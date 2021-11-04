@@ -1,0 +1,6 @@
+*.dll
+.vs/*
+*/bin/*
+*/obj/*
+*/node_modules/*
+*/.vs/*

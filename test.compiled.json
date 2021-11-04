@@ -1,0 +1,156 @@
+{
+  ".Default": {
+    "Scopes": {
+      "main": {
+        "Procedures": {
+          ".Default_2": {
+            "Name": ".Default_2",
+            "Variables": {
+              "_variables": {
+                "loop": 2049,
+                "set_white": 2057,
+                "set_gret": 2068
+              }
+            },
+            "Data": [
+              {
+                "Data": "5gU=",
+                "OriginalText": "ldx 0x05\r\n",
+                "RequiresReval": false,
+                "Params": "0x05",
+                "Address": 2049
+              },
+              {
+                "Data": "IAgJ",
+                "OriginalText": "jsr set_white\r\n",
+                "RequiresReval": false,
+                "Params": "set_white",
+                "Address": 2051
+              },
+              {
+                "Data": "yg==",
+                "OriginalText": "dex\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2054
+              },
+              {
+                "Data": "0Po=",
+                "OriginalText": "bne loop\r\n",
+                "RequiresReval": false,
+                "Params": "loop",
+                "Address": 2055
+              }
+            ]
+          },
+          "set_white": {
+            "Name": "set_white",
+            "Variables": {
+              "_variables": {}
+            },
+            "Data": [
+              {
+                "Data": "qfA=",
+                "OriginalText": "lda #<65520\r\n",
+                "RequiresReval": false,
+                "Params": "#<65520",
+                "Address": 2057
+              },
+              {
+                "Data": "javN",
+                "OriginalText": "sta data\r\n",
+                "RequiresReval": false,
+                "Params": "data",
+                "Address": 2059
+              },
+              {
+                "Data": "qf8=",
+                "OriginalText": "lda #>65520\r\n",
+                "RequiresReval": false,
+                "Params": "#>65520",
+                "Address": 2062
+              },
+              {
+                "Data": "javN",
+                "OriginalText": "sta data\r\n",
+                "RequiresReval": false,
+                "Params": "data",
+                "Address": 2064
+              },
+              {
+                "Data": "YA==",
+                "OriginalText": "rts\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2067
+              }
+            ]
+          },
+          "set_gret": {
+            "Name": "set_gret",
+            "Variables": {
+              "_variables": {
+                "sintable": 2079,
+                "datatable": 2079,
+                "somefile": 2079
+              }
+            },
+            "Data": [
+              {
+                "Data": "qYA=",
+                "OriginalText": "lda #<34944\r\n",
+                "RequiresReval": false,
+                "Params": "#<34944",
+                "Address": 2068
+              },
+              {
+                "Data": "javN",
+                "OriginalText": "sta data\r\n",
+                "RequiresReval": false,
+                "Params": "data",
+                "Address": 2070
+              },
+              {
+                "Data": "qYg=",
+                "OriginalText": "lda #>34944\r\n",
+                "RequiresReval": false,
+                "Params": "#>34944",
+                "Address": 2073
+              },
+              {
+                "Data": "javN",
+                "OriginalText": "sta data\r\n",
+                "RequiresReval": false,
+                "Params": "data",
+                "Address": 2075
+              },
+              {
+                "Data": "YA==",
+                "OriginalText": "rts\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2078
+              }
+            ]
+          }
+        },
+        "Name": "main",
+        "Variables": {
+          "_variables": {
+            "loop": 2049,
+            "set_white": 2057,
+            "set_gret": 2068
+          }
+        }
+      }
+    },
+    "Name": ".Default",
+    "StartAddress": 2049,
+    "Variables": {
+      "_variables": {
+        "data": 43981
+      }
+    },
+    "Address": 2079
+  }
+}

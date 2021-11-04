@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RazorEngineCore\RazorEngineCore\RazorEngineCore.csproj" />
+    <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
+  </ItemGroup>
+  
+</Project>

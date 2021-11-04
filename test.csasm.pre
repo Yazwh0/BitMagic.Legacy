@@ -1,0 +1,52 @@
+@using System.IO
+@* PreProcessor Result of D:\Documents\Source\BitMagic\test.csasm *@
+
+@{
+@:
+void ColourFunction(string name, ushort colour)
+{
+@:.proc @name
+@:lda #<@colour
+@:sta data
+@:lda #>@colour
+@:sta data
+@:rts
+}
+@:
+@:.const data = $abcd
+@:
+@:.scope main
+@:
+@:; entrypoint
+@X16Header();
+@:
+@:.loop:
+@:ldx 0x05
+@:jsr set_white
+@:dex
+@:bne loop
+@:
+ColourFunction("set_white", 0xfff0);
+ColourFunction("set_gret", 0x8880);
+@:
+@:.sintable:
+@:
+var sintable = new byte[256];
+for(var i = 0; i < 256; i++)
+{
+	sintable[i] = (byte)(Math.Sin((i * 360 / 256) * (Math.PI / 180)) * 128 + 128);
+}
+@Bytes(sintable);
+@:
+@:.datatable:
+@Bytes(new byte[] { 0x00, 0x02, 0x04, 0x06 });
+@:
+var x = File.ReadAllBytes("C:\\Temp\\Reflections_Demo\\README.txt");
+@:.somefile:
+@Bytes(x);
+@:
+@Words(new ushort[] { 0xffff, 0x00, 0xff00});
+@Words(new short[] { 1000, -1000});
+@:
+@:.endscope
+} @* PreProcessor End *@
