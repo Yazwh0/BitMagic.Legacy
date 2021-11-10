@@ -11,11 +11,11 @@
   "contributes": {
     "customEditors": [
       {
-        "viewType": "bitmagic.asm",
-        "displayName": "BitMagic Compiled ASM",
+        "viewType": "bitmagic.csasm",
+        "displayName": "BitMagic CS Razor ASM",
         "selector": [
           {
-            "filenamePattern": "*.asm"
+            "filenamePattern": "*.csasm"
           }
         ]
       }

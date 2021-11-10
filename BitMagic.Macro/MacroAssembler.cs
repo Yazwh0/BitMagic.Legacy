@@ -131,7 +131,8 @@ namespace BigMagic.Macro
 
             try
             {
-                var template = await _razorEngine.CompileAsync<RazorModel>(toProcess, a => {
+                var template = await _razorEngine.CompileAsync<RazorModel>(toProcess, a =>
+                {
                     var assemblies = new List<Assembly>();
 
                     a.Options.TemplateNamespace = "BitMagic.Asm";
@@ -142,16 +143,20 @@ namespace BigMagic.Macro
                     foreach (var include in _references)
                     {
                         var assembly = Assembly.Load(include);
-                        Console.WriteLine($"Adding Referenced Assembly: {include}");
+                        if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
+                            Console.WriteLine($"Adding Referenced Assembly: {include}");
                         a.AddAssemblyReference(assembly);
 
                         assemblies.Add(assembly);
                     }
 
-                    Console.WriteLine("Referenced Assemblies:");
-                    foreach (var ass in a.Options.ReferencedAssemblies)
+                    if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
                     {
-                        Console.WriteLine(ass.FullName);
+                        Console.WriteLine("Referenced Assemblies:");
+                        foreach (var ass in a.Options.ReferencedAssemblies)
+                        {
+                            Console.WriteLine(ass.FullName);
+                        }
                     }
                 });
                 

@@ -5,14 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitMagic.Cpu._6502
+namespace BitMagic.Cpu
 {
+    public interface I6502 : ICpu
+    {
+        public new I6502Registers Registers { get; }
+        public I6502Flags Flags { get; }
+        public void Push(byte value);
+        public byte Pop();
+    }
 
-    public class WDC65c02 : ICpu
+    public class WDC65c02 : I6502
     {
         public IEnumerable<ICpuOpCode> OpCodes => _opCodes;
+        public I6502Registers Registers { get; } = new _6502Registers();
+        public I6502Flags Flags => Registers.Flags;
+        IRegisters ICpu.Registers => Registers;
+        public IMemory _stack;
 
-        private ICpuOpCode[] _opCodes = new ICpuOpCode[]
+        private CpuOpCode[] _opCodes = new CpuOpCode[]
         {
             new Adc(),
             new And(),
@@ -72,13 +83,199 @@ namespace BitMagic.Cpu._6502
             new Tya()
         };
 
+        private Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)> _operations;
+
+        public WDC65c02(IMemory stack)
+        {
+            _operations = new Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)>();
+            _stack = stack;
+
+            foreach (var op in _opCodes)
+            {
+                foreach (var i in op.OpCodes)
+                {
+                    _operations.Add(i.OpCode, (op, i.Mode, i.Timing));
+                }
+            }
+        }
+
+        public void SetProgramCounter(int address)
+        {
+            Registers.PC = (ushort)address;
+        }
+
+        public int ClockTick(IMemory memory)
+        {
+            var opCode = memory.GetByte(Registers.PC++);
+
+            if (_operations.ContainsKey(opCode))
+                opCode = 0xea; // nop
+
+            var (op, am, timing) = _operations[opCode];
+
+            timing += op.Process(
+                () => GetValueAtPC(am, memory),
+                () => GetAddressAtPC(am, memory),
+                memory,
+                this);
+
+            return timing;
+        }
+
+        public void SetValue(int address, byte value, IMemory memory)
+        {
+            memory.SetByte(address, value);
+        }
+
+        public (ushort address, int timing, ushort pcStep) GetAddressAtPC(AccessMode mode, IMemory memory)
+        {
+            var l = memory.GetByte(Registers.PC);
+
+            if (mode == AccessMode.ZeroPage)
+            {
+                return (l, 0, 1);
+            }
+
+            if (mode == AccessMode.ZeroPageX)
+            {
+                return ((ushort)((l + Registers.X) & 0xff), 0, 1);
+            }
+
+            if (mode == AccessMode.ZeroPageY)
+            {
+                return ((ushort)((l + Registers.Y) & 0xff), 0, 1);
+            }
+
+            ushort address = 0;
+            if (mode == AccessMode.IndirectX)
+            {
+                address = memory.GetByte((l + Registers.X) & 0xff);
+                address += (ushort)(memory.GetByte((l + Registers.X + 1) & 0xff) << 8);
+                return (address, 0, 1);
+            }
+
+            int timing = 0;
+            if (mode == AccessMode.IndirectY)
+            {
+                address = memory.GetByte(l);
+                address += (ushort)(memory.GetByte(l + 1) << 8);
+                timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
+                return ((ushort)(address + Registers.Y), timing, 1);
+            }
+
+            var h = memory.GetByte(Registers.PC + 1);
+
+            address = (ushort)(l + h << 8);
+
+            if (mode == AccessMode.Absolute)
+                return (address, 0, 2);
+
+            if (mode == AccessMode.AbsoluteX)
+            {
+                timing = (address & 0xff00) == ((address + Registers.X) & 0xff00) ? 0 : 1;
+                return ((ushort)(address + Registers.X), timing, 2);
+            }
+
+            if (mode == AccessMode.AbsoluteY)
+            {
+                timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
+                return ((ushort)(address + Registers.Y), timing, 2);
+            }
+
+            if (mode == AccessMode.IndAbsoluteX)
+            {
+                address = (ushort)(memory.GetByte(address) + memory.GetByte(address) << 8);
+                address += Registers.X;
+                return (address, 0, 2);
+            }
+
+            throw new Exception($"Unhandled access mode {mode}");
+        }
+
+        public (byte value, int timing, ushort pcStep) GetValueAtPC(AccessMode mode, IMemory memory)
+        {
+            if (mode == AccessMode.Implied)
+                return (0, 0, 0);
+
+            if (mode == AccessMode.Accumulator)
+                return (Registers.A, 0, 0);
+
+            var (address, timing, pcStep) = GetAddressAtPC(mode, memory);
+
+            return (memory.GetByte(address), timing, pcStep);
+
+            /*
+                        var l = memory.GetByte(Registers.PC++);
+
+                        if (mode == AccessMode.Immediate || mode == AccessMode.Relative)
+                            return (l, 0);
+
+                        if (mode == AccessMode.ZeroPage)
+                            return (memory.GetByte(l), 0);
+
+                        if (mode == AccessMode.ZeroPageX)
+                            return (memory.GetByte((l + Registers.X) & 0xff), 0);
+
+                        if (mode == AccessMode.ZeroPageY)
+                            return (memory.GetByte((l + Registers.Y) & 0xff), 0);
+
+                        int address = 0;
+                        if (mode == AccessMode.IndirectX)
+                        {
+                            address = memory.GetByte((l + Registers.X) & 0xff);
+                            address += memory.GetByte((l + Registers.X + 1) & 0xff) << 8;
+                            return (memory.GetByte(address), 0);
+                        }
+
+                        var timing = 0;
+                        if (mode == AccessMode.IndirectY)
+                        {
+                            address = memory.GetByte(l);
+                            address += memory.GetByte(l + 1) << 8;
+                            timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
+                            return (memory.GetByte(address + Registers.Y), timing);
+                        }
+
+                        var h = memory.GetByte(Registers.PC++);
+
+                        address = l + h << 8;
+
+                        if (mode == AccessMode.Absolute)
+                            return (memory.GetByte(address), 0);
+
+                        if (mode == AccessMode.AbsoluteX) 
+                        {
+                            timing = (address & 0xff00) == ((address + Registers.X) & 0xff00) ? 0 : 1;
+                            return (memory.GetByte(address + Registers.X), timing);
+                        }
+
+                        if (mode == AccessMode.AbsoluteY)
+                        {
+                            timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
+                            return (memory.GetByte(address + Registers.Y), timing);
+                        }
+
+                        if (mode == AccessMode.IndAbsoluteX)
+                        {
+                            address = memory.GetByte(address) + memory.GetByte(address) << 8;
+                            address += Registers.X;
+                            return (memory.GetByte(address), 0);
+                        }*/
+        }
+
+        public void Push(byte value)
+        {
+            _stack.SetByte(Registers.S--, value);
+        }
+
+        public byte Pop() => _stack.GetByte(++Registers.S);
     }
 
     public class Adc : CpuOpCode
     {
         public override string Code => "ADC";
 
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new () {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x69, AccessMode.Immediate, 2),
             (0x65, AccessMode.ZeroPage, 3),
             (0x75, AccessMode.ZeroPageX, 4),
@@ -88,13 +285,26 @@ namespace BitMagic.Cpu._6502
             (0x61, AccessMode.IndirectX, 6),
             (0x71, AccessMode.IndirectY, 5),
         };
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            var newVal = value + cpu.Registers.A + (cpu.Registers.Flags.Carry ? 1 : 0);
+
+            cpu.Flags.Carry = newVal > 255;
+            cpu.Flags.Overflow = newVal > 127;
+            cpu.Registers.A = (byte)(newVal & 0xff);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
 
     public class And : CpuOpCode
     {
         public override string Code => "AND";
 
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new () {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x29, AccessMode.Immediate, 2),
             (0x25, AccessMode.ZeroPage, 3),
             (0x35, AccessMode.ZeroPageX, 4),
@@ -104,93 +314,207 @@ namespace BitMagic.Cpu._6502
             (0x21, AccessMode.IndirectX, 6),
             (0x31, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Registers.A = (byte)(value & cpu.Registers.A);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
 
     public class Asl : CpuOpCode
     {
         public override string Code => "ASL";
 
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new () {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x0a, AccessMode.Accumulator, 2),
             (0x06, AccessMode.ZeroPage, 5),
             (0x16, AccessMode.ZeroPageX, 6),
             (0x0e, AccessMode.Absolute, 6),
             (0x1e, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            var carry = cpu.Registers.Flags.Carry ? 1 : 0;
+            cpu.Flags.Carry = (value & 128) != 0;
+
+            cpu.Registers.A = (byte)(((cpu.Registers.A << 1) + carry) & 0xff);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
+
     public class Bit : CpuOpCode
     {
         public override string Code => "BIT";
 
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new () {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x24, AccessMode.ZeroPage, 3),
             (0x2c, AccessMode.Absolute, 4),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Flags.Zero = (value & cpu.Registers.A) == 0;
+            cpu.Flags.Negative = (value & 128) != 0;
+            cpu.Flags.Overflow = (value & 64) != 0;
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
 
-    public class Bpl : CpuOpCode
+    public abstract class BranchOpCode : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new () {
+        public abstract bool Condition(I6502 cpu);
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            if (Condition(cpu))
+            {
+                cpu.Registers.PC++;
+                return 0;
+            }
+
+            var (value, timing, _) = GetValueAtPC();
+
+            int newAddress;
+            if (value > 127)
+            {
+                newAddress = cpu.Registers.PC - (value & 127);
+            }
+            else
+            {
+                newAddress = cpu.Registers.PC + value;
+            }
+
+            timing += ((cpu.Registers.PC & 0xff00) != (newAddress & 0xff00)) ? 1 : 0;
+
+            cpu.Registers.PC = (ushort)newAddress;
+
+            return timing + 1;
+        }
+    }
+
+    public class Bpl : BranchOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x10, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => !cpu.Flags.Negative;
     }
 
-    public class Bmi : CpuOpCode
+    public class Bmi : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x30, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => cpu.Flags.Negative;
     }
-    public class Bvc : CpuOpCode
+
+    public class Bvc : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x50, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => !cpu.Flags.Overflow;
     }
-    public class Bvs : CpuOpCode
+    public class Bvs : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x70, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => cpu.Flags.Overflow;
     }
-    public class Bcc : CpuOpCode
+
+    public class Bcc : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x90, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => !cpu.Flags.Carry;
     }
-    public class Bcs : CpuOpCode
+
+    public class Bcs : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xb0, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => cpu.Flags.Carry;
     }
-    public class Bne : CpuOpCode
+
+    public class Bne : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xd0, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => !cpu.Flags.Zero;
     }
-    public class Beq : CpuOpCode
+
+    public class Beq : BranchOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xf0, AccessMode.Relative, 2)
         };
+
+        public override bool Condition(I6502 cpu) => cpu.Flags.Zero;
     }
+
     public class Brk : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x00, AccessMode.Implied, 7)
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
-    public class Cmp : CpuOpCode
+
+    public abstract class Compare : CpuOpCode
+    {
+        public abstract byte SourceVal(I6502 cpu);
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+
+            var cmpResult = cpu.Registers.A - value;
+
+            cpu.Flags.SetNv((byte)cmpResult);
+            cpu.Flags.Carry = cmpResult > 0;
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
+    }
+
+    public class Cmp : Compare
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -203,25 +527,32 @@ namespace BitMagic.Cpu._6502
             (0xc1, AccessMode.IndirectX, 6),
             (0xd1, AccessMode.IndirectY, 5),
         };
+
+        public override byte SourceVal(I6502 cpu) => cpu.Registers.A;
     }
 
-    public class Cpx : CpuOpCode
+    public class Cpx : Compare
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0xc9, AccessMode.Immediate, 2),
-            (0xc5, AccessMode.ZeroPage, 3),
-            (0xcd, AccessMode.Absolute, 4),
+            (0xe0, AccessMode.Immediate, 2),
+            (0xe4, AccessMode.ZeroPage, 3),
+            (0xec, AccessMode.Absolute, 4),
         };
+
+        public override byte SourceVal(I6502 cpu) => cpu.Registers.X;
     }
-    public class Cpy : CpuOpCode
+
+    public class Cpy : Compare
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0xc9, AccessMode.Immediate, 2),
-            (0xc5, AccessMode.ZeroPage, 3),
-            (0xcd, AccessMode.Absolute, 4),
+            (0xc0, AccessMode.Immediate, 2),
+            (0xc4, AccessMode.ZeroPage, 3),
+            (0xcc, AccessMode.Absolute, 4),
         };
+
+        public override byte SourceVal(I6502 cpu) => cpu.Registers.Y;
     }
 
     public class Dec : CpuOpCode
@@ -233,7 +564,23 @@ namespace BitMagic.Cpu._6502
             (0xce, AccessMode.Absolute, 6),
             (0xde, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, pcStep) = GetAddressAtPc();
+
+            int val = memory.GetByte(address);
+            val--;
+            byte actVal = (byte)(val & 0xff);
+
+            memory.SetByte(address, actVal);
+            cpu.Flags.SetNv(actVal);
+
+            cpu.Registers.PC += pcStep;
+            return timing;
+        }
     }
+
     public class Eor : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -247,56 +594,101 @@ namespace BitMagic.Cpu._6502
             (0x41, AccessMode.IndirectX, 6),
             (0x51, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Registers.A = (byte)(value ^ cpu.Registers.A);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
-    public class Clc : CpuOpCode
+
+    public abstract class FlagInstruction : CpuOpCode
+    {
+        public abstract void PerformOperation(I6502 cpu);
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            PerformOperation(cpu);
+
+            return 0;
+        }
+    }
+
+    public class Clc : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x18, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.Carry = false;
     }
-    public class Sec : CpuOpCode
+
+    public class Sec : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x38, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.Overflow = true;
+
     }
-    public class Cli : CpuOpCode
+
+    public class Cli : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x58, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.InterruptDisable = false;
     }
-    public class Sei : CpuOpCode
+
+    public class Sei : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x78, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.InterruptDisable = true;
     }
-    public class Clv : CpuOpCode
+
+    public class Clv : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xb8, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.Overflow = false;
     }
-    public class Cld : CpuOpCode
+
+    public class Cld : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xd8, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.Decimal = false;
     }
-    public class Sed : CpuOpCode
+
+    public class Sed : FlagInstruction
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xf8, AccessMode.Implied, 2)
         };
+
+        public override void PerformOperation(I6502 cpu) => cpu.Flags.Decimal = true;
     }
+
     public class Inc : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -306,15 +698,40 @@ namespace BitMagic.Cpu._6502
             (0xee, AccessMode.Absolute, 6),
             (0xfe, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, pcStep) = GetAddressAtPc();
+
+            int val = memory.GetByte(address);
+            val++;
+            byte actVal = (byte)(val & 0xff);
+
+            memory.SetByte(address, actVal);
+            cpu.Flags.SetNv(actVal);
+
+            cpu.Registers.PC += pcStep;
+            return timing;
+        }
     }
 
     public class Jmp : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0x4c, AccessMode.Absolute, 6),
+            (0x4c, AccessMode.Absolute, 3),
             (0x6c, AccessMode.Indirect, 5),
+            (0x7c, AccessMode.IndAbsoluteX, 6),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, _) = GetAddressAtPc();
+
+            cpu.Registers.PC = address;
+
+            return timing;
+        }
     }
 
     public class Jsr : CpuOpCode
@@ -323,7 +740,25 @@ namespace BitMagic.Cpu._6502
         {
             (0x20, AccessMode.Absolute, 6),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (destAddress, timing, _) = GetAddressAtPc();
+
+            var returnAddress = (ushort)(cpu.Registers.PC + 1); // normally -1, but we've not adjusted the PC yet.
+
+            var l = (byte)(returnAddress & 0xff);
+            var h = (byte)(returnAddress & 0xff00 >> 8);
+
+            cpu.Push(h);
+            cpu.Push(l);
+
+            cpu.Registers.PC = destAddress;
+
+            return timing;
+        }
     }
+
     public class Lda : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -337,17 +772,38 @@ namespace BitMagic.Cpu._6502
             (0xa1, AccessMode.IndirectX, 6),
             (0xb1, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Registers.A = value;
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
+
     public class Ldx : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa2, AccessMode.Immediate, 2),
-            (0xe6, AccessMode.ZeroPage, 3),
+            (0xa6, AccessMode.ZeroPage, 3),
             (0xb6, AccessMode.ZeroPageY, 4),
             (0xae, AccessMode.Absolute, 4),
             (0xbe, AccessMode.AbsoluteY, 4),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Registers.X = value;
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
 
     public class Ldy : CpuOpCode
@@ -355,11 +811,21 @@ namespace BitMagic.Cpu._6502
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa0, AccessMode.Immediate, 2),
-            (0xe4, AccessMode.ZeroPage, 3),
+            (0xa4, AccessMode.ZeroPage, 3),
             (0xb4, AccessMode.ZeroPageX, 4),
             (0xac, AccessMode.Absolute, 4),
             (0xbc, AccessMode.AbsoluteX, 4),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (value, timing, pcStep) = GetValueAtPC();
+            cpu.Registers.Y = value;
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
 
     public class Lsr : CpuOpCode
@@ -372,6 +838,11 @@ namespace BitMagic.Cpu._6502
             (0x4e, AccessMode.Absolute, 6),
             (0x5e, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Nop : CpuOpCode
@@ -380,7 +851,13 @@ namespace BitMagic.Cpu._6502
         {
             (0xea, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            return 0;
+        }
     }
+
     public class Ora : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -394,7 +871,13 @@ namespace BitMagic.Cpu._6502
             (0x01, AccessMode.IndirectX, 6),
             (0x11, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
+
     public class Rol : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -405,7 +888,13 @@ namespace BitMagic.Cpu._6502
             (0x2e, AccessMode.Absolute, 6),
             (0x3e, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
+
     public class Ror : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -416,21 +905,55 @@ namespace BitMagic.Cpu._6502
             (0x6e, AccessMode.Absolute, 6),
             (0x7e, AccessMode.AbsoluteX, 7),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
+
     public class Rti : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x40, AccessMode.Implied, 6),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.P = cpu.Pop();
+
+            var l = cpu.Pop();
+            var h = cpu.Pop();
+
+            var address = (ushort)(h * 256 + l);
+
+            cpu.Registers.PC = address;
+
+            return 0;
+        }
     }
+
     public class Rts : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x60, AccessMode.Implied, 6),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var l = cpu.Pop();
+            var h = cpu.Pop();
+
+            var address = (ushort)(h * 256 + l + 1);
+
+            cpu.Registers.PC = address;
+
+            return 0;
+        }
     }
+
     public class Sbc : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -444,7 +967,13 @@ namespace BitMagic.Cpu._6502
             (0xe1, AccessMode.IndirectX, 6),
             (0xf1, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
     }
+
     public class Sta : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -457,7 +986,19 @@ namespace BitMagic.Cpu._6502
             (0x81, AccessMode.IndirectX, 6),
             (0x91, AccessMode.IndirectY, 5),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, pcStep) = GetAddressAtPc();
+
+            memory.SetByte(address, cpu.Registers.A);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
+
     public class Stx : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -466,7 +1007,19 @@ namespace BitMagic.Cpu._6502
             (0x96, AccessMode.ZeroPageY, 4),
             (0x8e, AccessMode.Absolute, 4),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, pcStep) = GetAddressAtPc();
+
+            memory.SetByte(address, cpu.Registers.X);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
+
     public class Sty : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
@@ -475,104 +1028,236 @@ namespace BitMagic.Cpu._6502
             (0x94, AccessMode.ZeroPageX, 4),
             (0x8c, AccessMode.Absolute, 4),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            var (address, timing, pcStep) = GetAddressAtPc();
+
+            memory.SetByte(address, cpu.Registers.Y);
+
+            cpu.Registers.PC += pcStep;
+
+            return timing;
+        }
     }
+
     public class Tax : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xaa, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.X = cpu.Registers.A;
+            cpu.Flags.SetNv(cpu.Registers.X);
+
+            return 0;
+        }
     }
+
     public class Txa : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x8a, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.A = cpu.Registers.X;
+            cpu.Flags.SetNv(cpu.Registers.A);
+
+            return 0;
+        }
     }
+
     public class Dex : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xca, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.X--;
+            cpu.Flags.SetNv(cpu.Registers.X);
+
+            return 0;
+        }
     }
+
     public class Inx : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xe8, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.X++;
+
+            cpu.Flags.SetNv(cpu.Registers.X);
+
+            return 0;
+        }
     }
+
     public class Tay : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa8, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.Y = cpu.Registers.A;
+            cpu.Flags.SetNv(cpu.Registers.Y);
+
+            return 0;
+        }
     }
+
     public class Tya : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x98, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.A = cpu.Registers.Y;
+            cpu.Flags.SetNv(cpu.Registers.A);
+
+            return 0;
+        }
     }
+
     public class Dey : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x88, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.Y--;
+            cpu.Flags.SetNv(cpu.Registers.Y);
+
+            return 0;
+        }
     }
+
     public class Iny : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xc8, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.Y++;
+            cpu.Flags.SetNv(cpu.Registers.Y);
+
+            return 0;
+        }
     }
+
     public class Txs : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x9a, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.S = cpu.Registers.X;
+
+            return 0;
+        }
     }
+
     public class Tsx : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xba, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.X = cpu.Registers.S;
+
+            return 0;
+        }
     }
+
     public class Pha : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x48, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Push(cpu.Registers.A);
+
+            return 0;
+        }
     }
+
     public class Pla : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x68, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.A = cpu.Pop();
+
+            return 0;
+        }
     }
+
     public class Php : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x08, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Push(cpu.Registers.P);
+
+            return 0;
+        }
     }
+
     public class Plp : CpuOpCode
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x28, AccessMode.Implied, 2),
         };
+
+        public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.P = cpu.Pop();
+
+            return 0;
+        }
     }
 }
 

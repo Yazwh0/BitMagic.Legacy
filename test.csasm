@@ -25,15 +25,14 @@ dex
 bne loop
 
 ColourFunction("set_white", 0xfff0);
-ColourFunction("set_gret", 0x8880);
+ColourFunction("set_grey", 0x8880);
 
-.sintable:
-
-var sintable = new byte[256];
-for(var i = 0; i < 256; i++)
+var sintable = new byte[32];
+for(var i = 0; i < 32; i++)
 {
-	sintable[i] = (byte)(Math.Sin((i * 360 / 256) * (Math.PI / 180)) * 128 + 128);
+	sintable[i] = (byte)(Math.Sin((i * 360 / 32) * (Math.PI / 180)) * 128 + 128);
 }
+.sintable:
 @Bytes(sintable);
 
 .datatable:
@@ -41,7 +40,7 @@ for(var i = 0; i < 256; i++)
 
 var x = File.ReadAllBytes("C:\\Temp\\Reflections_Demo\\README.txt");
 .somefile:
-@Bytes(x);
+@Bytes(x.Take(10));
 
 @Words(new ushort[] { 0xffff, 0x00, 0xff00});
 @Words(new short[] { 1000, -1000});

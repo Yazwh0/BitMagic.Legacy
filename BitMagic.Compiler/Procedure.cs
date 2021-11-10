@@ -10,7 +10,7 @@ namespace BitMagic.Compiler
         [JsonProperty]
         public Variables Variables { get; }
         [JsonProperty]
-        public List<Line> Data { get; set; } = new List<Line>();
+        public List<ILine> Data { get; set; } = new List<ILine>();
 
         public Procedure(Scope scope, string name, bool anonymous)
         {
@@ -18,7 +18,7 @@ namespace BitMagic.Compiler
             Name = name;
         }
 
-        public void AddLine(Line line)
+        public void AddLine(ILine line)
         {
             Data.Add(line);
         }

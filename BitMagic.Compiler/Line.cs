@@ -12,13 +12,103 @@ namespace BitMagic.Compiler
     {
         byte[] Data { get; }
         string OriginalText { get; }
-        public int Address { get; }
+        int Address { get; }
+        bool RequiresReval { get; }
+        void ProcessParts(bool finalParse);
+        void WriteToConsole();
     }
 
+    public class DataLine : ILine
+    {
+        public byte[] Data { get; private set; } = new byte[] { };
+        public string OriginalText { get; }
+        public int Address { get; }
+        public bool RequiresReval { get; private set; }
+        private Procedure _procedure { get; }
+
+        internal DataLine(Procedure proc, string originalText, int address)
+        {
+            OriginalText = originalText;
+            Address = address;
+            _procedure = proc;
+        }
+
+        private enum LineType
+        {
+            IsByte,
+            IsWord
+        }
+
+        public void ProcessParts(bool finalParse)
+        {
+            var a = 0;
+            var data = new List<byte>();
+
+            var toProcess = OriginalText.Trim().ToLower();
+            var lineType = toProcess.StartsWith(".byte") ? LineType.IsByte : LineType.IsWord;
+
+            toProcess = toProcess.Substring(5);
+
+            var idx = toProcess.IndexOf(';');
+            if (idx != -1)
+                toProcess = toProcess.Substring(0, idx);
+
+            Line._evaluator.PreEvaluateVariable += _evaluator_PreEvaluateVariable;
+            var rawResult = Line._evaluator.Evaluate($"Array({toProcess})");
+            Line._evaluator.PreEvaluateVariable -= _evaluator_PreEvaluateVariable;
+
+            var result = rawResult as object[];
+
+            if (result == null)
+                throw new Exception($"Expected object[] back, actually have {rawResult.GetType().Name}");
+
+            foreach (var r in result) 
+            {
+                var i = r as int?;
+                
+                if (i == null)
+                    throw new Exception($"Expected value back, actually have {r.GetType().Name} for {r}");
+
+                if (lineType == LineType.IsByte)
+                {
+                    data.Add((byte)(i & 0xff));
+                } 
+                else
+                {
+                    var us = (ushort)i;
+
+                    data.Add((byte)(us & 0xff));
+                    data.Add((byte)((us & 0xff00) >> 8));
+                }
+            }
+
+            Data = data.ToArray();
+        }
+
+        private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
+        {
+            if (_procedure.Variables.TryGetValue(e.Name, out var result))
+            {
+                e.Value = result;
+                RequiresReval = false;
+            }
+            else
+            {
+                RequiresReval = true;
+                e.Value = 0xaaaa; // random two byte number
+            }
+        }
+
+        public void WriteToConsole()
+        {
+            Console.WriteLine($"${Address:X4}:\t{string.Join(", ", Data.Select(a => $"${a:X2}")),-22}");
+        }
+
+    }
 
     public class Line : ILine
     {
-        private readonly static ExpressionEvaluator _evaluator = new();
+        public readonly static ExpressionEvaluator _evaluator = new();
 
         public byte[] Data { get; internal set; } = new byte[] { };
         public string OriginalText { get; }
@@ -39,7 +129,7 @@ namespace BitMagic.Compiler
             Address = address;
         }
 
-        internal void ProcessParts(bool finalParse)
+        public void ProcessParts(bool finalParse)
         {
             // take the input and remove all spaces. trim down the initial # and ( X.Y) if necessary.
             // can then parse the expression.

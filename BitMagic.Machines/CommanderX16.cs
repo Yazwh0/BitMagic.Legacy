@@ -1,6 +1,5 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu;
-using BitMagic.Cpu._6502;
 using BitMagic.Cpu.Memory;
 using System;
 using System.Collections.Generic;
@@ -14,6 +13,8 @@ namespace BitMagic.Machines
         public ICpu Cpu { get; internal set; }
 
         public string Name => "Commander X16 R38";
+
+        IMemory IMachine.Memory => Memory;
 
         public CommanderX16()
         {
@@ -31,14 +32,18 @@ namespace BitMagic.Machines
                 rom.Add(new Rom(0x4000));
             }
 
+            var stack = new Ram(0x100);
+
             Memory = new MemoryMap(0x10000, new IMemory[] {
-                new Ram(0x9f00), // Fixed RAM
+                new Ram(0x100), // ZP
+                stack,
+                new Ram(0x9d00), // Fixed RAM
                 new Ram(0x100), // IO
                 new Banked(0x2000, banks), // Banked Ram
                 new Banked(0x4000, rom)
             });
 
-            Cpu = new WDC65c02();
+            Cpu = new WDC65c02(stack);
         }
     }
 }

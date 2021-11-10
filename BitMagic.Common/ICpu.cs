@@ -5,6 +5,9 @@ namespace BitMagic.Common
     public interface ICpu
     {
         IEnumerable<ICpuOpCode> OpCodes { get; }
+        public IRegisters Registers { get; }
+        public void SetProgramCounter(int address);
+        public int ClockTick(IMemory memory);
     }
 
     public interface ICpuOpCode
@@ -30,5 +33,23 @@ namespace BitMagic.Common
         IndirectY,    // ($44), Y
         IndAbsoluteX, // ($4444, X)
         Relative,     // #$ff for branch instruction
+    }
+
+    public interface IFlags
+    {
+        public int NumFlags { get; }
+        public bool GetFlag(int index);
+        public void SetFlag(int index, bool value);
+        public string GetFlagName(int index);
+        public byte Register { get; set; }
+    }
+
+    public interface IRegisters
+    {
+        public int NumRegisters { get; }
+        public byte GetRegister(int index);
+        public void SetRegister(int index, byte value);
+        public string GetRegisterName(int index);
+        public IFlags Flags {get;}
     }
 }

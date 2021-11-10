@@ -7,39 +7,45 @@
             "Name": ".Default_2",
             "Variables": {
               "_variables": {
-                "loop": 2049,
-                "set_white": 2057,
-                "set_gret": 2068
+                "loop": 2064,
+                "set_white": 2072,
+                "set_grey": 2083
               }
             },
             "Data": [
               {
-                "Data": "5gU=",
+                "Data": "DAgKAJ4gMjA2NAAAAAAA",
+                "OriginalText": ".byte\t$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00",
+                "Address": 2049,
+                "RequiresReval": false
+              },
+              {
+                "Data": "pgU=",
                 "OriginalText": "ldx 0x05\r\n",
                 "RequiresReval": false,
                 "Params": "0x05",
-                "Address": 2049
+                "Address": 2064
               },
               {
-                "Data": "IAgJ",
+                "Data": "IAgY",
                 "OriginalText": "jsr set_white\r\n",
                 "RequiresReval": false,
                 "Params": "set_white",
-                "Address": 2051
+                "Address": 2066
               },
               {
                 "Data": "yg==",
                 "OriginalText": "dex\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2054
+                "Address": 2069
               },
               {
                 "Data": "0Po=",
                 "OriginalText": "bne loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2055
+                "Address": 2070
               }
             ]
           },
@@ -54,45 +60,45 @@
                 "OriginalText": "lda #<65520\r\n",
                 "RequiresReval": false,
                 "Params": "#<65520",
-                "Address": 2057
+                "Address": 2072
               },
               {
                 "Data": "javN",
                 "OriginalText": "sta data\r\n",
                 "RequiresReval": false,
                 "Params": "data",
-                "Address": 2059
+                "Address": 2074
               },
               {
                 "Data": "qf8=",
                 "OriginalText": "lda #>65520\r\n",
                 "RequiresReval": false,
                 "Params": "#>65520",
-                "Address": 2062
+                "Address": 2077
               },
               {
                 "Data": "javN",
                 "OriginalText": "sta data\r\n",
                 "RequiresReval": false,
                 "Params": "data",
-                "Address": 2064
+                "Address": 2079
               },
               {
                 "Data": "YA==",
                 "OriginalText": "rts\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2067
+                "Address": 2082
               }
             ]
           },
-          "set_gret": {
-            "Name": "set_gret",
+          "set_grey": {
+            "Name": "set_grey",
             "Variables": {
               "_variables": {
-                "sintable": 2079,
-                "datatable": 2079,
-                "somefile": 2079
+                "sintable": 2094,
+                "datatable": 2126,
+                "somefile": 2130
               }
             },
             "Data": [
@@ -101,35 +107,71 @@
                 "OriginalText": "lda #<34944\r\n",
                 "RequiresReval": false,
                 "Params": "#<34944",
-                "Address": 2068
+                "Address": 2083
               },
               {
                 "Data": "javN",
                 "OriginalText": "sta data\r\n",
                 "RequiresReval": false,
                 "Params": "data",
-                "Address": 2070
+                "Address": 2085
               },
               {
                 "Data": "qYg=",
                 "OriginalText": "lda #>34944\r\n",
                 "RequiresReval": false,
                 "Params": "#>34944",
-                "Address": 2073
+                "Address": 2088
               },
               {
                 "Data": "javN",
                 "OriginalText": "sta data\r\n",
                 "RequiresReval": false,
                 "Params": "data",
-                "Address": 2075
+                "Address": 2090
               },
               {
                 "Data": "YA==",
                 "OriginalText": "rts\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2078
+                "Address": 2093
+              },
+              {
+                "Data": "gJivxdrq9f0A/fbr2seymg==",
+                "OriginalText": ".byte\t$80, $98, $AF, $C5, $DA, $EA, $F5, $FD, $00, $FD, $F6, $EB, $DA, $C7, $B2, $9A",
+                "Address": 2094,
+                "RequiresReval": false
+              },
+              {
+                "Data": "gGdQOiUVCgIAAgkUJThNZQ==",
+                "OriginalText": ".byte\t$80, $67, $50, $3A, $25, $15, $0A, $02, $00, $02, $09, $14, $25, $38, $4D, $65",
+                "Address": 2110,
+                "RequiresReval": false
+              },
+              {
+                "Data": "AAIEBg==",
+                "OriginalText": ".byte\t$00, $02, $04, $06",
+                "Address": 2126,
+                "RequiresReval": false
+              },
+              {
+                "Data": "Ly8vLy8vLy8vLw==",
+                "OriginalText": ".byte\t$2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F",
+                "Address": 2130,
+                "RequiresReval": false
+              },
+              {
+                "Data": "//8AAAD/",
+                "OriginalText": ".word\t$FFFF, $0000, $FF00",
+                "Address": 2140,
+                "RequiresReval": false
+              },
+              {
+                "Data": "6AMY/A==",
+                "OriginalText": ".word\t$03E8, $FC18",
+                "Address": 2146,
+                "RequiresReval": false
               }
             ]
           }
@@ -137,9 +179,9 @@
         "Name": "main",
         "Variables": {
           "_variables": {
-            "loop": 2049,
-            "set_white": 2057,
-            "set_gret": 2068
+            "loop": 2064,
+            "set_white": 2072,
+            "set_grey": 2083
           }
         }
       }
@@ -151,6 +193,6 @@
         "data": 43981
       }
     },
-    "Address": 2079
+    "Address": 2150
   }
 }

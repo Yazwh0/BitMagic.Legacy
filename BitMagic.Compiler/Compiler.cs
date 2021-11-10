@@ -32,8 +32,6 @@ namespace BitMagic.Compiler
                 _opCodes.Add(opCode.Code.ToLower(), opCode);
             }
 
-            var startTime = DateTime.Now;
-
             _anonCounter = 0;
             var globals = new Variables();
 
@@ -62,7 +60,7 @@ namespace BitMagic.Compiler
                     continue;
                 }
 
-                var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = line.Split(new[] { ' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (parts[0].StartsWith('.'))
                 {
@@ -81,14 +79,42 @@ namespace BitMagic.Compiler
 
             Reval();
 
-            if (!string.IsNullOrWhiteSpace( _project.AssemblerObject.Filename))
+            if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
             {
                 _project.AssemblerObject.Contents = JsonConvert.SerializeObject(_segments, Formatting.Indented);
                 await _project.AssemblerObject.Save();
             }
 
-            var totalTime = DateTime.Now - startTime;
-            Console.WriteLine($"Compiler Done in {totalTime:s\\.fff}s.");
+            await GenerateDataFile();
+        }
+
+        private async Task GenerateDataFile()
+        {
+            // todo -- add padding between segments for the prog file generation and save!
+            var toSave = new List<byte>(0x10000);
+
+            toSave.Add((byte)(_segments.First().Value.StartAddress & 0xff));
+            toSave.Add((byte)((_segments.First().Value.StartAddress & 0xff00) >> 8));
+
+            foreach (var segment in _segments.Values)
+            {
+                foreach (var scope in segment.Scopes.Values)
+                {
+                    foreach (var proc in scope.Procedures.Values)
+                    {
+                        foreach (var line in proc.Data)
+                        {
+                            toSave.AddRange(line.Data);
+                        }
+                    }
+                }
+            }
+
+            _project.ProgFile.Contents = toSave.ToArray();
+            if (!string.IsNullOrWhiteSpace(_project.ProgFile.Filename))
+            {
+                await _project.ProgFile.Save();
+            }
         }
 
         private void PruneUnusedObjects()
@@ -231,11 +257,17 @@ namespace BitMagic.Compiler
                     return;
 
                 case "byte":
-                    // todo: add this
-                    return;
                 case "word":
-                    // todo: add this
+                    var dataline = new DataLine(state.Procedure, line, state.Segment.Address);
+                    dataline.ProcessParts(false);
+                    state.Segment.Address += dataline.Data.Length;
+
+                    state.Procedure.AddLine(dataline);
+                    dataline.WriteToConsole();
+
                     return;
+                default:
+                    throw new Exception($"Unknown command {parts[0]}");
             }
 
             throw new Exception($"Unknown command {parts[0]}");

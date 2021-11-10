@@ -13,11 +13,11 @@ export class BitMagicAsmEditorProvider implements vscode.CustomTextEditorProvide
 	}
 
     
-	private static readonly viewType = 'bitMagic.asm';
+	private static readonly viewType = 'bitmagic.csasm';
 
     constructor(
 		private readonly context: vscode.ExtensionContext
 	) { }
 
-    
+
 }
