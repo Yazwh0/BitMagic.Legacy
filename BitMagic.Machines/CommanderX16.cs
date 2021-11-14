@@ -43,7 +43,7 @@ namespace BitMagic.Machines
                 new Banked(0x4000, rom)
             });
 
-            Cpu = new WDC65c02(stack);
+            Cpu = new WDC65c02(stack, 8000000);
         }
     }
 }

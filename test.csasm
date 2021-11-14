@@ -18,14 +18,20 @@ void ColourFunction(string name, ushort colour)
 ; entrypoint
 @X16Header();
 
+.start:
+ldx #$02
 .loop:
-ldx 0x05
-jsr set_white
 dex
-bne loop
+bne forward
+iny
+.forward:
+tya
+cmp #$02
+beq start
+jmp loop
 
-ColourFunction("set_white", 0xfff0);
-ColourFunction("set_grey", 0x8880);
+//ColourFunction("set_white", 0xfff0);
+//ColourFunction("set_grey", 0x8880);
 
 var sintable = new byte[32];
 for(var i = 0; i < 32; i++)
@@ -33,16 +39,16 @@ for(var i = 0; i < 32; i++)
 	sintable[i] = (byte)(Math.Sin((i * 360 / 32) * (Math.PI / 180)) * 128 + 128);
 }
 .sintable:
-@Bytes(sintable);
+//@Bytes(sintable);
 
 .datatable:
-@Bytes(new byte[] { 0x00, 0x02, 0x04, 0x06 });
+//@Bytes(new byte[] { 0x00, 0x02, 0x04, 0x06 });
 
 var x = File.ReadAllBytes("C:\\Temp\\Reflections_Demo\\README.txt");
 .somefile:
-@Bytes(x.Take(10));
+//@Bytes(x.Take(10));
 
-@Words(new ushort[] { 0xffff, 0x00, 0xff00});
-@Words(new short[] { 1000, -1000});
+//@Words(new ushort[] { 0xffff, 0x00, 0xff00});
+//@Words(new short[] { 1000, -1000});
 
 .endscope

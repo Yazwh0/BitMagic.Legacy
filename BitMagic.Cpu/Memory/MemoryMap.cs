@@ -9,54 +9,49 @@ namespace BitMagic.Cpu.Memory
     {
         public int Length { get; }
         private readonly IMemory[] _memoryMap;
-        private readonly int[] _startAddress;
+
+        private readonly (IMemory Memory, int Offset)[] _lookup;
 
         public MemoryMap(int size, IEnumerable<IMemory> blocks)
         {
             Length = size;
             _memoryMap = blocks.ToArray();
-            _startAddress = new int[_memoryMap.Length];
             var pos = 0;
 
             for(var i = 0; i < _memoryMap.Length; i++)
-            {
-                _startAddress[i] = pos;
-                pos += _memoryMap[i].Length;
+            {   pos += _memoryMap[i].Length;
             }
 
             if (pos != size)
                 throw new Exception($"Size {size} is different to blocks provided {pos}");
+
+            _lookup = new (IMemory, int)[size];
+            var idx = 0;
+            var current = _memoryMap[idx];
+            pos = 0;
+            for(var i = 0; i < size; i++)
+            {
+                _lookup[i] = (current, pos++);
+                if (pos > current.Length)
+                {
+                    pos = 0;
+                    idx++;
+                    current = _memoryMap[idx];
+                }
+            }
         }
 
         public byte GetByte(int address)
         {
-            int pos = 0;
-            for(var i = 1; i < _memoryMap.Length; i++)
-            {
-                if (_startAddress[i] < address)
-                {
-                    return _memoryMap[i - 1].GetByte(address - pos);
-                }
-                pos += _startAddress[i];
-            }
-
-            return _memoryMap[_memoryMap.Length - 1].GetByte(address - pos);
+            var (memory, offset) = _lookup[address];
+            return memory.GetByte(offset);
         }
 
         public void SetByte(int address, byte value)
         {
-            int pos = 0;
-            for (var i = 1; i < _memoryMap.Length; i++)
-            {
-                if (_startAddress[i] < address)
-                {
-                    _memoryMap[i - 1].SetByte(address - pos, value);
-                    return;
-                }
-                pos += _startAddress[i];
-            }
-
-            _memoryMap[_memoryMap.Length - 1].SetByte(address - pos, value);
+            var (memory, offset) = _lookup[address];
+            memory.SetByte(offset, value);
+            return;
         }
 
         public byte GetDebugByte(int address) => GetByte(address);

@@ -1,0 +1,32 @@
+
+
+
+.const data = $abcd
+
+.scope main
+
+; entrypoint
+.byte	$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
+
+.start:
+ldx #$02
+.loop:
+dex
+bne forward
+iny
+.forward:
+tya
+cmp #$02
+beq start
+jmp loop
+
+
+.sintable:
+
+.datatable:
+
+.somefile:
+
+
+.endscope
+ 

@@ -7,9 +7,12 @@
             "Name": ".Default_2",
             "Variables": {
               "_variables": {
-                "loop": 2064,
-                "set_white": 2072,
-                "set_grey": 2083
+                "start": 2064,
+                "loop": 2066,
+                "forward": 2070,
+                "sintable": 2078,
+                "datatable": 2078,
+                "somefile": 2078
               }
             },
             "Data": [
@@ -20,158 +23,60 @@
                 "RequiresReval": false
               },
               {
-                "Data": "pgU=",
-                "OriginalText": "ldx 0x05\r\n",
+                "Data": "ogI=",
+                "OriginalText": "ldx #$02\r\n",
                 "RequiresReval": false,
-                "Params": "0x05",
+                "Params": "#$02",
                 "Address": 2064
-              },
-              {
-                "Data": "IAgY",
-                "OriginalText": "jsr set_white\r\n",
-                "RequiresReval": false,
-                "Params": "set_white",
-                "Address": 2066
               },
               {
                 "Data": "yg==",
                 "OriginalText": "dex\r\n",
                 "RequiresReval": false,
                 "Params": "",
+                "Address": 2066
+              },
+              {
+                "Data": "0AE=",
+                "OriginalText": "bne forward\r\n",
+                "RequiresReval": false,
+                "Params": "forward",
+                "Address": 2067
+              },
+              {
+                "Data": "yA==",
+                "OriginalText": "iny\r\n",
+                "RequiresReval": false,
+                "Params": "",
                 "Address": 2069
               },
               {
-                "Data": "0Po=",
-                "OriginalText": "bne loop\r\n",
+                "Data": "mA==",
+                "OriginalText": "tya\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2070
+              },
+              {
+                "Data": "yQI=",
+                "OriginalText": "cmp #$02\r\n",
+                "RequiresReval": false,
+                "Params": "#$02",
+                "Address": 2071
+              },
+              {
+                "Data": "8PU=",
+                "OriginalText": "beq start\r\n",
+                "RequiresReval": false,
+                "Params": "start",
+                "Address": 2073
+              },
+              {
+                "Data": "TBII",
+                "OriginalText": "jmp loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2070
-              }
-            ]
-          },
-          "set_white": {
-            "Name": "set_white",
-            "Variables": {
-              "_variables": {}
-            },
-            "Data": [
-              {
-                "Data": "qfA=",
-                "OriginalText": "lda #<65520\r\n",
-                "RequiresReval": false,
-                "Params": "#<65520",
-                "Address": 2072
-              },
-              {
-                "Data": "javN",
-                "OriginalText": "sta data\r\n",
-                "RequiresReval": false,
-                "Params": "data",
-                "Address": 2074
-              },
-              {
-                "Data": "qf8=",
-                "OriginalText": "lda #>65520\r\n",
-                "RequiresReval": false,
-                "Params": "#>65520",
-                "Address": 2077
-              },
-              {
-                "Data": "javN",
-                "OriginalText": "sta data\r\n",
-                "RequiresReval": false,
-                "Params": "data",
-                "Address": 2079
-              },
-              {
-                "Data": "YA==",
-                "OriginalText": "rts\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2082
-              }
-            ]
-          },
-          "set_grey": {
-            "Name": "set_grey",
-            "Variables": {
-              "_variables": {
-                "sintable": 2094,
-                "datatable": 2126,
-                "somefile": 2130
-              }
-            },
-            "Data": [
-              {
-                "Data": "qYA=",
-                "OriginalText": "lda #<34944\r\n",
-                "RequiresReval": false,
-                "Params": "#<34944",
-                "Address": 2083
-              },
-              {
-                "Data": "javN",
-                "OriginalText": "sta data\r\n",
-                "RequiresReval": false,
-                "Params": "data",
-                "Address": 2085
-              },
-              {
-                "Data": "qYg=",
-                "OriginalText": "lda #>34944\r\n",
-                "RequiresReval": false,
-                "Params": "#>34944",
-                "Address": 2088
-              },
-              {
-                "Data": "javN",
-                "OriginalText": "sta data\r\n",
-                "RequiresReval": false,
-                "Params": "data",
-                "Address": 2090
-              },
-              {
-                "Data": "YA==",
-                "OriginalText": "rts\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2093
-              },
-              {
-                "Data": "gJivxdrq9f0A/fbr2seymg==",
-                "OriginalText": ".byte\t$80, $98, $AF, $C5, $DA, $EA, $F5, $FD, $00, $FD, $F6, $EB, $DA, $C7, $B2, $9A",
-                "Address": 2094,
-                "RequiresReval": false
-              },
-              {
-                "Data": "gGdQOiUVCgIAAgkUJThNZQ==",
-                "OriginalText": ".byte\t$80, $67, $50, $3A, $25, $15, $0A, $02, $00, $02, $09, $14, $25, $38, $4D, $65",
-                "Address": 2110,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAIEBg==",
-                "OriginalText": ".byte\t$00, $02, $04, $06",
-                "Address": 2126,
-                "RequiresReval": false
-              },
-              {
-                "Data": "Ly8vLy8vLy8vLw==",
-                "OriginalText": ".byte\t$2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F, $2F",
-                "Address": 2130,
-                "RequiresReval": false
-              },
-              {
-                "Data": "//8AAAD/",
-                "OriginalText": ".word\t$FFFF, $0000, $FF00",
-                "Address": 2140,
-                "RequiresReval": false
-              },
-              {
-                "Data": "6AMY/A==",
-                "OriginalText": ".word\t$03E8, $FC18",
-                "Address": 2146,
-                "RequiresReval": false
+                "Address": 2075
               }
             ]
           }
@@ -179,9 +84,12 @@
         "Name": "main",
         "Variables": {
           "_variables": {
-            "loop": 2064,
-            "set_white": 2072,
-            "set_grey": 2083
+            "start": 2064,
+            "loop": 2066,
+            "forward": 2070,
+            "sintable": 2078,
+            "datatable": 2078,
+            "somefile": 2078
           }
         }
       }
@@ -193,6 +101,6 @@
         "data": 43981
       }
     },
-    "Address": 2150
+    "Address": 2078
   }
 }

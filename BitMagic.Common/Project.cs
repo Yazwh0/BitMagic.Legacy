@@ -13,7 +13,7 @@ namespace BitMagic.Common
 
         public ProjectBinFile ProgFile { get; } = new ProjectBinFile();
 
-        public Options Options { get; } = new Options();
+        public Options Options { get; }
 
         public IMachine Machine { get; }
 
@@ -24,6 +24,7 @@ namespace BitMagic.Common
         public Project(IMachine machine)
         {
             Machine = machine;
+            Options = new Options();
         }
     }
 

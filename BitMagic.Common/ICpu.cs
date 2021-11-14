@@ -5,15 +5,16 @@ namespace BitMagic.Common
     public interface ICpu
     {
         IEnumerable<ICpuOpCode> OpCodes { get; }
-        public IRegisters Registers { get; }
-        public void SetProgramCounter(int address);
-        public int ClockTick(IMemory memory);
+        IRegisters Registers { get; }
+        void SetProgramCounter(int address);
+        int ClockTick(IMemory memory, bool debugOutput);
+        double Frequency { get; }
     }
 
     public interface ICpuOpCode
     {
-        public string Code { get; } // not unique
-        public byte GetOpCode(AccessMode mode);
+        string Code { get; } // not unique
+        byte GetOpCode(AccessMode mode);
         public IEnumerable<AccessMode> Modes { get; }
     }
 
@@ -37,19 +38,19 @@ namespace BitMagic.Common
 
     public interface IFlags
     {
-        public int NumFlags { get; }
-        public bool GetFlag(int index);
-        public void SetFlag(int index, bool value);
-        public string GetFlagName(int index);
-        public byte Register { get; set; }
+        int NumFlags { get; }
+        bool GetFlag(int index);
+        void SetFlag(int index, bool value);
+        string GetFlagName(int index);
+        byte Register { get; set; }
     }
 
     public interface IRegisters
     {
-        public int NumRegisters { get; }
-        public byte GetRegister(int index);
-        public void SetRegister(int index, byte value);
-        public string GetRegisterName(int index);
-        public IFlags Flags {get;}
+        int NumRegisters { get; }
+        byte GetRegister(int index);
+        void SetRegister(int index, byte value);
+        string GetRegisterName(int index);
+        IFlags Flags {get;}
     }
 }

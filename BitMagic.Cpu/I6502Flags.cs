@@ -4,15 +4,15 @@ namespace BitMagic.Cpu
 {
     public interface I6502Flags : IFlags
     {
-        public bool Negative { get; set; }
-        public bool Overflow { get; set; }
-        public bool Unused { get; }
-        public bool Break { get; set; }
-        public bool Decimal { get; set; }
-        public bool InterruptDisable { get; set; }
-        public bool Zero { get; set; }
-        public bool Carry { get; set; }
-        public void SetNv(byte value);       
+        bool Negative { get; set; }
+        bool Overflow { get; set; }
+        bool Unused { get; }
+        bool Break { get; set; }
+        bool Decimal { get; set; }
+        bool InterruptDisable { get; set; }
+        bool Zero { get; set; }
+        bool Carry { get; set; }
+        void SetNv(byte value);       
     }
 }
 

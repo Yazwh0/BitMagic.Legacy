@@ -6,14 +6,15 @@ namespace BitMagic.Cpu
     {
         public ushort PC { get; set; }
         public byte S { get; set; } = 0xff;
-        public byte P { get => Flags.Register; set => Flags.Register = value; }
+
+        public byte P { get => _flags.Register ; set => _flags.Register = value; }
 
         private byte _a;
         public byte A { 
             get => _a; 
             set {
                 _a = value;
-                Flags.SetNv(value);
+                _flags.SetNv(value);
             } 
         }
 
@@ -24,7 +25,7 @@ namespace BitMagic.Cpu
             set
             {
                 _x = value;
-                Flags.SetNv(value);
+                _flags.SetNv(value);
             }
         }
 
@@ -35,13 +36,13 @@ namespace BitMagic.Cpu
             set
             {
                 _y = value;
-                Flags.SetNv(value);
+                _flags.SetNv(value);
             }
         }
 
-
-        IFlags IRegisters.Flags => Flags;
-        public I6502Flags Flags => new _6502Flags();
+        private I6502Flags _flags = new _6502Flags();
+        IFlags IRegisters.Flags => _flags;
+        public I6502Flags Flags => _flags;
 
         public int NumRegisters => 7;
 
@@ -96,6 +97,8 @@ namespace BitMagic.Cpu
                     break;
             }
         }
+
+        public override string ToString() => $"A:${A:X2} X:${X:X2} Y:${Y:X2} PC:${PC:X4} S:${S:X2}";
     }
 }
 

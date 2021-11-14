@@ -201,7 +201,7 @@ namespace BitMagic.Compiler
 
             if (thisMode == AccessMode.Relative)
             {
-                var offset = result - Address;
+                var offset = result - Address - 2; // -2 for the branch command
                 Data = new[] { _opCode.GetOpCode(thisMode), (byte)offset };
             }
             else if (singleByte)
@@ -210,7 +210,7 @@ namespace BitMagic.Compiler
             } 
             else 
             {
-                Data = new[] { _opCode.GetOpCode(thisMode), (byte)(result >> 8 & 0xff), (byte)(result & 0xff)};
+                Data = new[] { _opCode.GetOpCode(thisMode), (byte)(result & 0xff), (byte)(result >> 8 & 0xff)};
             }
 
             if (finalParse && RequiresReval)
@@ -227,14 +227,7 @@ namespace BitMagic.Compiler
             else
             {                
                 RequiresReval = true;
-                if (_opCode.Modes.FirstOrDefault() == AccessMode.Relative)
-                {
-                    e.Value = 0x00; 
-                }
-                else
-                {
-                    e.Value = 0xaaaa; // random two byte number
-                }
+                e.Value = 0xabcd; // random two byte number
             }
         }
 

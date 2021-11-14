@@ -1,0 +1,139 @@
+{
+	"name": "csasm-debug",
+	"displayName": "BitMagic Debugger",
+	"version": "1.0.0",
+	"publisher": "Bitmap",
+	"engines": {
+		"vscode": "^1.61.0"
+	},
+	"private": true,
+	"keywords": [
+		"csasm",
+		"bsasm"
+	],
+	"categories": [
+		"Debuggers",
+		"Programming Languages"
+	],
+	"contributes": {
+		"menus": {
+			"editor/title/run": [
+				{
+					"command": "extension.csasm-debug.runEditorContents",
+					"when": "resourceLangId == csasm",
+					"group": "navigation@1"
+				},
+				{
+					"command": "extension.csasm-debug.debugEditorContents",
+					"when": "resourceLangId == csasm",
+					"group": "navigation@2"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "extension.csasm-debug.debugEditorContents",
+					"when": "resourceLangId == csasm"
+				},
+				{
+					"command": "extension.csasm-debug.runEditorContents",
+					"when": "resourceLangId == csasm"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "extension.csasm-debug.debugEditorContents",
+				"title": "Debug File",
+				"category": "CSASM Debug",
+				"enablement": "!inDebugMode",
+				"icon": "$(debug-alt)"
+			},
+			{
+				"command": "extension.csasm-debug.runEditorContents",
+				"title": "Run File",
+				"category": "CSASM Debug",
+				"enablement": "!inDebugMode",
+				"icon": "$(play)"
+			}
+		],
+		"languages": [
+			{
+				"id": "csasm",
+				"extensions": [
+					".csasm"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"breakpoints": [
+			{
+				"language": "csasm"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "csasm",
+				"languages": [
+					"csasm"
+				],
+				"label": "BigMagic Debug",
+				"program": "D:/Documents/Source/BitMagic/BitMagic/bin/Debug/net5.0/BitMagic.exe",
+                "args":[
+                    "razor",
+                    "compile",
+                    "emulate",
+                    "--razor-file",
+                    "${program}"
+                ],
+				"runtime": "node",
+				"configurationSnippets": [
+					{
+						"label": "BitMagic: Launch csasm",
+						"description": "A new configuration for launching a .csasm file.",
+						"body": {
+							"type": "csasm",
+							"request": "launch",
+							"name": "Debug File",
+							"program": "${workspaceFolder}/test.csasm"
+						}
+					}
+				],
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Absolute path to a text file.",
+								"default": "${workspaceFolder}/${command:AskForProgramName}"
+							}
+						}
+					}
+				}
+			}
+		]
+	},
+	"main": "./out/extension.js",
+	"activationEvents": [
+		"onDebug",
+		"onCommand:extension.csasm-debug.runEditorContents",
+		"onCommand:extension.csasm-debug.debugEditorContents"
+	],
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint . --ext .ts,.tsx",
+		"watch": "tsc -w -p ./"
+	},
+	"dependencies": {
+		"@types/node": "^16.11.6",
+		"@types/vscode": "^1.62.0",
+		"@typescript-eslint/eslint-plugin": "^5.3.0",
+		"@typescript-eslint/parser": "^5.3.0",
+		"eslint": "^8.1.0",
+		"typescript": "^4.4.4",
+		"vscode-debugadapter": "^1.50.0"
+	}
+}

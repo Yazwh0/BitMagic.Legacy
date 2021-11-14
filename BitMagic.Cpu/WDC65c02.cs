@@ -10,7 +10,6 @@ namespace BitMagic.Cpu
     public interface I6502 : ICpu
     {
         public new I6502Registers Registers { get; }
-        public I6502Flags Flags { get; }
         public void Push(byte value);
         public byte Pop();
     }
@@ -19,9 +18,10 @@ namespace BitMagic.Cpu
     {
         public IEnumerable<ICpuOpCode> OpCodes => _opCodes;
         public I6502Registers Registers { get; } = new _6502Registers();
-        public I6502Flags Flags => Registers.Flags;
         IRegisters ICpu.Registers => Registers;
         public IMemory _stack;
+
+        public double Frequency { get; }
 
         private CpuOpCode[] _opCodes = new CpuOpCode[]
         {
@@ -83,18 +83,20 @@ namespace BitMagic.Cpu
             new Tya()
         };
 
-        private Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)> _operations;
+        //private Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)> _operations;
+        private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
 
-        public WDC65c02(IMemory stack)
+        public WDC65c02(IMemory stack, double frequency)
         {
-            _operations = new Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)>();
+            _operations = new (CpuOpCode operation, AccessMode Mode, int Timing)?[256];
             _stack = stack;
+            Frequency = frequency;
 
             foreach (var op in _opCodes)
             {
                 foreach (var i in op.OpCodes)
                 {
-                    _operations.Add(i.OpCode, (op, i.Mode, i.Timing));
+                    _operations[i.OpCode] = (op, i.Mode, i.Timing);
                 }
             }
         }
@@ -104,20 +106,48 @@ namespace BitMagic.Cpu
             Registers.PC = (ushort)address;
         }
 
-        public int ClockTick(IMemory memory)
+        public int ClockTick(IMemory memory, bool verboseOutput)
         {
+            if (verboseOutput)
+            {
+                Console.Write($"${Registers.PC:X4}");
+            }
+
             var opCode = memory.GetByte(Registers.PC++);
 
-            if (_operations.ContainsKey(opCode))
+            if (_operations[opCode] == null)
+            {
                 opCode = 0xea; // nop
+                if (verboseOutput)
+                    Console.Write("?");
+            }
+            else if (verboseOutput)
+            {
+                Console.Write(" ");
+            }
 
-            var (op, am, timing) = _operations[opCode];
+            var opdef = _operations[opCode];
+            if (opdef == null) throw new Exception();
+
+            var (op, am, timing) = opdef.Value;
+
+            if (verboseOutput)
+            {
+                Console.Write(op.Code);
+                Console.Write(" ");
+            }
 
             timing += op.Process(
-                () => GetValueAtPC(am, memory),
-                () => GetAddressAtPC(am, memory),
+                () => GetValueAtPC(am, memory, verboseOutput),
+                () => GetAddressAtPC(am, memory, verboseOutput),
                 memory,
                 this);
+
+            if (verboseOutput)
+            {
+                Console.CursorLeft = 15;
+                Console.WriteLine($" Tks:{timing} -> {Registers} [{Registers.Flags}]");
+            }
 
             return timing;
         }
@@ -127,23 +157,30 @@ namespace BitMagic.Cpu
             memory.SetByte(address, value);
         }
 
-        public (ushort address, int timing, ushort pcStep) GetAddressAtPC(AccessMode mode, IMemory memory)
+        public (ushort address, int timing, ushort pcStep) GetAddressAtPC(AccessMode mode, IMemory memory, bool verboseOutput)
         {
             var l = memory.GetByte(Registers.PC);
 
             if (mode == AccessMode.ZeroPage)
             {
+                if (verboseOutput) Console.Write($"${l:X2}");
                 return (l, 0, 1);
             }
 
+            ushort toReturn;
+
             if (mode == AccessMode.ZeroPageX)
             {
-                return ((ushort)((l + Registers.X) & 0xff), 0, 1);
+                toReturn = (ushort)((l + Registers.X) & 0xff);
+                if (verboseOutput) Console.Write($"${toReturn:X4}");
+                return (toReturn, 0, 1);
             }
 
             if (mode == AccessMode.ZeroPageY)
             {
-                return ((ushort)((l + Registers.Y) & 0xff), 0, 1);
+                toReturn = (ushort)((l + Registers.Y) & 0xff);
+                if (verboseOutput) Console.Write($"${toReturn:X4}");
+                return (toReturn, 0, 1);
             }
 
             ushort address = 0;
@@ -151,6 +188,7 @@ namespace BitMagic.Cpu
             {
                 address = memory.GetByte((l + Registers.X) & 0xff);
                 address += (ushort)(memory.GetByte((l + Registers.X + 1) & 0xff) << 8);
+                if (verboseOutput) Console.Write($"${address:X4}");
                 return (address, 0, 1);
             }
 
@@ -160,47 +198,73 @@ namespace BitMagic.Cpu
                 address = memory.GetByte(l);
                 address += (ushort)(memory.GetByte(l + 1) << 8);
                 timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-                return ((ushort)(address + Registers.Y), timing, 1);
+                toReturn = (ushort)(address + Registers.Y);
+                if (verboseOutput) Console.Write($"${toReturn:X4}");
+                return (toReturn, timing, 1);
             }
 
             var h = memory.GetByte(Registers.PC + 1);
 
-            address = (ushort)(l + h << 8);
+            address = (ushort)(l + (h << 8));
 
             if (mode == AccessMode.Absolute)
+            {
+                if (verboseOutput) Console.Write($"${address:X4}");
                 return (address, 0, 2);
+            }
 
             if (mode == AccessMode.AbsoluteX)
             {
                 timing = (address & 0xff00) == ((address + Registers.X) & 0xff00) ? 0 : 1;
-                return ((ushort)(address + Registers.X), timing, 2);
+                toReturn = (ushort)(address + Registers.X);
+                if (verboseOutput) Console.Write($"${toReturn:X4}");
+                return (toReturn, timing, 2);
             }
 
             if (mode == AccessMode.AbsoluteY)
             {
                 timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-                return ((ushort)(address + Registers.Y), timing, 2);
+                toReturn = (ushort)(address + Registers.Y);
+                if (verboseOutput) Console.Write($"${toReturn:X4}");
+                return (toReturn, timing, 2);
             }
 
             if (mode == AccessMode.IndAbsoluteX)
             {
-                address = (ushort)(memory.GetByte(address) + memory.GetByte(address) << 8);
+                address = (ushort)(memory.GetByte(address) + (memory.GetByte(address) << 8));
                 address += Registers.X;
+                if (verboseOutput) Console.Write($"${address:X4}");
                 return (address, 0, 2);
             }
 
             throw new Exception($"Unhandled access mode {mode}");
         }
 
-        public (byte value, int timing, ushort pcStep) GetValueAtPC(AccessMode mode, IMemory memory)
+        public (byte value, int timing, ushort pcStep) GetValueAtPC(AccessMode mode, IMemory memory, bool verboseOutput)
         {
+            byte toReturn;
             if (mode == AccessMode.Implied)
+            {
+                if (verboseOutput) Console.Write("#$00");
                 return (0, 0, 0);
+            }
+
+            if (mode == AccessMode.Immediate || mode == AccessMode.Relative)
+            {
+                toReturn = memory.GetByte(Registers.PC);
+                if (verboseOutput) Console.Write($"#${toReturn:X2}");
+                return (toReturn, 0, 1);
+            }
 
             if (mode == AccessMode.Accumulator)
-                return (Registers.A, 0, 0);
+            {
+                toReturn = Registers.A;
+                if (verboseOutput) Console.Write($"#${toReturn:X2}");
 
-            var (address, timing, pcStep) = GetAddressAtPC(mode, memory);
+                return (Registers.A, 0, 0);
+            }
+
+            var (address, timing, pcStep) = GetAddressAtPC(mode, memory, verboseOutput);
 
             return (memory.GetByte(address), timing, pcStep);
 
@@ -290,8 +354,8 @@ namespace BitMagic.Cpu
             var (value, timing, pcStep) = GetValueAtPC();
             var newVal = value + cpu.Registers.A + (cpu.Registers.Flags.Carry ? 1 : 0);
 
-            cpu.Flags.Carry = newVal > 255;
-            cpu.Flags.Overflow = newVal > 127;
+            cpu.Registers.Flags.Carry = newVal > 255;
+            cpu.Registers.Flags.Overflow = newVal > 127;
             cpu.Registers.A = (byte)(newVal & 0xff);
 
             cpu.Registers.PC += pcStep;
@@ -342,7 +406,7 @@ namespace BitMagic.Cpu
         {
             var (value, timing, pcStep) = GetValueAtPC();
             var carry = cpu.Registers.Flags.Carry ? 1 : 0;
-            cpu.Flags.Carry = (value & 128) != 0;
+            cpu.Registers.Flags.Carry = (value & 128) != 0;
 
             cpu.Registers.A = (byte)(((cpu.Registers.A << 1) + carry) & 0xff);
 
@@ -364,9 +428,9 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             var (value, timing, pcStep) = GetValueAtPC();
-            cpu.Flags.Zero = (value & cpu.Registers.A) == 0;
-            cpu.Flags.Negative = (value & 128) != 0;
-            cpu.Flags.Overflow = (value & 64) != 0;
+            cpu.Registers.Flags.Zero = (value & cpu.Registers.A) == 0;
+            cpu.Registers.Flags.Negative = (value & 128) != 0;
+            cpu.Registers.Flags.Overflow = (value & 64) != 0;
 
             cpu.Registers.PC += pcStep;
 
@@ -380,8 +444,10 @@ namespace BitMagic.Cpu
 
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
-            if (Condition(cpu))
+            if (!Condition(cpu))
             {
+                GetValueAtPC();
+
                 cpu.Registers.PC++;
                 return 0;
             }
@@ -391,11 +457,11 @@ namespace BitMagic.Cpu
             int newAddress;
             if (value > 127)
             {
-                newAddress = cpu.Registers.PC - (value & 127);
+                newAddress = cpu.Registers.PC - (value ^ 0xff);
             }
             else
             {
-                newAddress = cpu.Registers.PC + value;
+                newAddress = cpu.Registers.PC + value + 1;
             }
 
             timing += ((cpu.Registers.PC & 0xff00) != (newAddress & 0xff00)) ? 1 : 0;
@@ -412,7 +478,7 @@ namespace BitMagic.Cpu
             (0x10, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => !cpu.Flags.Negative;
+        public override bool Condition(I6502 cpu) => !cpu.Registers.Flags.Negative;
     }
 
     public class Bmi : BranchOpCode
@@ -421,7 +487,7 @@ namespace BitMagic.Cpu
             (0x30, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => cpu.Flags.Negative;
+        public override bool Condition(I6502 cpu) => cpu.Registers.Flags.Negative;
     }
 
     public class Bvc : BranchOpCode
@@ -431,7 +497,7 @@ namespace BitMagic.Cpu
             (0x50, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => !cpu.Flags.Overflow;
+        public override bool Condition(I6502 cpu) => !cpu.Registers.Flags.Overflow;
     }
     public class Bvs : BranchOpCode
     {
@@ -440,7 +506,7 @@ namespace BitMagic.Cpu
             (0x70, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => cpu.Flags.Overflow;
+        public override bool Condition(I6502 cpu) => cpu.Registers.Flags.Overflow;
     }
 
     public class Bcc : BranchOpCode
@@ -450,7 +516,7 @@ namespace BitMagic.Cpu
             (0x90, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => !cpu.Flags.Carry;
+        public override bool Condition(I6502 cpu) => !cpu.Registers.Flags.Carry;
     }
 
     public class Bcs : BranchOpCode
@@ -460,7 +526,7 @@ namespace BitMagic.Cpu
             (0xb0, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => cpu.Flags.Carry;
+        public override bool Condition(I6502 cpu) => cpu.Registers.Flags.Carry;
     }
 
     public class Bne : BranchOpCode
@@ -470,7 +536,7 @@ namespace BitMagic.Cpu
             (0xd0, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => !cpu.Flags.Zero;
+        public override bool Condition(I6502 cpu) => !cpu.Registers.Flags.Zero;
     }
 
     public class Beq : BranchOpCode
@@ -480,7 +546,7 @@ namespace BitMagic.Cpu
             (0xf0, AccessMode.Relative, 2)
         };
 
-        public override bool Condition(I6502 cpu) => cpu.Flags.Zero;
+        public override bool Condition(I6502 cpu) => cpu.Registers.Flags.Zero;
     }
 
     public class Brk : CpuOpCode
@@ -505,8 +571,8 @@ namespace BitMagic.Cpu
 
             var cmpResult = cpu.Registers.A - value;
 
-            cpu.Flags.SetNv((byte)cmpResult);
-            cpu.Flags.Carry = cmpResult > 0;
+            cpu.Registers.Flags.SetNv((byte)cmpResult);
+            cpu.Registers.Flags.Carry = cmpResult > 0;
 
             cpu.Registers.PC += pcStep;
 
@@ -574,7 +640,7 @@ namespace BitMagic.Cpu
             byte actVal = (byte)(val & 0xff);
 
             memory.SetByte(address, actVal);
-            cpu.Flags.SetNv(actVal);
+            cpu.Registers.Flags.SetNv(actVal);
 
             cpu.Registers.PC += pcStep;
             return timing;
@@ -625,7 +691,7 @@ namespace BitMagic.Cpu
             (0x18, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.Carry = false;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Carry = false;
     }
 
     public class Sec : FlagInstruction
@@ -635,7 +701,7 @@ namespace BitMagic.Cpu
             (0x38, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.Overflow = true;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Overflow = true;
 
     }
 
@@ -646,7 +712,7 @@ namespace BitMagic.Cpu
             (0x58, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.InterruptDisable = false;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.InterruptDisable = false;
     }
 
     public class Sei : FlagInstruction
@@ -656,7 +722,7 @@ namespace BitMagic.Cpu
             (0x78, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.InterruptDisable = true;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.InterruptDisable = true;
     }
 
     public class Clv : FlagInstruction
@@ -666,7 +732,7 @@ namespace BitMagic.Cpu
             (0xb8, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.Overflow = false;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Overflow = false;
     }
 
     public class Cld : FlagInstruction
@@ -676,7 +742,7 @@ namespace BitMagic.Cpu
             (0xd8, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.Decimal = false;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Decimal = false;
     }
 
     public class Sed : FlagInstruction
@@ -686,7 +752,7 @@ namespace BitMagic.Cpu
             (0xf8, AccessMode.Implied, 2)
         };
 
-        public override void PerformOperation(I6502 cpu) => cpu.Flags.Decimal = true;
+        public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Decimal = true;
     }
 
     public class Inc : CpuOpCode
@@ -708,7 +774,7 @@ namespace BitMagic.Cpu
             byte actVal = (byte)(val & 0xff);
 
             memory.SetByte(address, actVal);
-            cpu.Flags.SetNv(actVal);
+            cpu.Registers.Flags.SetNv(actVal);
 
             cpu.Registers.PC += pcStep;
             return timing;
@@ -1051,7 +1117,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.X = cpu.Registers.A;
-            cpu.Flags.SetNv(cpu.Registers.X);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.X);
 
             return 0;
         }
@@ -1067,7 +1133,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.A = cpu.Registers.X;
-            cpu.Flags.SetNv(cpu.Registers.A);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.A);
 
             return 0;
         }
@@ -1083,7 +1149,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.X--;
-            cpu.Flags.SetNv(cpu.Registers.X);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.X);
 
             return 0;
         }
@@ -1100,7 +1166,7 @@ namespace BitMagic.Cpu
         {
             cpu.Registers.X++;
 
-            cpu.Flags.SetNv(cpu.Registers.X);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.X);
 
             return 0;
         }
@@ -1116,7 +1182,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.Y = cpu.Registers.A;
-            cpu.Flags.SetNv(cpu.Registers.Y);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.Y);
 
             return 0;
         }
@@ -1132,7 +1198,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.A = cpu.Registers.Y;
-            cpu.Flags.SetNv(cpu.Registers.A);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.A);
 
             return 0;
         }
@@ -1148,7 +1214,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.Y--;
-            cpu.Flags.SetNv(cpu.Registers.Y);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.Y);
 
             return 0;
         }
@@ -1164,7 +1230,7 @@ namespace BitMagic.Cpu
         public override int Process(Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.Y++;
-            cpu.Flags.SetNv(cpu.Registers.Y);
+            //cpu.Registers.Flags.SetNv(cpu.Registers.Y);
 
             return 0;
         }

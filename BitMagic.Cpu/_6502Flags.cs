@@ -96,6 +96,16 @@ namespace BitMagic.Cpu
                     break;
             }
         }
+
+        public override string ToString() =>
+                (Carry ? "C" : ".") +
+                (Zero ? "Z" : ".") +
+                (InterruptDisable ? "I" : ".") +
+                (Decimal ? "D" : ".") +
+                (Break ? "B" : ".") +
+                (".") +
+                (Overflow ? "O" : ".") +
+                (Negative ? "N" : ".");        
     }
 }
 

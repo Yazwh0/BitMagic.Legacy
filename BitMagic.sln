@@ -9,7 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic", "BitMagic\BitMag
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04FB280C-8395-45E5-8250-BE1F4653A3E1}"
 	ProjectSection(SolutionItems) = preProject
-		test.asm = test.asm
+		.editorconfig = .editorconfig
+		test.bmasm = test.bmasm
 		test.compiled.json = test.compiled.json
 		test.csasm = test.csasm
 		test.csasm.pre = test.csasm.pre
@@ -26,9 +27,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Machines", "BitMag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Cpu", "BitMagic.Cpu\BitMagic.Cpu.csproj", "{728E94B7-AB2F-4E08-A2CD-202D9252B739}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.VSCDebug", "BitMagic.VSCDebug\BitMagic.VSCDebug.csproj", "{A4D442E8-B6A4-4525-B43C-AFFCDBD732D3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Emulator", "BitMagic.Emulator\BitMagic.Emulator.csproj", "{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigMagic.DebugServer", "BigMagic.DebugServer\BigMagic.DebugServer.csproj", "{336B12A9-C555-431D-B30A-246E076EC981}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,14 +65,14 @@ Global
 		{728E94B7-AB2F-4E08-A2CD-202D9252B739}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{728E94B7-AB2F-4E08-A2CD-202D9252B739}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{728E94B7-AB2F-4E08-A2CD-202D9252B739}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4D442E8-B6A4-4525-B43C-AFFCDBD732D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4D442E8-B6A4-4525-B43C-AFFCDBD732D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4D442E8-B6A4-4525-B43C-AFFCDBD732D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4D442E8-B6A4-4525-B43C-AFFCDBD732D3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{336B12A9-C555-431D-B30A-246E076EC981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{336B12A9-C555-431D-B30A-246E076EC981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
