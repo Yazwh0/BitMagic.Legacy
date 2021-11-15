@@ -7,12 +7,11 @@
             "Name": ".Default_2",
             "Variables": {
               "_variables": {
-                "start": 2064,
-                "loop": 2066,
-                "forward": 2070,
-                "sintable": 2078,
-                "datatable": 2078,
-                "somefile": 2078
+                "offset": 2069,
+                "loop": 2071,
+                "sintable": 2074,
+                "datatable": 2074,
+                "somefile": 2074
               }
             },
             "Data": [
@@ -23,60 +22,32 @@
                 "RequiresReval": false
               },
               {
-                "Data": "ogI=",
-                "OriginalText": "ldx #$02\r\n",
+                "Data": "qQE=",
+                "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
-                "Params": "#$02",
+                "Params": "#$01",
                 "Address": 2064
               },
               {
-                "Data": "yg==",
-                "OriginalText": "dex\r\n",
+                "Data": "jRYI",
+                "OriginalText": "sta offset + 1\r\n",
                 "RequiresReval": false,
-                "Params": "",
+                "Params": "offset+1",
                 "Address": 2066
               },
               {
-                "Data": "0AE=",
-                "OriginalText": "bne forward\r\n",
+                "Data": "ov8=",
+                "OriginalText": "ldx #$ff\r\n",
                 "RequiresReval": false,
-                "Params": "forward",
-                "Address": 2067
-              },
-              {
-                "Data": "yA==",
-                "OriginalText": "iny\r\n",
-                "RequiresReval": false,
-                "Params": "",
+                "Params": "#$ff",
                 "Address": 2069
               },
               {
-                "Data": "mA==",
-                "OriginalText": "tya\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2070
-              },
-              {
-                "Data": "yQI=",
-                "OriginalText": "cmp #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2071
-              },
-              {
-                "Data": "8PU=",
-                "OriginalText": "beq start\r\n",
-                "RequiresReval": false,
-                "Params": "start",
-                "Address": 2073
-              },
-              {
-                "Data": "TBII",
+                "Data": "TBcI",
                 "OriginalText": "jmp loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2075
+                "Address": 2071
               }
             ]
           }
@@ -84,12 +55,11 @@
         "Name": "main",
         "Variables": {
           "_variables": {
-            "start": 2064,
-            "loop": 2066,
-            "forward": 2070,
-            "sintable": 2078,
-            "datatable": 2078,
-            "somefile": 2078
+            "offset": 2069,
+            "loop": 2071,
+            "sintable": 2074,
+            "datatable": 2074,
+            "somefile": 2074
           }
         }
       }
@@ -101,6 +71,6 @@
         "data": 43981
       }
     },
-    "Address": 2078
+    "Address": 2074
   }
 }

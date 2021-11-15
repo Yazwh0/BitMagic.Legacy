@@ -18,16 +18,11 @@ void ColourFunction(string name, ushort colour)
 ; entrypoint
 @X16Header();
 
-.start:
-ldx #$02
+lda #$01
+sta offset + 1
+.offset:
+ldx #$ff
 .loop:
-dex
-bne forward
-iny
-.forward:
-tya
-cmp #$02
-beq start
 jmp loop
 
 //ColourFunction("set_white", 0xfff0);

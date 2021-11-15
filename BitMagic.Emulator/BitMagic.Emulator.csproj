@@ -1,8 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
+    <PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />

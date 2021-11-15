@@ -47,9 +47,9 @@ namespace BitMagic.Common
             Contents = await File.ReadAllBytesAsync(Filename);
         }
 
-        public Task Save(string fielname)
+        public Task Save(string filename)
         {
-            Filename = Filename;
+            Filename = filename;
             return Save();
         }
 
@@ -57,6 +57,9 @@ namespace BitMagic.Common
         {
             if (string.IsNullOrWhiteSpace(Filename))
                 throw new ArgumentNullException(nameof(Filename));
+
+            if (Contents == null)
+                throw new ArgumentNullException(nameof(Contents));
 
             await File.WriteAllBytesAsync(Filename, Contents);
         }

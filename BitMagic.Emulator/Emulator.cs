@@ -1,4 +1,6 @@
 ﻿using BitMagic.Common;
+using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 using System;
 using System.Diagnostics;
 
@@ -30,6 +32,8 @@ namespace BitMagic.Emulation
 
         public void Emulate(int startAddress)
         {
+            CreateWindow();
+
             _machine.Cpu.SetProgramCounter(startAddress);
             var ticks = 0;
             var stopwatch = new Stopwatch();
@@ -42,6 +46,38 @@ namespace BitMagic.Emulation
 
             stopwatch.Stop();
             Console.Write($"{stopwatch.Elapsed:s\\.fffff}s");
+        }
+
+        public void CreateWindow()
+        {
+            var window = Window.Create(WindowOptions.Default);
+            GL? gl = null;
+
+            window.Size = new Silk.NET.Maths.Vector2D<int> { X = 640*2, Y = 480*2 };
+            window.Title = "BitMagic!";
+            window.WindowBorder = WindowBorder.Fixed;
+
+            window.Load += () =>
+            {
+                gl = window.CreateOpenGL();
+                gl.Viewport(window.Size);
+            };
+
+            window.Render += delta =>
+            {
+                if (gl == null) throw new ArgumentNullException(nameof(gl));
+
+                gl.ClearColor(0, 0, .1f, 1);
+                gl.Clear(ClearBufferMask.ColorBufferBit);
+            };
+
+            window.Closing += () =>
+            {
+                gl?.Dispose();
+            };
+
+            window.Run();
+
         }
     }
 }

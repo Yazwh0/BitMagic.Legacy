@@ -15,7 +15,7 @@ namespace BitMagic.Cpu
 
         public int NumFlags => 8;
 
-        public byte Register { get =>(byte)((Negative ? 128 : 0) +
+        public byte Register { get => (byte)((Negative ? 128 : 0) +
                                         (Overflow ? 64 : 0) +
                                         (Unused ? 32 : 0) +
                                         (Break ? 16 : 0) +
@@ -29,7 +29,7 @@ namespace BitMagic.Cpu
                 Overflow = (value & 64) != 0;
                 //Unused = (value & 32) != 0;
                 Break = (value & 16) != 0;
-                Decimal= (value & 8) != 0;
+                Decimal = (value & 8) != 0;
                 InterruptDisable = (value & 4) != 0;
                 Zero = (value & 2) != 0;
                 Carry = (value & 1) != 0;
@@ -51,7 +51,7 @@ namespace BitMagic.Cpu
             5 => Unused,
             6 => Overflow,
             7 => Negative,
-            _ => throw new Exception ($"Unknown flag {index}")
+            _ => throw new Exception($"Unknown flag {index}")
         };
 
         public string GetFlagName(int index) => index switch {
@@ -68,7 +68,7 @@ namespace BitMagic.Cpu
 
         public void SetFlag(int index, bool value)
         {
-            switch(index)
+            switch (index)
             {
                 case 0:
                     Carry = value;
@@ -98,14 +98,15 @@ namespace BitMagic.Cpu
         }
 
         public override string ToString() =>
-                (Carry ? "C" : ".") +
-                (Zero ? "Z" : ".") +
-                (InterruptDisable ? "I" : ".") +
-                (Decimal ? "D" : ".") +
-                (Break ? "B" : ".") +
-                (".") +
-                (Overflow ? "O" : ".") +
-                (Negative ? "N" : ".");        
+            (Negative ? "N" : ".") +
+            (Overflow ? "V" : ".") +
+            (".") +
+            (Break ? "B" : ".") +
+            (Decimal ? "D" : ".") +
+            (InterruptDisable ? "I" : ".") +
+            (Zero ? "Z" : ".") +
+            (Carry ? "C" : ".");
+
     }
 }
 

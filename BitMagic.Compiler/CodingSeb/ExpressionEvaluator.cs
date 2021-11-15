@@ -3279,7 +3279,7 @@ namespace CodingSeb.ExpressionEvaluator
 
         protected delegate dynamic InternalDelegate(params dynamic[] args);
 
-        protected virtual object ManageKindOfAssignation(string expression, ref int index, Match match, Func<object> getCurrentValue, Stack<object> stack = null)
+        protected virtual object ManageKindOfAssignation(string expression, ref int index, Match match, Func<object> getCurrentValue, Stack<object>? stack = null)
         {
             if (stack?.Count > 1)
                 throw new ExpressionEvaluatorSyntaxErrorException("The left part of an assignation must be a variable, a property or an indexer.");
@@ -4753,7 +4753,7 @@ namespace CodingSeb.ExpressionEvaluator
     /// </summary>
     public partial class VariablePreEvaluationEventArg : VariableEvaluationEventArg
     {
-        public VariablePreEvaluationEventArg(string name, ExpressionEvaluator evaluator = null, object onInstance = null, string genericTypes = null, Func<string, Type[]> evaluateGenericTypes = null)
+        public VariablePreEvaluationEventArg(string name, ExpressionEvaluator? evaluator = null, object? onInstance = null, string? genericTypes = null, Func<string, Type[]>? evaluateGenericTypes = null)
             : base(name, evaluator, onInstance, genericTypes, evaluateGenericTypes)
         { }
 
