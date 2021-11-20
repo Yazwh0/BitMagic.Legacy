@@ -119,7 +119,7 @@ namespace BitMagic
                 if (project.ProgFile.Contents == null)
                     await project.ProgFile.Load();
 
-                var emulator = new Emulator(project);
+                var emulator = new Emulation.Emulator(project);
                 emulator.LoadPrg();
                 emulator.Emulate(0x810);
             }

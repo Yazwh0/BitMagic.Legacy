@@ -2,6 +2,7 @@
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace BitMagic.Emulation
@@ -32,52 +33,40 @@ namespace BitMagic.Emulation
 
         public void Emulate(int startAddress)
         {
-            CreateWindow();
-
             _machine.Cpu.SetProgramCounter(startAddress);
-            var ticks = 0;
+
+            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency);
+
+            machineRunner.SetCpu(CpuFunc);
+            machineRunner.SetDisplay(_project.Machine.Display);
+
+            machineRunner.Start();
+
+            machineRunner.MainWindow.Run(_project.Machine.Display);
+
+            machineRunner.Stop();
+        }
+
+        internal async void CpuFunc(object? r)
+        {
+            var runner = r as MachineRunner;
+
+            if (runner == null)
+                throw new ArgumentException("r is not a machine runner.");
+
+            int ticks = 0;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            while (ticks < _machine.Cpu.Frequency)
+            while (true || ticks < _machine.Cpu.Frequency)
             {
                 ticks += _machine.Cpu.ClockTick(_machine.Memory, (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0);
+
+                await runner.Latch.ControlComplete();
             }
 
             stopwatch.Stop();
-            Console.Write($"{stopwatch.Elapsed:s\\.fffff}s");
-        }
-
-        public void CreateWindow()
-        {
-            var window = Window.Create(WindowOptions.Default);
-            GL? gl = null;
-
-            window.Size = new Silk.NET.Maths.Vector2D<int> { X = 640*2, Y = 480*2 };
-            window.Title = "BitMagic!";
-            window.WindowBorder = WindowBorder.Fixed;
-
-            window.Load += () =>
-            {
-                gl = window.CreateOpenGL();
-                gl.Viewport(window.Size);
-            };
-
-            window.Render += delta =>
-            {
-                if (gl == null) throw new ArgumentNullException(nameof(gl));
-
-                gl.ClearColor(0, 0, .1f, 1);
-                gl.Clear(ClearBufferMask.ColorBufferBit);
-            };
-
-            window.Closing += () =>
-            {
-                gl?.Dispose();
-            };
-
-            window.Run();
-
+            Console.Write($"Running for: {stopwatch.Elapsed:s\\.fffff}s");
         }
     }
 }

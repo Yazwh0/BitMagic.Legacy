@@ -30,7 +30,27 @@ namespace BitMagic.Cpu.Memory
 
         public byte GetByte(int address) => _currentBank.GetByte(address);
         public void SetByte(int address, byte value) => _currentBank.SetByte(address, value);
-        public byte GetDebugByte(int address) => GetByte(address);
-        public void SetDebugByte(int address, byte value) => SetByte(address, value);
+        public byte PeekByte(int address) => _currentBank.PeekByte(address);
+
+        private class BankSwitch : NormalMemory
+        {
+            private readonly Banked _bank;
+
+            public BankSwitch(Banked bank)
+            {
+                _bank = bank;
+            }
+
+            public override int Length => 1;
+
+            public override byte GetByte(int _) => (byte)_bank.BankIndex;
+
+            public override void SetByte(int _, byte value) => _bank.BankIndex = value;
+        }
+
+        public IMemory GetSwitch()
+        {
+            return new BankSwitch(this);
+        }
     }
 }

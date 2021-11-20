@@ -7,5 +7,6 @@ namespace BitMagic.Common
         public IMemory Memory { get; }
         public ICpu Cpu { get; }
         public string Name { get; }
+        public IDisplay Display { get; }
     }
 }

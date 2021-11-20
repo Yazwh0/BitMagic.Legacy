@@ -7,11 +7,15 @@
             "Name": ".Default_2",
             "Variables": {
               "_variables": {
-                "offset": 2069,
-                "loop": 2071,
-                "sintable": 2074,
-                "datatable": 2074,
-                "somefile": 2074
+                "data0": 40739,
+                "data1": 40740,
+                "addr_l": 40736,
+                "addr_m": 40737,
+                "addr_h": 40738,
+                "loop": 2079,
+                "sintable": 2086,
+                "datatable": 2086,
+                "somefile": 2086
               }
             },
             "Data": [
@@ -22,32 +26,67 @@
                 "RequiresReval": false
               },
               {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #$01\r\n",
+                "Data": "qRA=",
+                "OriginalText": "\r\nlda #$10\r\n",
                 "RequiresReval": false,
-                "Params": "#$01",
+                "Params": "#$10",
                 "Address": 2064
               },
               {
-                "Data": "jRYI",
-                "OriginalText": "sta offset + 1\r\n",
+                "Data": "jSKf",
+                "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
-                "Params": "offset+1",
+                "Params": "addr_h",
                 "Address": 2066
               },
               {
-                "Data": "ov8=",
-                "OriginalText": "ldx #$ff\r\n",
+                "Data": "qQA=",
+                "OriginalText": "lda #$00\r\n",
                 "RequiresReval": false,
-                "Params": "#$ff",
+                "Params": "#$00",
                 "Address": 2069
               },
               {
-                "Data": "TBcI",
-                "OriginalText": "jmp loop\r\n",
+                "Data": "jSGf",
+                "OriginalText": "sta addr_m\r\n",
+                "RequiresReval": false,
+                "Params": "addr_m",
+                "Address": 2071
+              },
+              {
+                "Data": "jSCf",
+                "OriginalText": "sta addr_l\r\n",
+                "RequiresReval": false,
+                "Params": "addr_l",
+                "Address": 2074
+              },
+              {
+                "Data": "ogE=",
+                "OriginalText": "\r\n\r\nldx #$1\r\n",
+                "RequiresReval": false,
+                "Params": "#$1",
+                "Address": 2077
+              },
+              {
+                "Data": "jiOf",
+                "OriginalText": "stx data0\r\n",
+                "RequiresReval": false,
+                "Params": "data0",
+                "Address": 2079
+              },
+              {
+                "Data": "6A==",
+                "OriginalText": "inx\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2082
+              },
+              {
+                "Data": "TB8I",
+                "OriginalText": "\r\njmp loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2071
+                "Address": 2083
               }
             ]
           }
@@ -55,11 +94,15 @@
         "Name": "main",
         "Variables": {
           "_variables": {
-            "offset": 2069,
-            "loop": 2071,
-            "sintable": 2074,
-            "datatable": 2074,
-            "somefile": 2074
+            "data0": 40739,
+            "data1": 40740,
+            "addr_l": 40736,
+            "addr_m": 40737,
+            "addr_h": 40738,
+            "loop": 2079,
+            "sintable": 2086,
+            "datatable": 2086,
+            "somefile": 2086
           }
         }
       }
@@ -71,6 +114,6 @@
         "data": 43981
       }
     },
-    "Address": 2074
+    "Address": 2086
   }
 }

@@ -7,8 +7,7 @@ namespace BitMagic.Common
     {
         int Length { get; }
         byte GetByte(int address);
+        byte PeekByte(int address);
         void SetByte(int address, byte value);
-        byte GetDebugByte(int address);
-        void SetDebugByte(int address, byte value);
     }
 }

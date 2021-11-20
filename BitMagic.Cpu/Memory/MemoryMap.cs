@@ -12,14 +12,15 @@ namespace BitMagic.Cpu.Memory
 
         private readonly (IMemory Memory, int Offset)[] _lookup;
 
-        public MemoryMap(int size, IEnumerable<IMemory> blocks)
+        public MemoryMap(int size, IEnumerable<IMemory> blocks, IEnumerable<(int address, IMemory memory, int offset)>? overrides = null )
         {
             Length = size;
             _memoryMap = blocks.ToArray();
             var pos = 0;
 
             for(var i = 0; i < _memoryMap.Length; i++)
-            {   pos += _memoryMap[i].Length;
+            {   
+                pos += _memoryMap[i].Length;
             }
 
             if (pos != size)
@@ -32,11 +33,20 @@ namespace BitMagic.Cpu.Memory
             for(var i = 0; i < size; i++)
             {
                 _lookup[i] = (current, pos++);
-                if (pos > current.Length)
+                if (pos >= current.Length)
                 {
                     pos = 0;
                     idx++;
-                    current = _memoryMap[idx];
+                    if (i != size -1)
+                        current = _memoryMap[idx];
+                }
+            }
+
+            if (overrides != null)
+            {
+                foreach(var (address, memory, offset) in overrides)
+                {
+                    _lookup[address] = (memory, offset);
                 }
             }
         }
@@ -54,7 +64,10 @@ namespace BitMagic.Cpu.Memory
             return;
         }
 
-        public byte GetDebugByte(int address) => GetByte(address);
-        public void SetDebugByte(int address, byte value) => SetByte(address, value);
+        public byte PeekByte(int address)
+        {
+            var (memory, offset) = _lookup[address];
+            return memory.PeekByte(offset);
+        }
     }
 }
