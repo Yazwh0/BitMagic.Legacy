@@ -9,8 +9,8 @@ namespace BitMagic.Emulation
         private readonly int _participantCount;
         private int _remainingParticipants;
 
-        private TaskCompletionSource<bool> _tcs = new TaskCompletionSource<bool>();
-        private TaskCompletionSource<bool> _controlTcs = new TaskCompletionSource<bool>();
+        private TaskCompletionSource<bool> _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private TaskCompletionSource<bool> _controlTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public AsyncBarrierControl(int participantCount)
         {

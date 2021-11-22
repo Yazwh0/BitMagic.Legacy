@@ -12,6 +12,7 @@
                 "addr_l": 40736,
                 "addr_m": 40737,
                 "addr_h": 40738,
+                "ctrl": 40741,
                 "loop": 2079,
                 "sintable": 2086,
                 "datatable": 2086,
@@ -26,10 +27,10 @@
                 "RequiresReval": false
               },
               {
-                "Data": "qRA=",
-                "OriginalText": "\r\nlda #$10\r\n",
+                "Data": "qQE=",
+                "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
-                "Params": "#$10",
+                "Params": "#$01",
                 "Address": 2064
               },
               {
@@ -40,10 +41,10 @@
                 "Address": 2066
               },
               {
-                "Data": "qQA=",
-                "OriginalText": "lda #$00\r\n",
+                "Data": "qfo=",
+                "OriginalText": "lda #$fa\r\n",
                 "RequiresReval": false,
-                "Params": "#$00",
+                "Params": "#$fa",
                 "Address": 2069
               },
               {
@@ -54,17 +55,17 @@
                 "Address": 2071
               },
               {
-                "Data": "jSCf",
-                "OriginalText": "sta addr_l\r\n",
+                "Data": "nCCf",
+                "OriginalText": "stz addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
                 "Address": 2074
               },
               {
-                "Data": "ogE=",
-                "OriginalText": "\r\n\r\nldx #$1\r\n",
+                "Data": "ogA=",
+                "OriginalText": "\r\nldx #00\r\n",
                 "RequiresReval": false,
-                "Params": "#$1",
+                "Params": "#00",
                 "Address": 2077
               },
               {
@@ -99,6 +100,7 @@
             "addr_l": 40736,
             "addr_m": 40737,
             "addr_h": 40738,
+            "ctrl": 40741,
             "loop": 2079,
             "sintable": 2086,
             "datatable": 2086,

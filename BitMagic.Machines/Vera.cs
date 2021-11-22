@@ -1,7 +1,5 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu.Memory;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 
 namespace BitMagic.Machines
@@ -72,7 +70,7 @@ namespace BitMagic.Machines
         public override int Length => 0x20;
 
         private readonly IMemory _vram;
-        private readonly Palette _palette;
+        internal readonly Palette Palette;
 
         public int Data0 { get; set; } = 0;
         public int Data1 { get; set; } = 0;
@@ -115,20 +113,23 @@ namespace BitMagic.Machines
 
         public VeraOutputMode OutputMode { get; set; } = VeraOutputMode.Disabled;
 
-        private VeraDisplay _display { get; } = new VeraDisplay(2);
+        private VeraDisplay _display { get; } 
 
         Action<object?>[] IDisplay.DisplayThreads => _display.DisplayThreads;
 
-        Image<Rgba32>[] IDisplay.Displays => _display.Displays;
+        BitImage[] IDisplay.Displays => _display.Displays;
+
+        (bool framedone, int nextCpuTick) IDisplay.IncrementDisplay(IMachineRunner runner) => _display.IncrementDisplay(runner);
 
         public Vera()
         {
-            _palette = new Palette();
+            Palette = new Palette();
+            _display = new VeraDisplay(2, this);
 
             _vram = new MemoryMap(0x20000, new IMemory[] {
                 new Ram(0x1f9c0),
                 new Ram(0x40),      // PSG
-                _palette,           // Pallete
+                Palette,            // Pallete
                 new Ram(0x400)      // Sprites
             });
         }
@@ -196,15 +197,15 @@ namespace BitMagic.Machines
                     break;
                 case VeraRegisters.ADDRx_H:
                     var decr = (value & 0b1000) != 0;
-                    var inc = (value & 0xf0) >> 4;
+                    var inc = (value & 0xf0) >> 4; 
                     if (!Data1Mode)
                     {
-                        Data0 = address | 0b1_0000_0000;
+                        Data0 = (Data0 & 0xffff) + ((value | 0x1) << 16);
                         Data0Step = GetStep(inc, decr);
                     }
                     else
                     {
-                        Data1 = address | 0b1_0000_0000;
+                        Data1 = (Data1 & 0xffff) + ((value | 0x1) << 16);
                         Data1Step = GetStep(inc, decr);
                     }
                     break;
@@ -435,6 +436,7 @@ namespace BitMagic.Machines
             return base.GetByte(address);
         }
 
-        public override byte PeekByte(int Address) => Memory[Address];        
+        public override byte PeekByte(int Address) => Memory[Address];
+
     }
 }

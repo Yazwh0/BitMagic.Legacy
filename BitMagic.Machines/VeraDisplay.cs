@@ -1,10 +1,9 @@
 ﻿using BitMagic.Common;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitMagic.Machines
@@ -21,22 +20,62 @@ namespace BitMagic.Machines
 
         public Action<object?>[] DisplayThreads => new Action<object?>[] { Background, Sprite0, Sprite1, Sprite2, Layer0, Layer1 };
 
-        public Image<Rgba32>[] Displays { get; }
+        public BitImage[] Displays { get; }
 
-        public VeraDisplay(int scale)
+        private readonly Vera _vera;
+        private readonly int _scale;
+
+        public VeraDisplay(int scale, Vera vera)
         {
-            Displays = new Image<Rgba32>[]
+            _vera = vera;
+            _scale = scale;
+
+            Displays = new BitImage[]
             {
-                new Image<Rgba32>(640 * scale, 320 * scale),
-                new Image<Rgba32>(640 * scale, 320 * scale),
-                new Image<Rgba32>(640 * scale, 320 * scale),
-                new Image<Rgba32>(640 * scale, 320 * scale),
-                new Image<Rgba32>(640 * scale, 320 * scale),
-                new Image<Rgba32>(640 * scale, 320 * scale)
+                new BitImage(640, 480),
+                new BitImage(640, 480),
+                new BitImage(640, 480),
+                new BitImage(640, 480),
+                new BitImage(640, 480),
+                new BitImage(640, 480)
             };
         }
 
-        private async void Background(object? r)
+        private const int _width = 800;
+        private const int _height = 524;
+        private const int _displayWidth = 640;
+        private const int _displayHeight = 480;
+        private const int _fps = 60;
+
+        private int _currentX = 0;
+        private int _currentY = 0;
+        private int _outputPosition = 0;
+
+//        public int GetSteps(IMachineRunner runner) => (int)((_cpuTicks + runner.TickDelta) / (runner.DeltaFrequency / _fps) * (_width * _height));
+
+
+        // render a line at a time, so _displayWidth pixels.
+        private void Run(IMachineRunner runner, BitImage image, int idx, Action<int, int,int, BitImage> action)
+        {
+            while (true)
+            {
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                for (var i = 0; i < _displayWidth; i++)
+                {
+                    action(myX++, myY, pos, image);
+                    pos++;
+                }
+
+                runner.DisplayEvents[idx].Set();
+                runner.DisplayStart[idx].WaitOne();
+            }
+        }
+
+        private void Background(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -45,13 +84,13 @@ namespace BitMagic.Machines
 
             var image = Displays[BackgroundIdx];
 
-            while (true)
+            Run(runner, image, BackgroundIdx, (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
-            }
+                bitmap.Pixels.Span[p] = _vera.Palette.Colours[0];
+            });
         }
 
-        private async void Sprite0(object? r)
+        private void Sprite0(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -60,13 +99,13 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite0Idx];
 
-            while (true)
+            Run(runner, image, Sprite0Idx , (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
-            }
+
+            });
         }
 
-        private async void Sprite1(object? r)
+        private void Sprite1(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -75,13 +114,13 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite1Idx];
 
-            while (true)
+            Run(runner, image, Sprite1Idx, (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
-            }
+            });
+
         }
 
-        private async void Sprite2(object? r)
+        private void Sprite2(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -90,13 +129,12 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite2Idx];
 
-            while (true)
+            Run(runner, image, Sprite2Idx, (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
-            }
+            });
         }
 
-        private async void Layer0(object? r)
+        private void Layer0(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -105,13 +143,12 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer0Idx];
 
-            while (true)
+            Run(runner, image, Layer0Idx, (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
-            }
+            });
         }
 
-        private async void Layer1(object? r)
+        private void Layer1(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -120,10 +157,45 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer1Idx];
 
-            while (true)
+            Run(runner, image, Layer1Idx, (x, y, p, bitmap) =>
             {
-                await runner.SignalAndWait();
+            });
+        }
+
+        // needs to calculate next cpu cycle for the display to work on.
+        // and return if frame is done.
+        public (bool framedone, int nextCpuTick) IncrementDisplay(IMachineRunner runner)
+        {
+            _currentX = 0;
+            _currentY++;
+
+            if (_currentY >= _displayHeight)
+            {
+                _outputPosition = 0;
+                _currentY = 0;
+
+                return (true, CpuTicks(runner)); // vblank period
             }
+
+            _outputPosition += _displayWidth;
+
+            return (false, CpuTicks(runner));
+        }
+
+        // number of dots from currency cpu position to _outputPosition
+        public int CpuTicks(IMachineRunner runner)
+        {
+            if (_outputPosition == 0) // we're done, return cpu ticks that are left
+            {
+                return (int)(runner.CpuFrequency / _fps) - runner.CpuTicks;
+            }
+
+            var reqPct = (_currentY * _width + _currentX) / (double)(_width * _height);
+            var cpuTicksFrame = (runner.CpuFrequency / _fps);
+
+            var reqCpuTicks = (reqPct * cpuTicksFrame) - runner.CpuTicks;
+
+            return (int)(reqCpuTicks );
         }
     }
 }

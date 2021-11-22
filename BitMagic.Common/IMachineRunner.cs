@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitMagic.Common
 {
     public interface IMachineRunner
     {
-        Task SignalAndWait();
-        int TickDelta { get; } // number of cp
-        double DeltaFrequency { get; }
+       // Task SignalAndWait();
+        int CpuTicks { get; } // number of cpu ticks this frame
+        double CpuFrequency { get; }
+        (bool framedone, int nextCpuTick) IncrementDisplay();
+        AutoResetEvent[] DisplayEvents { get; }
+        AutoResetEvent[] DisplayStart { get; }
+
     }
 }

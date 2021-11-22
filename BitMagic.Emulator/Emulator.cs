@@ -1,9 +1,11 @@
 ﻿using BitMagic.Common;
+using BitMagic.Emulator.Gl;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 
 namespace BitMagic.Emulation
 {
@@ -35,38 +37,64 @@ namespace BitMagic.Emulation
         {
             _machine.Cpu.SetProgramCounter(startAddress);
 
-            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency);
-
-            machineRunner.SetCpu(CpuFunc);
-            machineRunner.SetDisplay(_project.Machine.Display);
+            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display);
 
             machineRunner.Start();
 
-            machineRunner.MainWindow.Run(_project.Machine.Display);
+            EmulatorWindow.Run(_project.Machine.Display);
 
             machineRunner.Stop();
         }
 
-        internal async void CpuFunc(object? r)
+        internal void CpuFunc(object? r)
         {
-            var runner = r as MachineRunner;
-
-            if (runner == null)
+            if (r is not MachineRunner runner)
                 throw new ArgumentException("r is not a machine runner.");
 
-            int ticks = 0;
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            int frames = 0;
 
-            while (true || ticks < _machine.Cpu.Frequency)
+            var targetTicks = 0;
+            var frameDone = false;
+            var totalTicks = 0;
+            while (true)
             {
-                ticks += _machine.Cpu.ClockTick(_machine.Memory, (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0);
+                var ticks = 0;
 
-                await runner.Latch.ControlComplete();
+                while (ticks < targetTicks)
+                {
+                    ticks += _machine.Cpu.ClockTick(_machine.Memory, (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0);
+                }
+
+                for (var i = 0; i < runner.DisplayEvents.Length; i++)
+                {
+                    runner.DisplayStart[i].Set();
+                }
+
+                WaitHandle.WaitAll(runner.DisplayEvents);
+
+
+                runner.CpuTicks += ticks;
+
+                if (frameDone)
+                {
+                    totalTicks += runner.CpuTicks;
+                    runner.CpuTicks = 0;
+                    // trigger image upload and wait for next frame
+                    EmulatorWindow.SetRequireUpdate();
+                    frames++;
+                    if (frames == 60)
+                    {
+                        frames = 0;
+                        Console.WriteLine($"{timer.Elapsed:s\\.fff}s - {totalTicks / 60} ticks");
+                        timer.Restart();
+                        totalTicks = 0;
+                    }
+                }
+
+                (frameDone, targetTicks) = runner.IncrementDisplay();
             }
-
-            stopwatch.Stop();
-            Console.Write($"Running for: {stopwatch.Elapsed:s\\.fffff}s");
         }
     }
 }

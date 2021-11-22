@@ -7,7 +7,7 @@ namespace BitMagic.Machines
     {
         public override int Length => 0x200;
 
-        public Color[] _palette = new Color[0x100];
+        public PixelRgba[] Colours = new PixelRgba[0x100];
 
         public Palette()
         {
@@ -49,11 +49,21 @@ namespace BitMagic.Machines
 
             if ((address & 1) == 0)
             {
-                _palette[idx] = Color.FromArgb(_palette[idx].R, (byte)(((value & 0xf0) >> 4) * 2), (byte)((value & 0x0f) * 2));
+                var g = value & 0xf0;
+                g += g >> 4;
+                var b = value & 0x0f;
+                b += b << 4;
+
+                Colours[idx] = new PixelRgba(Colours[idx].R, (byte)g, (byte)b);
             } 
             else
             {
-                _palette[idx] = Color.FromArgb((byte)((value & 0x0f) * 2), _palette[idx].G, _palette[idx].B);
+                var r = value & 0x0f; ;
+                r += r << 4;
+
+                value = (byte)r;
+
+                Colours[idx] = new PixelRgba(value, Colours[idx].G, Colours[idx].B);
             }
 
             Memory[idx] = value;

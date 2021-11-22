@@ -212,7 +212,7 @@ namespace BitMagic.Compiler
             {
                 Data = new[] { _opCode.GetOpCode(thisMode), (byte)(result & 0xff), (byte)(result >> 8 & 0xff)};
             }
-
+                
             if (finalParse && RequiresReval)
                 throw new Exception($"Unknown label within '{_toParse}'");
         }

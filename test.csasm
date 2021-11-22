@@ -23,15 +23,15 @@ void ColourFunction(string name, ushort colour)
 .const addr_l = $9F20
 .const addr_m = $9F21
 .const addr_h = $9F22
+.const ctrl = $9f25
 
-lda #$10
+lda #$01
 sta addr_h
-lda #$00
+lda #$fa
 sta addr_m
-sta addr_l
+stz addr_l
 
-
-ldx #$1
+ldx #00
 .loop:
 stx data0
 inx
