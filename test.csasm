@@ -24,6 +24,29 @@ void ColourFunction(string name, ushort colour)
 .const addr_m = $9F21
 .const addr_h = $9F22
 .const ctrl = $9f25
+.const ien = $9F26
+.const isr = $9F27
+.const irq_line = $9F28
+
+.const start = $01
+.const colourswitch = $00
+
+stz start
+
+lda #$02
+sta ien
+
+lda start
+sta irq_line
+
+.loop:
+jmp loop
+
+.padto $900
+.proc vsync
+
+lda colourswitch
+bne setcolour
 
 lda #$01
 sta addr_h
@@ -31,12 +54,49 @@ lda #$fa
 sta addr_m
 stz addr_l
 
-ldx #00
-.loop:
-stx data0
-inx
+stz data0
 
-jmp loop
+lda #$01
+sta colourswitch
+
+lda #$ff
+sta irq_line
+
+stz isr
+
+ply
+plx
+pla
+rti
+
+.setcolour:
+
+lda #$01
+sta addr_h
+lda #$fa
+sta addr_m
+stz addr_l
+
+lda #$ff
+sta data0
+
+inc start
+lda start
+and #0b01111111
+
+sta irq_line
+
+stz colourswitch
+
+stz isr
+
+ply
+plx
+pla
+rti
+
+.endproc
+
 
 //ColourFunction("set_white", 0xfff0);
 //ColourFunction("set_grey", 0x8880);
@@ -60,3 +120,4 @@ var x = File.ReadAllBytes("C:\\Temp\\Reflections_Demo\\README.txt");
 //@Words(new short[] { 1000, -1000});
 
 .endscope
+

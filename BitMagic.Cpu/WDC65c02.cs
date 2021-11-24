@@ -20,6 +20,9 @@ namespace BitMagic.Cpu
         public I6502Registers Registers { get; } = new _6502Registers();
         IRegisters ICpu.Registers => Registers;
         public IMemory _stack;
+        public bool HasInterrupt { get; internal set; }
+
+        public int InterruptAddress { get; set; }
 
         public double Frequency { get; }
 
@@ -63,6 +66,8 @@ namespace BitMagic.Cpu
             new Pha(),
             new Php(),
             new Pla(),
+            new Ply(),
+            new Plx(),
             new Plp(),
             new Rol(),
             new Ror(),
@@ -100,6 +105,36 @@ namespace BitMagic.Cpu
                     _operations[i.OpCode] = (op, i.Mode, i.Timing);
                 }
             }
+        }
+
+        public void SetInterrupt()
+        {
+            HasInterrupt = true;
+        }
+
+        public int HandleInterrupt()
+        {
+            HasInterrupt = false;
+
+            if (Registers.Flags.InterruptDisable)
+                return 0;
+
+            if (InterruptAddress == 0)
+                return 0;
+
+            Push((byte)((Registers.PC & 0xff00) >> 8));
+            Push((byte)(Registers.PC & 0xff));
+            Push(Registers.P);
+
+            Push(Registers.A); // done by the kernal normally.
+            Push(Registers.X);
+            Push(Registers.Y);
+
+            Registers.PC = (ushort)InterruptAddress;
+
+            Registers.Flags.InterruptDisable = true;
+
+            return 0;
         }
 
         public void SetProgramCounter(int address)
@@ -245,170 +280,32 @@ namespace BitMagic.Cpu
                     return (address, 0, 2);
             }
 
-//            l = memory.GetByte(Registers.PC);
-
-//            if (mode == AccessMode.ZeroPage)
-//            {
-//                if (verboseOutput) Console.Write($"${l:X2}");
-//                return (l, 0, 1);
-//            }
-
-
-//            if (mode == AccessMode.ZeroPageX)
-//            {
-//                toReturn = (ushort)((l + Registers.X) & 0xff);
-//                if (verboseOutput) Console.Write($"${toReturn:X4}");
-//                return (toReturn, 0, 1);
-//            }
-
-//            if (mode == AccessMode.ZeroPageY)
-//            {
-//                toReturn = (ushort)((l + Registers.Y) & 0xff);
-//                if (verboseOutput) Console.Write($"${toReturn:X4}");
-//                return (toReturn, 0, 1);
-//            }
-
-//            if (mode == AccessMode.IndirectX)
-//            {
-//                address = memory.GetByte((l + Registers.X) & 0xff);
-//                address += (ushort)(memory.GetByte((l + Registers.X + 1) & 0xff) << 8);
-//                if (verboseOutput) Console.Write($"${address:X4}");
-//                return (address, 0, 1);
-//            }
-
-////            int timing = 0;
-//            if (mode == AccessMode.IndirectY)
-//            {
-//                address = memory.GetByte(l);
-//                address += (ushort)(memory.GetByte(l + 1) << 8);
-//                timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-//                toReturn = (ushort)(address + Registers.Y);
-//                if (verboseOutput) Console.Write($"${toReturn:X4}");
-//                return (toReturn, timing, 1);
-//            }
-
-//  //          var h = memory.GetByte(Registers.PC + 1);
-
-//            address = (ushort)(l + (h << 8));
-
-//            if (mode == AccessMode.Absolute)
-//            {
-//                if (verboseOutput) Console.Write($"${address:X4}");
-//                return (address, 0, 2);
-//            }
-
-//            if (mode == AccessMode.AbsoluteX)
-//            {
-//                timing = (address & 0xff00) == ((address + Registers.X) & 0xff00) ? 0 : 1;
-//                toReturn = (ushort)(address + Registers.X);
-//                if (verboseOutput) Console.Write($"${toReturn:X4}");
-//                return (toReturn, timing, 2);
-//            }
-
-//            if (mode == AccessMode.AbsoluteY)
-//            {
-//                timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-//                toReturn = (ushort)(address + Registers.Y);
-//                if (verboseOutput) Console.Write($"${toReturn:X4}");
-//                return (toReturn, timing, 2);
-//            }
-
-//            if (mode == AccessMode.IndAbsoluteX)
-//            {
-//                address = (ushort)(memory.GetByte(address) + (memory.GetByte(address) << 8));
-//                address += Registers.X;
-//                if (verboseOutput) Console.Write($"${address:X4}");
-//                return (address, 0, 2);
-//            }
-
             throw new Exception($"Unhandled access mode {mode}");
         }
 
         public (byte value, int timing, ushort pcStep) GetValueAtPC(AccessMode mode, IMemory memory, bool verboseOutput)
         {
             byte toReturn;
-            if (mode == AccessMode.Implied)
+            switch (mode)
             {
-                if (verboseOutput) Console.Write("#$00");
-                return (0, 0, 0);
-            }
+                case AccessMode.Implied:
+                    if (verboseOutput) Console.Write("#$00");
+                    return (0, 0, 0);
+                case AccessMode.Immediate:
+                case AccessMode.Relative:
+                    toReturn = memory.GetByte(Registers.PC);
+                    if (verboseOutput) Console.Write($"#${toReturn:X2}");
+                    return (toReturn, 0, 1);
+                case AccessMode.Accumulator:
+                    toReturn = Registers.A;
+                    if (verboseOutput) Console.Write($"#${toReturn:X2}");
 
-            if (mode == AccessMode.Immediate || mode == AccessMode.Relative)
-            {
-                toReturn = memory.GetByte(Registers.PC);
-                if (verboseOutput) Console.Write($"#${toReturn:X2}");
-                return (toReturn, 0, 1);
-            }
-
-            if (mode == AccessMode.Accumulator)
-            {
-                toReturn = Registers.A;
-                if (verboseOutput) Console.Write($"#${toReturn:X2}");
-
-                return (Registers.A, 0, 0);
+                    return (Registers.A, 0, 0);
             }
 
             var (address, timing, pcStep) = GetAddressAtPC(mode, memory, verboseOutput);
 
             return (memory.GetByte(address), timing, pcStep);
-
-            /*
-                        var l = memory.GetByte(Registers.PC++);
-
-                        if (mode == AccessMode.Immediate || mode == AccessMode.Relative)
-                            return (l, 0);
-
-                        if (mode == AccessMode.ZeroPage)
-                            return (memory.GetByte(l), 0);
-
-                        if (mode == AccessMode.ZeroPageX)
-                            return (memory.GetByte((l + Registers.X) & 0xff), 0);
-
-                        if (mode == AccessMode.ZeroPageY)
-                            return (memory.GetByte((l + Registers.Y) & 0xff), 0);
-
-                        int address = 0;
-                        if (mode == AccessMode.IndirectX)
-                        {
-                            address = memory.GetByte((l + Registers.X) & 0xff);
-                            address += memory.GetByte((l + Registers.X + 1) & 0xff) << 8;
-                            return (memory.GetByte(address), 0);
-                        }
-
-                        var timing = 0;
-                        if (mode == AccessMode.IndirectY)
-                        {
-                            address = memory.GetByte(l);
-                            address += memory.GetByte(l + 1) << 8;
-                            timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-                            return (memory.GetByte(address + Registers.Y), timing);
-                        }
-
-                        var h = memory.GetByte(Registers.PC++);
-
-                        address = l + h << 8;
-
-                        if (mode == AccessMode.Absolute)
-                            return (memory.GetByte(address), 0);
-
-                        if (mode == AccessMode.AbsoluteX) 
-                        {
-                            timing = (address & 0xff00) == ((address + Registers.X) & 0xff00) ? 0 : 1;
-                            return (memory.GetByte(address + Registers.X), timing);
-                        }
-
-                        if (mode == AccessMode.AbsoluteY)
-                        {
-                            timing = (address & 0xff00) == ((address + Registers.Y) & 0xff00) ? 0 : 1;
-                            return (memory.GetByte(address + Registers.Y), timing);
-                        }
-
-                        if (mode == AccessMode.IndAbsoluteX)
-                        {
-                            address = memory.GetByte(address) + memory.GetByte(address) << 8;
-                            address += Registers.X;
-                            return (memory.GetByte(address), 0);
-                        }*/
         }
 
         public void Push(byte value)
@@ -1203,7 +1100,7 @@ namespace BitMagic.Cpu
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
-            cpu.Registers.P = cpu.Pop();
+            cpu.Registers.P = cpu.Pop(); // will always have interrupt disable set to false
 
             var l = cpu.Pop();
             var h = cpu.Pop();
@@ -1508,7 +1405,7 @@ namespace BitMagic.Cpu
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0x48, AccessMode.Implied, 2),
+            (0x48, AccessMode.Implied, 3),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -1523,7 +1420,7 @@ namespace BitMagic.Cpu
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0x68, AccessMode.Implied, 2),
+            (0x68, AccessMode.Implied, 4),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -1538,7 +1435,7 @@ namespace BitMagic.Cpu
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0x08, AccessMode.Implied, 2),
+            (0x08, AccessMode.Implied, 3),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -1553,12 +1450,72 @@ namespace BitMagic.Cpu
     {
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
-            (0x28, AccessMode.Implied, 2),
+            (0x28, AccessMode.Implied, 4),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             cpu.Registers.P = cpu.Pop();
+
+            return 0;
+        }
+    }
+
+    public class Plx : CpuOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xfa, AccessMode.Implied, 4),
+        };
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.X = cpu.Pop();
+
+            return 0;
+        }
+    }
+
+    public class Ply : CpuOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x7a, AccessMode.Implied, 4),
+        };
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Registers.Y = cpu.Pop();
+
+            return 0;
+        }
+    }
+
+    public class Phx : CpuOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xda, AccessMode.Implied, 3),
+        };
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Push(cpu.Registers.X);
+
+            return 0;
+        }
+    }
+
+    public class Phy : CpuOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x5a, AccessMode.Implied, 3),
+        };
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            cpu.Push(cpu.Registers.Y);
 
             return 0;
         }

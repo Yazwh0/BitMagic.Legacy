@@ -46,10 +46,13 @@ namespace BitMagic.Emulation
 
         public double CpuFrequency { get; init; }
 
-        public MachineRunner(double deltaHtz, Action<object?> cpu, IDisplay display)
+        public ICpu Cpu { get; }
+
+        public MachineRunner(double deltaHtz, Action<object?> cpuThread, IDisplay display, ICpu cpu)
         {
             CpuFrequency = deltaHtz;
             Display = display;
+            Cpu = cpu;
             int j = 0;
 
             DisplayEvents = new AutoResetEvent[Display.DisplayThreads.Length];
@@ -63,7 +66,7 @@ namespace BitMagic.Emulation
 
             DisplayWorkers = Display.DisplayThreads.Select(i => new Worker(i, $"display {j++}")).ToArray();
 
-            CpuWorker = new Worker(cpu, "cpu");
+            CpuWorker = new Worker(cpuThread, "cpu");
         }
 
         public void Start()

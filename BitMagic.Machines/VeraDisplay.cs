@@ -55,25 +55,25 @@ namespace BitMagic.Machines
 
 
         // render a line at a time, so _displayWidth pixels.
-        private void Run(IMachineRunner runner, BitImage image, int idx, Action<int, int,int, BitImage> action)
-        {
-            while (true)
-            {
-                var pos = _outputPosition;
+        //private void Run(IMachineRunner runner, BitImage image, int idx, Action<int, int,int, BitImage> action)
+        //{
+        //    while (true)
+        //    {
+        //        var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
+        //        var myX = _currentX;
+        //        var myY = _currentY;
 
-                for (var i = 0; i < _displayWidth; i++)
-                {
-                    action(myX++, myY, pos, image);
-                    pos++;
-                }
+        //        for (var i = 0; i < _displayWidth; i++)
+        //        {
+        //            action(myX++, myY, pos, image);
+        //            pos++;
+        //        }
 
-                runner.DisplayEvents[idx].Set();
-                runner.DisplayStart[idx].WaitOne();
-            }
-        }
+        //        runner.DisplayEvents[idx].Set();
+        //        runner.DisplayStart[idx].WaitOne();
+        //    }
+        //}
 
         private void Background(object? r)
         {
@@ -84,10 +84,21 @@ namespace BitMagic.Machines
 
             var image = Displays[BackgroundIdx];
 
-            Run(runner, image, BackgroundIdx, (x, y, p, bitmap) =>
+            while (true)
             {
-                bitmap.Pixels.Span[p] = _vera.Palette.Colours[0];
-            });
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                for (var i = 0; i < _displayWidth; i++)
+                {
+                    image.Pixels.Span[pos++] = _vera.Palette.Colours[0];
+                }
+
+                runner.DisplayEvents[BackgroundIdx].Set();
+                runner.DisplayStart[BackgroundIdx].WaitOne();
+            }
         }
 
         private void Sprite0(object? r)
@@ -99,10 +110,23 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite0Idx];
 
-            Run(runner, image, Sprite0Idx , (x, y, p, bitmap) =>
+            while (true)
             {
+                var pos = _outputPosition;
 
-            });
+                var myX = _currentX;
+                var myY = _currentY;
+
+                if (_vera.SpritesEnabled)
+                {
+                    for (var i = 0; i < _displayWidth; i++)
+                    {
+                    }
+                }
+
+                runner.DisplayEvents[Sprite0Idx].Set();
+                runner.DisplayStart[Sprite0Idx].WaitOne();
+            }
         }
 
         private void Sprite1(object? r)
@@ -114,9 +138,23 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite1Idx];
 
-            Run(runner, image, Sprite1Idx, (x, y, p, bitmap) =>
+            while (true)
             {
-            });
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                if (_vera.SpritesEnabled)
+                {
+                    for (var i = 0; i < _displayWidth; i++)
+                    {
+                    }
+                }
+
+                runner.DisplayEvents[Sprite1Idx].Set();
+                runner.DisplayStart[Sprite1Idx].WaitOne();
+            }
 
         }
 
@@ -129,9 +167,23 @@ namespace BitMagic.Machines
 
             var image = Displays[Sprite2Idx];
 
-            Run(runner, image, Sprite2Idx, (x, y, p, bitmap) =>
+            while (true)
             {
-            });
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                if (_vera.SpritesEnabled)
+                {
+                    for (var i = 0; i < _displayWidth; i++)
+                    {
+                    }
+                }
+
+                runner.DisplayEvents[Sprite2Idx].Set();
+                runner.DisplayStart[Sprite2Idx].WaitOne();
+            }
         }
 
         private void Layer0(object? r)
@@ -143,9 +195,23 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer0Idx];
 
-            Run(runner, image, Layer0Idx, (x, y, p, bitmap) =>
+            while (true)
             {
-            });
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                if (_vera.Layer0.Enabled)
+                {
+                    for (var i = 0; i < _displayWidth; i++)
+                    {
+                    }
+                }
+
+                runner.DisplayEvents[Layer0Idx].Set();
+                runner.DisplayStart[Layer0Idx].WaitOne();
+            }
         }
 
         private void Layer1(object? r)
@@ -157,9 +223,23 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer1Idx];
 
-            Run(runner, image, Layer1Idx, (x, y, p, bitmap) =>
+            while (true)
             {
-            });
+                var pos = _outputPosition;
+
+                var myX = _currentX;
+                var myY = _currentY;
+
+                if (_vera.Layer1.Enabled)
+                {
+                    for (var i = 0; i < _displayWidth; i++)
+                    {
+                    }
+                }
+
+                runner.DisplayEvents[Layer1Idx].Set();
+                runner.DisplayStart[Layer1Idx].WaitOne();
+            }
         }
 
         // needs to calculate next cpu cycle for the display to work on.
@@ -187,7 +267,21 @@ namespace BitMagic.Machines
         {
             if (_outputPosition == 0) // we're done, return cpu ticks that are left
             {
+                // set vsync
+                if ((_vera.ISR & _vera.ISR_Vsync) == 0 && _vera.VsyncInterupt) 
+                {
+                    _vera.ISR |= _vera.ISR_Vsync;
+                    runner.Cpu.SetInterrupt();
+                }
+
                 return (int)(runner.CpuFrequency / _fps) - runner.CpuTicks;
+            }
+
+            if (_vera.IrqLine == _currentY-1 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
+            {
+                _vera.ISR |= _vera.ISR_Line;
+                runner.Cpu.SetInterrupt();
+               // Console.WriteLine($"Interrupt on {_currentY}");
             }
 
             var reqPct = (_currentY * _width + _currentX) / (double)(_width * _height);

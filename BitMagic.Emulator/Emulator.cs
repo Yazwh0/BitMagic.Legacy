@@ -1,4 +1,5 @@
 ﻿using BitMagic.Common;
+using BitMagic.Cpu;
 using BitMagic.Emulator.Gl;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -37,7 +38,11 @@ namespace BitMagic.Emulation
         {
             _machine.Cpu.SetProgramCounter(startAddress);
 
-            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display);
+            // Hack until we have a kernel
+            var cpu = _machine.Cpu as WDC65c02;
+            cpu.InterruptAddress = 0x900;
+
+            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display, _project.Machine.Cpu);
 
             machineRunner.Start();
 
@@ -58,9 +63,13 @@ namespace BitMagic.Emulation
             var targetTicks = 0;
             var frameDone = false;
             var totalTicks = 0;
+
             while (true)
             {
                 var ticks = 0;
+
+                if (_machine.Cpu.HasInterrupt)
+                    _machine.Cpu.HandleInterrupt();
 
                 while (ticks < targetTicks)
                 {

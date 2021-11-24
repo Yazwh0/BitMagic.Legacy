@@ -93,8 +93,9 @@ namespace BitMagic.Compiler
             // todo -- add padding between segments for the prog file generation and save!
             var toSave = new List<byte>(0x10000);
 
-            toSave.Add((byte)(_segments.First().Value.StartAddress & 0xff));
-            toSave.Add((byte)((_segments.First().Value.StartAddress & 0xff00) >> 8));
+            var address = _segments.First().Value.StartAddress;
+            toSave.Add((byte)(address & 0xff));
+            toSave.Add((byte)((address & 0xff00) >> 8));
 
             foreach (var segment in _segments.Values)
             {
@@ -104,7 +105,16 @@ namespace BitMagic.Compiler
                     {
                         foreach (var line in proc.Data)
                         {
+                            if (address != line.Address)
+                            {
+                                for(var i = address; i < line.Address; i++)
+                                {
+                                    toSave.Add(0x00);
+                                    address++;
+                                }
+                            }
                             toSave.AddRange(line.Data);
+                            address += line.Data.Length;
                         }
                     }
                 }
@@ -256,6 +266,13 @@ namespace BitMagic.Compiler
                     state.Procedure.Variables.SetValue(parts[1], ParseStringToValue(value));
                     return;
 
+                case "padto":
+                    var padto = ParseStringToValue(parts[1]);
+                    if (padto < state.Segment.Address)
+                        throw new Exception($"padto with destination of {padto:X4}, but segment address is already {state.Segment.Address}");
+
+                    state.Segment.Address = padto;
+                    return;
                 case "byte":
                 case "word":
                     var dataline = new DataLine(state.Procedure, line, state.Segment.Address);

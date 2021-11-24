@@ -81,6 +81,9 @@ namespace BitMagic.Machines
         public bool Data1Mode { get; set; } = false;
         public bool DcMode { get; set; } = false;
 
+        public byte ISR_Line { get; } = 0x02;
+        public byte ISR_Vsync { get; } = 0x01;
+        public byte ISR { get; set; } = 0;
         public int IrqLine { get; set; }
 
         public bool LineInterupt { get; set; } = false;
@@ -238,6 +241,7 @@ namespace BitMagic.Machines
 
                     break;
                 case VeraRegisters.ISR:
+                    ISR = value;
                     break;
                 case VeraRegisters.IRQLINE_L:
                     IrqLine = (IrqLine & 0x100) + value;
@@ -382,7 +386,7 @@ namespace BitMagic.Machines
                 case VeraRegisters.IEN:
                     break;
                 case VeraRegisters.ISR:
-                    break;
+                    return ISR;
                 case VeraRegisters.IRQLINE_L:
                     break;
                 case VeraRegisters.DC_VIDEO_HSTART:

@@ -9,6 +9,9 @@ namespace BitMagic.Common
         void SetProgramCounter(int address);
         int ClockTick(IMemory memory, bool debugOutput);
         double Frequency { get; }
+        void SetInterrupt();
+        bool HasInterrupt { get; }
+        int HandleInterrupt();
     }
 
     public interface ICpuOpCode
