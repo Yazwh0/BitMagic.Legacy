@@ -13,6 +13,7 @@ void ColourFunction(string name, ushort colour)
 @:rts
 }
 @:
+@:.define name=rom, address=$a000, filename="rom.bin"
 @:.const data = $abcd
 @:
 @:.scope main
@@ -31,6 +32,7 @@ void ColourFunction(string name, ushort colour)
 @:.const irq_line = $9F28
 @:
 @:.const start = $01
+@:.const colourswitch = $00
 @:
 @:stz start
 @:
@@ -43,10 +45,10 @@ void ColourFunction(string name, ushort colour)
 @:.loop:
 @:jmp loop
 @:
-@:.padto $900
+@:.pad $900
 @:.proc vsync
 @:
-@:lda $00
+@:lda colourswitch
 @:bne setcolour
 @:
 @:lda #$01
@@ -58,7 +60,7 @@ void ColourFunction(string name, ushort colour)
 @:stz data0
 @:
 @:lda #$01
-@:sta $00
+@:sta colourswitch
 @:
 @:lda #$ff
 @:sta irq_line
@@ -87,7 +89,7 @@ void ColourFunction(string name, ushort colour)
 @:
 @:sta irq_line
 @:
-@:stz $00
+@:stz colourswitch
 @:
 @:stz isr
 @:
@@ -98,6 +100,8 @@ void ColourFunction(string name, ushort colour)
 @:
 @:.endproc
 @:
+@:.segment rom
+@:.byte 1, 2, 3, 4, 5
 @:
 //ColourFunction("set_white", 0xfff0);
 //ColourFunction("set_grey", 0x8880);

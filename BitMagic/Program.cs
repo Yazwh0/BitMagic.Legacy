@@ -58,7 +58,6 @@ namespace BitMagic
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;// | ApplicationPart.Emulator;
 
-
             if (_args.Contains("razor"))
             {
                 if (string.IsNullOrWhiteSpace(project.Source.Filename))

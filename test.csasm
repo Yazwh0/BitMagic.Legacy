@@ -11,6 +11,7 @@ void ColourFunction(string name, ushort colour)
 	rts
 }
 
+.define name=rom, address=$a000, filename="rom.bin"
 .const data = $abcd
 
 .scope main
@@ -42,7 +43,7 @@ sta irq_line
 .loop:
 jmp loop
 
-.padto $900
+.pad $900
 .proc vsync
 
 lda colourswitch
@@ -97,6 +98,8 @@ rti
 
 .endproc
 
+.segment rom
+.byte 1, 2, 3, 4, 5
 
 //ColourFunction("set_white", 0xfff0);
 //ColourFunction("set_grey", 0x8880);

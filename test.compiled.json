@@ -17,17 +17,15 @@
                 "isr": 40743,
                 "irq_line": 40744,
                 "start": 1,
+                "colourswitch": 0,
                 "loop": 2076,
-                "vsync": 2304,
-                "sintable": 2376,
-                "datatable": 2376,
-                "somefile": 2376
+                "vsync": 2304
               }
             },
             "Data": [
               {
                 "Data": "DAgKAJ4gMjA2NAAAAAAA",
-                "OriginalText": ".byte\t$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00",
+                "OriginalText": "\t$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00",
                 "Address": 2049,
                 "RequiresReval": false
               },
@@ -85,9 +83,9 @@
             "Data": [
               {
                 "Data": "pQA=",
-                "OriginalText": "\r\nlda $00\r\n",
+                "OriginalText": "\r\nlda colourswitch\r\n",
                 "RequiresReval": false,
-                "Params": "$00",
+                "Params": "colourswitch",
                 "Address": 2304
               },
               {
@@ -148,9 +146,9 @@
               },
               {
                 "Data": "hQA=",
-                "OriginalText": "sta $00\r\n",
+                "OriginalText": "sta colourswitch\r\n",
                 "RequiresReval": false,
-                "Params": "$00",
+                "Params": "colourswitch",
                 "Address": 2326
               },
               {
@@ -281,9 +279,9 @@
               },
               {
                 "Data": "ZAA=",
-                "OriginalText": "\r\nstz $00\r\n",
+                "OriginalText": "\r\nstz colourswitch\r\n",
                 "RequiresReval": false,
-                "Params": "$00",
+                "Params": "colourswitch",
                 "Address": 2367
               },
               {
@@ -337,11 +335,9 @@
             "isr": 40743,
             "irq_line": 40744,
             "start": 1,
+            "colourswitch": 0,
             "loop": 2076,
-            "vsync": 2304,
-            "sintable": 2376,
-            "datatable": 2376,
-            "somefile": 2376
+            "vsync": 2304
           }
         }
       }
@@ -353,6 +349,52 @@
         "data": 43981
       }
     },
+    "Filename": null,
     "Address": 2376
+  },
+  "rom": {
+    "Scopes": {
+      ".Default_3": {
+        "Procedures": {
+          ".Default_4": {
+            "Name": ".Default_4",
+            "Variables": {
+              "_variables": {
+                "sintable": 40965,
+                "datatable": 40965,
+                "somefile": 40965
+              }
+            },
+            "Data": [
+              {
+                "Data": "AQIDBAU=",
+                "OriginalText": " 1, 2, 3, 4, 5",
+                "Address": 40960,
+                "RequiresReval": false
+              }
+            ]
+          }
+        },
+        "Name": ".Default_3",
+        "Variables": {
+          "_variables": {
+            "sintable": 40965,
+            "datatable": 40965,
+            "somefile": 40965
+          }
+        }
+      }
+    },
+    "Name": "rom",
+    "StartAddress": 40960,
+    "Variables": {
+      "_variables": {
+        "sintable": 40965,
+        "datatable": 40965,
+        "somefile": 40965
+      }
+    },
+    "Filename": "rom.bin",
+    "Address": 40965
   }
 }

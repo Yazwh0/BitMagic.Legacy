@@ -4,6 +4,7 @@ using CodingSeb.ExpressionEvaluator;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,13 +14,135 @@ namespace BitMagic.Compiler
     public class Compiler
     {
         private readonly Project _project;
-        private int _anonCounter = 0;
-        private Dictionary<string, Segment> _segments = new Dictionary<string, Segment>();
+        
+        //private Dictionary<string, Segment> _segments = new Dictionary<string, Segment>();
         private Dictionary<string, ICpuOpCode> _opCodes = new Dictionary<string, ICpuOpCode>();
+        private readonly CommandParser _commandParser;
 
         public Compiler(Project project)
         {
             _project = project;
+
+            _commandParser = CommandParser.Parser()
+                .WithLabel((label, state) =>
+                {
+                    if (label == ".:")
+                        throw new Exception("Labels require a name. .: is not valid.");
+
+                    state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
+                })
+                .WithParameters(".define", (dict, state) => {
+                    Segment segment;
+                    if (state.Segments.ContainsKey(dict["name"]))
+                    {
+                        segment = state.Segments[dict["name"]];
+                    } else
+                    {
+                        segment = new Segment(state.Globals, dict["name"]);
+                        state.Segments.Add(dict["name"], segment);
+                    }
+
+                    if (dict.ContainsKey("address"))
+                    {
+                        foreach (var scope in segment.Scopes)
+                        {
+                            foreach (var proc in scope.Value.Procedures)
+                            {
+                                if (proc.Value.Data.Any())
+                                {
+                                    throw new Exception($"Cannot modify segment start address when it already has data. {segment.Name}");
+                                }
+                            }
+                        }
+                    }
+
+                    if (dict.ContainsKey("address"))
+                    {
+                        segment.Address = ParseStringToValue(dict["address"]);
+                        segment.StartAddress = segment.Address;
+                    }
+
+                    if (dict.ContainsKey("filename"))
+                    {
+                        var filename = dict["filename"];
+
+                        if (filename.StartsWith('"') && filename.EndsWith('"'))
+                            filename = filename[1..^1];
+
+                        segment.Filename = filename;
+                    }
+
+                }, new[] { "name", "address", "filename" })
+                .WithParameters(".segment", (dict, state) => {
+                    var name = dict["name"];
+                    state.Segment = state.Segments[name];
+                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
+                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                }, new[] { "name" })
+                .WithParameters(".scope", (dict, state) => {
+                    string name = dict.ContainsKey("name") ? dict["name"] : $".Anonymous_{state.AnonCounter++}";
+                    state.Scope = state.Segment.GetScope(name, false);
+                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                }, new[] { "name" })
+                .WithParameters(".endscope", (dict, state) => { 
+                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true); 
+                })
+                .WithParameters(".proc", (dict, state) => {
+                    var name = dict.ContainsKey("name") ? dict["name"] : $".Anonymous_{state.AnonCounter++}";
+                    state.Procedure = state.Scope.GetProcedure(name, false);
+                    state.Scope.Variables.SetValue(name, state.Segment.Address);
+                }, new[] { "name" })
+                .WithParameters(".endproc", (dict, state) => {
+                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                })
+                .WithParameters(".const", (dict, state) => {
+                    // .const foo $ff
+                    if (dict.ContainsKey("name") && dict.ContainsKey("value"))
+                    {
+                        state.Procedure.Variables.SetValue(dict["name"], ParseStringToValue(dict["value"]));
+                        return;
+                    }
+
+                    foreach(var kv in dict)
+                    {
+                        state.Procedure.Variables.SetValue(kv.Key, ParseStringToValue(kv.Value));
+                    }
+                }, new[] { "name", "value" })
+                .WithParameters(".pad", (dict, state) => {
+                    var padto = ParseStringToValue(dict["address"]);
+                    if (padto < state.Segment.Address)
+                        throw new Exception($"pad with destination of ${padto:X4}, but segment address is already ${state.Segment.Address:X4}");
+
+                    state.Segment.Address = padto;
+                }, new[] { "address" })
+                .WithParameters(".align", (dict, state) => { 
+                    var boundry = ParseStringToValue(dict["boundry"]);
+
+                    if (boundry == 0)
+                        return;
+
+                    while(state.Segment.Address % boundry != 0)
+                    {
+                        state.Segment.Address++;
+                    }
+                }
+                , new[] { "boundry" })
+                .WithLine(".byte", (paramLine, state) => {
+                    var dataline = new DataLine(state.Procedure, paramLine, state.Segment.Address, DataLine.LineType.IsByte);
+                    dataline.ProcessParts(false);
+                    state.Segment.Address += dataline.Data.Length;
+
+                    state.Procedure.AddLine(dataline);
+                    dataline.WriteToConsole();
+                })
+                .WithLine(".word", (paramLine, state) => {
+                    var dataline = new DataLine(state.Procedure, paramLine, state.Segment.Address, DataLine.LineType.IsWord);
+                    dataline.ProcessParts(false);
+                    state.Segment.Address += dataline.Data.Length;
+
+                    state.Procedure.AddLine(dataline);
+                    dataline.WriteToConsole();
+                });
         }
 
         public async Task Compile()
@@ -32,17 +155,14 @@ namespace BitMagic.Compiler
                 _opCodes.Add(opCode.Code.ToLower(), opCode);
             }
 
-            _anonCounter = 0;
             var globals = new Variables();
 
             // all segments must be greated from the start via config?
             // maybe should be in state?
-            _segments.Clear();
-            _segments.Add(".Default", new Segment(globals, true, 0x801, ".Default"));
 
             var lines = _project.Code.Contents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.TrimEntries);
 
-            var state = GetInitialState();
+            var state = new CompileState();
 
             var previousLines = new StringBuilder();
 
@@ -60,76 +180,92 @@ namespace BitMagic.Compiler
                     continue;
                 }
 
-                var parts = line.Split(new[] { ' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-
-                if (parts[0].StartsWith('.'))
+                if (line.StartsWith('.'))
                 {
                     previousLines.Clear();
-                    ParseCommand(parts, line, state);
+                    ParseCommand(line, state);
                 }
                 else
                 {
+                    var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
                     previousLines.AppendLine(line);
                     ParseAsm(parts, previousLines.ToString(), state);
                     previousLines.Clear();
                 }
             }
 
-            PruneUnusedObjects();
+            PruneUnusedObjects(state);
 
-            Reval();
+            Reval(state);
 
             if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
             {
-                _project.AssemblerObject.Contents = JsonConvert.SerializeObject(_segments, Formatting.Indented);
+                _project.AssemblerObject.Contents = JsonConvert.SerializeObject(state.Segments, Formatting.Indented);
                 await _project.AssemblerObject.Save();
             }
 
-            await GenerateDataFile();
+            await GenerateDataFile(state);
         }
 
-        private async Task GenerateDataFile()
+        private async Task GenerateDataFile(CompileState state)
         {
-            // todo -- add padding between segments for the prog file generation and save!
-            var toSave = new List<byte>(0x10000);
+            var filenames = state.Segments.Select(i => i.Value.Filename).Distinct().ToArray();
 
-            var address = _segments.First().Value.StartAddress;
-            toSave.Add((byte)(address & 0xff));
-            toSave.Add((byte)((address & 0xff00) >> 8));
-
-            foreach (var segment in _segments.Values)
+            foreach (var filename in filenames)
             {
-                foreach (var scope in segment.Scopes.Values)
+                var toSave = new List<byte>(0x10000);
+                var segments = state.Segments.Where(i => i.Value.Filename == filename).OrderBy(kv => kv.Value.StartAddress).Select(kv => kv.Value).ToArray();
+
+                var address = segments.First().StartAddress;
+
+                if (string.IsNullOrWhiteSpace(filename) || filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach (var proc in scope.Procedures.Values)
+                    toSave.Add((byte)(address & 0xff));
+                    toSave.Add((byte)((address & 0xff00) >> 8));
+                }
+
+                foreach (var segment in segments)
+                {
+                    foreach (var scope in segment.Scopes.Values)
                     {
-                        foreach (var line in proc.Data)
+                        foreach (var proc in scope.Procedures.Values)
                         {
-                            if (address != line.Address)
+                            foreach (var line in proc.Data)
                             {
-                                for(var i = address; i < line.Address; i++)
+                                if (address != line.Address)
                                 {
-                                    toSave.Add(0x00);
-                                    address++;
+                                    for (var i = address; i < line.Address; i++)
+                                    {
+                                        toSave.Add(0x00);
+                                        address++;
+                                    }
                                 }
+                                toSave.AddRange(line.Data);
+                                address += line.Data.Length;
                             }
-                            toSave.AddRange(line.Data);
-                            address += line.Data.Length;
                         }
                     }
                 }
-            }
 
-            _project.ProgFile.Contents = toSave.ToArray();
-            if (!string.IsNullOrWhiteSpace(_project.ProgFile.Filename))
-            {
-                await _project.ProgFile.Save();
+                if (string.IsNullOrWhiteSpace(filename))
+                {
+                    _project.ProgFile.Contents = toSave.ToArray();
+                    if (!string.IsNullOrWhiteSpace(_project.ProgFile.Filename))
+                    {
+                        await _project.ProgFile.Save();
+                    }
+                } 
+                else 
+                {
+                    await File.WriteAllBytesAsync(filename, toSave.ToArray());
+                }
             }
         }
 
-        private void PruneUnusedObjects()
+        private void PruneUnusedObjects(CompileState state)
         {
-            foreach(var segment in _segments.Values)
+            foreach(var segment in state.Segments.Values)
             {
                 foreach (var scope in segment.Scopes.Values)
                 {
@@ -144,21 +280,17 @@ namespace BitMagic.Compiler
                     segment.Scopes.Remove(scopeName);
                 }
             }
+
+/*            foreach(var segmentName in _segments.Values.Where(i => !i.Scopes.Any()).Select(i => i.Name).ToArray())
+            {
+                _segments.Remove(segmentName);
+            }*/
         }
 
-        private CompileState GetInitialState()
-        {
-            var segment = GetSegment(".Default"); // use '.' so this cant be generated by the user
-            var scope = segment.GetScope($".Default_{_anonCounter++}", true);
-            var procedure = scope.GetProcedure($".Default_{_anonCounter++}", true);
-
-            return new CompileState(segment, scope, procedure);
-        }
-
-        private void Reval()
+        private void Reval(CompileState state)
         {
             Console.WriteLine("Revaluations:");
-            foreach (var segment in _segments.Values)
+            foreach (var segment in state.Segments.Values)
             {
                 foreach(var scope in segment.Scopes.Values)
                 {
@@ -194,127 +326,28 @@ namespace BitMagic.Compiler
             state.Segment.Address += toAdd.Data.Length;
         }
 
-        private void ParseCommand(string[] parts, string line, CompileState state)
-        {
-            if (parts[0].EndsWith(':'))
-            {
-                if (parts[0] == ".:")
-                    throw new Exception("Labels require a name. .: is not valid.");
-
-                state.Procedure.Variables.SetValue(parts[0].Substring(1, parts[0].Length - 2), state.Segment.Address);
-                return;
-            }
-
-            string name;
-            switch (parts[0].Substring(1).ToLower())
-            {
-                case "segment":
-                    HasParameter(parts, 2, line);
-                    state.Segment = GetSegment(parts[1]);
-                    state.Scope = state.Segment.GetScope($".Default_{_anonCounter++}", true);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{_anonCounter++}", true);
-                    return;
-
-                case "scope":
-                    if (parts.Length == 1)
-                    {
-                        name = $".Anonymous_{_anonCounter++}";
-                    } 
-                    else
-                    {
-                        HasParameter(parts, 2, line);
-                        name = parts[1];
-                    }
-
-                    state.Scope = state.Segment.GetScope(name, false);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{_anonCounter++}", true);
-                    return;
-                case "endscope":
-                    state.Scope = state.Segment.GetScope($".Default_{_anonCounter++}", true);
-                    return;
-
-                case "proc":
-                    if (parts.Length == 1)
-                    {
-                        name = $".Anonymous_{_anonCounter++}";
-                    }
-                    else
-                    {
-                        HasParameter(parts, 2, line);
-                        name = parts[1];
-                    }
-
-                    state.Procedure = state.Scope.GetProcedure(name, false);
-                    state.Scope.Variables.SetValue(name, state.Segment.Address);
-                    return;
-                case "endproc":
-                    state.Procedure = state.Scope.GetProcedure($".Default_{_anonCounter++}", true);
-                    return;
-
-                case "const": // .var foo = $12 -or- .var foo $12
-                    HasParameter(parts, 3, line);
-                    string value;
-                    if (parts[2] == "=")
-                    {
-                        HasParameter(parts, 4, line);
-                        value = parts[3];
-                    }
-                    else
-                    {
-                        value = parts[2];
-                    }
-                    state.Procedure.Variables.SetValue(parts[1], ParseStringToValue(value));
-                    return;
-
-                case "padto":
-                    var padto = ParseStringToValue(parts[1]);
-                    if (padto < state.Segment.Address)
-                        throw new Exception($"padto with destination of {padto:X4}, but segment address is already {state.Segment.Address}");
-
-                    state.Segment.Address = padto;
-                    return;
-                case "byte":
-                case "word":
-                    var dataline = new DataLine(state.Procedure, line, state.Segment.Address);
-                    dataline.ProcessParts(false);
-                    state.Segment.Address += dataline.Data.Length;
-
-                    state.Procedure.AddLine(dataline);
-                    dataline.WriteToConsole();
-
-                    return;
-                default:
-                    throw new Exception($"Unknown command {parts[0]}");
-            }
-
-            throw new Exception($"Unknown command {parts[0]}");
-        }
+        private void ParseCommand(string line, CompileState state) => _commandParser.Process(line, state);        
 
         private int ParseStringToValue(string inp)
         {
             if (inp.StartsWith('$'))
-                return Convert.ToInt32(inp.Substring(1), 16);
+                return Convert.ToInt32(inp[1..], 16);
+
+            if (inp.StartsWith('%'))
+                return Convert.ToInt32(inp[1..], 2);
 
             if (int.TryParse(inp, out var result))
                 return result;
 
             throw new Exception($"Cannot parse {inp} into an int");
-
         }
 
-        private void HasParameter(string[] parts, int size, string sourceLine)
-        {
-            if (parts.Length < size || string.IsNullOrEmpty(parts[size - 1]))
-                throw new Exception($"Syntax error {sourceLine}, expecting {size} parts");
-
-        }
-
-        private Segment GetSegment(string name)
+/*        private Segment GetSegment(string name)
         {
             if (_segments.ContainsKey(name))
                 return _segments[name];
 
             throw new Exception($"Unknown segment {name}");
-        }
+        }*/
     }
 }

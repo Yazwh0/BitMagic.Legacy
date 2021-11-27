@@ -14,14 +14,26 @@ namespace BitMagic.Compiler
 
         [JsonProperty]
         public readonly Dictionary<string, Scope> Scopes = new Dictionary<string, Scope>();
+
+        [JsonProperty]
+        public string? Filename { get; set; }
+
+        [JsonProperty]
         public int Address { get; set; }
 
-        public Segment(Variables globals, bool anonymous, int startAddress, string name)
+        public Segment(Variables globals, string name)
+        {
+            Variables = new Variables(globals);
+            Name = name;
+        }
+
+        public Segment(Variables globals, bool anonymous, int startAddress, string name, string? filename = null)
         {
             Variables = anonymous ? globals : new Variables(globals);
             StartAddress = startAddress;
             Address = startAddress;
             Name = name;
+            Filename = filename;
         }
 
         public Scope GetScope(string name, bool anonymous)

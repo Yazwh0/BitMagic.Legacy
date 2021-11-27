@@ -25,15 +25,17 @@ namespace BitMagic.Compiler
         public int Address { get; }
         public bool RequiresReval { get; private set; }
         private Procedure _procedure { get; }
+        private LineType _lineType { get; }
 
-        internal DataLine(Procedure proc, string originalText, int address)
+        internal DataLine(Procedure proc, string originalText, int address, LineType type)
         {
             OriginalText = originalText;
             Address = address;
             _procedure = proc;
+            _lineType = type;
         }
 
-        private enum LineType
+        internal enum LineType
         {
             IsByte,
             IsWord
@@ -45,9 +47,6 @@ namespace BitMagic.Compiler
             var data = new List<byte>();
 
             var toProcess = OriginalText.Trim().ToLower();
-            var lineType = toProcess.StartsWith(".byte") ? LineType.IsByte : LineType.IsWord;
-
-            toProcess = toProcess.Substring(5);
 
             var idx = toProcess.IndexOf(';');
             if (idx != -1)
@@ -69,7 +68,7 @@ namespace BitMagic.Compiler
                 if (i == null)
                     throw new Exception($"Expected value back, actually have {r.GetType().Name} for {r}");
 
-                if (lineType == LineType.IsByte)
+                if (_lineType == LineType.IsByte)
                 {
                     data.Add((byte)(i & 0xff));
                 } 
