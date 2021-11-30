@@ -47,7 +47,7 @@ namespace BitMagic.Emulator.Gl
 
             _layers = new GlObject[_display.Displays.Length];
 
-            for(var i = 0; i < 1; i++)// _display.Displays.Length; i++)
+            for(var i = 0; i < _display.Displays.Length; i++)
             {
                 _layers[i] = new GlObject();
                 _layers[i].OnLoad(_gl, _display.Displays[i], i / 10);
@@ -67,12 +67,12 @@ namespace BitMagic.Emulator.Gl
            // _gl.BlendFunc(BlendingFactor.SrcColor, BlendingFactor.SrcColor);
             _gl.Clear(ClearBufferMask.ColorBufferBit);
 
-            _layers[0].OnRender(_gl, _shader, _requireUpdate);
+            //_layers[0].OnRender(_gl, _shader, _requireUpdate);
 
-            //foreach (var i in _layers)
-            //{
-            //    i.OnRender(_gl, _shader, _requireUpdate);
-            //}
+            foreach (var i in _layers)
+            {
+                i.OnRender(_gl, _shader, _requireUpdate);
+            }
             _requireUpdate = false;
         }
 

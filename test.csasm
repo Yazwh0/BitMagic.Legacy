@@ -11,8 +11,7 @@ void ColourFunction(string name, ushort colour)
 	rts
 }
 
-.define name=rom, address=$a000, filename="rom.bin"
-.const data = $abcd
+.define name=rom, address=$c000, filename="rom.bin"
 
 .scope main
 
@@ -28,78 +27,204 @@ void ColourFunction(string name, ushort colour)
 .const ien = $9F26
 .const isr = $9F27
 .const irq_line = $9F28
+.const dc_video = $9F29
+.const l0_config = $9F2D
+.const l0_mapbase = $9F2E
+.const l0_tilebase = $9F2F
 
 .const start = $01
 .const colourswitch = $00
 
-stz start
+	stz start
 
-lda #$02
-sta ien
+	lda #$02
+	sta ien
 
-lda start
-sta irq_line
+	lda start
+	sta irq_line
+
+	stz ctrl
+	;     FS10-Cmm
+	lda #0b00010001
+	sta dc_video
+
+	;      hhwwtbcc
+	lda #0b00000010 ; tiles 4bp
+    sta l0_config
+
+	stz l0_mapbase
+
+	lda #0b00110000 ; tiles at $6000
+	sta l0_tilebase
+
+	jsr copydata
+
+	lda #$10 
+    sta addr_h
+    stz addr_m
+    stz addr_l
+
+	lda #$01
+	sta data0
+
+	lda #<vsync
+	sta $314
+	lda #>vsync
+	sta $315
 
 .loop:
-jmp loop
+	jmp loop
 
-.pad $900
+.proc copydata
+
+.const address = $6000
+.const size = 64
+
+    lda #^address + $10 ; add on 1byte increment
+    sta addr_h
+    lda #>address
+    sta addr_m
+    lda #<address
+    sta addr_l
+
+    ; y low value
+    ; x high value
+    ldy #<size
+    ldx #>size+1 ; +1 as we check the end when we reduce x
+
+    lda #<tile
+    sta copydata_src + 1
+    lda #>tile
+    sta copydata_src + 2
+
+.copydata_src:
+    lda $1234 ; gets modified
+    sta data0
+
+    inc copydata_src + 1
+    bne noinc
+
+    inc copydata_src + 2
+
+.noinc:
+    dey
+    bne copydata_src
+
+    dex
+    beq copydata_done
+    jmp copydata_src
+
+.copydata_done:
+    rts
+.endproc
+
 .proc vsync
 
-lda colourswitch
-bne setcolour
+	lda colourswitch
+	bne setcolour
 
-lda #$01
-sta addr_h
-lda #$fa
-sta addr_m
-stz addr_l
+	lda #$01
+	sta addr_h
+	lda #$fa
+	sta addr_m
+	stz addr_l
 
-stz data0
+	stz data0
 
-lda #$01
-sta colourswitch
+	lda #$01
+	sta colourswitch
 
-lda #$ff
-sta irq_line
+	lda #$ff
+	sta irq_line
 
-stz isr
+	stz isr
 
-ply
-plx
-pla
-rti
+	ply
+	plx
+	pla
+	rti
 
 .setcolour:
 
-lda #$01
-sta addr_h
-lda #$fa
-sta addr_m
-stz addr_l
+	lda #$01
+	sta addr_h
+	lda #$fa
+	sta addr_m
+	stz addr_l
 
-lda #$ff
-sta data0
+	lda #$0a
+	sta data0
 
-inc start
-lda start
-and #0b01111111
+	inc start
+	lda start
+	and #0b01111111
 
-sta irq_line
+	sta irq_line
 
-stz colourswitch
+	stz colourswitch
 
-stz isr
+	stz isr
 
-ply
-plx
-pla
-rti
+	ply
+	plx
+	pla
+	rti
 
 .endproc
 
+; will not be loaded as its in its own anonymous proc.
+.tile:
+.byte $01, $11, $11, $00
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $01, $11, $11, $00
+.byte $00, $00, $00, $00
+
+.byte $11, $11, $99, $99
+.byte $22, $22, $aa, $aa
+.byte $33, $33, $bb, $bb
+.byte $44, $44, $cc, $cc
+.byte $55, $55, $dd, $dd
+.byte $66, $66, $ee, $ee
+.byte $77, $77, $ff, $ff
+.byte $88, $88, $00, $00
+
 .segment rom
-.byte 1, 2, 3, 4, 5
+.const isr = $9F27
+
+.proc startup
+	jmp $801
+.endproc
+
+.proc irq
+	
+	pha
+	phx
+	phy
+
+	lda $314
+	beq no_handle
+
+	jmp ($314)
+
+.no_handle:
+	stz isr
+
+	ply
+	plx
+	pla
+	rti
+
+.endproc
+
+.pad $fffa
+.word irq
+.word startup
+.word irq
+.endsegment
 
 //ColourFunction("set_white", 0xfff0);
 //ColourFunction("set_grey", 0x8880);

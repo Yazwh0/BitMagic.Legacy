@@ -9,8 +9,11 @@ namespace BitMagic.Cpu.Memory
     {
         public int Length { get; }
         private readonly IMemory[] _memoryMap;
+        private readonly byte[] _memoryBytes;
 
         private readonly (IMemory Memory, int Offset)[] _lookup;
+
+        public Memory<byte> Memory { get; }
 
         public MemoryMap(int size, IEnumerable<IMemory> blocks, IEnumerable<(int address, IMemory memory, int offset)>? overrides = null )
         {
@@ -25,6 +28,9 @@ namespace BitMagic.Cpu.Memory
 
             if (pos != size)
                 throw new Exception($"Size {size} is different to blocks provided {pos}");
+
+            _memoryBytes = new byte[size];
+            Memory = new Memory<byte>(_memoryBytes);
 
             _lookup = new (IMemory, int)[size];
             var idx = 0;

@@ -65,6 +65,8 @@ namespace BitMagic.Cpu
             new Ora(),
             new Pha(),
             new Php(),
+            new Phx(),
+            new Phy(),
             new Pla(),
             new Ply(),
             new Plx(),
@@ -112,7 +114,7 @@ namespace BitMagic.Cpu
             HasInterrupt = true;
         }
 
-        public int HandleInterrupt()
+        public int HandleInterrupt(IMemory memory)
         {
             HasInterrupt = false;
 
@@ -125,12 +127,14 @@ namespace BitMagic.Cpu
             Push((byte)((Registers.PC & 0xff00) >> 8));
             Push((byte)(Registers.PC & 0xff));
             Push(Registers.P);
+            /*
+                        Push(Registers.A); // done by the kernal normally.
+                        Push(Registers.X);
+                        Push(Registers.Y);*/
 
-            Push(Registers.A); // done by the kernal normally.
-            Push(Registers.X);
-            Push(Registers.Y);
+            var interuptHandler = memory.GetByte(InterruptAddress) + (memory.GetByte(InterruptAddress + 1) << 8);
 
-            Registers.PC = (ushort)InterruptAddress;
+            Registers.PC = (ushort)interuptHandler;
 
             Registers.Flags.InterruptDisable = true;
 
@@ -184,6 +188,7 @@ namespace BitMagic.Cpu
             {
                 Console.CursorLeft = 15;
                 Console.WriteLine($" Tks:{timing} -> {Registers} [{Registers.Flags}]");
+                Console.ReadKey();
             }
 
             return timing;
@@ -273,9 +278,17 @@ namespace BitMagic.Cpu
                     h = memory.GetByte(Registers.PC + 1);
                     address = (ushort)(l + (h << 8));
 
-                    address = (ushort)(memory.GetByte(address) + (memory.GetByte(address) << 8));
+                    address = (ushort)(memory.GetByte(address) + (memory.GetByte(address+1) << 8));
                     address += Registers.X;
 
+                    if (verboseOutput) Console.Write($"${address:X4}");
+                    return (address, 0, 2);
+                case AccessMode.Indirect:
+                    l = memory.GetByte(Registers.PC);
+                    h = memory.GetByte(Registers.PC + 1);
+                    address = (ushort)(l + (h << 8));
+
+                    address = (ushort)(memory.GetByte(address) + (memory.GetByte(address+1) << 8));
                     if (verboseOutput) Console.Write($"${address:X4}");
                     return (address, 0, 2);
             }

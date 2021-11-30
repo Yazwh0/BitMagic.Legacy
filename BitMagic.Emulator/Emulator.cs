@@ -40,7 +40,7 @@ namespace BitMagic.Emulation
 
             // Hack until we have a kernel
             var cpu = _machine.Cpu as WDC65c02;
-            cpu.InterruptAddress = 0x900;
+            cpu.InterruptAddress = 0xfffe;
 
             var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display, _project.Machine.Cpu);
 
@@ -69,7 +69,7 @@ namespace BitMagic.Emulation
                 var ticks = 0;
 
                 if (_machine.Cpu.HasInterrupt)
-                    _machine.Cpu.HandleInterrupt();
+                    _machine.Cpu.HandleInterrupt(_machine.Memory);
 
                 while (ticks < targetTicks)
                 {

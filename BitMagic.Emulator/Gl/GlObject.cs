@@ -56,6 +56,9 @@ namespace BitMagic.Emulator.Gl
             if (requireUpdate)
                 _texture.Update();
 
+            gl.Enable(GLEnum.Blend);
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
             _vao.Bind();
             shader.Use();
             _texture.Bind(TextureUnit.Texture0);

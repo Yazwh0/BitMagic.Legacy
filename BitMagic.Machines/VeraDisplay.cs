@@ -88,8 +88,8 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
+                //var myX = EffectiveX(_currentX);
+                //var myY = EffectiveY(_currentY);
 
                 for (var i = 0; i < _displayWidth; i++)
                 {
@@ -114,11 +114,11 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
-
                 if (_vera.SpritesEnabled)
                 {
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
                     for (var i = 0; i < _displayWidth; i++)
                     {
                     }
@@ -142,11 +142,11 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
-
                 if (_vera.SpritesEnabled)
                 {
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
                     for (var i = 0; i < _displayWidth; i++)
                     {
                     }
@@ -171,13 +171,14 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
-
                 if (_vera.SpritesEnabled)
                 {
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
                     for (var i = 0; i < _displayWidth; i++)
                     {
+
                     }
                 }
 
@@ -199,12 +200,21 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
-
                 if (_vera.Layer0.Enabled)
                 {
-                    for (var i = 0; i < _displayWidth; i++)
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
+                    if (_vera.Layer0.BitmapMode)
+                    {
+
+                    }
+                    else if (_vera.Layer0.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    {
+                        // todo: make these effective y and x
+                        LayerTiles(_vera, _vera.Layer0, image, pos, myX, myY);
+                    }
+                    else
                     {
                     }
                 }
@@ -213,6 +223,9 @@ namespace BitMagic.Machines
                 runner.DisplayStart[Layer0Idx].WaitOne();
             }
         }
+
+        public int EffectiveX(int displayX) => _vera.HScale * (displayX - _vera.HStart) >> 7;
+        public int EffectiveY(int displayY) => _vera.VScale * (displayY - _vera.VStart) >> 7;
 
         private void Layer1(object? r)
         {
@@ -227,20 +240,142 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                var myX = _currentX;
-                var myY = _currentY;
-
                 if (_vera.Layer1.Enabled)
                 {
-                    for (var i = 0; i < _displayWidth; i++)
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
+                    if (_vera.Layer1.BitmapMode)
+                    {
+
+                    } else if (_vera.Layer1.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    {
+                        // todo: make these effective y and x
+                        LayerTiles(_vera, _vera.Layer1, image, pos, myX, myY);
+                    }
+                    else
                     {
                     }
-                }
+                } 
 
                 runner.DisplayEvents[Layer1Idx].Set();
                 runner.DisplayStart[Layer1Idx].WaitOne();
             }
         }
+
+        // x and y are effective, ie after scaling.
+        private static void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int x, int y)
+        {
+            var mapAddressLine = layer.MapBase + (((y >> layer.TileHeightShift) * layer.MapWidth) + layer.VScroll) * 2;
+
+            int tileSizeBytes = (layer.TileHeight * layer.TileWidth) >> layer.ColourDepthShift;
+
+            var tileLineStart = 0;
+            var newTileCnt = 0;
+            var newValueCnt = 0;
+            int tileValue = 0;
+            int mask = 0;
+            int addrStep = 0;
+            int tilePos = 0;
+            int tileAddress = 0;
+            int paletteOffset = 0;
+
+            for (var i = x; i < _displayWidth; i++) // todo: consider hstop, but that should chagne _display width?
+            {
+                int tileIndex;
+                int mapAddress;
+                int tileData;
+                if (newTileCnt == 0)
+                {
+                    // todo: adjust i to display
+                    mapAddress = mapAddressLine + (((i + layer.HScroll) >> layer.ColourDepthShift) * 2);
+                    tileData = vera.Vram.GetByte(mapAddress + 1);
+
+                    var hFlip = (tileData & 0b100) != 0;
+                    var vFlip = (tileData & 0b1000) != 0;
+
+                    tileIndex = vera.Vram.GetByte(mapAddress);
+                    tileIndex += (tileData & 0b11) << 8;
+
+                    paletteOffset = (tileData & 0xf0) >> 4;
+                    tileAddress = layer.TileBase + tileIndex * tileSizeBytes;
+
+                    tileLineStart = y % layer.TileHeight;
+
+                    if (hFlip)
+                    {
+                        tileLineStart = layer.TileHeight - tileLineStart;
+                    }
+
+                    if (vFlip)
+                    {
+                        addrStep = -1;
+                        tileLineStart = tileLineStart + (layer.TileWidth >> layer.ColourDepthShift);
+                    }
+                    else
+                    {
+                        addrStep = 1;
+                    }
+                    newTileCnt = layer.TileWidth;
+                    tilePos = 0;
+                }
+
+                if (newValueCnt == 0)
+                {
+                    tileValue = vera.Vram.GetByte(((tileLineStart * (layer.TileWidth >> layer.ColourDepthShift)) + tileAddress + tilePos++) % 0x1ffff);
+                    newValueCnt = layer.ColourDepthShift +1;
+                    mask = (layer.ColourDepth, addrStep) switch
+                    {
+                        (VeraLayer.LayerColourDepth.bpp8, _)  => 0b1111_1111,
+                        (VeraLayer.LayerColourDepth.bpp4, 1)  => 0b1111_0000,
+                        (VeraLayer.LayerColourDepth.bpp2, 1)  => 0b1100_0000,
+                        (VeraLayer.LayerColourDepth.bpp1, 1)  => 0b1000_0000,
+                        (VeraLayer.LayerColourDepth.bpp4, -1) => 0b0000_1111,
+                        (VeraLayer.LayerColourDepth.bpp2, -1) => 0b0000_0011,
+                        (VeraLayer.LayerColourDepth.bpp1, -1) => 0b0000_0001,
+                        _ => throw new Exception($"unhandled depth\\direction {layer.ColourDepth} {addrStep}.")
+                    };
+                }
+
+                int actValue = (tileValue & mask) >> mask switch { 
+                    0b1111_1111 => 0,
+                    0b0000_1111 => 0,
+                    0b1111_0000 => 4,
+                    0b0000_0011 => 0,
+                    0b0000_1100 => 2,                    
+                    0b0011_0000 => 4,
+                    0b1100_0000 => 6,
+                    0b0000_0001 => 0,
+                    0b0000_0010 => 1,
+                    0b0000_0100 => 2,
+                    0b0000_1000 => 3,
+                    0b0001_0000 => 4,
+                    0b0010_0000 => 5,
+                    0b0100_0000 => 6,
+                    0b1000_0000 => 7,
+                    _ => throw new Exception($"Unknown mask")
+                };
+
+                mask = (layer.ColourDepth, addrStep) switch
+                {
+                    (VeraLayer.LayerColourDepth.bpp8, _) => mask,
+                    (VeraLayer.LayerColourDepth.bpp4, 1) => mask >> 4,
+                    (VeraLayer.LayerColourDepth.bpp2, 1) => mask >> 2,
+                    (VeraLayer.LayerColourDepth.bpp1, 1) => mask >> 1,
+                    (VeraLayer.LayerColourDepth.bpp4, -1) => mask << 4,
+                    (VeraLayer.LayerColourDepth.bpp2, -1) => mask << 2,
+                    (VeraLayer.LayerColourDepth.bpp1, -1) => mask << 1,
+                    _ => throw new Exception($"unhandled depth\\direction {layer.ColourDepth} {addrStep}.")
+                };
+
+                image.Pixels.Span[pos] = vera.Palette.Colours[actValue + paletteOffset];
+
+                newValueCnt--;
+                newTileCnt--;
+                pos++;
+            }
+        }
+
 
         // needs to calculate next cpu cycle for the display to work on.
         // and return if frame is done.

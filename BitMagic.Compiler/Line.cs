@@ -115,6 +115,7 @@ namespace BitMagic.Compiler
         public bool RequiresReval { get; internal set; }
         private Procedure _procedure { get; }
         private string _toParse { get; set; }
+        private string _original { get; set; }
         public string Params { get; }
         public int Address { get; }
 
@@ -124,6 +125,7 @@ namespace BitMagic.Compiler
             _procedure = proc;
             _opCode = opCode;
             _toParse = string.Concat(parts).Replace(" ", "");
+            _original = _toParse;
             Params = _toParse;
             Address = address;
         }
@@ -132,7 +134,7 @@ namespace BitMagic.Compiler
         {
             // take the input and remove all spaces. trim down the initial # and ( X.Y) if necessary.
             // can then parse the expression.
-
+            _toParse = _original;
             if (_toParse == "")
             {
                 AccessMode? code = _opCode.Modes.FirstOrDefault(o => o is AccessMode.Implied or AccessMode.Accumulator);

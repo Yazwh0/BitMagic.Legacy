@@ -19,7 +19,7 @@ namespace BitMagic.Machines
         public IDisplay Display => Vera;
         public Vera Vera { get; }
 
-        public CommanderX16()
+        public CommanderX16(byte[] rom)
         {
             var banks = new List<IMemory>();
 
@@ -32,7 +32,7 @@ namespace BitMagic.Machines
 
             for (var i = 0; i < 8; i++)
             {
-                roms.Add(new Rom(0x4000));
+                roms.Add(new Rom(0x4000, i == 0 ? rom : null));
             }
 
             var stack = new Ram(0x100);

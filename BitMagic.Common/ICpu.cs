@@ -11,7 +11,7 @@ namespace BitMagic.Common
         double Frequency { get; }
         void SetInterrupt();
         bool HasInterrupt { get; }
-        int HandleInterrupt();
+        int HandleInterrupt(IMemory memory);
     }
 
     public interface ICpuOpCode

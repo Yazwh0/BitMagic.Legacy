@@ -23,10 +23,11 @@ namespace BitMagic
         /// <param name="bmasmFile">bmasm file to process or save if using a csasm source</param>
         /// <param name="asmObjectFile">option debugging json file</param>
         /// <param name="prgFile">prg file</param>
+        /// <param name="romFile">rom files</param>
         /// <param name="args">Commands to run. eg: razor  compile  emulate</param>
         /// <returns></returns>
         static async Task Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
-               string prgFile = "", string[]? args = null)
+               string prgFile = "", string romFile= "rom.bin", string[]? args = null)
         {
             string[] _args;
             if (args == null)
@@ -44,7 +45,7 @@ namespace BitMagic
                 Console.WriteLine($"BitMagic!");
             }
 
-            var project = new Project(new CommanderX16());
+            var project = new Project();
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -54,6 +55,11 @@ namespace BitMagic
             project.Code.Filename = bmasmFile;
             project.AssemblerObject.Filename = asmObjectFile;
             project.ProgFile.Filename = prgFile;
+            project.RomFile.Filename = romFile;
+            await project.RomFile.Load();
+
+            project.Machine = new CommanderX16(project.RomFile?.Contents ?? throw new Exception("No rom"));
+
             project.LoadTime = stopWatch.Elapsed;
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;// | ApplicationPart.Emulator;

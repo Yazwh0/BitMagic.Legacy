@@ -12,18 +12,18 @@ namespace BitMagic.Common
         public ProjectTextFile AssemblerObject { get; } = new ProjectTextFile();
 
         public ProjectBinFile ProgFile { get; } = new ProjectBinFile();
+        public ProjectBinFile RomFile { get; } = new ProjectBinFile();
 
         public Options Options { get; }
 
-        public IMachine Machine { get; }
+        public IMachine Machine { get; set; }
 
         public TimeSpan LoadTime { get; set; }
         public TimeSpan PreProcessTime { get; set; }
         public TimeSpan CompileTime { get; set; }
 
-        public Project(IMachine machine)
+        public Project()
         {
-            Machine = machine;
             Options = new Options();
         }
     }

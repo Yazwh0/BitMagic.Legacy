@@ -13,10 +13,8 @@ namespace BitMagic.Compiler
 {
     public class Compiler
     {
-        private readonly Project _project;
-        
-        //private Dictionary<string, Segment> _segments = new Dictionary<string, Segment>();
-        private Dictionary<string, ICpuOpCode> _opCodes = new Dictionary<string, ICpuOpCode>();
+        private readonly Project _project;        
+        private readonly Dictionary<string, ICpuOpCode> _opCodes = new Dictionary<string, ICpuOpCode>();
         private readonly CommandParser _commandParser;
 
         public Compiler(Project project)
@@ -79,6 +77,11 @@ namespace BitMagic.Compiler
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
                 }, new[] { "name" })
+                .WithParameters(".endsegment", (dict, state) => {
+                    state.Segment = state.Segments[".Default"];
+                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
+                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                })
                 .WithParameters(".scope", (dict, state) => {
                     string name = dict.ContainsKey("name") ? dict["name"] : $".Anonymous_{state.AnonCounter++}";
                     state.Scope = state.Segment.GetScope(name, false);
@@ -187,7 +190,9 @@ namespace BitMagic.Compiler
                 }
                 else
                 {
-                    var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    var idx = line.IndexOf(';');
+                    
+                    var parts = (idx == -1 ? line : line[..idx]).Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                     previousLines.AppendLine(line);
                     ParseAsm(parts, previousLines.ToString(), state);

@@ -74,10 +74,13 @@ namespace BitMagic.Compiler
 
         private static void ProcesParameters(string line, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
         {
-            if (string.IsNullOrEmpty(line))
-                return;
-
             Dictionary<string, string> parameters = new Dictionary<string, string>();
+
+            if (string.IsNullOrEmpty(line))
+            {
+                action(parameters, state);
+                return;
+            }
 
             var defaultPos = 0;
 

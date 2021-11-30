@@ -8,21 +8,95 @@ namespace BitMagic.Machines
     {
         public enum LayerColourDepth
         {
-            bpp1,
-            bpp2,
-            bpp4,
-            bp8p
+            bpp1 = 0,
+            bpp2 = 1,
+            bpp4 = 2,
+            bpp8 = 3
         }
 
-        public int MapHeight { get; set; }
-        public int MapWidth { get; set; }
+        public int _mapHeight;
+        public int MapHeight
+        {
+            get => _mapHeight; 
+            set
+            {
+                _mapHeight = value;
+                MapHeightShift = value switch
+                {
+                    32 => 5,
+                    64 => 6,
+                    128 => 7,
+                    256 => 8,
+                    _ => 0
+                };
+            }
+        }
+        public int MapHeightShift { get; set; }
+
+        private int _mapWidth;
+        public int MapWidth
+        {
+            get => _mapWidth; 
+            set
+            {
+                _mapWidth = value;
+                MapWidthShift = value switch
+                {
+                    32 => 5,
+                    64 => 6,
+                    128 => 7,
+                    256 => 8,
+                    _ => 0
+                };
+            }
+        }
+        public int MapWidthShift { get; set; }
+
         public bool BitmapMode { get; set; }
         public bool T256C { get; set; }
-        public LayerColourDepth ColourDepth { get; set; }
+
+        private LayerColourDepth _colourDepth;
+        public LayerColourDepth ColourDepth { get => _colourDepth;
+            set {
+                _colourDepth = value;
+                ColourDepthShift = value switch
+                {
+                    LayerColourDepth.bpp1 => 4,
+                    LayerColourDepth.bpp2 => 2,
+                    LayerColourDepth.bpp4 => 1,
+                    LayerColourDepth.bpp8 => 0,
+                    _ => throw new Exception($"unhandled colour depth {value}")
+                };
+            } 
+        }
+        public int ColourDepthShift { get; set; }
+
         public int MapBase { get; set; }
         public int TileBase { get; set; }
-        public int TileWidth { get; set; }
-        public int TileHeight { get; set; }
+
+        private int _tileWidth;
+        public int TileWidth
+        {
+            get => _tileWidth; 
+            set
+            {
+                _tileWidth = value;
+                TileWidthShift = value == 8 ? 3 : 4;
+            }
+        }
+        public int TileWidthShift { get; set; }
+
+        private int _tileHeight;
+        public int TileHeight
+        {
+            get => _tileHeight; 
+            set
+            {
+                _tileHeight = value;
+                TileHeightShift = value == 8 ? 3 : 4;
+            }
+        }
+        public int TileHeightShift { get; set; }
 
         public int HScroll { get; set; }
         public int VScroll { get; set; }
@@ -69,7 +143,7 @@ namespace BitMagic.Machines
 
         public override int Length => 0x20;
 
-        private readonly IMemory _vram;
+        public IMemory Vram { get; }
         internal readonly Palette Palette;
 
         public int Data0 { get; set; } = 0;
@@ -91,8 +165,44 @@ namespace BitMagic.Machines
         public bool SpriteColInterupt { get; set; } = false;
         public bool AflowInterupt { get; set; } = false;
 
-        public int HScale { get; set; } = 1;
-        public int VScale { get; set; } = 1;
+        private int _hScale = 128;
+        public int HScale
+        {
+            get => _hScale; 
+            set
+            {
+                _hScale = value;
+                HScaleStep = value switch
+                {
+                    128 => 1,
+                    64 => 2,
+                    32 => 4,
+                    16 => 8,
+                    _ => throw new Exception($"Cannot handle scale of {value}")
+                };
+            }
+        }
+        public int HScaleStep { get; set; } = 1;
+
+        public int _vScale = 128;
+        public int VScale
+        {
+            get => _vScale; 
+            set
+            {
+                _vScale = value;
+                VScaleStep = value switch
+                {
+                    128 => 1,
+                    64 => 2,
+                    32 => 4,
+                    16 => 8,
+                    _ => throw new Exception($"Cannot handle scale of {value}")
+                };
+            }
+        }
+        public int VScaleStep { get; set; } = 1;
+
         public int BorderColour { get; set; } = 0;
 
         public int HStart { get; set; }
@@ -129,7 +239,7 @@ namespace BitMagic.Machines
             Palette = new Palette();
             _display = new VeraDisplay(2, this);
 
-            _vram = new MemoryMap(0x20000, new IMemory[] {
+            Vram = new MemoryMap(0x20000, new IMemory[] {
                 new Ram(0x1f9c0),
                 new Ram(0x40),      // PSG
                 Palette,            // Pallete
@@ -167,6 +277,14 @@ namespace BitMagic.Machines
             _ => throw new ArgumentException(nameof(size))
         };
 
+        private VeraLayer.LayerColourDepth GetDepth(int depth) => depth switch { 
+            0 => VeraLayer.LayerColourDepth.bpp1,
+            1 => VeraLayer.LayerColourDepth.bpp2,
+            2 => VeraLayer.LayerColourDepth.bpp4,
+            3 => VeraLayer.LayerColourDepth.bpp8
+        };
+
+
         public int GetTileSize(int size) => size switch
         {
             0 => 8,
@@ -203,22 +321,22 @@ namespace BitMagic.Machines
                     var inc = (value & 0xf0) >> 4; 
                     if (!Data1Mode)
                     {
-                        Data0 = (Data0 & 0xffff) + ((value | 0x1) << 16);
+                        Data0 = (Data0 & 0xffff) + ((value & 0x1) << 16);
                         Data0Step = GetStep(inc, decr);
                     }
                     else
                     {
-                        Data1 = (Data1 & 0xffff) + ((value | 0x1) << 16);
+                        Data1 = (Data1 & 0xffff) + ((value & 0x1) << 16);
                         Data1Step = GetStep(inc, decr);
                     }
                     break;
                 case VeraRegisters.DATA0:
-                    _vram.SetByte(Data0, value);
+                    Vram.SetByte(Data0, value);
                     Data0 += Data0Step;
                     Data0 &= 0x1ffff;
                     break;
                 case VeraRegisters.DATA1:
-                    _vram.SetByte(Data1, value);
+                    Vram.SetByte(Data1, value);
                     Data1 += Data1Step;
                     Data1 &= 0x1ffff;
                     break;
@@ -302,7 +420,7 @@ namespace BitMagic.Machines
                     Layer0.MapBase = value << 10; // 16:9
                     break;
                 case VeraRegisters.L0_TILEBASE:
-                    Layer0.TileBase = (value & 0b1111_1100) << 10; // 16:11
+                    Layer0.TileBase = (value & 0b1111_1100) << 9; // 16:11
                     Layer0.TileWidth = GetTileSize(value & 1);
                     Layer0.TileHeight = GetTileSize((value & 2) >> 1);
                     break;
@@ -329,7 +447,7 @@ namespace BitMagic.Machines
                     Layer1.MapBase = value << 10; // 16:9
                     break;
                 case VeraRegisters.L1_TILEBASE:
-                    Layer1.TileBase = (value & 0b1111_1100) << 10; // 16:11
+                    Layer1.TileBase = (value & 0b1111_1100) << 9; // 16:11
                     Layer1.TileWidth = GetTileSize(value & 1);
                     Layer1.TileHeight = GetTileSize((value & 2) >> 1);
                     break;
@@ -372,14 +490,14 @@ namespace BitMagic.Machines
                 case VeraRegisters.ADDRx_H:
                     break;
                 case VeraRegisters.DATA0:
-                    toReturn = _vram.GetByte(Data0);
+                    toReturn = Vram.GetByte(Data0);
                     Data0 += Data0Step;
                     Data0 &= 0b1_1111_1111_1111;
                     return toReturn;
                 case VeraRegisters.DATA1:
-                    toReturn = _vram.GetByte(Data0);
-                    Data0 += Data0Step;
-                    Data0 &= 0b1_1111_1111_1111;
+                    toReturn = Vram.GetByte(Data1);
+                    Data1 += Data1Step;
+                    Data1 &= 0b1_1111_1111_1111;
                     return toReturn;
                 case VeraRegisters.CTRL:
                     break;
