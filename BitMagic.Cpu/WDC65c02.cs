@@ -1,6 +1,7 @@
 ﻿using BitMagic.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -577,7 +578,9 @@ namespace BitMagic.Cpu
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
-            throw new NotImplementedException();
+            Debug.Assert(false);
+            //throw new NotImplementedException();
+            return 0;
         }
     }
 
@@ -588,7 +591,7 @@ namespace BitMagic.Cpu
         {
             var (value, timing, pcStep) = GetValueAtPC();
 
-            var cmpResult = cpu.Registers.A - value;
+            var cmpResult = SourceVal(cpu) - value;
 
             cpu.Registers.Flags.SetNv((byte)cmpResult);
             cpu.Registers.Flags.Carry = cmpResult > 0;

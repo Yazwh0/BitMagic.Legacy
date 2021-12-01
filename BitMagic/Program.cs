@@ -62,7 +62,7 @@ namespace BitMagic
 
             project.LoadTime = stopWatch.Elapsed;
 
-            project.Options.VerboseDebugging = ApplicationPart.Compiler;// | ApplicationPart.Emulator;
+            project.Options.VerboseDebugging = ApplicationPart.Compiler;//| ApplicationPart.Emulator;
 
             if (_args.Contains("razor"))
             {

@@ -63,30 +63,30 @@ namespace BitMagic.Emulator.Gl
         {
             if (_gl == null) throw new ArgumentNullException(nameof(_gl));
 
-            //var save = false;
+/*            var save = true;
 
-            //if (save)
-            //{
-            //    var image = new Image<Rgba32>(_image.Width, _image.Height);
+            if (save)
+            {
+                var image = new Image<Rgba32>(_image.Width, _image.Height);
 
-            //    int pos = 0;
-            //    for(var row = 0; row < _image.Height; row++)
-            //    {
-            //        var r = image.GetPixelRowSpan(row);
+                int pos = 0;
+                for(var row = 0; row < _image.Height; row++)
+                {
+                    var r = image.GetPixelRowSpan(row);
 
-            //        for(var i = 0; i < _image.Width; i++)
-            //        {
-            //            r[i].R = _image.Pixels.Span[pos].R;
-            //            r[i].G = _image.Pixels.Span[pos].G;
-            //            r[i].B = _image.Pixels.Span[pos].B;
-            //            r[i].A = _image.Pixels.Span[pos].A;
+                    for(var i = 0; i < _image.Width; i++)
+                    {
+                        r[i].R = _image.Pixels.Span[pos].R;
+                        r[i].G = _image.Pixels.Span[pos].G;
+                        r[i].B = _image.Pixels.Span[pos].B;
+                        r[i].A = _image.Pixels.Span[pos].A;
 
-            //            pos++;
-            //        }
-            //    }
+                        pos++;
+                    }
+                }
 
-            //    image.SaveAsPng(@"c:\temp\capture.png");
-            //}
+                image.SaveAsPng(@"c:\temp\capture.png");
+            }*/
 
             fixed (void* data = &MemoryMarshal.GetReference(_image.Pixels.Span))
             {

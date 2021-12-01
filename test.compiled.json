@@ -22,10 +22,12 @@
                 "l0_tilebase": 40751,
                 "start": 1,
                 "colourswitch": 0,
-                "loop": 2126,
-                "copydata": 2129,
-                "vsync": 2182,
-                "tile": 2254
+                "longloop": 2118,
+                "clearloop": 2120,
+                "loop": 2142,
+                "copydata": 2145,
+                "vsync": 2198,
+                "tile": 2281
               }
             },
             "Data": [
@@ -92,10 +94,10 @@
                 "Address": 2081
               },
               {
-                "Data": "qQI=",
-                "OriginalText": "\r\n;      hhwwtbcc\r\nlda #0b00000010 ; tiles 4bp\r\n",
+                "Data": "qSI=",
+                "OriginalText": "\r\n;      hhwwtbcc\r\nlda #0b00100010 ; tiles 4bp, 128 tiles wide.\r\n",
                 "RequiresReval": false,
-                "Params": "#0b00000010",
+                "Params": "#0b00100010",
                 "Address": 2084
               },
               {
@@ -127,7 +129,7 @@
                 "Address": 2094
               },
               {
-                "Data": "IFEI",
+                "Data": "IGEI",
                 "OriginalText": "\r\njsr copydata\r\n",
                 "RequiresReval": false,
                 "Params": "copydata",
@@ -176,39 +178,95 @@
                 "Address": 2113
               },
               {
-                "Data": "qYY=",
-                "OriginalText": "\r\nlda #<vsync\r\n",
+                "Data": "oBI=",
+                "OriginalText": "\r\nldy #$12\r\n",
+                "RequiresReval": false,
+                "Params": "#$12",
+                "Address": 2116
+              },
+              {
+                "Data": "ov8=",
+                "OriginalText": "ldx #$ff\r\n",
+                "RequiresReval": false,
+                "Params": "#$ff",
+                "Address": 2118
+              },
+              {
+                "Data": "nCOf",
+                "OriginalText": "stz data0\r\n",
+                "RequiresReval": false,
+                "Params": "data0",
+                "Address": 2120
+              },
+              {
+                "Data": "nCOf",
+                "OriginalText": "stz data0\r\n",
+                "RequiresReval": false,
+                "Params": "data0",
+                "Address": 2123
+              },
+              {
+                "Data": "yg==",
+                "OriginalText": "dex\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2126
+              },
+              {
+                "Data": "0Pc=",
+                "OriginalText": "bne clearloop\r\n",
+                "RequiresReval": false,
+                "Params": "clearloop",
+                "Address": 2127
+              },
+              {
+                "Data": "iA==",
+                "OriginalText": "dey\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2129
+              },
+              {
+                "Data": "0PI=",
+                "OriginalText": "bne longloop\r\n",
+                "RequiresReval": false,
+                "Params": "longloop",
+                "Address": 2130
+              },
+              {
+                "Data": "qZY=",
+                "OriginalText": "\r\n\r\nlda #<vsync\r\n",
                 "RequiresReval": false,
                 "Params": "#<vsync",
-                "Address": 2116
+                "Address": 2132
               },
               {
                 "Data": "jRQD",
                 "OriginalText": "sta $314\r\n",
                 "RequiresReval": false,
                 "Params": "$314",
-                "Address": 2118
+                "Address": 2134
               },
               {
                 "Data": "qQg=",
                 "OriginalText": "lda #>vsync\r\n",
                 "RequiresReval": false,
                 "Params": "#>vsync",
-                "Address": 2121
+                "Address": 2137
               },
               {
                 "Data": "jRUD",
                 "OriginalText": "sta $315\r\n",
                 "RequiresReval": false,
                 "Params": "$315",
-                "Address": 2123
+                "Address": 2139
               },
               {
-                "Data": "TE4I",
+                "Data": "TF4I",
                 "OriginalText": "jmp loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2126
+                "Address": 2142
               }
             ]
           },
@@ -218,9 +276,9 @@
               "_variables": {
                 "address": 24576,
                 "size": 64,
-                "copydata_src": 2158,
-                "noinc": 2172,
-                "copydata_done": 2181
+                "copydata_src": 2174,
+                "noinc": 2188,
+                "copydata_done": 2197
               }
             },
             "Data": [
@@ -229,161 +287,161 @@
                 "OriginalText": "\r\nlda #^address + $10 ; add on 1byte increment\r\n",
                 "RequiresReval": false,
                 "Params": "#^address+$10",
-                "Address": 2129
+                "Address": 2145
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2131
+                "Address": 2147
               },
               {
                 "Data": "qWA=",
                 "OriginalText": "lda #>address\r\n",
                 "RequiresReval": false,
                 "Params": "#>address",
-                "Address": 2134
+                "Address": 2150
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2136
+                "Address": 2152
               },
               {
                 "Data": "qQA=",
                 "OriginalText": "lda #<address\r\n",
                 "RequiresReval": false,
                 "Params": "#<address",
-                "Address": 2139
+                "Address": 2155
               },
               {
                 "Data": "jSCf",
                 "OriginalText": "sta addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2141
+                "Address": 2157
               },
               {
                 "Data": "oEA=",
                 "OriginalText": "\r\n; y low value\r\n; x high value\r\nldy #<size\r\n",
                 "RequiresReval": false,
                 "Params": "#<size",
-                "Address": 2144
+                "Address": 2160
               },
               {
                 "Data": "ogE=",
                 "OriginalText": "ldx #>size+1 ; +1 as we check the end when we reduce x\r\n",
                 "RequiresReval": false,
                 "Params": "#>size+1",
-                "Address": 2146
+                "Address": 2162
               },
               {
-                "Data": "qc4=",
+                "Data": "qek=",
                 "OriginalText": "\r\nlda #<tile\r\n",
                 "RequiresReval": false,
                 "Params": "#<tile",
-                "Address": 2148
+                "Address": 2164
               },
               {
-                "Data": "jW8I",
+                "Data": "jX8I",
                 "OriginalText": "sta copydata_src + 1\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+1",
-                "Address": 2150
+                "Address": 2166
               },
               {
                 "Data": "qQg=",
                 "OriginalText": "lda #>tile\r\n",
                 "RequiresReval": false,
                 "Params": "#>tile",
-                "Address": 2153
+                "Address": 2169
               },
               {
-                "Data": "jXAI",
+                "Data": "jYAI",
                 "OriginalText": "sta copydata_src + 2\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+2",
-                "Address": 2155
+                "Address": 2171
               },
               {
                 "Data": "rTQS",
                 "OriginalText": "lda $1234 ; gets modified\r\n",
                 "RequiresReval": false,
                 "Params": "$1234",
-                "Address": 2158
+                "Address": 2174
               },
               {
                 "Data": "jSOf",
                 "OriginalText": "sta data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2161
+                "Address": 2177
               },
               {
-                "Data": "7m8I",
+                "Data": "7n8I",
                 "OriginalText": "\r\ninc copydata_src + 1\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+1",
-                "Address": 2164
+                "Address": 2180
               },
               {
                 "Data": "0AM=",
                 "OriginalText": "bne noinc\r\n",
                 "RequiresReval": false,
                 "Params": "noinc",
-                "Address": 2167
+                "Address": 2183
               },
               {
-                "Data": "7nAI",
+                "Data": "7oAI",
                 "OriginalText": "\r\ninc copydata_src + 2\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+2",
-                "Address": 2169
+                "Address": 2185
               },
               {
                 "Data": "iA==",
                 "OriginalText": "dey\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2172
+                "Address": 2188
               },
               {
                 "Data": "0O8=",
                 "OriginalText": "bne copydata_src\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src",
-                "Address": 2173
+                "Address": 2189
               },
               {
                 "Data": "yg==",
                 "OriginalText": "\r\ndex\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2175
+                "Address": 2191
               },
               {
                 "Data": "8AM=",
                 "OriginalText": "beq copydata_done\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_done",
-                "Address": 2176
+                "Address": 2192
               },
               {
-                "Data": "TG4I",
+                "Data": "TH4I",
                 "OriginalText": "jmp copydata_src\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src",
-                "Address": 2178
+                "Address": 2194
               },
               {
                 "Data": "YA==",
                 "OriginalText": "rts\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2181
+                "Address": 2197
               }
             ]
           },
@@ -391,247 +449,283 @@
             "Name": "vsync",
             "Variables": {
               "_variables": {
-                "setcolour": 2218
+                "done": 2239,
+                "setcolour": 2243
               }
             },
             "Data": [
+              {
+                "Data": "rSef",
+                "OriginalText": "\r\nlda isr\r\n",
+                "RequiresReval": false,
+                "Params": "isr",
+                "Address": 2198
+              },
+              {
+                "Data": "KQI=",
+                "OriginalText": "and #$02\r\n",
+                "RequiresReval": false,
+                "Params": "#$02",
+                "Address": 2201
+              },
+              {
+                "Data": "8CI=",
+                "OriginalText": "beq done\r\n",
+                "RequiresReval": false,
+                "Params": "done",
+                "Address": 2203
+              },
               {
                 "Data": "pQA=",
                 "OriginalText": "\r\nlda colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2182
+                "Address": 2205
               },
               {
-                "Data": "0CA=",
+                "Data": "0CI=",
                 "OriginalText": "bne setcolour\r\n",
                 "RequiresReval": false,
                 "Params": "setcolour",
-                "Address": 2184
+                "Address": 2207
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2186
+                "Address": 2209
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2188
+                "Address": 2211
               },
               {
                 "Data": "qfo=",
                 "OriginalText": "lda #$fa\r\n",
                 "RequiresReval": false,
                 "Params": "#$fa",
-                "Address": 2191
+                "Address": 2214
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2193
+                "Address": 2216
               },
               {
                 "Data": "nCCf",
                 "OriginalText": "stz addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2196
+                "Address": 2219
               },
               {
                 "Data": "nCOf",
                 "OriginalText": "\r\nstz data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2199
+                "Address": 2222
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2202
+                "Address": 2225
               },
               {
                 "Data": "hQA=",
                 "OriginalText": "sta colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2204
+                "Address": 2227
               },
               {
                 "Data": "qf8=",
                 "OriginalText": "\r\nlda #$ff\r\n",
                 "RequiresReval": false,
                 "Params": "#$ff",
-                "Address": 2206
+                "Address": 2229
               },
               {
                 "Data": "jSif",
                 "OriginalText": "sta irq_line\r\n",
                 "RequiresReval": false,
                 "Params": "irq_line",
-                "Address": 2208
+                "Address": 2231
               },
               {
-                "Data": "nCef",
-                "OriginalText": "\r\nstz isr\r\n",
+                "Data": "qQI=",
+                "OriginalText": "\r\nlda #$02\r\n",
+                "RequiresReval": false,
+                "Params": "#$02",
+                "Address": 2234
+              },
+              {
+                "Data": "jSef",
+                "OriginalText": "sta isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 2211
+                "Address": 2236
               },
               {
                 "Data": "eg==",
-                "OriginalText": "\r\nply\r\n",
+                "OriginalText": "ply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2214
+                "Address": 2239
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2215
+                "Address": 2240
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2216
+                "Address": 2241
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2217
+                "Address": 2242
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2218
+                "Address": 2243
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2220
+                "Address": 2245
               },
               {
                 "Data": "qfo=",
                 "OriginalText": "lda #$fa\r\n",
                 "RequiresReval": false,
                 "Params": "#$fa",
-                "Address": 2223
+                "Address": 2248
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2225
+                "Address": 2250
               },
               {
                 "Data": "nCCf",
                 "OriginalText": "stz addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2228
+                "Address": 2253
               },
               {
                 "Data": "qQo=",
                 "OriginalText": "\r\nlda #$0a\r\n",
                 "RequiresReval": false,
                 "Params": "#$0a",
-                "Address": 2231
+                "Address": 2256
               },
               {
                 "Data": "jSOf",
                 "OriginalText": "sta data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2233
+                "Address": 2258
               },
               {
                 "Data": "5gE=",
                 "OriginalText": "\r\ninc start\r\n",
                 "RequiresReval": false,
                 "Params": "start",
-                "Address": 2236
+                "Address": 2261
               },
               {
                 "Data": "pQE=",
                 "OriginalText": "lda start\r\n",
                 "RequiresReval": false,
                 "Params": "start",
-                "Address": 2238
+                "Address": 2263
               },
               {
                 "Data": "KX8=",
                 "OriginalText": "and #0b01111111\r\n",
                 "RequiresReval": false,
                 "Params": "#0b01111111",
-                "Address": 2240
+                "Address": 2265
               },
               {
                 "Data": "jSif",
                 "OriginalText": "\r\nsta irq_line\r\n",
                 "RequiresReval": false,
                 "Params": "irq_line",
-                "Address": 2242
+                "Address": 2267
               },
               {
                 "Data": "ZAA=",
                 "OriginalText": "\r\nstz colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2245
+                "Address": 2270
               },
               {
-                "Data": "nCef",
-                "OriginalText": "\r\nstz isr\r\n",
+                "Data": "qQI=",
+                "OriginalText": "\r\nlda #$02\r\n",
+                "RequiresReval": false,
+                "Params": "#$02",
+                "Address": 2272
+              },
+              {
+                "Data": "jSef",
+                "OriginalText": "sta isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 2247
+                "Address": 2274
               },
               {
                 "Data": "eg==",
                 "OriginalText": "\r\nply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2250
+                "Address": 2277
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2251
+                "Address": 2278
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2252
+                "Address": 2279
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2253
+                "Address": 2280
               }
             ]
           },
@@ -654,107 +748,109 @@
                 "l0_tilebase": 40751,
                 "start": 1,
                 "colourswitch": 0,
-                "loop": 2126,
-                "copydata": 2129,
-                "vsync": 2182,
-                "tile": 2254
+                "longloop": 2118,
+                "clearloop": 2120,
+                "loop": 2142,
+                "copydata": 2145,
+                "vsync": 2198,
+                "tile": 2281
               }
             },
             "Data": [
               {
                 "Data": "ARERAA==",
                 "OriginalText": " $01, $11, $11, $00",
-                "Address": 2254,
+                "Address": 2281,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2258,
+                "Address": 2285,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2262,
+                "Address": 2289,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2266,
+                "Address": 2293,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2270,
+                "Address": 2297,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2274,
+                "Address": 2301,
                 "RequiresReval": false
               },
               {
                 "Data": "ARERAA==",
                 "OriginalText": " $01, $11, $11, $00",
-                "Address": 2278,
+                "Address": 2305,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAA==",
                 "OriginalText": " $00, $00, $00, $00",
-                "Address": 2282,
+                "Address": 2309,
                 "RequiresReval": false
               },
               {
                 "Data": "ERGZmQ==",
                 "OriginalText": " $11, $11, $99, $99",
-                "Address": 2286,
+                "Address": 2313,
                 "RequiresReval": false
               },
               {
                 "Data": "IiKqqg==",
                 "OriginalText": " $22, $22, $aa, $aa",
-                "Address": 2290,
+                "Address": 2317,
                 "RequiresReval": false
               },
               {
                 "Data": "MzO7uw==",
                 "OriginalText": " $33, $33, $bb, $bb",
-                "Address": 2294,
+                "Address": 2321,
                 "RequiresReval": false
               },
               {
                 "Data": "RETMzA==",
                 "OriginalText": " $44, $44, $cc, $cc",
-                "Address": 2298,
+                "Address": 2325,
                 "RequiresReval": false
               },
               {
                 "Data": "VVXd3Q==",
                 "OriginalText": " $55, $55, $dd, $dd",
-                "Address": 2302,
+                "Address": 2329,
                 "RequiresReval": false
               },
               {
                 "Data": "Zmbu7g==",
                 "OriginalText": " $66, $66, $ee, $ee",
-                "Address": 2306,
+                "Address": 2333,
                 "RequiresReval": false
               },
               {
                 "Data": "d3f//w==",
                 "OriginalText": " $77, $77, $ff, $ff",
-                "Address": 2310,
+                "Address": 2337,
                 "RequiresReval": false
               },
               {
                 "Data": "iIgAAA==",
                 "OriginalText": " $88, $88, $00, $00",
-                "Address": 2314,
+                "Address": 2341,
                 "RequiresReval": false
               }
             ]
@@ -778,10 +874,12 @@
             "l0_tilebase": 40751,
             "start": 1,
             "colourswitch": 0,
-            "loop": 2126,
-            "copydata": 2129,
-            "vsync": 2182,
-            "tile": 2254
+            "longloop": 2118,
+            "clearloop": 2120,
+            "loop": 2142,
+            "copydata": 2145,
+            "vsync": 2198,
+            "tile": 2281
           }
         }
       }
@@ -790,13 +888,13 @@
     "StartAddress": 2049,
     "Variables": {
       "_variables": {
-        "sintable": 2318,
-        "datatable": 2318,
-        "somefile": 2318
+        "sintable": 2345,
+        "datatable": 2345,
+        "somefile": 2345
       }
     },
     "Filename": null,
-    "Address": 2318
+    "Address": 2345
   },
   "rom": {
     "Scopes": {
@@ -868,39 +966,53 @@
                 "Address": 49163
               },
               {
-                "Data": "nCef",
-                "OriginalText": "stz isr\r\n",
+                "Data": "rSef",
+                "OriginalText": "lda isr\t\t; clear all flags\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
                 "Address": 49166
+              },
+              {
+                "Data": "KQ8=",
+                "OriginalText": "and #$0f\r\n",
+                "RequiresReval": false,
+                "Params": "#$0f",
+                "Address": 49169
+              },
+              {
+                "Data": "jSef",
+                "OriginalText": "sta isr\r\n",
+                "RequiresReval": false,
+                "Params": "isr",
+                "Address": 49171
               },
               {
                 "Data": "eg==",
                 "OriginalText": "\r\nply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49169
+                "Address": 49174
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49170
+                "Address": 49175
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49171
+                "Address": 49176
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49172
+                "Address": 49177
               }
             ]
           },

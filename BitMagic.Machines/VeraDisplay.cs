@@ -368,7 +368,14 @@ namespace BitMagic.Machines
                     _ => throw new Exception($"unhandled depth\\direction {layer.ColourDepth} {addrStep}.")
                 };
 
-                image.Pixels.Span[pos] = vera.Palette.Colours[actValue + paletteOffset];
+                if (actValue == 0)
+                {
+                    image.Pixels.Span[pos] = new PixelRgba(0, 0, 0, 0);
+                }
+                else 
+                {
+                    image.Pixels.Span[pos] = vera.Palette.Colours[actValue + paletteOffset];
+                }
 
                 newValueCnt--;
                 newTileCnt--;

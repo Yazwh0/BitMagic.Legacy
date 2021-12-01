@@ -51,7 +51,7 @@ void ColourFunction(string name, ushort colour)
 @:sta dc_video
 @:
 @:;      hhwwtbcc
-@:lda #0b00000010 ; tiles 4bp
+@:lda #0b00100010 ; tiles 4bp, 128 tiles wide.
 @:sta l0_config
 @:
 @:stz l0_mapbase
@@ -68,6 +68,18 @@ void ColourFunction(string name, ushort colour)
 @:
 @:lda #$01
 @:sta data0
+@:
+@:ldy #$12
+@:.longloop:
+@:ldx #$ff
+@:.clearloop:
+@:stz data0
+@:stz data0
+@:dex
+@:bne clearloop
+@:dey
+@:bne longloop
+@:
 @:
 @:lda #<vsync
 @:sta $314
@@ -122,6 +134,10 @@ void ColourFunction(string name, ushort colour)
 @:
 @:.proc vsync
 @:
+@:lda isr
+@:and #$02
+@:beq done
+@:
 @:lda colourswitch
 @:bne setcolour
 @:
@@ -139,8 +155,10 @@ void ColourFunction(string name, ushort colour)
 @:lda #$ff
 @:sta irq_line
 @:
-@:stz isr
+@:lda #$02
+@:sta isr
 @:
+@:.done:
 @:ply
 @:plx
 @:pla
@@ -165,7 +183,8 @@ void ColourFunction(string name, ushort colour)
 @:
 @:stz colourswitch
 @:
-@:stz isr
+@:lda #$02
+@:sta isr
 @:
 @:ply
 @:plx
@@ -213,7 +232,9 @@ void ColourFunction(string name, ushort colour)
 @:jmp ($314)
 @:
 @:.no_handle:
-@:stz isr
+@:lda isr		; clear all flags
+@:and #$0f
+@:sta isr
 @:
 @:ply
 @:plx

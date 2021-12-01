@@ -359,7 +359,10 @@ namespace BitMagic.Machines
 
                     break;
                 case VeraRegisters.ISR:
-                    ISR = value;
+                    value = (byte)((~value & 0x0f) + 0xf0);
+
+                    ISR = (byte)(ISR & value);
+                    value = ISR;
                     break;
                 case VeraRegisters.IRQLINE_L:
                     IrqLine = (IrqLine & 0x100) + value;
