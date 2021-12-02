@@ -30,12 +30,17 @@ void ColourFunction(string name, ushort colour)
 @:.const isr = $9F27
 @:.const irq_line = $9F28
 @:.const dc_video = $9F29
+@:.const dc_hscale = $9F2A
+@:.const dc_vscale = $9F2B
 @:.const l0_config = $9F2D
 @:.const l0_mapbase = $9F2E
 @:.const l0_tilebase = $9F2F
+@:.const l0_hscroll_l = $9F30
+@:.const l0_vscroll_l = $9F32
 @:
 @:.const start = $01
 @:.const colourswitch = $00
+@:.const offset = $02
 @:
 @:stz start
 @:
@@ -46,7 +51,7 @@ void ColourFunction(string name, ushort colour)
 @:sta irq_line
 @:
 @:stz ctrl
-@:;     FS10-Cmm
+@:;      FS10-Cmm
 @:lda #0b00010001
 @:sta dc_video
 @:
@@ -56,7 +61,12 @@ void ColourFunction(string name, ushort colour)
 @:
 @:stz l0_mapbase
 @:
-@:lda #0b00110000 ; tiles at $6000
+@:lda #64
+@:sta dc_hscale
+@:sta dc_vscale
+@:
+@:;      aaaaaahw
+@:lda #0b00110011 ; tiles at $6000
 @:sta l0_tilebase
 @:
 @:jsr copydata
@@ -67,6 +77,8 @@ void ColourFunction(string name, ushort colour)
 @:stz addr_l
 @:
 @:lda #$01
+@:sta data0
+@:stz data0
 @:sta data0
 @:
 @:ldy #$12
@@ -92,7 +104,7 @@ void ColourFunction(string name, ushort colour)
 @:.proc copydata
 @:
 @:.const address = $6000
-@:.const size = 64
+@:.const size = 256
 @:
 @:lda #^address + $10 ; add on 1byte increment
 @:sta addr_h
@@ -106,9 +118,9 @@ void ColourFunction(string name, ushort colour)
 @:ldy #<size
 @:ldx #>size+1 ; +1 as we check the end when we reduce x
 @:
-@:lda #<tile
+@:lda #<tile16
 @:sta copydata_src + 1
-@:lda #>tile
+@:lda #>tile16
 @:sta copydata_src + 2
 @:
 @:.copydata_src:
@@ -152,6 +164,16 @@ void ColourFunction(string name, ushort colour)
 @:lda #$01
 @:sta colourswitch
 @:
+@:inc offset
+@:;lda #8
+@:lda offset
+@:sta l0_hscroll_l
+@:cmp #$0f
+@:bne skipoffset_reset
+@:stz offset
+@:
+@:.skipoffset_reset:
+@:
 @:lda #$ff
 @:sta irq_line
 @:
@@ -194,7 +216,7 @@ void ColourFunction(string name, ushort colour)
 @:.endproc
 @:
 @:; will not be loaded as its in its own anonymous proc.
-@:.tile:
+@:.tile8:
 @:.byte $01, $11, $11, $00
 @:.byte $10, $00, $00, $10
 @:.byte $10, $00, $00, $10
@@ -212,6 +234,49 @@ void ColourFunction(string name, ushort colour)
 @:.byte $66, $66, $ee, $ee
 @:.byte $77, $77, $ff, $ff
 @:.byte $88, $88, $00, $00
+@:
+@:.tile16:
+@:.byte $01, $11, $11, $11, $11, $11, $11, $00
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $01, $11, $11, $11, $11, $11, $11, $00
+@:.byte $00, $00, $00, $00, $00, $00, $00, $00
+@:
+@:
+@:.byte $01, $11, $11, $11, $11, $11, $11, $00
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:
+@:.byte $10, $04, $44, $00, $04, $44, $00, $10
+@:.byte $10, $04, $44, $00, $04, $44, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $10, $04, $40, $00, $00, $04, $40, $10
+@:.byte $10, $00, $40, $00, $00, $40, $00, $10
+@:
+@:.byte $10, $00, $04, $44, $44, $00, $00, $10
+@:.byte $10, $00, $00, $00, $00, $00, $00, $10
+@:.byte $01, $11, $11, $11, $11, $11, $11, $00
+@:.byte $00, $00, $00, $00, $00, $00, $00, $00
+@:
 @:
 @:.segment rom
 @:.const isr = $9F27
