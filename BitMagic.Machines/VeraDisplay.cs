@@ -210,7 +210,7 @@ namespace BitMagic.Machines
                 if (_vera.Layer0.Enabled)
                 {
                     var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY) + _vera.Layer0.VScroll;
+                    var myY = EffectiveY(_currentY);
 
                     if (_vera.Layer0.BitmapMode)
                     {
@@ -252,7 +252,7 @@ namespace BitMagic.Machines
                 if (_vera.Layer1.Enabled)
                 {
                     var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY) + _vera.Layer1.VScroll;
+                    var myY = EffectiveY(_currentY);
 
                     if (_vera.Layer1.BitmapMode)
                     {
