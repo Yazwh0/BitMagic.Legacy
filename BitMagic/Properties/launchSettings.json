@@ -3,8 +3,8 @@
     "BitMagic": {
       "commandName": "Project",
       "commandLineArgsSpinner": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\Spinner\\build.prg emulate",
-      "commandLineArgsHello": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\HelloWorld\\build.prg emulate",
-      "commandLineArgs": "--razor-file D:\\Documents\\Source\\BitMagic\\test.csasm --pre-razor-file D:\\Documents\\Source\\BitMagic\\test.csasm.pre --asm-file D:\\Documents\\Source\\BitMagic\\test.bmasm --asm-object-file D:\\Documents\\Source\\BitMagic\\test.compiled.json --prg-file D:\\Documents\\Source\\BitMagic\\test.prg razor compile emulate"
+      "commandLineArgs": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\HelloWorld\\build.prg emulate",
+      "commandLineArgsTest": "--razor-file D:\\Documents\\Source\\BitMagic\\test.csasm --pre-razor-file D:\\Documents\\Source\\BitMagic\\test.csasm.pre --asm-file D:\\Documents\\Source\\BitMagic\\test.bmasm --asm-object-file D:\\Documents\\Source\\BitMagic\\test.compiled.json --prg-file D:\\Documents\\Source\\BitMagic\\test.prg razor compile emulate"
     }
   }
 }

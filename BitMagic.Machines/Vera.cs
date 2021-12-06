@@ -447,7 +447,7 @@ namespace BitMagic.Machines
                     Layer1.MapWidth = GetSize((value & 0b11_0000) >> 4);
                     break;
                 case VeraRegisters.L1_MAPBASE:
-                    Layer1.MapBase = value << 10; // 16:9
+                    Layer1.MapBase = value << 9; // 16:9
                     break;
                 case VeraRegisters.L1_TILEBASE:
                     Layer1.TileBase = (value & 0b1111_1100) << 9; // 16:11

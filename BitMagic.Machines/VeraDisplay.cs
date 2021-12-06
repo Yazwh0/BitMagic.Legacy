@@ -51,7 +51,7 @@ namespace BitMagic.Machines
         private int _currentY = 0;
         private int _outputPosition = 0;
 
-//        public int GetSteps(IMachineRunner runner) => (int)((_cpuTicks + runner.TickDelta) / (runner.DeltaFrequency / _fps) * (_width * _height));
+        //        public int GetSteps(IMachineRunner runner) => (int)((_cpuTicks + runner.TickDelta) / (runner.DeltaFrequency / _fps) * (_width * _height));
 
 
         // render a line at a time, so _displayWidth pixels.
@@ -74,6 +74,9 @@ namespace BitMagic.Machines
         //        runner.DisplayStart[idx].WaitOne();
         //    }
         //}
+
+        public int EffectiveX(int displayX) => _vera.HScale * (displayX - _vera.HStart) >> 7;
+        public int EffectiveY(int displayY) => _vera.VScale * (displayY - _vera.VStart) >> 7;
 
         private void Background(object? r)
         {
@@ -187,6 +190,8 @@ namespace BitMagic.Machines
             }
         }
 
+        const int _maxPixelsPerByte = 8;
+
         private void Layer0(object? r)
         {
             var runner = r as IMachineRunner;
@@ -196,6 +201,8 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer0Idx];
 
+            int[] _buffer = new int[_maxPixelsPerByte];
+
             while (true)
             {
                 var pos = _outputPosition;
@@ -203,7 +210,7 @@ namespace BitMagic.Machines
                 if (_vera.Layer0.Enabled)
                 {
                     var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
+                    var myY = EffectiveY(_currentY) + _vera.Layer0.VScroll;
 
                     if (_vera.Layer0.BitmapMode)
                     {
@@ -214,7 +221,7 @@ namespace BitMagic.Machines
                         myX += _vera.Layer0.HScroll;
                         myY += _vera.Layer0.VScroll;
 
-                        LayerTiles(_vera, _vera.Layer0, image, pos, myX, myY);
+                        LayerTiles(_vera, _vera.Layer0, image, pos, myX, myY, _buffer);
                     }
                     else
                     {
@@ -226,9 +233,6 @@ namespace BitMagic.Machines
             }
         }
 
-        public int EffectiveX(int displayX) => _vera.HScale * (displayX - _vera.HStart) >> 7;
-        public int EffectiveY(int displayY) => _vera.VScale * (displayY - _vera.VStart) >> 7;
-
 
         private void Layer1(object? r)
         {
@@ -239,6 +243,8 @@ namespace BitMagic.Machines
 
             var image = Displays[Layer1Idx];
 
+            int[] _buffer = new int[_maxPixelsPerByte];
+
             while (true)
             {
                 var pos = _outputPosition;
@@ -246,7 +252,7 @@ namespace BitMagic.Machines
                 if (_vera.Layer1.Enabled)
                 {
                     var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
+                    var myY = EffectiveY(_currentY) + _vera.Layer1.VScroll;
 
                     if (_vera.Layer1.BitmapMode)
                     {
@@ -256,7 +262,7 @@ namespace BitMagic.Machines
                         myX += _vera.Layer1.HScroll;
                         myY += _vera.Layer1.VScroll;
 
-                        LayerTiles(_vera, _vera.Layer1, image, pos, myX, myY);
+                        LayerTiles(_vera, _vera.Layer1, image, pos, myX, myY, _buffer);
                     }
                     else
                     {
@@ -269,28 +275,39 @@ namespace BitMagic.Machines
         }
 
         // x and y are effective, ie after scaling.
-        private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int x, int y)
+        private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int x, int y, int[] buffer)
         {
             var mapAddressLine = layer.MapBase + (y >> layer.TileHeightShift) * layer.MapWidth * 2;
+            int mapAddress;
 
             int tileSizeBytes = (layer.TileHeight * layer.TileWidth) >> layer.ColourDepthShift;
 
-            var tileLineStart = 0;
+            var tileLine = 0;
             var newTileCnt = 0;
             var newValueCnt = 0;
-            int tileValue = 0;
-            int mask = 0;
             int addrStep = 0;
-            int tilePos = 0;
-            int tileAddress = 0;
+            var tileAddress = 0;
+            int tilePosX = 0;
             int paletteOffset = 0;
             int lastX = -1;
             PixelRgba lastPixel = new PixelRgba(0, 0, 0, 0);
             bool first = true;
 
-            for (var i = x; i < _displayWidth; i++) // todo: consider hstop, but that should chagne _display width?
+            var (pxPerByte, initMask, shift) = layer.ColourDepth switch
             {
-                var thisX = EffectiveX(i);
+                VeraLayer.LayerColourDepth.bpp1 => (8, 0b0000_0001, 1),
+                VeraLayer.LayerColourDepth.bpp2 => (4, 0b0000_0011, 2),
+                VeraLayer.LayerColourDepth.bpp4 => (2, 0b0000_1111, 4),
+                VeraLayer.LayerColourDepth.bpp8 => (1, 0b1111_1111, 0),
+                _ => throw new Exception()
+            };
+
+            // x is the offset at this point
+            mapAddress = mapAddressLine + ((x >> layer.TileWidthShift >> layer.ColourDepthShift) * 2);
+
+            for (var i = x; i < _displayWidth + x; i++) // todo: consider hstop, but that should chagne _display width?
+            {
+                var thisX = EffectiveX(i) + layer.HScroll;
                 if (thisX == lastX)
                 {
                     image.Pixels.Span[pos] = lastPixel;
@@ -302,12 +319,9 @@ namespace BitMagic.Machines
                 lastX = thisX;
 
                 int tileIndex;
-                int mapAddress;
                 int tileData;
                 if (newTileCnt == 0)
                 {
-                    // todo: fix start address, initial tile is incorrect.
-                    mapAddress = mapAddressLine + ((thisX >> layer.ColourDepthShift) * 2);
                     tileData = vera.Vram.GetByte(mapAddress + 1);
 
                     var hFlip = (tileData & 0b100) != 0;
@@ -316,89 +330,68 @@ namespace BitMagic.Machines
                     tileIndex = vera.Vram.GetByte(mapAddress);
                     tileIndex += (tileData & 0b11) << 8;
 
-                    paletteOffset = (tileData & 0xf0) >> 4;
-                    tileAddress = layer.TileBase + tileIndex * tileSizeBytes;
+                    paletteOffset = ((tileData & 0xf0) >> 4) * 16;
 
-                    tileLineStart = y % layer.TileHeight;
+                    tileLine = y % layer.TileHeight;
 
                     if (hFlip)
                     {
-                        tileLineStart = layer.TileHeight - tileLineStart;
+                        tileLine = layer.TileHeight - tileLine;
                     }
 
                     if (vFlip)
                     {
                         addrStep = -1;
-                        tileLineStart = tileLineStart + (layer.TileWidth >> layer.ColourDepthShift);
+                        tileLine = tileLine + (layer.TileWidth >> layer.ColourDepthShift);
                     }
                     else
                     {
                         addrStep = 1;
                     }
 
+                    tileAddress = (tileLine * (layer.TileWidth >> layer.ColourDepthShift)) + layer.TileBase + tileIndex * tileSizeBytes;
+
                     // first pixel on the line will need to be stepped into the tile
                     if (first)
                     {
-                        tilePos = i >> layer.ColourDepthShift;
-                        newTileCnt = layer.TileWidth - i;
-                        first = false;
+                        tilePosX = (i % layer.TileWidth) >> layer.ColourDepthShift;
+                        newTileCnt = layer.TileWidth - (i % (layer.TileWidth));
                     }
                     else 
                     {
                         newTileCnt = layer.TileWidth;
-                        tilePos = 0;
+                        tilePosX = 0;
                     }
+
+                    mapAddress += 2;
                 }
 
                 if (newValueCnt == 0)
                 {
-                    tileValue = vera.Vram.GetByte(((tileLineStart * (layer.TileWidth >> layer.ColourDepthShift)) + tileAddress + tilePos++) % 0x1ffff);
-                    newValueCnt = layer.ColourDepthShift +1;
-                    mask = (layer.ColourDepth, addrStep) switch
+                    if (first)
                     {
-                        (VeraLayer.LayerColourDepth.bpp8, _)  => 0b1111_1111,
-                        (VeraLayer.LayerColourDepth.bpp4, 1)  => 0b1111_0000,
-                        (VeraLayer.LayerColourDepth.bpp2, 1)  => 0b1100_0000,
-                        (VeraLayer.LayerColourDepth.bpp1, 1)  => 0b1000_0000,
-                        (VeraLayer.LayerColourDepth.bpp4, -1) => 0b0000_1111,
-                        (VeraLayer.LayerColourDepth.bpp2, -1) => 0b0000_0011,
-                        (VeraLayer.LayerColourDepth.bpp1, -1) => 0b0000_0001,
-                        _ => throw new Exception($"unhandled depth\\direction {layer.ColourDepth} {addrStep}.")
-                    };
+                        first = false;
+                        var ofset = newTileCnt % pxPerByte;
+                        newValueCnt = pxPerByte - ofset;
+                    }
+                    else
+                    {
+                        newValueCnt = pxPerByte;
+                    }
+
+                    // fill buffer with pixel values for the byte
+                    int mask = initMask;
+                    var tileValue = vera.Vram.GetByte((tileAddress + tilePosX++) % 0x1ffff);
+
+                    for (int px = 0; px < pxPerByte; px++)
+                    {
+                        buffer[px] = (tileValue & mask);
+                        tileValue = (byte)(tileValue >> shift);
+                    }
+
                 }
 
-                int actValue = (tileValue & mask) >> mask switch { 
-                    0b1111_1111 => 0,
-                    0b0000_1111 => 0,
-                    0b1111_0000 => 4,
-                    0b0000_0011 => 0,
-                    0b0000_1100 => 2,                    
-                    0b0011_0000 => 4,
-                    0b1100_0000 => 6,
-                    0b0000_0001 => 0,
-                    0b0000_0010 => 1,
-                    0b0000_0100 => 2,
-                    0b0000_1000 => 3,
-                    0b0001_0000 => 4,
-                    0b0010_0000 => 5,
-                    0b0100_0000 => 6,
-                    0b1000_0000 => 7,
-                    _ => throw new Exception($"Unknown mask")
-                };
-
-                mask = (layer.ColourDepth, addrStep) switch
-                {
-                    (VeraLayer.LayerColourDepth.bpp8, _) => mask,
-                    (VeraLayer.LayerColourDepth.bpp4, 1) => mask >> 4,
-                    (VeraLayer.LayerColourDepth.bpp2, 1) => mask >> 2,
-                    (VeraLayer.LayerColourDepth.bpp1, 1) => mask >> 1,
-                    (VeraLayer.LayerColourDepth.bpp4, -1) => mask << 4,
-                    (VeraLayer.LayerColourDepth.bpp2, -1) => mask << 2,
-                    (VeraLayer.LayerColourDepth.bpp1, -1) => mask << 1,
-                    _ => throw new Exception($"unhandled depth\\direction {layer.ColourDepth} {addrStep}.")
-                };
-
-
+                var actValue = buffer[newValueCnt - 1];
                 if (actValue == 0)
                 {
                     lastPixel = new PixelRgba(0, 0, 0, 0);
