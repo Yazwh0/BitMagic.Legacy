@@ -83,7 +83,6 @@ namespace BitMagic.Emulation
 
                 WaitHandle.WaitAll(runner.DisplayEvents);
 
-
                 runner.CpuTicks += ticks;
 
                 if (frameDone)

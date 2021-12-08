@@ -233,7 +233,6 @@ namespace BitMagic.Machines
             }
         }
 
-
         private void Layer1(object? r)
         {
             var runner = r as IMachineRunner;
@@ -257,7 +256,8 @@ namespace BitMagic.Machines
                     if (_vera.Layer1.BitmapMode)
                     {
 
-                    } else if (_vera.Layer1.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    } 
+                    else if (_vera.Layer1.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
                     {
                         myX += _vera.Layer1.HScroll;
                         myY += _vera.Layer1.VScroll;
@@ -275,7 +275,7 @@ namespace BitMagic.Machines
         }
 
         // x and y are effective, ie after scaling.
-        private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int x, int y, int[] buffer)
+        private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int startX, int y, int[] buffer)
         {
             var mapAddressLine = layer.MapBase + (y >> layer.TileHeightShift) * layer.MapWidth * 2;
             int mapAddress;
@@ -303,11 +303,11 @@ namespace BitMagic.Machines
             };
 
             // x is the offset at this point
-            mapAddress = mapAddressLine + ((x >> layer.TileWidthShift >> layer.ColourDepthShift) * 2);
+            mapAddress = mapAddressLine + ((startX >> layer.TileWidthShift) * 2);
 
-            for (var i = x; i < _displayWidth + x; i++) // todo: consider hstop, but that should chagne _display width?
+            for (var i = 0; i < _displayWidth; i++) // todo: consider hstop, but that should chagne _display width?
             {
-                var thisX = EffectiveX(i) + layer.HScroll;
+                var thisX = EffectiveX(startX+i);
                 if (thisX == lastX)
                 {
                     image.Pixels.Span[pos] = lastPixel;
@@ -354,8 +354,8 @@ namespace BitMagic.Machines
                     // first pixel on the line will need to be stepped into the tile
                     if (first)
                     {
-                        tilePosX = (i % layer.TileWidth) >> layer.ColourDepthShift;
-                        newTileCnt = layer.TileWidth - (i % (layer.TileWidth));
+                        tilePosX = ((i+startX) % layer.TileWidth) >> layer.ColourDepthShift;
+                        newTileCnt = layer.TileWidth - ((i+startX) % (layer.TileWidth));
                     }
                     else 
                     {
@@ -439,12 +439,13 @@ namespace BitMagic.Machines
                 {
                     _vera.ISR |= _vera.ISR_Vsync;
                     runner.Cpu.SetInterrupt();
+                    //Console.WriteLine($"{_vera.Layer1.HScroll}");
                 }
 
                 return (int)(runner.CpuFrequency / _fps) - runner.CpuTicks;
             }
 
-            if (_vera.IrqLine == _currentY-1 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
+            if (_vera.IrqLine == _currentY-2 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
             {
                 _vera.ISR |= _vera.ISR_Line;
                 runner.Cpu.SetInterrupt();

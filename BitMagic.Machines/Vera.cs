@@ -350,7 +350,7 @@ namespace BitMagic.Machines
                     DcMode = (value & 2) != 0;
                     break;
                 case VeraRegisters.IEN:
-                    IrqLine = (IrqLine & 0xff) + ((value & 0b1000_000) << 1);
+                    IrqLine = (IrqLine & 0xff) + ((value & 0b1000_0000) << 1);
 
                     VsyncInterupt = (value & 1) != 0;
                     LineInterupt = (value & 2) != 0;
