@@ -283,17 +283,17 @@ namespace BitMagic.Machines
             int tileSizeBytes = (layer.TileHeight * layer.TileWidth) >> layer.ColourDepthShift;
 
             var tileLine = 0;
-            var newTileCnt = 0;
-            var newValueCnt = 0;
+            var pixelsUntilNextTile = 0;
+            var pixelsUtilNextTileByte = 0;
             int addrStep = 0;
             var tileAddress = 0;
-            int tilePosX = 0;
+            int tileBytePosition = 0;
             int paletteOffset = 0;
             int lastX = -1;
             PixelRgba lastPixel = new PixelRgba(0, 0, 0, 0);
             bool first = true;
 
-            var (pxPerByte, initMask, shift) = layer.ColourDepth switch
+            var (pixelsPerByte, initMask, shift) = layer.ColourDepth switch
             {
                 VeraLayer.LayerColourDepth.bpp1 => (8, 0b0000_0001, 1),
                 VeraLayer.LayerColourDepth.bpp2 => (4, 0b0000_0011, 2),
@@ -305,9 +305,9 @@ namespace BitMagic.Machines
             // x is the offset at this point
             mapAddress = mapAddressLine + ((startX >> layer.TileWidthShift) * 2);
 
-            for (var i = 0; i < _displayWidth; i++) // todo: consider hstop, but that should chagne _display width?
+            for (var i = startX; i < _displayWidth+ startX; i++) // todo: consider hstop, but that should chagne _display width?
             {
-                var thisX = EffectiveX(startX+i);
+                var thisX = EffectiveX(i);
                 if (thisX == lastX)
                 {
                     image.Pixels.Span[pos] = lastPixel;
@@ -320,7 +320,7 @@ namespace BitMagic.Machines
 
                 int tileIndex;
                 int tileData;
-                if (newTileCnt == 0)
+                if (pixelsUntilNextTile == 0)
                 {
                     tileData = vera.Vram.GetByte(mapAddress + 1);
 
@@ -354,44 +354,43 @@ namespace BitMagic.Machines
                     // first pixel on the line will need to be stepped into the tile
                     if (first)
                     {
-                        tilePosX = ((i+startX) % layer.TileWidth) >> layer.ColourDepthShift;
-                        newTileCnt = layer.TileWidth - ((i+startX) % (layer.TileWidth));
+                        var startPos = i % layer.TileWidth;
+                        tileBytePosition = startPos >> shift;   // how many bytes into the tile
+                        pixelsUntilNextTile = layer.TileWidth - startPos;        // how many pixels left until the next tile.
                     }
                     else 
                     {
-                        newTileCnt = layer.TileWidth;
-                        tilePosX = 0;
+                        pixelsUntilNextTile = layer.TileWidth;
+                        tileBytePosition = 0;
                     }
 
                     mapAddress += 2;
                 }
 
-                if (newValueCnt == 0)
+                if (pixelsUtilNextTileByte == 0)
                 {
                     if (first)
                     {
+                        pixelsUtilNextTileByte = pixelsPerByte - ((i % layer.TileWidth) % pixelsPerByte);
                         first = false;
-                        var ofset = newTileCnt % pxPerByte;
-                        newValueCnt = pxPerByte - ofset;
-                    }
+                    } 
                     else
                     {
-                        newValueCnt = pxPerByte;
+                        pixelsUtilNextTileByte = pixelsPerByte;
                     }
 
-                    // fill buffer with pixel values for the byte
+                    // fill buffer with pixel values for the byte, buffer is reversed.
                     int mask = initMask;
-                    var tileValue = vera.Vram.GetByte((tileAddress + tilePosX++) % 0x1ffff);
+                    var tileValue = vera.Vram.GetByte((tileAddress + tileBytePosition++) % 0x1ffff);
 
-                    for (int px = 0; px < pxPerByte; px++)
+                    for (int px = 0; px < pixelsPerByte; px++)
                     {
                         buffer[px] = (tileValue & mask);
                         tileValue = (byte)(tileValue >> shift);
                     }
-
                 }
 
-                var actValue = buffer[newValueCnt - 1];
+                var actValue = buffer[--pixelsUtilNextTileByte];
                 if (actValue == 0)
                 {
                     lastPixel = new PixelRgba(0, 0, 0, 0);
@@ -402,8 +401,7 @@ namespace BitMagic.Machines
                 }
                 image.Pixels.Span[pos] = lastPixel;
 
-                newValueCnt--;
-                newTileCnt--;
+                pixelsUntilNextTile--;
                 pos++;
             }
         }
@@ -411,7 +409,7 @@ namespace BitMagic.Machines
 
         // needs to calculate next cpu cycle for the display to work on.
         // and return if frame is done.
-        public (bool framedone, int nextCpuTick) IncrementDisplay(IMachineRunner runner)
+        public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay(IMachineRunner runner)
         {
             _currentX = 0;
             _currentY++;
@@ -421,12 +419,12 @@ namespace BitMagic.Machines
                 _outputPosition = 0;
                 _currentY = 0;
 
-                return (true, CpuTicks(runner)); // vblank period
+                return (true, CpuTicks(runner), true); // vblank period
             }
 
             _outputPosition += _displayWidth;
 
-            return (false, CpuTicks(runner));
+            return (false, CpuTicks(runner), true);
         }
 
         // number of dots from currency cpu position to _outputPosition
@@ -445,7 +443,7 @@ namespace BitMagic.Machines
                 return (int)(runner.CpuFrequency / _fps) - runner.CpuTicks;
             }
 
-            if (_vera.IrqLine == _currentY-2 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
+            if (_vera.IrqLine == _currentY-1 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
             {
                 _vera.ISR |= _vera.ISR_Line;
                 runner.Cpu.SetInterrupt();

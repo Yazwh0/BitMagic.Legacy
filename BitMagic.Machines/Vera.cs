@@ -232,7 +232,7 @@ namespace BitMagic.Machines
 
         BitImage[] IDisplay.Displays => _display.Displays;
 
-        (bool framedone, int nextCpuTick) IDisplay.IncrementDisplay(IMachineRunner runner) => _display.IncrementDisplay(runner);
+        (bool framedone, int nextCpuTick, bool releaseVideo) IDisplay.IncrementDisplay(IMachineRunner runner) => _display.IncrementDisplay(runner);
 
         public Vera()
         {

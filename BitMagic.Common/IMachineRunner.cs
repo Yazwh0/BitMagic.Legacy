@@ -12,7 +12,7 @@ namespace BitMagic.Common
        // Task SignalAndWait();
         int CpuTicks { get; } // number of cpu ticks this frame
         double CpuFrequency { get; }
-        (bool framedone, int nextCpuTick) IncrementDisplay();
+        (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay();
         AutoResetEvent[] DisplayEvents { get; }
         AutoResetEvent[] DisplayStart { get; }
         ICpu Cpu { get; }

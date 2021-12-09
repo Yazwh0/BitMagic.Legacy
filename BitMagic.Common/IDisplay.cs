@@ -11,7 +11,7 @@ namespace BitMagic.Common
     {
         public Action<object?>[] DisplayThreads { get; }
         public BitImage[] Displays { get; }
-        public (bool framedone, int nextCpuTick) IncrementDisplay(IMachineRunner runner);        
+        public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay(IMachineRunner runner);        
     }
 
     public class BitImage

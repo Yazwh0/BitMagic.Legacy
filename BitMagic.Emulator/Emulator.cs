@@ -63,6 +63,7 @@ namespace BitMagic.Emulation
             var targetTicks = 0;
             var frameDone = false;
             var totalTicks = 0;
+            bool releaseVideo = true;
 
             while (true)
             {
@@ -76,12 +77,15 @@ namespace BitMagic.Emulation
                     ticks += _machine.Cpu.ClockTick(_machine.Memory, (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0);
                 }
 
-                for (var i = 0; i < runner.DisplayEvents.Length; i++)
+                if (releaseVideo)
                 {
-                    runner.DisplayStart[i].Set();
-                }
+                    for (var i = 0; i < runner.DisplayEvents.Length; i++)
+                    {
+                        runner.DisplayStart[i].Set();
+                    }
 
-                WaitHandle.WaitAll(runner.DisplayEvents);
+                    WaitHandle.WaitAll(runner.DisplayEvents);
+                }
 
                 runner.CpuTicks += ticks;
 
@@ -101,7 +105,7 @@ namespace BitMagic.Emulation
                     }
                 }
 
-                (frameDone, targetTicks) = runner.IncrementDisplay();
+                (frameDone, targetTicks, releaseVideo) = runner.IncrementDisplay();
             }
         }
     }
