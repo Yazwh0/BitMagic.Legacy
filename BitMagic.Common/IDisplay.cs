@@ -16,18 +16,41 @@ namespace BitMagic.Common
 
     public class BitImage
     {
-        public Memory<PixelRgba> Pixels { get; }
-        private PixelRgba[] _pixels;
+        public Memory<PixelRgba> DrawPixels { get; internal set; }
+        public Memory<PixelRgba> RenderPixels { get; internal set; }
+        
+        private PixelRgba[] _pixelsA;
+        private PixelRgba[] _pixelsB;
+
+        private bool _state = false;
 
         public int Width { get; }
         public int Height { get; }
 
         public BitImage(int width, int height)
         {
-            _pixels = new PixelRgba[height * width];
-            Pixels = _pixels;
+            _pixelsA = new PixelRgba[height * width];
+            _pixelsB = new PixelRgba[height * width];
+            DrawPixels = _pixelsA;
+            RenderPixels = _pixelsB;
             Width = width;
             Height = height;
+        }
+
+        public void Switch()
+        {
+            _state = !_state;
+
+            if (_state)
+            {
+                DrawPixels = _pixelsA;
+                RenderPixels = _pixelsB;
+            } 
+            else
+            {
+                DrawPixels = _pixelsB;
+                RenderPixels = _pixelsA;
+            }
         }
     }
 

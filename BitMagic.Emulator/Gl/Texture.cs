@@ -38,7 +38,7 @@ namespace BitMagic.Emulator.Gl
                         }*/
 
 
-            fixed (void* data = &MemoryMarshal.GetReference(_image.Pixels.Span))
+            fixed (void* data = &MemoryMarshal.GetReference(_image.RenderPixels.Span))
             {
                 Load(gl, data, (uint)_image.Width, (uint)_image.Height);
             }
@@ -63,32 +63,7 @@ namespace BitMagic.Emulator.Gl
         {
             if (_gl == null) throw new ArgumentNullException(nameof(_gl));
 
-/*            var save = true;
-
-            if (save)
-            {
-                var image = new Image<Rgba32>(_image.Width, _image.Height);
-
-                int pos = 0;
-                for(var row = 0; row < _image.Height; row++)
-                {
-                    var r = image.GetPixelRowSpan(row);
-
-                    for(var i = 0; i < _image.Width; i++)
-                    {
-                        r[i].R = _image.Pixels.Span[pos].R;
-                        r[i].G = _image.Pixels.Span[pos].G;
-                        r[i].B = _image.Pixels.Span[pos].B;
-                        r[i].A = _image.Pixels.Span[pos].A;
-
-                        pos++;
-                    }
-                }
-
-                image.SaveAsPng(@"c:\temp\capture.png");
-            }*/
-
-            fixed (void* data = &MemoryMarshal.GetReference(_image.Pixels.Span))
+            fixed (void* data = &MemoryMarshal.GetReference(_image.RenderPixels.Span))
             {
                 _gl.DeleteTexture(_handle);
                 Load(_gl, data, (uint)_image.Width, (uint)_image.Height);

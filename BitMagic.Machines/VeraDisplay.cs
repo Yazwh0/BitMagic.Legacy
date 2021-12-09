@@ -1,6 +1,7 @@
 ﻿using BitMagic.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -43,12 +44,13 @@ namespace BitMagic.Machines
 
         private const int _width = 800;
         private const int _height = 524;
+        private const int _porch = 33;
         private const int _displayWidth = 640;
         private const int _displayHeight = 480;
         private const int _fps = 60;
 
         private int _currentX = 0;
-        private int _currentY = 0;
+        private int _currentY = -33;
         private int _outputPosition = 0;
 
         //        public int GetSteps(IMachineRunner runner) => (int)((_cpuTicks + runner.TickDelta) / (runner.DeltaFrequency / _fps) * (_width * _height));
@@ -96,7 +98,7 @@ namespace BitMagic.Machines
 
                 for (var i = 0; i < _displayWidth; i++)
                 {
-                    image.Pixels.Span[pos++] = _vera.Palette.Colours[0];
+                    image.DrawPixels.Span[pos++] = _vera.Palette.Colours[0];
                 }
 
                 runner.DisplayEvents[BackgroundIdx].Set();
@@ -278,7 +280,6 @@ namespace BitMagic.Machines
         private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int startX, int y, int[] buffer)
         {
             var mapAddressLine = layer.MapBase + (y >> layer.TileHeightShift) * layer.MapWidth * 2;
-            int mapAddress;
 
             int tileSizeBytes = (layer.TileHeight * layer.TileWidth) >> layer.ColourDepthShift;
 
@@ -293,6 +294,9 @@ namespace BitMagic.Machines
             PixelRgba lastPixel = new PixelRgba(0, 0, 0, 0);
             bool first = true;
 
+            //if (y == 0)
+                //Debug.Assert(false);
+
             var (pixelsPerByte, initMask, shift) = layer.ColourDepth switch
             {
                 VeraLayer.LayerColourDepth.bpp1 => (8, 0b0000_0001, 1),
@@ -303,14 +307,14 @@ namespace BitMagic.Machines
             };
 
             // x is the offset at this point
-            mapAddress = mapAddressLine + ((startX >> layer.TileWidthShift) * 2);
+            int mapAddress = mapAddressLine + ((startX >> layer.TileWidthShift) * 2);
 
             for (var i = startX; i < _displayWidth+ startX; i++) // todo: consider hstop, but that should chagne _display width?
             {
                 var thisX = EffectiveX(i);
                 if (thisX == lastX)
                 {
-                    image.Pixels.Span[pos] = lastPixel;
+                    image.DrawPixels.Span[pos] = lastPixel;
 
                     pos++;
 
@@ -399,7 +403,7 @@ namespace BitMagic.Machines
                 {
                     lastPixel = vera.Palette.Colours[actValue + paletteOffset];
                 }
-                image.Pixels.Span[pos] = lastPixel;
+                image.DrawPixels.Span[pos] = lastPixel;
 
                 pixelsUntilNextTile--;
                 pos++;
@@ -411,51 +415,49 @@ namespace BitMagic.Machines
         // and return if frame is done.
         public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay(IMachineRunner runner)
         {
-            _currentX = 0;
-            _currentY++;
-
-            if (_currentY >= _displayHeight)
-            {
-                _outputPosition = 0;
-                _currentY = 0;
-
-                return (true, CpuTicks(runner), true); // vblank period
-            }
-
-            _outputPosition += _displayWidth;
-
-            return (false, CpuTicks(runner), true);
-        }
-
-        // number of dots from currency cpu position to _outputPosition
-        public int CpuTicks(IMachineRunner runner)
-        {
-            if (_outputPosition == 0) // we're done, return cpu ticks that are left
+            if (_currentY == _displayHeight + 1) // vsync
             {
                 // set vsync
-                if ((_vera.ISR & _vera.ISR_Vsync) == 0 && _vera.VsyncInterupt) 
+                if ((_vera.ISR & _vera.ISR_Vsync) == 0 && _vera.VsyncInterupt)
                 {
                     _vera.ISR |= _vera.ISR_Vsync;
                     runner.Cpu.SetInterrupt();
-                    //Console.WriteLine($"{_vera.Layer1.HScroll}");
                 }
-
-                return (int)(runner.CpuFrequency / _fps) - runner.CpuTicks;
             }
 
-            if (_vera.IrqLine == _currentY-1 && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt)
-            {
-                _vera.ISR |= _vera.ISR_Line;
-                runner.Cpu.SetInterrupt();
-               // Console.WriteLine($"Interrupt on {_currentY}");
-            }
-
-            var reqPct = (_currentY * _width + _currentX) / (double)(_width * _height);
+            var reqPct = _width / (double)(_width * _height) * (_currentY + _porch + 1); // 1 line
             var cpuTicksFrame = (runner.CpuFrequency / _fps);
 
             var reqCpuTicks = (reqPct * cpuTicksFrame) - runner.CpuTicks;
 
-            return (int)(reqCpuTicks );
-        }
+            _currentX = 0;
+            _currentY++;
+
+            if (_vera.IrqLine == _currentY && (_vera.ISR & _vera.ISR_Line) == 0 && _vera.LineInterupt && _currentY <= _displayHeight)
+            {
+                _vera.ISR |= _vera.ISR_Line;
+                runner.Cpu.SetInterrupt();
+            }
+
+            bool frameDone = _currentY == 0;
+            if (frameDone)
+            {
+                _outputPosition = 0;
+                foreach(var d in Displays)
+                {
+                    d.Switch();
+                }
+            }
+            else if(_currentY >= 0 && _currentY < _displayHeight)
+            {
+                _outputPosition += _displayWidth;
+            } else if (_currentY > _height - _porch - 1)
+            {
+                _currentY = 0 - _porch;
+            }
+
+            bool release = _currentY >= 0 && _currentY < _displayHeight-1;
+            return (frameDone, (int)reqCpuTicks, release);
+        }     
     }
 }
