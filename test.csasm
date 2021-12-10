@@ -40,6 +40,9 @@ void ColourFunction(string name, ushort colour)
 .const colourswitch = $00
 .const offset = $02
 
+	lda #01
+	sta $01
+
 	stz start
 
 	lda #$02
@@ -96,7 +99,7 @@ void ColourFunction(string name, ushort colour)
 	dey
 	bne longloop
 
-
+	brk
 	lda #<vsync
 	sta $314
 	lda #>vsync

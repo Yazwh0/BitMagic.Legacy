@@ -141,8 +141,6 @@ namespace BitMagic.Machines
             SPI_CTRL,
         };
 
-        public override int Length => 0x20;
-
         public IMemory Vram { get; }
         internal readonly Palette Palette;
 
@@ -157,7 +155,16 @@ namespace BitMagic.Machines
 
         public byte ISR_Line { get; } = 0x02;
         public byte ISR_Vsync { get; } = 0x01;
-        public byte ISR { get; set; } = 0;
+
+        private byte _isr { get; set; } = 0;
+        public byte ISR
+        {
+            get => _isr; set
+            {
+                _isr = value;
+                Memory!.Memory[StartAddress + (int)VeraRegisters.ISR] = value; // reflect in main ram
+            }
+        }
         public int IrqLine { get; set; }
 
         public bool LineInterupt { get; set; } = false;
@@ -234,17 +241,28 @@ namespace BitMagic.Machines
 
         (bool framedone, int nextCpuTick, bool releaseVideo) IDisplay.IncrementDisplay(IMachineRunner runner) => _display.IncrementDisplay(runner);
 
-        public Vera()
+        public Vera() : base("Vera", 0x20)
         {
             Palette = new Palette();
             _display = new VeraDisplay(2, this);
 
-            Vram = new MemoryMap(0x20000, new IMemory[] {
-                new Ram(0x1f9c0),
-                new Ram(0x40),      // PSG
+            Vram = new MemoryMap(0, 0x20000, new IMemoryBlock[] {
+                new Ram("VRAM", 0x1f9c0),
+                new Ram("PSG", 0x40),      // PSG
                 Palette,            // Pallete
-                new Ram(0x400)      // Sprites
+                new Ram("Sprites", 0x400)      // Sprites
             });
+        }
+
+        public override void Init(IMemoryBlockMap memory, int startAddress)
+        {
+            base.Init(memory, startAddress);
+
+            for (var i = 0; i < Length; i++)
+            {
+                Memory!.WriteNotification[StartAddress + i] = WriteNotification;
+                Memory!.ReadNotification[startAddress + i] = ReadNotification;
+            }
         }
 
         private int GetStep(int step, bool decr) => step switch
@@ -277,13 +295,12 @@ namespace BitMagic.Machines
             _ => throw new ArgumentException(nameof(size))
         };
 
-        private VeraLayer.LayerColourDepth GetDepth(int depth) => depth switch { 
+/*        private VeraLayer.LayerColourDepth GetDepth(int depth) => depth switch { 
             0 => VeraLayer.LayerColourDepth.bpp1,
             1 => VeraLayer.LayerColourDepth.bpp2,
             2 => VeraLayer.LayerColourDepth.bpp4,
             3 => VeraLayer.LayerColourDepth.bpp8
-        };
-
+        };*/
 
         public int GetTileSize(int size) => size switch
         {
@@ -292,9 +309,9 @@ namespace BitMagic.Machines
             _ => throw new ArgumentException(nameof(size))
         };
 
-        public override void SetByte(int address, byte value)
+        public void WriteNotification(int address, byte value)
         {
-            switch ((VeraRegisters)address)
+            switch ((VeraRegisters)(address - StartAddress))
             {
                 case VeraRegisters.ADDRx_L:
                     if (!Data1Mode)
@@ -361,8 +378,8 @@ namespace BitMagic.Machines
                 case VeraRegisters.ISR:
                     value = (byte)((~value & 0x0f) + 0xf0);
 
-                    ISR = (byte)(ISR & value);
-                    value = ISR;
+                    _isr = (byte)(_isr & value);
+                    value = _isr;
                     break;
                 case VeraRegisters.IRQLINE_L:
                     IrqLine = (IrqLine & 0x100) + value;
@@ -478,20 +495,14 @@ namespace BitMagic.Machines
                     break;
             }
 
-            base.SetByte(address, value);
+            Memory!.Memory[address] = value;
         }
 
-        public override byte GetByte(int address)
+        public byte ReadNotification(int address)
         {
             byte toReturn;
-            switch ((VeraRegisters)address)
+            switch ((VeraRegisters)(address - StartAddress))
             {
-                case VeraRegisters.ADDRx_L:
-                    break;
-                case VeraRegisters.ADDRx_M:
-                    break;
-                case VeraRegisters.ADDRx_H:
-                    break;
                 case VeraRegisters.DATA0:
                     toReturn = Vram.GetByte(Data0);
                     Data0 += Data0Step;
@@ -502,66 +513,8 @@ namespace BitMagic.Machines
                     Data1 += Data1Step;
                     Data1 &= 0b1_1111_1111_1111;
                     return toReturn;
-                case VeraRegisters.CTRL:
-                    break;
-                case VeraRegisters.IEN:
-                    break;
-                case VeraRegisters.ISR:
-                    return ISR;
-                case VeraRegisters.IRQLINE_L:
-                    break;
-                case VeraRegisters.DC_VIDEO_HSTART:
-                    break;
-                case VeraRegisters.DC_HSCALE_HSTOP:
-                    break;
-                case VeraRegisters.DC_VSCALE_VSTART:
-                    break;
-                case VeraRegisters.DC_BORDER_VSTOP:
-                    break;
-                case VeraRegisters.L0_CONFIG:
-                    break;
-                case VeraRegisters.L0_MAPBASE:
-                    break;
-                case VeraRegisters.L0_TILEBASE:
-                    break;
-                case VeraRegisters.L0_HSCROLL_L:
-                    break;
-                case VeraRegisters.L0_HSCROLL_H:
-                    break;
-                case VeraRegisters.L0_VSCROLL_L:
-                    break;
-                case VeraRegisters.L0_VSCROLL_H:
-                    break;
-                case VeraRegisters.L1_CONFIG:
-                    break;
-                case VeraRegisters.L1_MAPBASE:
-                    break;
-                case VeraRegisters.L1_TILEBASE:
-                    break;
-                case VeraRegisters.L1_HSCROLL_L:
-                    break;
-                case VeraRegisters.L1_HSCROLL_H:
-                    break;
-                case VeraRegisters.L1_VSCROLL_L:
-                    break;
-                case VeraRegisters.L1_VSCROLL_H:
-                    break;
-                case VeraRegisters.AUDIO_CTRL:
-                    break;
-                case VeraRegisters.AUDIO_RATE:
-                    break;
-                case VeraRegisters.AUDIO_DATA:
-                    break;
-                case VeraRegisters.SPI_DATA:
-                    break;
-                case VeraRegisters.SPI_CTRL:
-                    break;
             }
-            
-            return base.GetByte(address);
+            return Memory!.Memory[address];
         }
-
-        public override byte PeekByte(int Address) => Memory[Address];
-
     }
 }

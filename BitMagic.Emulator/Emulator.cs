@@ -1,10 +1,7 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu;
 using BitMagic.Emulator.Gl;
-using Silk.NET.OpenGL;
-using Silk.NET.Windowing;
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 
@@ -64,6 +61,7 @@ namespace BitMagic.Emulation
             var frameDone = false;
             var totalTicks = 0;
             bool releaseVideo = true;
+            bool debugging = (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0;
 
             while (true)
             {
@@ -74,7 +72,7 @@ namespace BitMagic.Emulation
 
                 while (ticks < targetTicks)
                 {
-                    ticks += _machine.Cpu.ClockTick(_machine.Memory, (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0);
+                    ticks += _machine.Cpu.ClockTick(_machine.Memory, debugging);
                 }
 
                 if (releaseVideo)

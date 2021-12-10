@@ -1,17 +1,22 @@
 ﻿namespace BitMagic.Common
 {
-    public abstract class NormalMemory : IMemory
+    public abstract class NormalMemory: IMemoryBlock
     {
-        public abstract int Length { get; }
-        public byte[] Memory { get; protected set; }
+        public int Length { get; }
+        public string Name { get; }
+        public IMemoryBlockMap? Memory { get; internal set; }
+        public int StartAddress { get; internal set; }
 
-        public NormalMemory()
+        public NormalMemory(string name, int length)
         {
-            Memory = new byte[Length];
+            Length = length;
+            Name = name;
         }
 
-        public virtual byte GetByte(int address) => Memory[address];
-        public virtual void SetByte(int address, byte value) => Memory[address] = value;
-        public virtual byte PeekByte(int Address) => GetByte(Address);
+        public virtual void Init(IMemoryBlockMap memory, int startAddress)
+        {
+            Memory = memory;
+            StartAddress = startAddress;
+        }
     }
 }

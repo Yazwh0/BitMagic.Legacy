@@ -5,13 +5,17 @@ namespace BitMagic.Machines
 {
     public class Palette : NormalMemory
     {
-        public override int Length => 0x200;
-
         public PixelRgba[] Colours = new PixelRgba[0x100];
 
-        public Palette()
+        public Palette() : base("Palette", 0x200)
+        {           
+        }
+
+        public override void Init(IMemoryBlockMap memory, int startAddress)
         {
-            SetColours(new[] {
+            base.Init(memory, startAddress);
+
+            InitColours(new[] {
                 0x000, 0xfff, 0x800, 0xafe, 0xc4c, 0x0c5, 0x00a, 0xee7, 0xd85, 0x640, 0xf77, 0x333, 0x777, 0xaf6, 0x08f, 0xbbb,
                 0x000, 0x111, 0x222, 0x333, 0x444, 0x555, 0x666, 0x777, 0x888, 0x999, 0xaaa, 0xbbb, 0xccc, 0xddd, 0xeee, 0xfff,
                 0x211, 0x433, 0x644, 0x866, 0xa88, 0xc99, 0xfbb, 0x211, 0x422, 0x633, 0x844, 0xa55, 0xc66, 0xf77, 0x200, 0x411,
@@ -30,22 +34,25 @@ namespace BitMagic.Machines
                 0xc6b, 0xf7d, 0x201, 0x413, 0x615, 0x826, 0xa28, 0xc3a, 0xf3c, 0x201, 0x403, 0x604, 0x806, 0xa08, 0xc09, 0xf0b});
         }
 
-        private void SetColours(int[] colours)
+        private void InitColours(int[] colours)
         {
             var address = 0;
             foreach(var colour in colours)
             {
                 var value = colour & 0xff;
-                SetByte(address++, (byte)value);
+                Memory!.WriteNotification[StartAddress + address] = WriteNotification;
+                WriteNotification(StartAddress + address++, (byte)value);
+
                 value = (colour & 0xff00) >> 8;
-                SetByte(address++, (byte)value);
+                Memory!.WriteNotification[StartAddress + address] = WriteNotification;
+                WriteNotification(StartAddress + address++, (byte)value);
             }
         }
 
         // if address is even, then its Green\Blue, otherwise its blank, Red
-        public override void SetByte(int address, byte value)
+        public void WriteNotification(int address, byte value)
         {
-            var idx = address >> 1;
+            var idx = (address - StartAddress) >> 1;
 
             if ((address & 1) == 0)
             {
@@ -66,7 +73,7 @@ namespace BitMagic.Machines
                 Colours[idx] = new PixelRgba(value, Colours[idx].G, Colours[idx].B);
             }
 
-            Memory[idx] = value;
+            Memory!.Memory[address] = value;
         }
     }
 

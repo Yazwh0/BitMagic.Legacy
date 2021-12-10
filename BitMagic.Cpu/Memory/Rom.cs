@@ -2,17 +2,28 @@
 
 namespace BitMagic.Cpu.Memory
 {
-    public class Rom: NormalMemory
+    public class Rom : NormalMemory
     {
-        public override int Length { get; }
+        private byte[]? _data;
 
-        public Rom(int length, byte[]? image = null)
+        public Rom(string name, int length, byte[]? data) : base(name, length)
         {
-            Length = length;
-            Memory = image ?? new byte[length];
+            _data = data;
         }
 
-        public override void SetByte(int address, byte value)
+        public override void Init(IMemoryBlockMap memory, int startAddress)
+        {
+            base.Init(memory, startAddress);
+
+            for(var i = 0; i < Length; i++)
+            {
+                memory.WriteNotification[startAddress + i] = BlockWrite;
+                if (_data != null)
+                    memory.Memory[startAddress + i] = _data[i];
+            }
+        }
+
+        private void BlockWrite(int address, byte value)
         {
         }
     }

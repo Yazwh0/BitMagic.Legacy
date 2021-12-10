@@ -21,6 +21,7 @@ namespace BitMagic.Cpu
         public I6502Registers Registers { get; } = new _6502Registers();
         IRegisters ICpu.Registers => Registers;
         public IMemory _stack;
+        public const int _stackStart = 0x100;
         public bool HasInterrupt { get; internal set; }
 
         public int InterruptAddress { get; set; }
@@ -324,10 +325,10 @@ namespace BitMagic.Cpu
 
         public void Push(byte value)
         {
-            _stack.SetByte(Registers.S--, value);
+            _stack.SetByte(_stackStart + Registers.S--, value);
         }
 
-        public byte Pop() => _stack.GetByte(++Registers.S);
+        public byte Pop() => _stack.GetByte(_stackStart + ++Registers.S);
     }
 
     public class Adc : CpuOpCode

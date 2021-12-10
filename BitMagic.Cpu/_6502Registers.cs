@@ -1,10 +1,20 @@
 ﻿using BitMagic.Common;
+using System.Diagnostics;
 
 namespace BitMagic.Cpu
 {
     public class _6502Registers : I6502Registers
     {
-        public ushort PC { get; set; }
+        private ushort _pc;
+        public ushort PC
+        {
+            get => _pc; set
+            {
+                _pc = value;
+                if (_pc < 256)
+                    Debug.Assert(true);
+            }
+        }
         public byte S { get; set; } = 0xff;
 
         public byte P { get => _flags.Register ; set => _flags.Register = value; }
