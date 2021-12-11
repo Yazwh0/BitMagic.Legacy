@@ -21,14 +21,14 @@ namespace BitMagic.Machines
 
         public CommanderX16(byte[] rom)
         {
-            var banks = new List<IMemoryBlockMap>();
+            var banks = new List<IMemory>();
 
             for (var i = 0; i < 0x100; i++)
             {
                 banks.Add(new MemoryMap(0, 0x2000, new IMemoryBlock[] { new Ram($"RAM Bank {i}", 0x2000) }));
             }
 
-            var roms = new List<IMemoryBlockMap>();
+            var roms = new List<IMemory>();
 
             for (var i = 0; i < 8; i++)
             {

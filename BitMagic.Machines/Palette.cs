@@ -11,7 +11,7 @@ namespace BitMagic.Machines
         {           
         }
 
-        public override void Init(IMemoryBlockMap memory, int startAddress)
+        public override void Init(IMemory memory, int startAddress)
         {
             base.Init(memory, startAddress);
 

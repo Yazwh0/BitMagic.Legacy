@@ -11,7 +11,7 @@ namespace BitMagic.Cpu.Memory
             _data = data;
         }
 
-        public override void Init(IMemoryBlockMap memory, int startAddress)
+        public override void Init(IMemory memory, int startAddress)
         {
             base.Init(memory, startAddress);
 

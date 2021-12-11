@@ -6,18 +6,18 @@ namespace BitMagic.Cpu.Memory
 {
     public class Banked : NormalMemory
     {
-        private IMemoryBlockMap _currentBank;
-        private IMemoryBlockMap[] _banks;
+        private IMemory _currentBank;
+        private IMemory[] _banks;
         private int _index;
 
-        public Banked(string name, int length, IEnumerable<IMemoryBlockMap> banks) : base(name, length)
+        public Banked(string name, int length, IEnumerable<IMemory> banks) : base(name, length)
         {
             _index = 0;
             _banks = banks.ToArray();
             _currentBank = _banks[0];            
         }
 
-        public override void Init(IMemoryBlockMap memory, int startAddress)
+        public override void Init(IMemory memory, int startAddress)
         {
             base.Init(memory, startAddress);
 

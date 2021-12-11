@@ -4,7 +4,7 @@ using System;
 
 namespace BitMagic.Machines
 {
-    public class VeraLayer
+    public struct VeraLayer
     {
         public enum LayerColourDepth
         {
@@ -142,10 +142,13 @@ namespace BitMagic.Machines
         };
 
         public IMemory Vram { get; }
+
+        public IMemory VramShadow { get; }
+
         internal readonly Palette Palette;
 
-        public int Data0 { get; set; } = 0;
-        public int Data1 { get; set; } = 0;
+        public int Data0Addr { get; set; } = 0;
+        public int Data1Addr { get; set; } = 0;
 
         public int Data0Step { get; set; } = 0;
         public int Data1Step { get; set; } = 0;
@@ -220,8 +223,11 @@ namespace BitMagic.Machines
         public bool SpritesEnabled { get; set; } = false;
         public bool ChromaDisable { get; set; } = false;
 
-        public VeraLayer Layer0 { get; } = new VeraLayer();
-        public VeraLayer Layer1 { get; } = new VeraLayer();
+        public VeraLayer Layer0 = new VeraLayer();
+        public VeraLayer Layer1 = new VeraLayer();
+
+        public VeraLayer Layer0Shadow = new VeraLayer();
+        public VeraLayer Layer1Shadow = new VeraLayer();
 
         public enum VeraOutputMode
         { 
@@ -236,6 +242,7 @@ namespace BitMagic.Machines
         private VeraDisplay _display { get; } 
 
         Action<object?>[] IDisplay.DisplayThreads => _display.DisplayThreads;
+        bool[] IDisplay.DisplayHold => _display.DisplayHold;
 
         BitImage[] IDisplay.Displays => _display.Displays;
 
@@ -252,9 +259,20 @@ namespace BitMagic.Machines
                 Palette,            // Pallete
                 new Ram("Sprites", 0x400)      // Sprites
             });
+
+            VramShadow = new MemoryMap(0, 0x20000, new IMemoryBlock[] { 
+                new Ram("VRAMShadow", 0x20000)
+            });
         }
 
-        public override void Init(IMemoryBlockMap memory, int startAddress)
+        public void CopyToShadow()
+        {
+            Vram.MemoryStruct.CopyTo(VramShadow.MemoryStruct);
+            Layer0Shadow = Layer0;
+            Layer1Shadow = Layer1;
+        }
+
+        public override void Init(IMemory memory, int startAddress)
         {
             base.Init(memory, startAddress);
 
@@ -316,21 +334,21 @@ namespace BitMagic.Machines
                 case VeraRegisters.ADDRx_L:
                     if (!Data1Mode)
                     {
-                        Data0 = (Data0 & 0x1ff00) + value;
+                        Data0Addr = (Data0Addr & 0x1ff00) + value;
                     } 
                     else
                     {
-                        Data1 = (Data1 & 0x1ff00) + value;
+                        Data1Addr = (Data1Addr & 0x1ff00) + value;
                     }
                     break;
                 case VeraRegisters.ADDRx_M:
                     if (!Data1Mode)
                     {
-                        Data0 = (Data0 & 0x100ff) + (value << 8);
+                        Data0Addr = (Data0Addr & 0x100ff) + (value << 8);
                     } 
                     else
                     {
-                        Data1 = (Data1 & 0x100ff) + (value << 8);
+                        Data1Addr = (Data1Addr & 0x100ff) + (value << 8);
                     }
                     break;
                 case VeraRegisters.ADDRx_H:
@@ -338,24 +356,24 @@ namespace BitMagic.Machines
                     var inc = (value & 0xf0) >> 4; 
                     if (!Data1Mode)
                     {
-                        Data0 = (Data0 & 0xffff) + ((value & 0x1) << 16);
+                        Data0Addr = (Data0Addr & 0xffff) + ((value & 0x1) << 16);
                         Data0Step = GetStep(inc, decr);
                     }
                     else
                     {
-                        Data1 = (Data1 & 0xffff) + ((value & 0x1) << 16);
+                        Data1Addr = (Data1Addr & 0xffff) + ((value & 0x1) << 16);
                         Data1Step = GetStep(inc, decr);
                     }
                     break;
                 case VeraRegisters.DATA0:
-                    Vram.SetByte(Data0, value);
-                    Data0 += Data0Step;
-                    Data0 &= 0x1ffff;
+                    Vram.SetByte(Data0Addr, value);
+                    Data0Addr += Data0Step;
+                    Data0Addr &= 0x1ffff;
                     break;
                 case VeraRegisters.DATA1:
-                    Vram.SetByte(Data1, value);
-                    Data1 += Data1Step;
-                    Data1 &= 0x1ffff;
+                    Vram.SetByte(Data1Addr, value);
+                    Data1Addr += Data1Step;
+                    Data1Addr &= 0x1ffff;
                     break;
                 case VeraRegisters.CTRL:
                     if ((value & 0b1000_000) != 0)
@@ -437,7 +455,7 @@ namespace BitMagic.Machines
                     Layer0.MapWidth = GetSize((value & 0b11_0000) >> 4);
                     break;
                 case VeraRegisters.L0_MAPBASE:
-                    Layer0.MapBase = value << 10; // 16:9
+                    Layer0.MapBase = value << 9; // 16:9
                     break;
                 case VeraRegisters.L0_TILEBASE:
                     Layer0.TileBase = (value & 0b1111_1100) << 9; // 16:11
@@ -504,17 +522,22 @@ namespace BitMagic.Machines
             switch ((VeraRegisters)(address - StartAddress))
             {
                 case VeraRegisters.DATA0:
-                    toReturn = Vram.GetByte(Data0);
-                    Data0 += Data0Step;
-                    Data0 &= 0b1_1111_1111_1111;
+                    toReturn = Vram.GetByte(Data0Addr);
+                    Data0Addr += Data0Step;
+                    Data0Addr &= 0b1_1111_1111_1111_1111;
                     return toReturn;
                 case VeraRegisters.DATA1:
-                    toReturn = Vram.GetByte(Data1);
-                    Data1 += Data1Step;
-                    Data1 &= 0b1_1111_1111_1111;
+                    toReturn = Vram.GetByte(Data1Addr);
+                    Data1Addr += Data1Step;
+                    Data1Addr &= 0b1_1111_1111_1111_1111;
                     return toReturn;
             }
             return Memory!.Memory[address];
+        }
+
+        public void PreRender()
+        {
+            CopyToShadow();
         }
     }
 }

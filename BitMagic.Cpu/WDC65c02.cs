@@ -160,6 +160,7 @@ namespace BitMagic.Cpu
             if (_operations[opCode] == null)
             {
                 opCode = 0xea; // nop
+                Debug.Assert(false);
                 if (verboseOutput)
                     Console.Write("?");
             }
@@ -248,6 +249,14 @@ namespace BitMagic.Cpu
 
                     if (verboseOutput) Console.Write($"${toReturn:X4}");
                     return (toReturn, timing, 1);
+                case AccessMode.ZeroPageIndirect:
+                    l = memory.GetByte(Registers.PC);
+
+                    address = memory.GetByte(l);
+                    address += (ushort)(memory.GetByte(l + 1) << 8);
+
+                    if (verboseOutput) Console.Write($"${address:X4}");
+                    return (address, 0, 1);
                 case AccessMode.Absolute:
                     l = memory.GetByte(Registers.PC);
                     h = memory.GetByte(Registers.PC + 1);
@@ -331,6 +340,23 @@ namespace BitMagic.Cpu
         public byte Pop() => _stack.GetByte(_stackStart + ++Registers.S);
     }
 
+    public class Stp : CpuOpCode
+    {
+        public override string Code => "STP";
+
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xdb, AccessMode.Immediate, 2),
+        };
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            // turn on debug mode?
+            Debug.Assert(false);
+
+            return 0;
+        }
+    }
+
     public class Adc : CpuOpCode
     {
         public override string Code => "ADC";
@@ -344,6 +370,7 @@ namespace BitMagic.Cpu
             (0x79, AccessMode.AbsoluteY, 4),
             (0x61, AccessMode.IndirectX, 6),
             (0x71, AccessMode.IndirectY, 5),
+            (0x72, AccessMode.ZeroPageIndirect, 5),
         };
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
@@ -373,6 +400,7 @@ namespace BitMagic.Cpu
             (0x39, AccessMode.AbsoluteY, 4),
             (0x21, AccessMode.IndirectX, 6),
             (0x31, AccessMode.IndirectY, 5),
+            (0x32, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -615,6 +643,7 @@ namespace BitMagic.Cpu
             (0xd9, AccessMode.AbsoluteY, 4),
             (0xc1, AccessMode.IndirectX, 6),
             (0xd1, AccessMode.IndirectY, 5),
+            (0xd2, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override byte SourceVal(I6502 cpu) => cpu.Registers.A;
@@ -682,6 +711,7 @@ namespace BitMagic.Cpu
             (0x59, AccessMode.AbsoluteY, 4),
             (0x41, AccessMode.IndirectX, 6),
             (0x51, AccessMode.IndirectY, 5),
+            (0x52, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -860,6 +890,7 @@ namespace BitMagic.Cpu
             (0xb9, AccessMode.AbsoluteY, 4),
             (0xa1, AccessMode.IndirectX, 6),
             (0xb1, AccessMode.IndirectY, 5),
+            (0xb2, AccessMode.ZeroPageIndirect, 5)
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -991,6 +1022,7 @@ namespace BitMagic.Cpu
             (0x19, AccessMode.AbsoluteY, 4),
             (0x01, AccessMode.IndirectX, 6),
             (0x11, AccessMode.IndirectY, 5),
+            (0x12, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -1162,6 +1194,7 @@ namespace BitMagic.Cpu
             (0xf9, AccessMode.AbsoluteY, 4),
             (0xe1, AccessMode.IndirectX, 6),
             (0xf1, AccessMode.IndirectY, 5),
+            (0xf2, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -1190,6 +1223,7 @@ namespace BitMagic.Cpu
             (0x99, AccessMode.AbsoluteY, 5),
             (0x81, AccessMode.IndirectX, 6),
             (0x91, AccessMode.IndirectY, 6),
+            (0x92, AccessMode.ZeroPageIndirect, 5),
         };
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)

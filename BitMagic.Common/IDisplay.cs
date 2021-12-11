@@ -10,8 +10,10 @@ namespace BitMagic.Common
     public interface IDisplay
     {
         public Action<object?>[] DisplayThreads { get; }
+        public bool[] DisplayHold { get; }
         public BitImage[] Displays { get; }
-        public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay(IMachineRunner runner);        
+        public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay(IMachineRunner runner);
+        void PreRender();
     }
 
     public class BitImage

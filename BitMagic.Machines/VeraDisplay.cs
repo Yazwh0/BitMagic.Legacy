@@ -14,12 +14,16 @@ namespace BitMagic.Machines
         // order is important
         private const int BackgroundIdx = 0;
         private const int Sprite0Idx = 1;
-        private const int Layer0Idx = 2;
+        private const int Layer0ShadowIdx = 2;
         private const int Sprite1Idx = 3;
-        private const int Layer1Idx = 4;
+        private const int Layer1ShadowIdx = 4;
         private const int Sprite2Idx = 5;
 
-        public Action<object?>[] DisplayThreads => new Action<object?>[] { Background, Sprite0, Sprite1, Sprite2, Layer0, Layer1 };
+        private const int BackgroundThreadIdx = 0;
+        private const int LayersThreadIdx = 1;
+
+        public Action<object?>[] DisplayThreads => new Action<object?>[] { BackgroundAndSprites, Layers };
+        public bool[] DisplayHold { get; } = new bool[2];
 
         public BitImage[] Displays { get; }
 
@@ -80,7 +84,7 @@ namespace BitMagic.Machines
         public int EffectiveX(int displayX) => _vera.HScale * (displayX - _vera.HStart) >> 7;
         public int EffectiveY(int displayY) => _vera.VScale * (displayY - _vera.VStart) >> 7;
 
-        private void Background(object? r)
+        private void BackgroundAndSprites(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -101,12 +105,15 @@ namespace BitMagic.Machines
                     image.DrawPixels.Span[pos++] = _vera.Palette.Colours[0];
                 }
 
-                runner.DisplayEvents[BackgroundIdx].Set();
-                runner.DisplayStart[BackgroundIdx].WaitOne();
+                DisplayHold[BackgroundThreadIdx] = true;
+                while (DisplayHold[BackgroundThreadIdx]) { }
+
+                //runner.DisplayEvents[BackgroundThreadIdx].Set();
+                //runner.DisplayStart[BackgroundThreadIdx].WaitOne();
             }
         }
 
-        private void Sprite0(object? r)
+       /* private void Sprite0(object? r)
         {
             var runner = r as IMachineRunner;
 
@@ -129,8 +136,11 @@ namespace BitMagic.Machines
                     }
                 }
 
-                runner.DisplayEvents[Sprite0Idx].Set();
-                runner.DisplayStart[Sprite0Idx].WaitOne();
+                DisplayHold[Sprite0Idx] = true;
+                while (DisplayHold[Sprite0Idx]) { }
+
+                //runner.DisplayEvents[Sprite0Idx].Set();
+                //runner.DisplayStart[Sprite0Idx].WaitOne();
             }
         }
 
@@ -157,8 +167,11 @@ namespace BitMagic.Machines
                     }
                 }
 
-                runner.DisplayEvents[Sprite1Idx].Set();
-                runner.DisplayStart[Sprite1Idx].WaitOne();
+                DisplayHold[Sprite1Idx] = true;
+                while (DisplayHold[Sprite1Idx]) { }
+
+                //runner.DisplayEvents[Sprite1Idx].Set();
+                //runner.DisplayStart[Sprite1Idx].WaitOne();
             }
 
         }
@@ -187,21 +200,24 @@ namespace BitMagic.Machines
                     }
                 }
 
-                runner.DisplayEvents[Sprite2Idx].Set();
-                runner.DisplayStart[Sprite2Idx].WaitOne();
+                DisplayHold[Sprite2Idx] = true;
+                while (DisplayHold[Sprite2Idx]) { }
+
+                //runner.DisplayEvents[Sprite2Idx].Set();
+                //runner.DisplayStart[Sprite2Idx].WaitOne();
             }
-        }
+        }*/
 
         const int _maxPixelsPerByte = 8;
 
-        private void Layer0(object? r)
+       /* private void Layer0Shadow(object? r)
         {
             var runner = r as IMachineRunner;
 
             if (runner == null)
                 throw new ArgumentException("r is not a machine runner.");
 
-            var image = Displays[Layer0Idx];
+            var image = Displays[Layer0ShadowIdx];
 
             int[] _buffer = new int[_maxPixelsPerByte];
 
@@ -209,75 +225,106 @@ namespace BitMagic.Machines
             {
                 var pos = _outputPosition;
 
-                if (_vera.Layer0.Enabled)
+                if (_vera.Layer0Shadow.Enabled)
                 {
                     var myX = EffectiveX(_currentX);
                     var myY = EffectiveY(_currentY);
 
-                    if (_vera.Layer0.BitmapMode)
+                    if (_vera.Layer0Shadow.BitmapMode)
                     {
 
                     }
-                    else if (_vera.Layer0.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    else if (_vera.Layer0Shadow.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
                     {
-                        myX += _vera.Layer0.HScroll;
-                        myY += _vera.Layer0.VScroll;
+                        myX += _vera.Layer0Shadow.HScroll;
+                        myY += _vera.Layer0Shadow.VScroll;
 
-                        LayerTiles(_vera, _vera.Layer0, image, pos, myX, myY, _buffer);
+                        LayerTiles(_vera, ref _vera.Layer0Shadow, image, pos, myX, myY, _buffer);
                     }
                     else
                     {
                     }
                 }
 
-                runner.DisplayEvents[Layer0Idx].Set();
-                runner.DisplayStart[Layer0Idx].WaitOne();
-            }
-        }
+                DisplayHold[Layer0ShadowIdx] = true;
+                while (DisplayHold[Layer0ShadowIdx]) { }
 
-        private void Layer1(object? r)
+                //runner.DisplayEvents[Layer0ShadowIdx].Set();
+                //runner.DisplayStart[Layer0ShadowIdx].WaitOne();
+            }
+        }*/
+
+        private void Layers(object? r)
         {
             var runner = r as IMachineRunner;
 
             if (runner == null)
                 throw new ArgumentException("r is not a machine runner.");
 
-            var image = Displays[Layer1Idx];
+            //var image = Displays[Layer1ShadowIdx];
 
             int[] _buffer = new int[_maxPixelsPerByte];
 
             while (true)
             {
-                var pos = _outputPosition;
 
-                if (_vera.Layer1.Enabled)
+                if (_vera.Layer1Shadow.Enabled)
                 {
+                    var pos = _outputPosition;
+
                     var myX = EffectiveX(_currentX);
                     var myY = EffectiveY(_currentY);
 
-                    if (_vera.Layer1.BitmapMode)
+                    if (_vera.Layer1Shadow.BitmapMode)
                     {
 
                     } 
-                    else if (_vera.Layer1.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    else if (_vera.Layer1Shadow.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
                     {
-                        myX += _vera.Layer1.HScroll;
-                        myY += _vera.Layer1.VScroll;
+                        myX += _vera.Layer1Shadow.HScroll;
+                        myY += _vera.Layer1Shadow.VScroll;
 
-                        LayerTiles(_vera, _vera.Layer1, image, pos, myX, myY, _buffer);
+                        LayerTiles(_vera, ref _vera.Layer1Shadow, Displays[Layer1ShadowIdx], pos, myX, myY, _buffer);
                     }
                     else
                     {
                     }
-                } 
+                }
 
-                runner.DisplayEvents[Layer1Idx].Set();
-                runner.DisplayStart[Layer1Idx].WaitOne();
+                if (_vera.Layer0Shadow.Enabled)
+                {
+                    var pos = _outputPosition;
+
+                    var myX = EffectiveX(_currentX);
+                    var myY = EffectiveY(_currentY);
+
+                    if (_vera.Layer0Shadow.BitmapMode)
+                    {
+
+                    }
+                    else if (_vera.Layer0Shadow.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
+                    {
+                        myX += _vera.Layer0Shadow.HScroll;
+                        myY += _vera.Layer0Shadow.VScroll;
+
+                        LayerTiles(_vera, ref _vera.Layer0Shadow, Displays[Layer0ShadowIdx], pos, myX, myY, _buffer);
+                    }
+                    else
+                    {
+                    }
+                }
+
+
+                DisplayHold[LayersThreadIdx] = true;
+                while (DisplayHold[LayersThreadIdx]) { }
+
+                //runner.DisplayEvents[LayersThreadIdx].Set();
+                //runner.DisplayStart[LayersThreadIdx].WaitOne();
             }
         }
 
         // x and y are effective, ie after scaling.
-        private void LayerTiles(Vera vera, VeraLayer layer, BitImage image, int pos, int startX, int y, int[] buffer)
+        private void LayerTiles(Vera vera, ref VeraLayer layer, BitImage image, int pos, int startX, int y, int[] buffer)
         {
             var mapAddressLine = layer.MapBase + (y >> layer.TileHeightShift) * layer.MapWidth * 2;
 
@@ -326,12 +373,12 @@ namespace BitMagic.Machines
                 int tileData;
                 if (pixelsUntilNextTile == 0)
                 {
-                    tileData = vera.Vram.GetByte(mapAddress + 1);
+                    tileData = vera.VramShadow.GetByte(mapAddress + 1);
 
                     var hFlip = (tileData & 0b100) != 0;
                     var vFlip = (tileData & 0b1000) != 0;
 
-                    tileIndex = vera.Vram.GetByte(mapAddress);
+                    tileIndex = vera.VramShadow.GetByte(mapAddress);
                     tileIndex += (tileData & 0b11) << 8;
 
                     paletteOffset = ((tileData & 0xf0) >> 4) * 16;
@@ -385,7 +432,7 @@ namespace BitMagic.Machines
 
                     // fill buffer with pixel values for the byte, buffer is reversed.
                     int mask = initMask;
-                    var tileValue = vera.Vram.GetByte((tileAddress + tileBytePosition++) % 0x1ffff);
+                    var tileValue = vera.VramShadow.GetByte((tileAddress + tileBytePosition++) % 0x1ffff);
 
                     for (int px = 0; px < pixelsPerByte; px++)
                     {
@@ -458,6 +505,11 @@ namespace BitMagic.Machines
 
             bool release = _currentY >= 0 && _currentY < _displayHeight-1;
             return (frameDone, (int)reqCpuTicks, release);
-        }     
+        }
+
+        public void PreRender()
+        {
+            _vera.CopyToShadow();
+        }
     }
 }

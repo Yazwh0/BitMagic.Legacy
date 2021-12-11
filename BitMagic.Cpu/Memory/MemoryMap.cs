@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace BitMagic.Cpu.Memory
 {
-    public class MemoryMap : IMemory, IMemoryBlockMap
+    public class MemoryMap : IMemory
     {
         public int StartAddress { get; }
         public int Length { get; }
@@ -13,13 +13,13 @@ namespace BitMagic.Cpu.Memory
 
         //private readonly (IMemory Memory, int Offset)[] _lookup;
 
-        public Memory<byte> Memory { get; }
+        public Memory<byte> MemoryStruct { get; }
 
-        public readonly byte[] _memory;
+        public byte[] Memory { get; }
         public Func<int, byte>[] _readNotification;
         public Action<int, byte>[] _writeNotification;
 
-        byte[] IMemoryBlockMap.Memory => _memory;
+        //byte[] IMemory.Memory => _memory;
         public Func<int, byte>[] ReadNotification => _readNotification;
         public Action<int, byte>[] WriteNotification => _writeNotification;
 
@@ -28,7 +28,7 @@ namespace BitMagic.Cpu.Memory
         {
             Length = size;
 
-            _memory = new byte[size];
+            Memory = new byte[size];
             _readNotification = new Func<int, byte>[size];
             _writeNotification = new Action<int, byte>[size];
 
@@ -44,15 +44,15 @@ namespace BitMagic.Cpu.Memory
             if (pos - startAddress != size)
                 throw new Exception($"Size {size} is different to blocks provided {pos}");
 
-            Memory = new Memory<byte>(_memory);
+            MemoryStruct = new Memory<byte>(Memory);
         }
 
         public byte GetByte(int address) {
             if (_readNotification[address] == null)
-                return _memory[address];
+                return Memory[address];
 
             var value = _readNotification[address](address);
-            _memory[address] = value;
+            Memory[address] = value;
             return value;
         }
 
@@ -60,13 +60,13 @@ namespace BitMagic.Cpu.Memory
         {
             if (_writeNotification[address] == null)
             {
-                _memory[address] = value;
+                Memory[address] = value;
                 return;
             }
 
             _writeNotification[address](address, value); // if there is a notification, it will update the memory
         }
 
-        public byte PeekByte(int address) => _memory[address];
+        public byte PeekByte(int address) => MemoryStruct.Span[address];
     }
 }

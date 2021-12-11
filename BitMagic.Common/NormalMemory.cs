@@ -4,7 +4,7 @@
     {
         public int Length { get; }
         public string Name { get; }
-        public IMemoryBlockMap? Memory { get; internal set; }
+        public IMemory? Memory { get; internal set; }
         public int StartAddress { get; internal set; }
 
         public NormalMemory(string name, int length)
@@ -13,7 +13,7 @@
             Name = name;
         }
 
-        public virtual void Init(IMemoryBlockMap memory, int startAddress)
+        public virtual void Init(IMemory memory, int startAddress)
         {
             Memory = memory;
             StartAddress = startAddress;

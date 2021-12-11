@@ -83,6 +83,11 @@ namespace BitMagic.Emulation
             // ??
         }
 
+        public void PreRender()
+        {
+            Display.PreRender();
+        }
+
         public (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay() => Display.IncrementDisplay(this);
     }
 }

@@ -3,6 +3,7 @@ using BitMagic.Cpu;
 using BitMagic.Emulator.Gl;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace BitMagic.Emulation
@@ -63,6 +64,9 @@ namespace BitMagic.Emulation
             bool releaseVideo = true;
             bool debugging = (_project.Options.VerboseDebugging & ApplicationPart.Emulator) > 0;
 
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             while (true)
             {
                 var ticks = 0;
@@ -77,18 +81,29 @@ namespace BitMagic.Emulation
 
                 if (releaseVideo)
                 {
+                    runner.PreRender();
+
                     for (var i = 0; i < runner.DisplayEvents.Length; i++)
                     {
-                        runner.DisplayStart[i].Set();
+                        runner.Display.DisplayHold[i] = false;
+                        //runner.DisplayStart[i].Set();
                     }
-
-                    WaitHandle.WaitAll(runner.DisplayEvents);
+                    while (runner.Display.DisplayHold.Any(i => i == false)) { }
+                    //WaitHandle.WaitAll(runner.DisplayEvents);
                 }
 
                 runner.CpuTicks += ticks;
 
                 if (frameDone)
                 {
+                    // wait until the stopwatch is at 1/60th of a second.
+
+/*                    while (stopWatch.ElapsedMilliseconds < 16)
+                    {
+                    }
+
+                    stopWatch.Reset();*/
+
                     totalTicks += runner.CpuTicks;
                     runner.CpuTicks = 0;
                     // trigger image upload and wait for next frame
