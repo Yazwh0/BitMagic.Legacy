@@ -607,8 +607,11 @@ namespace BitMagic.Cpu
 
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
-            Debug.Assert(false);
+            //Debug.Assert(false);
             //throw new NotImplementedException();
+
+            cpu.Registers.PC += 1; // See http://6502.org/tutorials/6502opcodes.html#BRK
+
             return 0;
         }
     }
