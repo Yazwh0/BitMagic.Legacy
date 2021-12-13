@@ -91,19 +91,127 @@ namespace BitMagic.Machines
             if (runner == null)
                 throw new ArgumentException("r is not a machine runner.");
 
-            var image = Displays[BackgroundIdx];
+            var background = Displays[BackgroundIdx];
+            var sprite0 = Displays[Sprite0Idx];
+            var sprite1 = Displays[Sprite1Idx];
+            var sprite2 = Displays[Sprite2Idx];
+
+            var zLayer = new int[_displayWidth];
 
             while (true)
             {
                 var pos = _outputPosition;
 
-                //var myX = EffectiveX(_currentX);
-                //var myY = EffectiveY(_currentY);
+                var myX = EffectiveX(_currentX);
+                var myY = EffectiveY(_currentY);
+
+                var spriteBudget = 801;
+                var startPos = pos;
 
                 for (var i = 0; i < _displayWidth; i++)
                 {
-                    image.DrawPixels.Span[pos++] = _vera.Palette.Colours[0];
+                    background.DrawPixels.Span[pos++] = _vera.Palette.Colours[0];
+                    zLayer[i] = 0;
+
+                    sprite0.DrawPixels.Span[i] = new (0, 0, 0, 0);
+                    sprite1.DrawPixels.Span[i] = new (0, 0, 0, 0);
+                    sprite2.DrawPixels.Span[i] = new (0, 0, 0, 0);
                 }
+
+                var xScale = _vera.VScaleStep;
+
+                if (_vera.SpritesEnabled)
+                {
+                    if (spriteBudget > 0)
+                    {
+                        var lastPixel = new PixelRgba(0, 0, 0, 0);
+
+                        foreach (var sprite in _vera.Sprites.Sprites)
+                        {
+                            spriteBudget--;
+
+                            if (sprite.Depth == 0)
+                                continue;
+
+                            if (myY < sprite.Y || myY > sprite.Y + sprite.Height)
+                                continue;
+
+                            for (var spriteX = 0; spriteX < sprite.Width; spriteX++)
+                            {
+                                spriteBudget--; // one per pixel
+
+                                if ((spriteX & 3) == 0) // one every read of data?
+                                    spriteBudget--;
+
+                                if (spriteBudget <= 0)
+                                    break;
+
+                                var actX = sprite.X + spriteX;
+
+                                if (sprite.X > actX)
+                                    continue;
+
+                                if (zLayer[actX] >= sprite.Depth)
+                                    continue;
+
+                                var spriteY = myY - sprite.Y;
+                                if (sprite.VFlip)
+                                    spriteY = sprite.Height - spriteY;
+
+                                int colourIdx = 0;
+                                if (sprite.Bpp4)
+                                {
+                                    var pixlIndex = spriteX + (spriteY * sprite.Width);
+                                    var pixelAddress = sprite.Address + (pixlIndex >> 1);
+                                    var value = (int)_vera.VramShadow.Memory[pixelAddress];
+
+                                    if ((pixlIndex & 1) > 0)
+                                    {
+                                        value = value & 0x0f;
+                                    }
+                                    else
+                                    {
+                                        value = (value & 0xf0) >> 4;
+                                    }
+
+                                    colourIdx = value == 0 ? - 0 : (value + sprite.PaletteOffset * 16) & 0xff;
+                                }
+                                else
+                                {
+                                    var pixelAddress = sprite.Address + (spriteX + (spriteY * sprite.Width));
+                                    var value = _vera.VramShadow.Memory[pixelAddress];
+                                    colourIdx = value == 0 ? -0 : ( + (sprite.PaletteOffset * 16)) & 0xff;
+                                }
+
+                                if (colourIdx == 0)
+                                {
+                                    lastPixel = new PixelRgba(0, 0, 0, 0);
+                                }
+                                else
+                                {
+                                    lastPixel = _vera.Palette.Colours[colourIdx];
+                                }
+
+                                var outputPos = startPos + (actX * xScale);
+                                for (var pxc = 0; pxc < xScale; pxc++)
+                                {
+                                    if (sprite.Depth == 1)
+                                        sprite0.DrawPixels.Span[outputPos] = lastPixel;
+                                    else if (sprite.Depth == 2)
+                                        sprite1.DrawPixels.Span[outputPos] = lastPixel;
+                                    else if (sprite.Depth == 3)
+                                        sprite2.DrawPixels.Span[outputPos] = lastPixel;
+                                    outputPos++;
+                                }
+
+                                zLayer[actX] = sprite.Depth;
+                            }
+
+                            if (spriteBudget <= 0)
+                                break;
+                        }
+                    }
+                }                
 
                 DisplayHold[BackgroundThreadIdx] = true;
                 while (DisplayHold[BackgroundThreadIdx]) { }
@@ -113,146 +221,9 @@ namespace BitMagic.Machines
             }
         }
 
-       /* private void Sprite0(object? r)
-        {
-            var runner = r as IMachineRunner;
-
-            if (runner == null)
-                throw new ArgumentException("r is not a machine runner.");
-
-            var image = Displays[Sprite0Idx];
-
-            while (true)
-            {
-                var pos = _outputPosition;
-
-                if (_vera.SpritesEnabled)
-                {
-                    var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
-
-                    for (var i = 0; i < _displayWidth; i++)
-                    {
-                    }
-                }
-
-                DisplayHold[Sprite0Idx] = true;
-                while (DisplayHold[Sprite0Idx]) { }
-
-                //runner.DisplayEvents[Sprite0Idx].Set();
-                //runner.DisplayStart[Sprite0Idx].WaitOne();
-            }
-        }
-
-        private void Sprite1(object? r)
-        {
-            var runner = r as IMachineRunner;
-
-            if (runner == null)
-                throw new ArgumentException("r is not a machine runner.");
-
-            var image = Displays[Sprite1Idx];
-
-            while (true)
-            {
-                var pos = _outputPosition;
-
-                if (_vera.SpritesEnabled)
-                {
-                    var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
-
-                    for (var i = 0; i < _displayWidth; i++)
-                    {
-                    }
-                }
-
-                DisplayHold[Sprite1Idx] = true;
-                while (DisplayHold[Sprite1Idx]) { }
-
-                //runner.DisplayEvents[Sprite1Idx].Set();
-                //runner.DisplayStart[Sprite1Idx].WaitOne();
-            }
-
-        }
-
-        private void Sprite2(object? r)
-        {
-            var runner = r as IMachineRunner;
-
-            if (runner == null)
-                throw new ArgumentException("r is not a machine runner.");
-
-            var image = Displays[Sprite2Idx];
-
-            while (true)
-            {
-                var pos = _outputPosition;
-
-                if (_vera.SpritesEnabled)
-                {
-                    var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
-
-                    for (var i = 0; i < _displayWidth; i++)
-                    {
-
-                    }
-                }
-
-                DisplayHold[Sprite2Idx] = true;
-                while (DisplayHold[Sprite2Idx]) { }
-
-                //runner.DisplayEvents[Sprite2Idx].Set();
-                //runner.DisplayStart[Sprite2Idx].WaitOne();
-            }
-        }*/
 
         const int _maxPixelsPerByte = 8;
 
-       /* private void Layer0Shadow(object? r)
-        {
-            var runner = r as IMachineRunner;
-
-            if (runner == null)
-                throw new ArgumentException("r is not a machine runner.");
-
-            var image = Displays[Layer0ShadowIdx];
-
-            int[] _buffer = new int[_maxPixelsPerByte];
-
-            while (true)
-            {
-                var pos = _outputPosition;
-
-                if (_vera.Layer0Shadow.Enabled)
-                {
-                    var myX = EffectiveX(_currentX);
-                    var myY = EffectiveY(_currentY);
-
-                    if (_vera.Layer0Shadow.BitmapMode)
-                    {
-
-                    }
-                    else if (_vera.Layer0Shadow.ColourDepth != VeraLayer.LayerColourDepth.bpp1)
-                    {
-                        myX += _vera.Layer0Shadow.HScroll;
-                        myY += _vera.Layer0Shadow.VScroll;
-
-                        LayerTiles(_vera, ref _vera.Layer0Shadow, image, pos, myX, myY, _buffer);
-                    }
-                    else
-                    {
-                    }
-                }
-
-                DisplayHold[Layer0ShadowIdx] = true;
-                while (DisplayHold[Layer0ShadowIdx]) { }
-
-                //runner.DisplayEvents[Layer0ShadowIdx].Set();
-                //runner.DisplayStart[Layer0ShadowIdx].WaitOne();
-            }
-        }*/
 
         private void Layers(object? r)
         {

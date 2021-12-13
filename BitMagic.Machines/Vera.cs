@@ -146,6 +146,7 @@ namespace BitMagic.Machines
         public IMemory VramShadow { get; }
 
         internal readonly Palette Palette;
+        internal readonly SpritesMemory Sprites;
 
         public int Data0Addr { get; set; } = 0;
         public int Data1Addr { get; set; } = 0;
@@ -251,13 +252,14 @@ namespace BitMagic.Machines
         public Vera() : base("Vera", 0x20)
         {
             Palette = new Palette();
+            Sprites = new SpritesMemory();
             _display = new VeraDisplay(2, this);
 
             Vram = new MemoryMap(0, 0x20000, new IMemoryBlock[] {
                 new Ram("VRAM", 0x1f9c0),
                 new Ram("PSG", 0x40),      // PSG
-                Palette,            // Pallete
-                new Ram("Sprites", 0x400)      // Sprites
+                Palette,                   // Pallete
+                Sprites                    // Sprites
             });
 
             VramShadow = new MemoryMap(0, 0x20000, new IMemoryBlock[] { 

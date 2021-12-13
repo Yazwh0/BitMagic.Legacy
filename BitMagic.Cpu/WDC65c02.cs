@@ -85,6 +85,7 @@ namespace BitMagic.Cpu
             new Stz(),
             new Stx(),
             new Sty(),
+            new Stp(),
             new Tax(),
             new Tay(),
             new Tsx(),
