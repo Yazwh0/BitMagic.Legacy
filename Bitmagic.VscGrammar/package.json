@@ -1,0 +1,29 @@
+{
+    "name": "bmasm",
+    "displayName": "bmasm",
+    "description": "BitMagic 6502",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.63.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Yazwh0/BitMagic.git"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "bmasm",
+            "aliases": ["BitMagic X16 Asm", "bmasm"],
+            "extensions": [".bmasm"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "bmasm",
+            "scopeName": "source.bmasm",
+            "path": "./syntaxes/bmasm.tmLanguage.json"
+        }]
+    }
+}

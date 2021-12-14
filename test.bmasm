@@ -1,24 +1,360 @@
 
 
 
-.const data = $abcd
+.define name=rom, address=$c000, filename="rom.bin"
 
 .scope main
 
 ; entrypoint
 .byte	$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
 
-.start:
-ldx #$02
-.loop:
+.const data0 = $9F23
+.const data1 = $9F24
+.const addr_l = $9F20
+.const addr_m = $9F21
+.const addr_h = $9F22
+.const ctrl = $9f25
+.const ien = $9F26
+.const isr = $9F27
+.const irq_line = $9F28
+.const dc_video = $9F29
+.const dc_hscale = $9F2A
+.const dc_vscale = $9F2B
+.const l0_config = $9F2D
+.const l0_mapbase = $9F2E
+.const l0_tilebase = $9F2F
+.const l0_hscroll_l = $9F30
+.const l0_vscroll_l = $9F32
+
+.const start = $01
+.const colourswitch = $00
+.const offset = $02
+
+lda #01
+sta $01
+
+stz start
+
+lda #$02
+sta ien
+
+lda start
+sta irq_line
+
+stz ctrl
+;      FS10-Cmm
+lda #0b00010001
+sta dc_video
+
+;      hhwwtbcc
+lda #0b00100010 ; tiles 4bp, 128 tiles wide.
+sta l0_config
+
+stz l0_mapbase
+
+lda #64
+sta dc_hscale
+sta dc_vscale
+
+;      aaaaaahw
+lda #0b00110011 ; tiles at $6000
+sta l0_tilebase
+
+jsr copydata
+
+lda #$10
+sta addr_h
+stz addr_m
+stz addr_l
+
+lda #$01
+sta data0
+stz data0
+lda #$02
+sta data0
+stz data0
+lda #$03
+sta data0
+stz data0
+
+
+ldy #$12
+.longloop:
+ldx #$ff
+.clearloop:
+stz data0
+stz data0
 dex
-bne forward
-iny
-.forward:
-tya
-cmp #$02
-beq start
+bne clearloop
+dey
+bne longloop
+
+brk
+lda #<vsync
+sta $314
+lda #>vsync
+sta $315
+
+.loop:
 jmp loop
+
+.proc copydata
+
+.const address = $6000
+.const size = 512
+
+lda #^address + $10 ; add on 1byte increment
+sta addr_h
+lda #>address
+sta addr_m
+lda #<address
+sta addr_l
+
+; y low value
+; x high value
+ldy #<size
+ldx #>size+1 ; +1 as we check the end when we reduce x
+
+lda #<tile16
+sta copydata_src + 1
+lda #>tile16
+sta copydata_src + 2
+
+.copydata_src:
+lda $1234 ; gets modified
+sta data0
+
+inc copydata_src + 1
+bne noinc
+
+inc copydata_src + 2
+
+.noinc:
+dey
+bne copydata_src
+
+dex
+beq copydata_done
+jmp copydata_src
+
+.copydata_done:
+rts
+.endproc
+
+.proc vsync
+
+lda isr
+and #$02
+beq done
+
+lda colourswitch
+bne setcolour
+
+lda #$01
+sta addr_h
+lda #$fa
+sta addr_m
+stz addr_l
+
+stz data0
+
+lda #$01
+sta colourswitch
+
+inc offset
+;lda #8
+lda offset
+sta l0_hscroll_l
+cmp #$0f
+bne skipoffset_reset
+stz offset
+
+.skipoffset_reset:
+
+lda #$ff
+sta irq_line
+
+lda #$02
+sta isr
+
+.done:
+ply
+plx
+pla
+rti
+
+.setcolour:
+
+lda #$01
+sta addr_h
+lda #$fa
+sta addr_m
+stz addr_l
+
+lda #$0a
+sta data0
+
+inc start
+lda start
+and #0b01111111
+
+sta irq_line
+
+stz colourswitch
+
+lda #$02
+sta isr
+
+ply
+plx
+pla
+rti
+
+.endproc
+
+; will not be loaded as its in its own anonymous proc.
+.tile8:
+.byte $01, $11, $11, $00
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $10, $00, $00, $10
+.byte $01, $11, $11, $00
+.byte $00, $00, $00, $00
+
+.byte $11, $11, $99, $99
+.byte $22, $22, $aa, $aa
+.byte $33, $33, $bb, $bb
+.byte $44, $44, $cc, $cc
+.byte $55, $55, $dd, $dd
+.byte $66, $66, $ee, $ee
+.byte $77, $77, $ff, $ff
+.byte $88, $88, $00, $00
+
+.tile16:
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $00, $00, $00, $00, $00, $00, $00, $00
+
+
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $00, $00, $00, $00, $00, $00, $00, $00
+
+
+
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $44, $00, $00, $10
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $00, $00, $00, $00, $00, $00, $00, $00
+
+
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $44, $00, $10
+.byte $10, $00, $00, $00, $44, $44, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $10, $00, $00, $00, $00, $00, $00, $10
+.byte $01, $11, $11, $11, $11, $11, $11, $00
+.byte $00, $00, $00, $00, $00, $00, $00, $00
+
+
+.segment rom
+.const isr = $9F27
+.const irq_handler = $314
+.const entrypoint = $810
+
+.proc startup
+jmp entrypoint
+.endproc
+
+.proc irq
+
+pha
+phx
+phy
+
+lda irq_handler
+beq no_handle
+
+jmp (irq_handler)
+
+.no_handle:
+lda isr		; clear all flags
+and #$0f
+sta isr
+
+ply
+plx
+pla
+rti
+
+.endproc
+
+.pad $fffa
+.word irq
+.word startup
+.word irq
+.endsegment
 
 
 .sintable:
@@ -29,4 +365,6 @@ jmp loop
 
 
 .endscope
+
+
  
