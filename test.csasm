@@ -1,3 +1,4 @@
+
 reference System.IO.FileSystem
 using System.IO
 
@@ -11,7 +12,6 @@ void ColourFunction(string name, ushort colour)
 	rts
 }
 
-.define name=rom, address=$c000, filename="rom.bin"
 
 .scope main
 
@@ -99,7 +99,6 @@ void ColourFunction(string name, ushort colour)
 	dey
 	bne longloop
 
-	brk
 	lda #<vsync
 	sta $314
 	lda #>vsync
@@ -328,33 +327,40 @@ void ColourFunction(string name, ushort colour)
 .byte $00, $00, $00, $00, $00, $00, $00, $00
 
 
-.segment rom
+.segment name=rom, address=$c000, filename="rom.bin"
+
 .const isr = $9F27
+.const irq_handler = $314
+.const entrypoint = $810
 
 .proc startup
-	jmp $801
+jmp entrypoint
 .endproc
 
 .proc irq
-	
-	pha
-	phx
-	phy
 
-	lda $314
-	beq no_handle
+pha
+phx
+phy
 
-	jmp ($314)
+lda irq_handler
+bne has_jump
+lda irq_handler+1
+beq no_handle
+
+.has_jump:
+jmp (irq_handler)
 
 .no_handle:
-	lda isr		; clear all flags
-	and #$0f
-	sta isr
+lda isr		; clear all flags
+and #$0f
+sta isr
 
-	ply
-	plx
-	pla
-	rti
+ply
+plx
+pla
+rti
+
 
 .endproc
 

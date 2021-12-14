@@ -29,12 +29,18 @@ namespace BitMagic.Compiler
 
                     state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
                 })
-                .WithParameters(".define", (dict, state) => {
+/*                .WithParameters(".definesegment", (dict, state) => {
+
+
+                }, new[] { "name", "address", "filename" })*/
+                .WithParameters(".segment", (dict, state) => {
                     Segment segment;
+
                     if (state.Segments.ContainsKey(dict["name"]))
                     {
                         segment = state.Segments[dict["name"]];
-                    } else
+                    }
+                    else
                     {
                         segment = new Segment(state.Globals, dict["name"]);
                         state.Segments.Add(dict["name"], segment);
@@ -70,13 +76,10 @@ namespace BitMagic.Compiler
                         segment.Filename = filename;
                     }
 
-                }, new[] { "name", "address", "filename" })
-                .WithParameters(".segment", (dict, state) => {
-                    var name = dict["name"];
-                    state.Segment = state.Segments[name];
+                    state.Segment = segment;
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
-                }, new[] { "name" })
+                }, new[] { "name", "address", "filename" })
                 .WithParameters(".endsegment", (dict, state) => {
                     state.Segment = state.Segments[".Default"];
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
@@ -218,13 +221,26 @@ namespace BitMagic.Compiler
             var filenames = state.Segments.Select(i => i.Value.Filename).Distinct().ToArray();
 
             foreach (var filename in filenames)
-            {
+            {                
                 var toSave = new List<byte>(0x10000);
                 var segments = state.Segments.Where(i => i.Value.Filename == filename).OrderBy(kv => kv.Value.StartAddress).Select(kv => kv.Value).ToArray();
 
                 var address = segments.First().StartAddress;
 
-                if (string.IsNullOrWhiteSpace(filename) || filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase))
+                // segments with filenames
+                bool header;
+
+                // main output
+                if (string.IsNullOrWhiteSpace(filename))
+                {
+                    header = string.IsNullOrWhiteSpace(_project.OutputFile.Filename) || _project.OutputFile.Filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {   // segment with filename
+                    header = !string.IsNullOrWhiteSpace(filename) && filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (header)
                 {
                     toSave.Add((byte)(address & 0xff));
                     toSave.Add((byte)((address & 0xff00) >> 8));
@@ -255,15 +271,20 @@ namespace BitMagic.Compiler
 
                 if (string.IsNullOrWhiteSpace(filename))
                 {
-                    _project.ProgFile.Contents = toSave.ToArray();
-                    if (!string.IsNullOrWhiteSpace(_project.ProgFile.Filename))
+                    _project.OutputFile.Contents = toSave.ToArray();
+                    if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename))
                     {
-                        await _project.ProgFile.Save();
+                        await _project.OutputFile.Save();
+                        Console.WriteLine($"{_project.OutputFile.Filename} written {toSave.Count} bytes.");
+                    } else
+                    {
+                        Console.WriteLine($"Program size {toSave.Count} bytes.");
                     }
                 } 
                 else 
                 {
                     await File.WriteAllBytesAsync(filename, toSave.ToArray());
+                    Console.WriteLine($"{filename} written {toSave.Count} bytes.");
                 }
             }
         }
@@ -286,10 +307,10 @@ namespace BitMagic.Compiler
                 }
             }
 
-/*            foreach(var segmentName in _segments.Values.Where(i => !i.Scopes.Any()).Select(i => i.Name).ToArray())
+            foreach(var segmentName in state.Segments.Values.Where(i => !i.Scopes.Any()).Select(i => i.Name).ToArray())
             {
-                _segments.Remove(segmentName);
-            }*/
+                state.Segments.Remove(segmentName);
+            }
         }
 
         private void Reval(CompileState state)

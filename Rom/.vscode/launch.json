@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {        
+            "type" : "PowerShell",
+            "name": "Build and Run X16 Compiler",
+            "request" : "launch",
+            "script" : "./build.ps1",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

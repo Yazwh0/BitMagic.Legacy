@@ -1,0 +1,41 @@
+.segment rom, address=$c000
+
+.const isr = $9F27
+.const irq_handler = $314
+.const entrypoint = $810
+
+.proc startup
+jmp entrypoint
+.endproc
+
+.proc irq
+
+pha
+phx
+phy
+
+lda irq_handler
+bne has_jump
+lda irq_handler+1
+beq no_handle
+
+.has_jump:
+jmp (irq_handler)
+
+.no_handle:
+lda isr		; clear all flags
+and #$0f
+sta isr
+
+ply
+plx
+pla
+rti
+
+.endproc
+
+.pad $fffa
+.word irq
+.word startup
+.word irq
+.endsegment

@@ -103,7 +103,7 @@
 		"pseudofunctions": {
 			"patterns": [{
 				"name": "keyword.control.pseudofunction.bmasm",
-				"match": "\\.(?i:byte|word|define|segment|const|pad|align)\\b"
+				"match": "\\.(?i:byte|word|definesegment|segment|const|pad|align)\\b"
 			}]
 		},
 		"blockstarts": {

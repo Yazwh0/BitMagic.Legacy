@@ -1,0 +1,196 @@
+{
+  "rom": {
+    "Scopes": {
+      ".Default_2": {
+        "Procedures": {
+          "startup": {
+            "Name": "startup",
+            "Variables": {
+              "_variables": {}
+            },
+            "Data": [
+              {
+                "Data": "TBAI",
+                "OriginalText": "jmp entrypoint\r\n",
+                "RequiresReval": false,
+                "Params": "entrypoint",
+                "Address": 49152
+              }
+            ]
+          },
+          "irq": {
+            "Name": "irq",
+            "Variables": {
+              "_variables": {
+                "has_jump": 49168,
+                "no_handle": 49171
+              }
+            },
+            "Data": [
+              {
+                "Data": "SA==",
+                "OriginalText": "\r\npha\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49155
+              },
+              {
+                "Data": "2g==",
+                "OriginalText": "phx\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49156
+              },
+              {
+                "Data": "Wg==",
+                "OriginalText": "phy\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49157
+              },
+              {
+                "Data": "rRQD",
+                "OriginalText": "\r\nlda irq_handler\r\n",
+                "RequiresReval": false,
+                "Params": "irq_handler",
+                "Address": 49158
+              },
+              {
+                "Data": "0AU=",
+                "OriginalText": "bne has_jump\r\n",
+                "RequiresReval": false,
+                "Params": "has_jump",
+                "Address": 49161
+              },
+              {
+                "Data": "rRUD",
+                "OriginalText": "lda irq_handler+1\r\n",
+                "RequiresReval": false,
+                "Params": "irq_handler+1",
+                "Address": 49163
+              },
+              {
+                "Data": "8AM=",
+                "OriginalText": "beq no_handle\r\n",
+                "RequiresReval": false,
+                "Params": "no_handle",
+                "Address": 49166
+              },
+              {
+                "Data": "bBQD",
+                "OriginalText": "jmp (irq_handler)\r\n",
+                "RequiresReval": false,
+                "Params": "(irq_handler)",
+                "Address": 49168
+              },
+              {
+                "Data": "rSef",
+                "OriginalText": "lda isr\t\t; clear all flags\r\n",
+                "RequiresReval": false,
+                "Params": "isr",
+                "Address": 49171
+              },
+              {
+                "Data": "KQ8=",
+                "OriginalText": "and #$0f\r\n",
+                "RequiresReval": false,
+                "Params": "#$0f",
+                "Address": 49174
+              },
+              {
+                "Data": "jSef",
+                "OriginalText": "sta isr\r\n",
+                "RequiresReval": false,
+                "Params": "isr",
+                "Address": 49176
+              },
+              {
+                "Data": "eg==",
+                "OriginalText": "\r\nply\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49179
+              },
+              {
+                "Data": "+g==",
+                "OriginalText": "plx\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49180
+              },
+              {
+                "Data": "aA==",
+                "OriginalText": "pla\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49181
+              },
+              {
+                "Data": "QA==",
+                "OriginalText": "rti\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 49182
+              }
+            ]
+          },
+          ".Default_5": {
+            "Name": ".Default_5",
+            "Variables": {
+              "_variables": {
+                "isr": 40743,
+                "irq_handler": 788,
+                "entrypoint": 2064,
+                "startup": 49152,
+                "irq": 49155
+              }
+            },
+            "Data": [
+              {
+                "Data": "A8A=",
+                "OriginalText": " irq",
+                "Address": 65530,
+                "RequiresReval": false
+              },
+              {
+                "Data": "AMA=",
+                "OriginalText": " startup",
+                "Address": 65532,
+                "RequiresReval": false
+              },
+              {
+                "Data": "A8A=",
+                "OriginalText": " irq",
+                "Address": 65534,
+                "RequiresReval": false
+              }
+            ]
+          }
+        },
+        "Name": ".Default_2",
+        "Variables": {
+          "_variables": {
+            "isr": 40743,
+            "irq_handler": 788,
+            "entrypoint": 2064,
+            "startup": 49152,
+            "irq": 49155
+          }
+        }
+      }
+    },
+    "Name": "rom",
+    "StartAddress": 49152,
+    "Variables": {
+      "_variables": {
+        "isr": 40743,
+        "irq_handler": 788,
+        "entrypoint": 2064,
+        "startup": 49152,
+        "irq": 49155
+      }
+    },
+    "Filename": null,
+    "Address": 65536
+  }
+}

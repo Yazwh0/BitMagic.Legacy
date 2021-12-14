@@ -11,7 +11,7 @@ namespace BitMagic.Common
         public ProjectTextFile Code { get;  } = new ProjectTextFile();
         public ProjectTextFile AssemblerObject { get; } = new ProjectTextFile();
 
-        public ProjectBinFile ProgFile { get; } = new ProjectBinFile();
+        public ProjectBinFile OutputFile { get; } = new ProjectBinFile();
         public ProjectBinFile RomFile { get; } = new ProjectBinFile();
 
         public Options Options { get; }

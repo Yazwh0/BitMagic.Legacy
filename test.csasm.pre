@@ -1,7 +1,8 @@
 @using System.IO
-@* PreProcessor Result of D:\\Documents\\Source\\BitMagic\\test.csasm *@
+@* PreProcessor Result of D:\Documents\Source\BitMagic\test.csasm *@
 
 @{
+@:
 @:
 void ColourFunction(string name, ushort colour)
 {
@@ -13,7 +14,6 @@ void ColourFunction(string name, ushort colour)
 @:rts
 }
 @:
-@:.define name=rom, address=$c000, filename="rom.bin"
 @:
 @:.scope main
 @:
@@ -101,7 +101,6 @@ void ColourFunction(string name, ushort colour)
 @:dey
 @:bne longloop
 @:
-@:brk
 @:lda #<vsync
 @:sta $314
 @:lda #>vsync
@@ -330,11 +329,14 @@ void ColourFunction(string name, ushort colour)
 @:.byte $00, $00, $00, $00, $00, $00, $00, $00
 @:
 @:
-@:.segment rom
+@:.segment name=rom, address=$c000, filename="rom.bin"
+@:
 @:.const isr = $9F27
+@:.const irq_handler = $314
+@:.const entrypoint = $810
 @:
 @:.proc startup
-@:jmp $801
+@:jmp entrypoint
 @:.endproc
 @:
 @:.proc irq
@@ -343,10 +345,13 @@ void ColourFunction(string name, ushort colour)
 @:phx
 @:phy
 @:
-@:lda $314
+@:lda irq_handler
+@:bne has_jump
+@:lda irq_handler+1
 @:beq no_handle
 @:
-@:jmp ($314)
+@:.has_jump:
+@:jmp (irq_handler)
 @:
 @:.no_handle:
 @:lda isr		; clear all flags
@@ -357,6 +362,7 @@ void ColourFunction(string name, ushort colour)
 @:plx
 @:pla
 @:rti
+@:
 @:
 @:.endproc
 @:

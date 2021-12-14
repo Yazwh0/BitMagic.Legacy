@@ -21,14 +21,19 @@ namespace BitMagic.Emulation
 
         public void LoadPrg()
         {
-            if (_project.ProgFile.Contents == null)
-                throw new ArgumentNullException(nameof(_project.ProgFile.Contents));
+            if (_project.OutputFile.Contents == null)
+                throw new ArgumentNullException(nameof(_project.OutputFile.Contents));
 
-            var address = _project.ProgFile.Contents[0] + (_project.ProgFile.Contents[1] << 8);
+            var address = _project.OutputFile.Contents[0] + (_project.OutputFile.Contents[1] << 8);
 
-            for (var i = 2; i < _project.ProgFile.Contents.Length; i++)
+            if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename) && !_project.OutputFile.Filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase))
             {
-                _machine.Memory.SetByte(address++, _project.ProgFile.Contents[i]);
+                throw new Exception("Output filename must be .prg if loading into the emulator.");
+            }
+
+            for (var i = 2; i < _project.OutputFile.Contents.Length; i++)
+            {
+                _machine.Memory.SetByte(address++, _project.OutputFile.Contents[i]);
             }
         }
 

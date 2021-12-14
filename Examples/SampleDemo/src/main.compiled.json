@@ -29,11 +29,11 @@
                 "offset": 2,
                 "longloop": 2149,
                 "clearloop": 2151,
-                "loop": 2173,
-                "copydata": 2176,
-                "vsync": 2229,
-                "tile8": 2325,
-                "tile16": 2389
+                "loop": 2174,
+                "copydata": 2177,
+                "vsync": 2230,
+                "tile8": 2326,
+                "tile16": 2390
               }
             },
             "Data": [
@@ -170,7 +170,7 @@
                 "Address": 2106
               },
               {
-                "Data": "IIAI",
+                "Data": "IIEI",
                 "OriginalText": "\r\njsr copydata\r\n",
                 "RequiresReval": false,
                 "Params": "copydata",
@@ -324,39 +324,46 @@
                 "Address": 2161
               },
               {
-                "Data": "qbU=",
-                "OriginalText": "\r\nlda #<vsync\r\n",
+                "Data": "AA==",
+                "OriginalText": "\r\nbrk\r\n",
+                "RequiresReval": false,
+                "Params": "",
+                "Address": 2163
+              },
+              {
+                "Data": "qbY=",
+                "OriginalText": "lda #<vsync\r\n",
                 "RequiresReval": false,
                 "Params": "#<vsync",
-                "Address": 2163
+                "Address": 2164
               },
               {
                 "Data": "jRQD",
                 "OriginalText": "sta $314\r\n",
                 "RequiresReval": false,
                 "Params": "$314",
-                "Address": 2165
+                "Address": 2166
               },
               {
                 "Data": "qQg=",
                 "OriginalText": "lda #>vsync\r\n",
                 "RequiresReval": false,
                 "Params": "#>vsync",
-                "Address": 2168
+                "Address": 2169
               },
               {
                 "Data": "jRUD",
                 "OriginalText": "sta $315\r\n",
                 "RequiresReval": false,
                 "Params": "$315",
-                "Address": 2170
+                "Address": 2171
               },
               {
-                "Data": "TH0I",
+                "Data": "TH4I",
                 "OriginalText": "jmp loop\r\n",
                 "RequiresReval": false,
                 "Params": "loop",
-                "Address": 2173
+                "Address": 2174
               }
             ]
           },
@@ -366,9 +373,9 @@
               "_variables": {
                 "address": 24576,
                 "size": 512,
-                "copydata_src": 2205,
-                "noinc": 2219,
-                "copydata_done": 2228
+                "copydata_src": 2206,
+                "noinc": 2220,
+                "copydata_done": 2229
               }
             },
             "Data": [
@@ -377,161 +384,161 @@
                 "OriginalText": "\r\nlda #^address + $10 ; add on 1byte increment\r\n",
                 "RequiresReval": false,
                 "Params": "#^address+$10",
-                "Address": 2176
+                "Address": 2177
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2178
+                "Address": 2179
               },
               {
                 "Data": "qWA=",
                 "OriginalText": "lda #>address\r\n",
                 "RequiresReval": false,
                 "Params": "#>address",
-                "Address": 2181
+                "Address": 2182
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2183
+                "Address": 2184
               },
               {
                 "Data": "qQA=",
                 "OriginalText": "lda #<address\r\n",
                 "RequiresReval": false,
                 "Params": "#<address",
-                "Address": 2186
+                "Address": 2187
               },
               {
                 "Data": "jSCf",
                 "OriginalText": "sta addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2188
+                "Address": 2189
               },
               {
                 "Data": "oAA=",
                 "OriginalText": "\r\n; y low value\r\n; x high value\r\nldy #<size\r\n",
                 "RequiresReval": false,
                 "Params": "#<size",
-                "Address": 2191
+                "Address": 2192
               },
               {
                 "Data": "ogM=",
                 "OriginalText": "ldx #>size+1 ; +1 as we check the end when we reduce x\r\n",
                 "RequiresReval": false,
                 "Params": "#>size+1",
-                "Address": 2193
+                "Address": 2194
               },
               {
-                "Data": "qVU=",
+                "Data": "qVY=",
                 "OriginalText": "\r\nlda #<tile16\r\n",
                 "RequiresReval": false,
                 "Params": "#<tile16",
-                "Address": 2195
+                "Address": 2196
               },
               {
-                "Data": "jZ4I",
+                "Data": "jZ8I",
                 "OriginalText": "sta copydata_src + 1\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+1",
-                "Address": 2197
+                "Address": 2198
               },
               {
                 "Data": "qQk=",
                 "OriginalText": "lda #>tile16\r\n",
                 "RequiresReval": false,
                 "Params": "#>tile16",
-                "Address": 2200
+                "Address": 2201
               },
               {
-                "Data": "jZ8I",
+                "Data": "jaAI",
                 "OriginalText": "sta copydata_src + 2\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+2",
-                "Address": 2202
+                "Address": 2203
               },
               {
                 "Data": "rTQS",
                 "OriginalText": "lda $1234 ; gets modified\r\n",
                 "RequiresReval": false,
                 "Params": "$1234",
-                "Address": 2205
+                "Address": 2206
               },
               {
                 "Data": "jSOf",
                 "OriginalText": "sta data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2208
+                "Address": 2209
               },
               {
-                "Data": "7p4I",
+                "Data": "7p8I",
                 "OriginalText": "\r\ninc copydata_src + 1\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+1",
-                "Address": 2211
+                "Address": 2212
               },
               {
                 "Data": "0AM=",
                 "OriginalText": "bne noinc\r\n",
                 "RequiresReval": false,
                 "Params": "noinc",
-                "Address": 2214
+                "Address": 2215
               },
               {
-                "Data": "7p8I",
+                "Data": "7qAI",
                 "OriginalText": "\r\ninc copydata_src + 2\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src+2",
-                "Address": 2216
+                "Address": 2217
               },
               {
                 "Data": "iA==",
                 "OriginalText": "dey\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2219
+                "Address": 2220
               },
               {
                 "Data": "0O8=",
                 "OriginalText": "bne copydata_src\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src",
-                "Address": 2220
+                "Address": 2221
               },
               {
                 "Data": "yg==",
                 "OriginalText": "\r\ndex\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2222
+                "Address": 2223
               },
               {
                 "Data": "8AM=",
                 "OriginalText": "beq copydata_done\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_done",
-                "Address": 2223
+                "Address": 2224
               },
               {
-                "Data": "TJ0I",
+                "Data": "TJ4I",
                 "OriginalText": "jmp copydata_src\r\n",
                 "RequiresReval": false,
                 "Params": "copydata_src",
-                "Address": 2225
+                "Address": 2226
               },
               {
                 "Data": "YA==",
                 "OriginalText": "rts\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2228
+                "Address": 2229
               }
             ]
           },
@@ -539,9 +546,9 @@
             "Name": "vsync",
             "Variables": {
               "_variables": {
-                "skipoffset_reset": 2273,
-                "done": 2283,
-                "setcolour": 2287
+                "skipoffset_reset": 2274,
+                "done": 2284,
+                "setcolour": 2288
               }
             },
             "Data": [
@@ -550,315 +557,315 @@
                 "OriginalText": "\r\nlda isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 2229
+                "Address": 2230
               },
               {
                 "Data": "KQI=",
                 "OriginalText": "and #$02\r\n",
                 "RequiresReval": false,
                 "Params": "#$02",
-                "Address": 2232
+                "Address": 2233
               },
               {
                 "Data": "8C8=",
                 "OriginalText": "beq done\r\n",
                 "RequiresReval": false,
                 "Params": "done",
-                "Address": 2234
+                "Address": 2235
               },
               {
                 "Data": "pQA=",
                 "OriginalText": "\r\nlda colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2236
+                "Address": 2237
               },
               {
                 "Data": "0C8=",
                 "OriginalText": "bne setcolour\r\n",
                 "RequiresReval": false,
                 "Params": "setcolour",
-                "Address": 2238
+                "Address": 2239
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2240
+                "Address": 2241
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2242
+                "Address": 2243
               },
               {
                 "Data": "qfo=",
                 "OriginalText": "lda #$fa\r\n",
                 "RequiresReval": false,
                 "Params": "#$fa",
-                "Address": 2245
+                "Address": 2246
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2247
+                "Address": 2248
               },
               {
                 "Data": "nCCf",
                 "OriginalText": "stz addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2250
+                "Address": 2251
               },
               {
                 "Data": "nCOf",
                 "OriginalText": "\r\nstz data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2253
+                "Address": 2254
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2256
+                "Address": 2257
               },
               {
                 "Data": "hQA=",
                 "OriginalText": "sta colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2258
+                "Address": 2259
               },
               {
                 "Data": "5gI=",
                 "OriginalText": "\r\ninc offset\r\n",
                 "RequiresReval": false,
                 "Params": "offset",
-                "Address": 2260
+                "Address": 2261
               },
               {
                 "Data": "pQI=",
                 "OriginalText": ";lda #8\r\nlda offset\r\n",
                 "RequiresReval": false,
                 "Params": "offset",
-                "Address": 2262
+                "Address": 2263
               },
               {
                 "Data": "jTCf",
                 "OriginalText": "sta l0_hscroll_l\r\n",
                 "RequiresReval": false,
                 "Params": "l0_hscroll_l",
-                "Address": 2264
+                "Address": 2265
               },
               {
                 "Data": "yQ8=",
                 "OriginalText": "cmp #$0f\r\n",
                 "RequiresReval": false,
                 "Params": "#$0f",
-                "Address": 2267
+                "Address": 2268
               },
               {
                 "Data": "0AI=",
                 "OriginalText": "bne skipoffset_reset\r\n",
                 "RequiresReval": false,
                 "Params": "skipoffset_reset",
-                "Address": 2269
+                "Address": 2270
               },
               {
                 "Data": "ZAI=",
                 "OriginalText": "stz offset\r\n",
                 "RequiresReval": false,
                 "Params": "offset",
-                "Address": 2271
+                "Address": 2272
               },
               {
                 "Data": "qf8=",
                 "OriginalText": "\r\nlda #$ff\r\n",
                 "RequiresReval": false,
                 "Params": "#$ff",
-                "Address": 2273
+                "Address": 2274
               },
               {
                 "Data": "jSif",
                 "OriginalText": "sta irq_line\r\n",
                 "RequiresReval": false,
                 "Params": "irq_line",
-                "Address": 2275
+                "Address": 2276
               },
               {
                 "Data": "qQI=",
                 "OriginalText": "\r\nlda #$02\r\n",
                 "RequiresReval": false,
                 "Params": "#$02",
-                "Address": 2278
+                "Address": 2279
               },
               {
                 "Data": "jSef",
                 "OriginalText": "sta isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 2280
+                "Address": 2281
               },
               {
                 "Data": "eg==",
                 "OriginalText": "ply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2283
+                "Address": 2284
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2284
+                "Address": 2285
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2285
+                "Address": 2286
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2286
+                "Address": 2287
               },
               {
                 "Data": "qQE=",
                 "OriginalText": "\r\nlda #$01\r\n",
                 "RequiresReval": false,
                 "Params": "#$01",
-                "Address": 2287
+                "Address": 2288
               },
               {
                 "Data": "jSKf",
                 "OriginalText": "sta addr_h\r\n",
                 "RequiresReval": false,
                 "Params": "addr_h",
-                "Address": 2289
+                "Address": 2290
               },
               {
                 "Data": "qfo=",
                 "OriginalText": "lda #$fa\r\n",
                 "RequiresReval": false,
                 "Params": "#$fa",
-                "Address": 2292
+                "Address": 2293
               },
               {
                 "Data": "jSGf",
                 "OriginalText": "sta addr_m\r\n",
                 "RequiresReval": false,
                 "Params": "addr_m",
-                "Address": 2294
+                "Address": 2295
               },
               {
                 "Data": "nCCf",
                 "OriginalText": "stz addr_l\r\n",
                 "RequiresReval": false,
                 "Params": "addr_l",
-                "Address": 2297
+                "Address": 2298
               },
               {
                 "Data": "qQo=",
                 "OriginalText": "\r\nlda #$0a\r\n",
                 "RequiresReval": false,
                 "Params": "#$0a",
-                "Address": 2300
+                "Address": 2301
               },
               {
                 "Data": "jSOf",
                 "OriginalText": "sta data0\r\n",
                 "RequiresReval": false,
                 "Params": "data0",
-                "Address": 2302
+                "Address": 2303
               },
               {
                 "Data": "5gE=",
                 "OriginalText": "\r\ninc start\r\n",
                 "RequiresReval": false,
                 "Params": "start",
-                "Address": 2305
+                "Address": 2306
               },
               {
                 "Data": "pQE=",
                 "OriginalText": "lda start\r\n",
                 "RequiresReval": false,
                 "Params": "start",
-                "Address": 2307
+                "Address": 2308
               },
               {
                 "Data": "KX8=",
                 "OriginalText": "and #0b01111111\r\n",
                 "RequiresReval": false,
                 "Params": "#0b01111111",
-                "Address": 2309
+                "Address": 2310
               },
               {
                 "Data": "jSif",
                 "OriginalText": "\r\nsta irq_line\r\n",
                 "RequiresReval": false,
                 "Params": "irq_line",
-                "Address": 2311
+                "Address": 2312
               },
               {
                 "Data": "ZAA=",
                 "OriginalText": "\r\nstz colourswitch\r\n",
                 "RequiresReval": false,
                 "Params": "colourswitch",
-                "Address": 2314
+                "Address": 2315
               },
               {
                 "Data": "qQI=",
                 "OriginalText": "\r\nlda #$02\r\n",
                 "RequiresReval": false,
                 "Params": "#$02",
-                "Address": 2316
+                "Address": 2317
               },
               {
                 "Data": "jSef",
                 "OriginalText": "sta isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 2318
+                "Address": 2319
               },
               {
                 "Data": "eg==",
                 "OriginalText": "\r\nply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2321
+                "Address": 2322
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2322
+                "Address": 2323
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2323
+                "Address": 2324
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 2324
+                "Address": 2325
               }
             ]
           },
@@ -888,492 +895,492 @@
                 "offset": 2,
                 "longloop": 2149,
                 "clearloop": 2151,
-                "loop": 2173,
-                "copydata": 2176,
-                "vsync": 2229,
-                "tile8": 2325,
-                "tile16": 2389
+                "loop": 2174,
+                "copydata": 2177,
+                "vsync": 2230,
+                "tile8": 2326,
+                "tile16": 2390
               }
             },
             "Data": [
               {
                 "Data": "ARERAA==",
                 "OriginalText": " $01, $11, $11, $00",
-                "Address": 2325,
+                "Address": 2326,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2329,
+                "Address": 2330,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2333,
+                "Address": 2334,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2337,
+                "Address": 2338,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2341,
+                "Address": 2342,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAEA==",
                 "OriginalText": " $10, $00, $00, $10",
-                "Address": 2345,
+                "Address": 2346,
                 "RequiresReval": false
               },
               {
                 "Data": "ARERAA==",
                 "OriginalText": " $01, $11, $11, $00",
-                "Address": 2349,
+                "Address": 2350,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAA==",
                 "OriginalText": " $00, $00, $00, $00",
-                "Address": 2353,
+                "Address": 2354,
                 "RequiresReval": false
               },
               {
                 "Data": "ERGZmQ==",
                 "OriginalText": " $11, $11, $99, $99",
-                "Address": 2357,
+                "Address": 2358,
                 "RequiresReval": false
               },
               {
                 "Data": "IiKqqg==",
                 "OriginalText": " $22, $22, $aa, $aa",
-                "Address": 2361,
+                "Address": 2362,
                 "RequiresReval": false
               },
               {
                 "Data": "MzO7uw==",
                 "OriginalText": " $33, $33, $bb, $bb",
-                "Address": 2365,
+                "Address": 2366,
                 "RequiresReval": false
               },
               {
                 "Data": "RETMzA==",
                 "OriginalText": " $44, $44, $cc, $cc",
-                "Address": 2369,
+                "Address": 2370,
                 "RequiresReval": false
               },
               {
                 "Data": "VVXd3Q==",
                 "OriginalText": " $55, $55, $dd, $dd",
-                "Address": 2373,
+                "Address": 2374,
                 "RequiresReval": false
               },
               {
                 "Data": "Zmbu7g==",
                 "OriginalText": " $66, $66, $ee, $ee",
-                "Address": 2377,
+                "Address": 2378,
                 "RequiresReval": false
               },
               {
                 "Data": "d3f//w==",
                 "OriginalText": " $77, $77, $ff, $ff",
-                "Address": 2381,
+                "Address": 2382,
                 "RequiresReval": false
               },
               {
                 "Data": "iIgAAA==",
                 "OriginalText": " $88, $88, $00, $00",
-                "Address": 2385,
+                "Address": 2386,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2389,
+                "Address": 2390,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2397,
+                "Address": 2398,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2405,
+                "Address": 2406,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2413,
+                "Address": 2414,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2421,
+                "Address": 2422,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2429,
+                "Address": 2430,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2437,
+                "Address": 2438,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2445,
+                "Address": 2446,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2453,
+                "Address": 2454,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2461,
+                "Address": 2462,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2469,
+                "Address": 2470,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2477,
+                "Address": 2478,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2485,
+                "Address": 2486,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2493,
+                "Address": 2494,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2501,
+                "Address": 2502,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAAAAAAA=",
                 "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2509,
+                "Address": 2510,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2517,
+                "Address": 2518,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2525,
+                "Address": 2526,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2533,
+                "Address": 2534,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2541,
+                "Address": 2542,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2549,
+                "Address": 2550,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2557,
+                "Address": 2558,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2565,
+                "Address": 2566,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2573,
+                "Address": 2574,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2581,
+                "Address": 2582,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2589,
+                "Address": 2590,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2597,
+                "Address": 2598,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2605,
+                "Address": 2606,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2613,
+                "Address": 2614,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2621,
+                "Address": 2622,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2629,
+                "Address": 2630,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAAAAAAA=",
                 "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2637,
+                "Address": 2638,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2645,
+                "Address": 2646,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2653,
+                "Address": 2654,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2661,
+                "Address": 2662,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2669,
+                "Address": 2670,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2677,
+                "Address": 2678,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEQAABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $00, $00, $10",
-                "Address": 2685,
+                "Address": 2686,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2693,
+                "Address": 2694,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2701,
+                "Address": 2702,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2709,
+                "Address": 2710,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2717,
+                "Address": 2718,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2725,
+                "Address": 2726,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2733,
+                "Address": 2734,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2741,
+                "Address": 2742,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2749,
+                "Address": 2750,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2757,
+                "Address": 2758,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAAAAAAA=",
                 "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2765,
+                "Address": 2766,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2773,
+                "Address": 2774,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2781,
+                "Address": 2782,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2789,
+                "Address": 2790,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2797,
+                "Address": 2798,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2805,
+                "Address": 2806,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAABEABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2813,
+                "Address": 2814,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAEREABA=",
                 "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2821,
+                "Address": 2822,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2829,
+                "Address": 2830,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2837,
+                "Address": 2838,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2845,
+                "Address": 2846,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2853,
+                "Address": 2854,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2861,
+                "Address": 2862,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2869,
+                "Address": 2870,
                 "RequiresReval": false
               },
               {
                 "Data": "EAAAAAAAABA=",
                 "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2877,
+                "Address": 2878,
                 "RequiresReval": false
               },
               {
                 "Data": "AREREREREQA=",
                 "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2885,
+                "Address": 2886,
                 "RequiresReval": false
               },
               {
                 "Data": "AAAAAAAAAAA=",
                 "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2893,
+                "Address": 2894,
                 "RequiresReval": false
               }
             ]
@@ -1404,11 +1411,11 @@
             "offset": 2,
             "longloop": 2149,
             "clearloop": 2151,
-            "loop": 2173,
-            "copydata": 2176,
-            "vsync": 2229,
-            "tile8": 2325,
-            "tile16": 2389
+            "loop": 2174,
+            "copydata": 2177,
+            "vsync": 2230,
+            "tile8": 2326,
+            "tile16": 2390
           }
         }
       }
@@ -1417,13 +1424,13 @@
     "StartAddress": 2049,
     "Variables": {
       "_variables": {
-        "sintable": 2901,
-        "datatable": 2901,
-        "somefile": 2901
+        "sintable": 2902,
+        "datatable": 2902,
+        "somefile": 2902
       }
     },
     "Filename": null,
-    "Address": 2901
+    "Address": 2902
   },
   "rom": {
     "Scopes": {
@@ -1448,8 +1455,7 @@
             "Name": "irq",
             "Variables": {
               "_variables": {
-                "has_jump": 49168,
-                "no_handle": 49171
+                "no_handle": 49166
               }
             },
             "Data": [
@@ -1482,81 +1488,67 @@
                 "Address": 49158
               },
               {
-                "Data": "0AU=",
-                "OriginalText": "bne has_jump\r\n",
-                "RequiresReval": false,
-                "Params": "has_jump",
-                "Address": 49161
-              },
-              {
-                "Data": "rRUD",
-                "OriginalText": "lda irq_handler+1\r\n",
-                "RequiresReval": false,
-                "Params": "irq_handler+1",
-                "Address": 49163
-              },
-              {
                 "Data": "8AM=",
                 "OriginalText": "beq no_handle\r\n",
                 "RequiresReval": false,
                 "Params": "no_handle",
-                "Address": 49166
+                "Address": 49161
               },
               {
                 "Data": "bBQD",
-                "OriginalText": "jmp (irq_handler)\r\n",
+                "OriginalText": "\r\njmp (irq_handler)\r\n",
                 "RequiresReval": false,
                 "Params": "(irq_handler)",
-                "Address": 49168
+                "Address": 49163
               },
               {
                 "Data": "rSef",
                 "OriginalText": "lda isr\t\t; clear all flags\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 49171
+                "Address": 49166
               },
               {
                 "Data": "KQ8=",
                 "OriginalText": "and #$0f\r\n",
                 "RequiresReval": false,
                 "Params": "#$0f",
-                "Address": 49174
+                "Address": 49169
               },
               {
                 "Data": "jSef",
                 "OriginalText": "sta isr\r\n",
                 "RequiresReval": false,
                 "Params": "isr",
-                "Address": 49176
+                "Address": 49171
               },
               {
                 "Data": "eg==",
                 "OriginalText": "\r\nply\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49179
+                "Address": 49174
               },
               {
                 "Data": "+g==",
                 "OriginalText": "plx\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49180
+                "Address": 49175
               },
               {
                 "Data": "aA==",
                 "OriginalText": "pla\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49181
+                "Address": 49176
               },
               {
                 "Data": "QA==",
                 "OriginalText": "rti\r\n",
                 "RequiresReval": false,
                 "Params": "",
-                "Address": 49182
+                "Address": 49177
               }
             ]
           },

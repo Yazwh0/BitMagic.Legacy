@@ -22,12 +22,12 @@ namespace BitMagic
         /// <param name="preRazorFile">optional debugging outputfile</param>
         /// <param name="bmasmFile">bmasm file to process or save if using a csasm source</param>
         /// <param name="asmObjectFile">option debugging json file</param>
-        /// <param name="prgFile">prg file</param>
+        /// <param name="outputFile">output file</param>
         /// <param name="romFile">rom files</param>
         /// <param name="args">Commands to run. eg: razor  compile  emulate</param>
         /// <returns></returns>
         static async Task Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
-               string prgFile = "", string romFile= "rom.bin", string[]? args = null)
+               string outputFile = "", string romFile= "rom.bin", string[]? args = null)
         {
             string[] _args;
             if (args == null)
@@ -54,11 +54,20 @@ namespace BitMagic
             project.PreProcess.Filename = preRazorFile;
             project.Code.Filename = bmasmFile;
             project.AssemblerObject.Filename = asmObjectFile;
-            project.ProgFile.Filename = prgFile;
+            project.OutputFile.Filename = outputFile;
             project.RomFile.Filename = romFile;
-            await project.RomFile.Load();
 
-            project.Machine = new CommanderX16(project.RomFile?.Contents ?? throw new Exception("No rom"));
+            // if we're not emulating, we dont need a real rom.
+            if (_args.Contains("emulate"))
+            {
+                await project.RomFile.Load();
+
+                project.Machine = new CommanderX16(project.RomFile?.Contents ?? throw new Exception("No rom"));
+            } 
+            else
+            {
+                project.Machine = new CommanderX16(new byte[0x4000]);
+            }
 
             project.LoadTime = stopWatch.Elapsed;
 
@@ -115,14 +124,14 @@ namespace BitMagic
 
             if (_args.Contains("emulate"))
             {
-                if (string.IsNullOrWhiteSpace(project.ProgFile.Filename) && project.ProgFile.Contents == null)
+                if (string.IsNullOrWhiteSpace(project.OutputFile.Filename) && project.OutputFile.Contents == null)
                 {
                     Console.WriteLine("No prg file specific, or no compilation has taken place. Cannot emulate.");
                     return;
                 }
 
-                if (project.ProgFile.Contents == null)
-                    await project.ProgFile.Load();
+                if (project.OutputFile.Contents == null)
+                    await project.OutputFile.Load();
 
                 var emulator = new Emulation.Emulator(project);
                 emulator.LoadPrg();

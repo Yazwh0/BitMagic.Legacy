@@ -1,7 +1,7 @@
 
 
 
-.define name=rom, address=$c000, filename="rom.bin"
+
 
 .scope main
 
@@ -89,7 +89,6 @@ bne clearloop
 dey
 bne longloop
 
-brk
 lda #<vsync
 sta $314
 lda #>vsync
@@ -318,11 +317,14 @@ rti
 .byte $00, $00, $00, $00, $00, $00, $00, $00
 
 
-.segment rom
+.segment name=rom, address=$c000, filename="rom.bin"
+
 .const isr = $9F27
+.const irq_handler = $314
+.const entrypoint = $810
 
 .proc startup
-jmp $801
+jmp entrypoint
 .endproc
 
 .proc irq
@@ -331,10 +333,13 @@ pha
 phx
 phy
 
-lda $314
+lda irq_handler
+bne has_jump
+lda irq_handler+1
 beq no_handle
 
-jmp ($314)
+.has_jump:
+jmp (irq_handler)
 
 .no_handle:
 lda isr		; clear all flags
@@ -345,6 +350,7 @@ ply
 plx
 pla
 rti
+
 
 .endproc
 
