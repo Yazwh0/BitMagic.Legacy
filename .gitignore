@@ -5,3 +5,6 @@
 */node_modules/*
 */.vs/*
 *.vsix
+*.diagsession
+*.bin
+*.prg

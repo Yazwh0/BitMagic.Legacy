@@ -1,0 +1,2 @@
+Clear-Host
+D:/Documents/Source/BitMagic/BitMagic/bin/Release/net6.0/BitMagic.exe --razor-file D:\\Documents\\Source\\BitMagic\\test.csasm --pre-razor-file D:\\Documents\\Source\\BitMagic\\test.csasm.pre --bmasm-file D:\\Documents\\Source\\BitMagic\\test.bmasm --asm-object-file D:\\Documents\\Source\\BitMagic\\test.compiled.json --prg-file D:\\Documents\\Source\\BitMagic\\test.prg razor compile emulate

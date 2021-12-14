@@ -53,7 +53,7 @@ namespace BitMagic.Emulator.Gl
                 _layers[i].OnLoad(_gl, _display.Displays[i], i / 10);
             }
 
-            _shader = new Shader(_gl, @"shader\shader.vert", @"shader\shader.frag");
+            _shader = new Shader(_gl, @"shader.vert", @"shader.frag");
         }
 
         private static unsafe void OnRender(double deltaTime)

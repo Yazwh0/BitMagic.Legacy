@@ -1,6 +1,3 @@
-
-
-
 .define name=rom, address=$c000, filename="rom.bin"
 
 .scope main
@@ -320,9 +317,11 @@ rti
 
 .segment rom
 .const isr = $9F27
+.const irq_handler = $314
+.const entrypoint = $810
 
 .proc startup
-jmp $801
+jmp entrypoint
 .endproc
 
 .proc irq
@@ -331,10 +330,10 @@ pha
 phx
 phy
 
-lda $314
+lda irq_handler
 beq no_handle
 
-jmp ($314)
+jmp (irq_handler)
 
 .no_handle:
 lda isr		; clear all flags

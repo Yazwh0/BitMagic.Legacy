@@ -5,6 +5,18 @@
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Shader\shader.frag" />
+    <None Remove="Shader\shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Shader\shader.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Shader\shader.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
@@ -15,15 +27,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Shader\shader.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Shader\shader.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

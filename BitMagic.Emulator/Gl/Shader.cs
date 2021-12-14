@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -78,7 +79,16 @@ namespace BitMagic.Emulator.Gl
 
         private uint LoadShader(ShaderType type, string path)
         {
-            string src = File.ReadAllText(path);
+            string src;
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith(path));
+            using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                src = reader.ReadToEnd();
+            }
+
+            // string src = File.ReadAllText(path);
             uint handle = _gl.CreateShader(type);
             _gl.ShaderSource(handle, src);
             _gl.CompileShader(handle);
