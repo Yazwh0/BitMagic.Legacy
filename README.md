@@ -18,15 +18,16 @@ Unlike HTMLs tags which makes differentiation easy, BitMagic will examine each l
 
 Here is an example of some csasm code:
 
-    reference System.Drawing.Primitives // reference use system.drawing as it contains the color struct.
-    using System.Drawing
+    reference System.Drawing.Primitives; // reference and use system.drawing as it contains the color struct.
+    using System.Drawing;
 
     @X16Header();   // adds a header that will start the application. The first address of code will be $810.
 
     .loop:          // application does nothing
     jmp loop
 
-    // define a function that can be reused, akin to a 'macro'. It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
+    // define a function that can be reused, akin to a 'macro'. 
+    // It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
     void SetColour(Color colour)
     {
         lda #@(((colour.G >> 4) << 4) + (colour.B >> 4))
@@ -37,7 +38,6 @@ Here is an example of some csasm code:
 
     SetColour(Color.DarkOrchid); // $9932CC, or $93c o nthe X16, and so $3c, $09 when loading into VERA
     SetColour(Color.White);
-    // etc
 
 When compiled this will create a .prg file with the following:
 

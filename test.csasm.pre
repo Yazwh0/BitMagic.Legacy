@@ -8,7 +8,8 @@
 @:.loop:          // application does nothing
 @:jmp loop
 @:
-// define a function that can be reused, akin to a 'macro'. It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
+// define a function that can be reused, akin to a 'macro'. 
+// It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
 void SetColour(Color colour)
 {
 @:lda #@(((colour.G >> 4) << 4) + (colour.B >> 4))
