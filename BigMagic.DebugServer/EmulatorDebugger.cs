@@ -40,7 +40,7 @@ namespace BigMagic.DebugServer
             _emulator.LoadPrg();
 
             await _debugServer.Initialize(new System.Threading.CancellationToken());
-            _emulator.Emulate(0x810);
+            _emulator.Emulate();
         }
     }
 }

@@ -37,13 +37,9 @@ namespace BitMagic.Emulation
             }
         }
 
-        public void Emulate(int startAddress)
+        public void Emulate()
         {
-            _machine.Cpu.SetProgramCounter(startAddress);
-
-            // Hack until we have a kernel
-            var cpu = _machine.Cpu as WDC65c02;
-            cpu.InterruptAddress = 0xfffe;
+            _machine.Cpu.Reset();
 
             var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display, _project.Machine.Cpu);
 

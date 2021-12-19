@@ -11,7 +11,7 @@ namespace BitMagic.Compiler
     {
         private Regex _firstWord = new Regex("^\\s*(?<result>([.][\\w\\-:]+))(?<line>(.*))$");
 
-        private Dictionary<string, Action<string, CompileState>> _lineProcessor = new Dictionary<string, Action<string, CompileState>>();
+        private Dictionary<string, Action<string, int, CompileState>> _lineProcessor = new Dictionary<string, Action<string, int, CompileState>>();
         private Action<string, CompileState>? _labelProcessor;
 
         private CommandParser()
@@ -25,13 +25,13 @@ namespace BitMagic.Compiler
 
         public CommandParser WithParameters(string verb, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames = null)
         {
-            _lineProcessor.Add(verb, (l, s) => ProcesParameters(l, s, action, defaultNames));
+            _lineProcessor.Add(verb, (l, n, s) => ProcesParameters(l, n, s, action, defaultNames));
             return this;
         }
 
-        public CommandParser WithLine(string verb, Action<string, CompileState> action) 
+        public CommandParser WithLine(string verb, Action<string, int, CompileState> action) 
         {
-            _lineProcessor.Add(verb, (l, s) => ProcessLine(l, s, action));
+            _lineProcessor.Add(verb, (l, n, s) => ProcessLine(l, n, s, action));
             return this;
         }
         public CommandParser WithLabel(Action<string, CompileState> action) 
@@ -40,7 +40,7 @@ namespace BitMagic.Compiler
             return this;
         }
 
-        public void Process(string line, CompileState state)
+        public void Process(string line, int lineNumber, CompileState state)
         {
             if (string.IsNullOrEmpty(line))
                 return;
@@ -49,7 +49,7 @@ namespace BitMagic.Compiler
 
             if (!result.Success)
             {
-                throw new Exception($"Cannot find verb in {line}");
+                throw new CompilerVerbException(line, lineNumber, $"Cannot find verb on line.");
             }
 
             var thisVerb = result.Groups["result"].Value;
@@ -65,14 +65,14 @@ namespace BitMagic.Compiler
             }
 
             if (!_lineProcessor.ContainsKey(thisVerb))
-                throw new Exception($"Unknown verb {thisVerb}");
+                throw new CompilerVerbException(line, lineNumber, $"Unknown verb '{thisVerb.Substring(1)}'");
 
             var map = _lineProcessor[thisVerb];
 
-            map(toProcess, state);
+            map(toProcess, lineNumber, state);
         }
 
-        private static void ProcesParameters(string line, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
+        private static void ProcesParameters(string line, int lineNumber, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -111,9 +111,9 @@ namespace BitMagic.Compiler
             action(parameters, state);
         }
 
-        private static void ProcessLine(string line, CompileState state, Action<string, CompileState> action) => action(line, state);
+        private static void ProcessLine(string line, int lineNumber, CompileState state, Action<string, int, CompileState> action) => action(line, lineNumber, state);
 
-        private static void ProcessLabel(string line, CompileState state, Action<string, CompileState> action) => action(line, state);
+        private static void ProcessLabel(string line, int lineNumber, CompileState state, Action<string, int, CompileState> action) => action(line, lineNumber, state);
 
 
 /*        private static void Parse(string args,

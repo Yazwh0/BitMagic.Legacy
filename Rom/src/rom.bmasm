@@ -1,41 +1,56 @@
 .segment rom, address=$c000
 
-.const isr = $9F27
-.const irq_handler = $314
 .const entrypoint = $810
 
 .proc startup
-jmp entrypoint
+
+    ; set irq handle vector
+    lda #<default_irq_handler
+    sta INTERUPT_L
+    lda #>default_irq_handler 
+    sta INTERUPT_H
+
+    jmp entrypoint
+
 .endproc
 
-.proc irq
+.proc default_irq_handler
 
-pha
-phx
-phy
+    lda ISR		; clear all flags
+    and #$0f
+    sta ISR
 
-lda irq_handler
-bne has_jump
-lda irq_handler+1
-beq no_handle
+    ply
+    plx
+    pla
+    rti
 
-.has_jump:
-jmp (irq_handler)
+.endproc
 
-.no_handle:
-lda isr		; clear all flags
-and #$0f
-sta isr
+; todo
+.proc brk_handler
 
-ply
-plx
-pla
-rti
+    ply
+    plx
+    pla
+    rti
+
+.endproc
+
+
+; push registers and call the handler
+.proc irq_handler
+
+    pha
+    phx
+    phy
+
+    jmp (INTERUPT)
 
 .endproc
 
 .pad $fffa
-.word irq
+.word brk_handler
 .word startup
-.word irq
+.word irq_handler
 .endsegment

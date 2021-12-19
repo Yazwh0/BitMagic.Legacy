@@ -20,11 +20,12 @@ namespace BitMagic.Cpu
         public IEnumerable<ICpuOpCode> OpCodes => _opCodes;
         public I6502Registers Registers { get; } = new _6502Registers();
         IRegisters ICpu.Registers => Registers;
-        public IMemory _stack;
+        public IMemory _memory;
         public const int _stackStart = 0x100;
         public bool HasInterrupt { get; internal set; }
 
-        public int InterruptAddress { get; set; }
+        public const int InterruptVector = 0xfffe;
+        public const int ResetVector = 0xfffc;
 
         public double Frequency { get; }
 
@@ -40,6 +41,7 @@ namespace BitMagic.Cpu
             new Bmi(),
             new Bne(),
             new Bpl(),
+            new Bra(),
             new Brk(),
             new Bvc(),
             new Bvs(),
@@ -97,10 +99,10 @@ namespace BitMagic.Cpu
         //private Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)> _operations;
         private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
 
-        public WDC65c02(IMemory stack, double frequency)
+        public WDC65c02(IMemory memory, double frequency)
         {
             _operations = new (CpuOpCode operation, AccessMode Mode, int Timing)?[256];
-            _stack = stack;
+            _memory = memory;
             Frequency = frequency;
 
             foreach (var op in _opCodes)
@@ -124,9 +126,6 @@ namespace BitMagic.Cpu
             if (Registers.Flags.InterruptDisable)
                 return 0;
 
-            if (InterruptAddress == 0)
-                return 0;
-
             Push((byte)((Registers.PC & 0xff00) >> 8));
             Push((byte)(Registers.PC & 0xff));
             Push(Registers.P);
@@ -135,13 +134,18 @@ namespace BitMagic.Cpu
                         Push(Registers.X);
                         Push(Registers.Y);*/
 
-            var interuptHandler = memory.GetByte(InterruptAddress) + (memory.GetByte(InterruptAddress + 1) << 8);
+            var interuptHandler = memory.GetByte(InterruptVector) + (memory.GetByte(InterruptVector + 1) << 8);
 
             Registers.PC = (ushort)interuptHandler;
 
             Registers.Flags.InterruptDisable = true;
 
             return 0;
+        }
+
+        public void Reset()
+        {
+            Registers.PC = (ushort)(_memory.GetByte(ResetVector) + (_memory.GetByte(ResetVector + 1) << 8));
         }
 
         public void SetProgramCounter(int address)
@@ -335,20 +339,19 @@ namespace BitMagic.Cpu
 
         public void Push(byte value)
         {
-            _stack.SetByte(_stackStart + Registers.S--, value);
+            _memory.SetByte(_stackStart + Registers.S--, value);
         }
 
-        public byte Pop() => _stack.GetByte(_stackStart + ++Registers.S);
+        public byte Pop() => _memory.GetByte(_stackStart + ++Registers.S);
     }
 
     public class Stp : CpuOpCode
     {
-        public override string Code => "STP";
-
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xdb, AccessMode.Immediate, 2),
         };
+
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             // turn on debug mode?
@@ -360,8 +363,6 @@ namespace BitMagic.Cpu
 
     public class Adc : CpuOpCode
     {
-        public override string Code => "ADC";
-
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x69, AccessMode.Immediate, 2),
             (0x65, AccessMode.ZeroPage, 3),
@@ -373,6 +374,7 @@ namespace BitMagic.Cpu
             (0x71, AccessMode.IndirectY, 5),
             (0x72, AccessMode.ZeroPageIndirect, 5),
         };
+
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             var (value, timing, pcStep) = GetValueAtPC();
@@ -390,8 +392,6 @@ namespace BitMagic.Cpu
 
     public class And : CpuOpCode
     {
-        public override string Code => "AND";
-
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x29, AccessMode.Immediate, 2),
             (0x25, AccessMode.ZeroPage, 3),
@@ -417,8 +417,6 @@ namespace BitMagic.Cpu
 
     public class Asl : CpuOpCode
     {
-        public override string Code => "ASL";
-
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x0a, AccessMode.Accumulator, 2),
             (0x06, AccessMode.ZeroPage, 5),
@@ -468,8 +466,6 @@ namespace BitMagic.Cpu
 
     public class Bit : CpuOpCode
     {
-        public override string Code => "BIT";
-
         internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x24, AccessMode.ZeroPage, 3),
             (0x2c, AccessMode.Absolute, 4),
@@ -520,6 +516,16 @@ namespace BitMagic.Cpu
 
             return timing + 1;
         }
+    }
+
+    public class Bra : BranchOpCode
+    {
+        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x10, AccessMode.Relative, 2)
+        };
+
+        public override bool Condition(I6502 cpu) => true;
     }
 
     public class Bpl : BranchOpCode

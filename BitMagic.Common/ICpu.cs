@@ -4,6 +4,7 @@ namespace BitMagic.Common
 {
     public interface ICpu
     {
+        void Reset();
         IEnumerable<ICpuOpCode> OpCodes { get; }
         IRegisters Registers { get; }
         void SetProgramCounter(int address);

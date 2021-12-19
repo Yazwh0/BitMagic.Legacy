@@ -14,18 +14,14 @@ namespace BitMagic.Common
         public ProjectBinFile OutputFile { get; } = new ProjectBinFile();
         public ProjectBinFile RomFile { get; } = new ProjectBinFile();
 
-        public Options Options { get; }
+        public Options Options { get; } = new Options();
+        public CompileOptions CompileOptions { get; } = new CompileOptions();
 
-        public IMachine Machine { get; set; }
+        public IMachine? Machine { get; set; }
 
         public TimeSpan LoadTime { get; set; }
         public TimeSpan PreProcessTime { get; set; }
         public TimeSpan CompileTime { get; set; }
-
-        public Project()
-        {
-            Options = new Options();
-        }
     }
 
     public class ProjectBinFile
@@ -112,5 +108,10 @@ namespace BitMagic.Common
     public class Options
     {
         public ApplicationPart VerboseDebugging { get; set; }
+    }
+
+    public class CompileOptions
+    {
+        public bool DisplayVariables { get; set; }
     }
 }

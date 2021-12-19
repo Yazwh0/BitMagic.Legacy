@@ -11,6 +11,42 @@ using System.Threading.Tasks;
 
 namespace BitMagic.Compiler
 {
+    public abstract class CompilerException : Exception
+    {
+        public int LineNumber { get; set; }
+        public abstract string ErrorDetail { get; }
+
+        public CompilerException(string message) : base(message)
+        {
+        }
+    }
+
+    public class CompilerLineException : CompilerException
+    {
+        public ILine Line { get; }
+
+        public CompilerLineException(ILine line, string message) : base(message)
+        {
+            Line = line;
+            LineNumber = line.LineNumber;
+        }
+
+        public override string ErrorDetail => Line.OriginalText.Trim();
+    }
+
+    public class CompilerVerbException : CompilerException
+    {
+        public string Line { get; }
+
+        public CompilerVerbException(string line, int lineNumber, string message) : base(message)
+        {
+            Line = line;
+            LineNumber = lineNumber;
+        }
+
+        public override string ErrorDetail => Line;
+    }
+
     public class Compiler
     {
         private readonly Project _project;        
@@ -86,7 +122,7 @@ namespace BitMagic.Compiler
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
                 })
                 .WithParameters(".scope", (dict, state) => {
-                    string name = dict.ContainsKey("name") ? dict["name"] : $".Anonymous_{state.AnonCounter++}";
+                    string name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedScope_{state.AnonCounter++}";
                     state.Scope = state.Segment.GetScope(name, false);
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
                 }, new[] { "name" })
@@ -94,7 +130,7 @@ namespace BitMagic.Compiler
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true); 
                 })
                 .WithParameters(".proc", (dict, state) => {
-                    var name = dict.ContainsKey("name") ? dict["name"] : $".Anonymous_{state.AnonCounter++}";
+                    var name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedProc_{state.AnonCounter++}";
                     state.Procedure = state.Scope.GetProcedure(name, false);
                     state.Scope.Variables.SetValue(name, state.Segment.Address);
                 }, new[] { "name" })
@@ -133,16 +169,16 @@ namespace BitMagic.Compiler
                     }
                 }
                 , new[] { "boundry" })
-                .WithLine(".byte", (paramLine, state) => {
-                    var dataline = new DataLine(state.Procedure, paramLine, state.Segment.Address, DataLine.LineType.IsByte);
+                .WithLine(".byte", (paramLine, lineNumber, state) => {
+                    var dataline = new DataLine(state.Procedure, lineNumber, paramLine, state.Segment.Address, DataLine.LineType.IsByte);
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
                     state.Procedure.AddLine(dataline);
                     dataline.WriteToConsole();
                 })
-                .WithLine(".word", (paramLine, state) => {
-                    var dataline = new DataLine(state.Procedure, paramLine, state.Segment.Address, DataLine.LineType.IsWord);
+                .WithLine(".word", (paramLine, lineNumber, state) => {
+                    var dataline = new DataLine(state.Procedure, lineNumber, paramLine, state.Segment.Address, DataLine.LineType.IsWord);
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
@@ -156,24 +192,27 @@ namespace BitMagic.Compiler
             if (_project.Code.Contents == null)
                 throw new ArgumentNullException(nameof(_project.Code.Contents));
 
+            if (_project.Machine == null)
+                throw new ArgumentNullException(nameof(_project.Machine));
+
             foreach(var opCode in _project.Machine.Cpu.OpCodes)
             {
                 _opCodes.Add(opCode.Code.ToLower(), opCode);
             }
 
-            var globals = new Variables();
-
-            // all segments must be greated from the start via config?
-            // maybe should be in state?
+            var globals = new Variables(_project.Machine.Variables, "App");
 
             var lines = _project.Code.Contents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.TrimEntries);
 
-            var state = new CompileState();
+            var state = new CompileState(globals);
 
             var previousLines = new StringBuilder();
+            int lineNumber = 0;
 
             foreach (var line in lines)
             {
+                lineNumber++;
+
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     previousLines.AppendLine();
@@ -189,7 +228,7 @@ namespace BitMagic.Compiler
                 if (line.StartsWith('.'))
                 {
                     previousLines.Clear();
-                    ParseCommand(line, state);
+                    ParseCommand(line, lineNumber, state);
                 }
                 else
                 {
@@ -198,7 +237,7 @@ namespace BitMagic.Compiler
                     var parts = (idx == -1 ? line : line[..idx]).Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                     previousLines.AppendLine(line);
-                    ParseAsm(parts, previousLines.ToString(), state);
+                    ParseAsm(parts, previousLines.ToString(), lineNumber, state);
                     previousLines.Clear();
                 }
             }
@@ -206,6 +245,15 @@ namespace BitMagic.Compiler
             PruneUnusedObjects(state);
 
             Reval(state);
+
+            if (_project.CompileOptions.DisplayVariables)
+            {
+                Console.WriteLine("Variables:");
+                foreach(var (Name, Value) in globals.GetChildVariables(globals.Namespace))
+                {
+                    Console.WriteLine($"{Name} = ${Value:X2}");
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
             {
@@ -275,7 +323,7 @@ namespace BitMagic.Compiler
                     if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename))
                     {
                         await _project.OutputFile.Save();
-                        Console.WriteLine($"{_project.OutputFile.Filename} written {toSave.Count} bytes.");
+                        Console.WriteLine($"Written {toSave.Count} bytes to '{_project.OutputFile.Filename}'.");
                     } else
                     {
                         Console.WriteLine($"Program size {toSave.Count} bytes.");
@@ -284,7 +332,7 @@ namespace BitMagic.Compiler
                 else 
                 {
                     await File.WriteAllBytesAsync(filename, toSave.ToArray());
-                    Console.WriteLine($"{filename} written {toSave.Count} bytes.");
+                    Console.WriteLine($"Written {toSave.Count} bytes to '{filename}'.");
                 }
             }
         }
@@ -326,13 +374,18 @@ namespace BitMagic.Compiler
                         {
                             line.ProcessParts(true);
                             line.WriteToConsole();
+
+                            if (line.RequiresReval)
+                            {
+                                throw new CompilerLineException(line, $"Unknown name {string.Join(", ", line.RequiresRevalNames.Select(i => $"'{i}'"))}");
+                            }
                         }
                     }
                 }
             }
         }
 
-        private void ParseAsm(string[] parts, string line, CompileState state)
+        private void ParseAsm(string[] parts, string line, int lineNumber, CompileState state)
         {
             var code = parts[0].ToLower();
 
@@ -343,7 +396,7 @@ namespace BitMagic.Compiler
 
             var opCode = _opCodes[code];
 
-            var toAdd = new Line(opCode, line, state.Procedure, state.Segment.Address, parts[1..]);
+            var toAdd = new Line(opCode, line, lineNumber, state.Procedure, state.Segment.Address, parts[1..]);
 
             toAdd.ProcessParts(false);
             toAdd.WriteToConsole();
@@ -352,7 +405,7 @@ namespace BitMagic.Compiler
             state.Segment.Address += toAdd.Data.Length;
         }
 
-        private void ParseCommand(string line, CompileState state) => _commandParser.Process(line, state);        
+        private void ParseCommand(string line, int lineNumber, CompileState state) => _commandParser.Process(line, lineNumber, state);        
 
         private int ParseStringToValue(string inp)
         {

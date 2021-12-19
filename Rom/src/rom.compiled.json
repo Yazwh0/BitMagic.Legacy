@@ -6,163 +6,261 @@
           "startup": {
             "Name": "startup",
             "Variables": {
-              "_variables": {}
+              "_variables": {},
+              "Values": {}
             },
             "Data": [
               {
-                "Data": "TBAI",
-                "OriginalText": "jmp entrypoint\r\n",
+                "Data": "qQ0=",
+                "OriginalText": "\r\n; set irq handle vector\r\nlda #<default_irq_handler\r\n",
+                "LineNumber": 8,
                 "RequiresReval": false,
-                "Params": "entrypoint",
+                "RequiresRevalNames": [],
+                "Params": "#<default_irq_handler",
                 "Address": 49152
+              },
+              {
+                "Data": "jRQD",
+                "OriginalText": "sta INTERUPT_L\r\n",
+                "LineNumber": 9,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "INTERUPT_L",
+                "Address": 49154
+              },
+              {
+                "Data": "qcA=",
+                "OriginalText": "lda #>default_irq_handler\r\n",
+                "LineNumber": 10,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#>default_irq_handler",
+                "Address": 49157
+              },
+              {
+                "Data": "jRUD",
+                "OriginalText": "sta INTERUPT_H\r\n",
+                "LineNumber": 11,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "INTERUPT_H",
+                "Address": 49159
+              },
+              {
+                "Data": "TBAI",
+                "OriginalText": "\r\njmp entrypoint\r\n",
+                "LineNumber": 13,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "entrypoint",
+                "Address": 49162
               }
             ]
           },
-          "irq": {
-            "Name": "irq",
+          "default_irq_handler": {
+            "Name": "default_irq_handler",
             "Variables": {
-              "_variables": {
-                "has_jump": 49168,
-                "no_handle": 49171
+              "_variables": {},
+              "Values": {}
+            },
+            "Data": [
+              {
+                "Data": "rSef",
+                "OriginalText": "\r\nlda ISR\t\t; clear all flags\r\n",
+                "LineNumber": 19,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "ISR",
+                "Address": 49165
+              },
+              {
+                "Data": "KQ8=",
+                "OriginalText": "and #$0f\r\n",
+                "LineNumber": 20,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#$0f",
+                "Address": 49168
+              },
+              {
+                "Data": "jSef",
+                "OriginalText": "sta ISR\r\n",
+                "LineNumber": 21,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "ISR",
+                "Address": 49170
+              },
+              {
+                "Data": "eg==",
+                "OriginalText": "\r\nply\r\n",
+                "LineNumber": 23,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49173
+              },
+              {
+                "Data": "+g==",
+                "OriginalText": "plx\r\n",
+                "LineNumber": 24,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49174
+              },
+              {
+                "Data": "aA==",
+                "OriginalText": "pla\r\n",
+                "LineNumber": 25,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49175
+              },
+              {
+                "Data": "QA==",
+                "OriginalText": "rti\r\n",
+                "LineNumber": 26,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49176
               }
+            ]
+          },
+          "brk_handler": {
+            "Name": "brk_handler",
+            "Variables": {
+              "_variables": {},
+              "Values": {}
+            },
+            "Data": [
+              {
+                "Data": "eg==",
+                "OriginalText": "\r\nply\r\n",
+                "LineNumber": 33,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49177
+              },
+              {
+                "Data": "+g==",
+                "OriginalText": "plx\r\n",
+                "LineNumber": 34,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49178
+              },
+              {
+                "Data": "aA==",
+                "OriginalText": "pla\r\n",
+                "LineNumber": 35,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49179
+              },
+              {
+                "Data": "QA==",
+                "OriginalText": "rti\r\n",
+                "LineNumber": 36,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49180
+              }
+            ]
+          },
+          "irq_handler": {
+            "Name": "irq_handler",
+            "Variables": {
+              "_variables": {},
+              "Values": {}
             },
             "Data": [
               {
                 "Data": "SA==",
                 "OriginalText": "\r\npha\r\n",
+                "LineNumber": 43,
                 "RequiresReval": false,
-                "Params": "",
-                "Address": 49155
-              },
-              {
-                "Data": "2g==",
-                "OriginalText": "phx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49156
-              },
-              {
-                "Data": "Wg==",
-                "OriginalText": "phy\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49157
-              },
-              {
-                "Data": "rRQD",
-                "OriginalText": "\r\nlda irq_handler\r\n",
-                "RequiresReval": false,
-                "Params": "irq_handler",
-                "Address": 49158
-              },
-              {
-                "Data": "0AU=",
-                "OriginalText": "bne has_jump\r\n",
-                "RequiresReval": false,
-                "Params": "has_jump",
-                "Address": 49161
-              },
-              {
-                "Data": "rRUD",
-                "OriginalText": "lda irq_handler+1\r\n",
-                "RequiresReval": false,
-                "Params": "irq_handler+1",
-                "Address": 49163
-              },
-              {
-                "Data": "8AM=",
-                "OriginalText": "beq no_handle\r\n",
-                "RequiresReval": false,
-                "Params": "no_handle",
-                "Address": 49166
-              },
-              {
-                "Data": "bBQD",
-                "OriginalText": "jmp (irq_handler)\r\n",
-                "RequiresReval": false,
-                "Params": "(irq_handler)",
-                "Address": 49168
-              },
-              {
-                "Data": "rSef",
-                "OriginalText": "lda isr\t\t; clear all flags\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 49171
-              },
-              {
-                "Data": "KQ8=",
-                "OriginalText": "and #$0f\r\n",
-                "RequiresReval": false,
-                "Params": "#$0f",
-                "Address": 49174
-              },
-              {
-                "Data": "jSef",
-                "OriginalText": "sta isr\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 49176
-              },
-              {
-                "Data": "eg==",
-                "OriginalText": "\r\nply\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49179
-              },
-              {
-                "Data": "+g==",
-                "OriginalText": "plx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49180
-              },
-              {
-                "Data": "aA==",
-                "OriginalText": "pla\r\n",
-                "RequiresReval": false,
+                "RequiresRevalNames": [],
                 "Params": "",
                 "Address": 49181
               },
               {
-                "Data": "QA==",
-                "OriginalText": "rti\r\n",
+                "Data": "2g==",
+                "OriginalText": "phx\r\n",
+                "LineNumber": 44,
                 "RequiresReval": false,
+                "RequiresRevalNames": [],
                 "Params": "",
                 "Address": 49182
+              },
+              {
+                "Data": "Wg==",
+                "OriginalText": "phy\r\n",
+                "LineNumber": 45,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "",
+                "Address": 49183
+              },
+              {
+                "Data": "bBQD",
+                "OriginalText": "\r\njmp (INTERUPT)\r\n",
+                "LineNumber": 47,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "(INTERUPT)",
+                "Address": 49184
               }
             ]
           },
-          ".Default_5": {
-            "Name": ".Default_5",
+          ".Default_7": {
+            "Name": ".Default_7",
             "Variables": {
               "_variables": {
-                "isr": 40743,
-                "irq_handler": 788,
                 "entrypoint": 2064,
                 "startup": 49152,
-                "irq": 49155
+                "default_irq_handler": 49165,
+                "brk_handler": 49177,
+                "irq_handler": 49181
+              },
+              "Values": {
+                "entrypoint": 2064,
+                "startup": 49152,
+                "default_irq_handler": 49165,
+                "brk_handler": 49177,
+                "irq_handler": 49181
               }
             },
             "Data": [
               {
-                "Data": "A8A=",
-                "OriginalText": " irq",
+                "Data": "GcA=",
+                "OriginalText": " brk_handler",
+                "LineNumber": 52,
                 "Address": 65530,
-                "RequiresReval": false
+                "RequiresReval": false,
+                "RequiresRevalNames": []
               },
               {
                 "Data": "AMA=",
                 "OriginalText": " startup",
+                "LineNumber": 53,
                 "Address": 65532,
-                "RequiresReval": false
+                "RequiresReval": false,
+                "RequiresRevalNames": []
               },
               {
-                "Data": "A8A=",
-                "OriginalText": " irq",
+                "Data": "HcA=",
+                "OriginalText": " irq_handler",
+                "LineNumber": 54,
                 "Address": 65534,
-                "RequiresReval": false
+                "RequiresReval": false,
+                "RequiresRevalNames": []
               }
             ]
           }
@@ -170,11 +268,18 @@
         "Name": ".Default_2",
         "Variables": {
           "_variables": {
-            "isr": 40743,
-            "irq_handler": 788,
             "entrypoint": 2064,
             "startup": 49152,
-            "irq": 49155
+            "default_irq_handler": 49165,
+            "brk_handler": 49177,
+            "irq_handler": 49181
+          },
+          "Values": {
+            "entrypoint": 2064,
+            "startup": 49152,
+            "default_irq_handler": 49165,
+            "brk_handler": 49177,
+            "irq_handler": 49181
           }
         }
       }
@@ -183,11 +288,18 @@
     "StartAddress": 49152,
     "Variables": {
       "_variables": {
-        "isr": 40743,
-        "irq_handler": 788,
         "entrypoint": 2064,
         "startup": 49152,
-        "irq": 49155
+        "default_irq_handler": 49165,
+        "brk_handler": 49177,
+        "irq_handler": 49181
+      },
+      "Values": {
+        "entrypoint": 2064,
+        "startup": 49152,
+        "default_irq_handler": 49165,
+        "brk_handler": 49177,
+        "irq_handler": 49181
       }
     },
     "Filename": null,

@@ -19,6 +19,9 @@ namespace BitMagic.Machines
         public IDisplay Display => Vera;
         public Vera Vera { get; }
 
+        private CommanderX16Defaults _defaultVariables = new();
+        public IVariables Variables => _defaultVariables;
+
         public CommanderX16(byte[] rom)
         {
             var banks = new List<IMemory>();
@@ -58,5 +61,56 @@ namespace BitMagic.Machines
 
             Cpu = new WDC65c02(Memory, 8000000);
         }
+    }
+
+    internal class CommanderX16Defaults : IVariables
+    {
+        private static Dictionary<string, int> _defaults = new Dictionary<string, int>
+        {
+            {"ADDRx_L", 0x9F20 },
+            {"ADDRx_M", 0x9F21},
+            {"ADDRx_H", 0x9F22},
+            {"DATA0", 0x9F23},
+            {"DATA1", 0x9F24},
+            {"CTRL", 0x9F25},
+            {"IEN", 0x9F26},
+            {"ISR", 0x9F27},
+            {"IRQLINE_L", 0x9F28},
+            {"DC_VIDEO", 0x9F29},
+            {"DC_HSCALE", 0x9F2A},
+            {"DC_VSCALE", 0x9F2B},
+            {"DC_BORDER", 0x9F2C},
+            {"DC_HSTART", 0x9F29},
+            {"DC_HSTOP", 0x9F2A},
+            {"DC_VSTART", 0x9F2B},
+            {"DC_VSTOP", 0x9F2C},
+            {"L0_CONFIG", 0x9F2D},
+            {"L0_MAPBASE", 0x9F2E},
+            {"L0_TILEBASE", 0x9F2F},
+            {"L0_HSCROLL_L", 0x9F30},
+            {"L0_HSCROLL_H", 0x9F31},
+            {"L0_VSCROLL_L", 0x9F32},
+            {"L0_VSCROLL_H", 0x9F33},
+            {"L1_CONFIG", 0x9F34},
+            {"L1_MAPBASE", 0x9F35},
+            {"L1_TILEBASE", 0x9F36},
+            {"L1_HSCROLL_L", 0x9F37},
+            {"L1_HSCROLL_H", 0x9F38},
+            {"L1_VSCROLL_L", 0x9F39},
+            {"L1_VSCROLL_H", 0x9F3A},
+            {"AUDIO_CTRL", 0x9F3B},
+            {"AUDIO_RATE", 0x9F3C},
+            {"AUDIO_DATA", 0x9F3D},
+            {"SPI_DATA", 0x9F3E},
+            {"SPI_CTRL", 0x9F3F},
+
+            {"INTERUPT", 0x0314},
+            {"INTERUPT_L", 0x0314},
+            {"INTERUPT_H", 0x0315},
+
+            {"RAM_BANK", 0x9F61}
+        };
+
+        public IReadOnlyDictionary<string, int> Values => _defaults;
     }
 }

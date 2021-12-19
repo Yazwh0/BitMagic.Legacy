@@ -7,8 +7,10 @@ namespace BitMagic.Compiler
     {
         [JsonProperty]
         public string Name { get; set; } = "";
+
         [JsonProperty]
         public int StartAddress { get; set; }
+
         [JsonProperty]
         public Variables Variables { get; }
 
@@ -23,13 +25,17 @@ namespace BitMagic.Compiler
 
         public Segment(Variables globals, string name)
         {
-            Variables = new Variables(globals);
             Name = name;
+            Variables = new Variables(globals, name);
         }
 
         public Segment(Variables globals, bool anonymous, int startAddress, string name, string? filename = null)
         {
-            Variables = anonymous ? globals : new Variables(globals);
+            Variables = anonymous ? globals : new Variables(globals, name);
+
+            if (!anonymous)
+                globals.RegisterChild(Variables);
+
             StartAddress = startAddress;
             Address = startAddress;
             Name = name;

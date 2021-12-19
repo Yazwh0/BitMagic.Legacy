@@ -14,9 +14,13 @@ namespace BitMagic.Compiler
 
         public Scope(Segment segment, string name, bool anonymous)
         {
-            Variables = anonymous ? segment.Variables : new Variables(segment.Variables);
             Name = name;
+            Variables = anonymous ? segment.Variables : new Variables(segment.Variables, name);
+
+            if (!anonymous)
+                segment.Variables.RegisterChild(Variables);
         }
+
         public Procedure GetProcedure(string name, bool anonymous)
         {
             if (!Procedures.ContainsKey(name))

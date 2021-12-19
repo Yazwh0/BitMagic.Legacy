@@ -24,9 +24,9 @@ namespace BitMagic
         /// <param name="asmObjectFile">option debugging json file</param>
         /// <param name="outputFile">output file</param>
         /// <param name="romFile">rom files</param>
-        /// <param name="args">Commands to run. eg: razor  compile  emulate</param>
+        /// <param name="args">Commands to run. eg: razor compile emulate</param>
         /// <returns></returns>
-        static async Task Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
+        static async Task<int> Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
                string outputFile = "", string romFile= "rom.bin", string[]? args = null)
         {
             string[] _args;
@@ -73,12 +73,15 @@ namespace BitMagic
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;//| ApplicationPart.Emulator;
 
+            project.CompileOptions.DisplayVariables = true;
+
             if (_args.Contains("razor"))
             {
                 if (string.IsNullOrWhiteSpace(project.Source.Filename))
                 {
                     Console.WriteLine("No Razor csasm file specified.");
-                    return;
+                    Console.ResetColor();
+                    return -1;
                 }
 
                 await project.Source.Load();
@@ -95,7 +98,8 @@ namespace BitMagic
                 if (string.IsNullOrWhiteSpace(project.Code.Filename) && project.Code.Contents == null)
                 {
                     Console.WriteLine("No bmasm or csasm file specified. Cannot compile.");
-                    return;
+                    Console.ResetColor();
+                    return -1;
                 }
 
                 if (project.Code.Contents == null)
@@ -104,7 +108,19 @@ namespace BitMagic
                 stopWatch.Restart();
 
                 var compiler = new Compiler.Compiler(project);
-                await compiler.Compile();
+
+                try
+                {
+                    await compiler.Compile();
+                } 
+                catch(CompilerException e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Compiler Error: {e.Message}");
+                    Console.WriteLine($"On Line {e.LineNumber}: {e.ErrorDetail}");
+                    Console.ResetColor();
+                    return 1;
+                }
 
                 project.CompileTime = stopWatch.Elapsed;
             }
@@ -119,15 +135,19 @@ namespace BitMagic
             if (_args.Contains("emulate") && _args.Contains("debug"))
             {
                 Console.WriteLine("Cannot emulate and debug. Use only one command.");
-                return;
+                Console.ResetColor();
+                return -1;
             }
 
             if (_args.Contains("emulate"))
             {
+                Console.WriteLine("Using Rom: " + project.RomFile.Filename);
+
                 if (string.IsNullOrWhiteSpace(project.OutputFile.Filename) && project.OutputFile.Contents == null)
                 {
                     Console.WriteLine("No prg file specific, or no compilation has taken place. Cannot emulate.");
-                    return;
+                    Console.ResetColor();
+                    return -1;
                 }
 
                 if (project.OutputFile.Contents == null)
@@ -135,7 +155,7 @@ namespace BitMagic
 
                 var emulator = new Emulation.Emulator(project);
                 emulator.LoadPrg();
-                emulator.Emulate(0x810);
+                emulator.Emulate();
             }
 
             if (_args.Contains("debug"))
@@ -145,6 +165,8 @@ namespace BitMagic
             }
 
             Console.WriteLine("Done.");
+            Console.ResetColor();
+            return 0;
         }
     }    
 }

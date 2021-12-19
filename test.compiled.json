@@ -1,1594 +1,213 @@
 {
   ".Default": {
     "Scopes": {
-      "main": {
+      ".Default_0": {
         "Procedures": {
-          ".Default_2": {
-            "Name": ".Default_2",
+          ".Default_1": {
+            "Name": ".Default_1",
             "Variables": {
               "_variables": {
-                "data0": 40739,
-                "data1": 40740,
-                "addr_l": 40736,
-                "addr_m": 40737,
-                "addr_h": 40738,
-                "ctrl": 40741,
-                "ien": 40742,
-                "isr": 40743,
-                "irq_line": 40744,
-                "dc_video": 40745,
-                "dc_hscale": 40746,
-                "dc_vscale": 40747,
-                "l0_config": 40749,
-                "l0_mapbase": 40750,
-                "l0_tilebase": 40751,
-                "l0_hscroll_l": 40752,
-                "l0_vscroll_l": 40754,
-                "start": 1,
-                "colourswitch": 0,
-                "offset": 2,
-                "longloop": 2149,
-                "clearloop": 2151,
-                "loop": 2173,
-                "copydata": 2176,
-                "vsync": 2229,
-                "tile8": 2325,
-                "tile16": 2389
-              }
+                "ADDRx_L": 40736,
+                "ADDRx_M": 40737,
+                "ADDRx_H": 40738,
+                "DATA0": 40739,
+                "DATA1": 40740,
+                "CTRL": 40741,
+                "IEN": 40742,
+                "ISR": 40743,
+                "IRQLINE_L": 40744,
+                "DC_VIDEO": 40745,
+                "DC_HSCALE": 40746,
+                "DC_VSCALE": 40747,
+                "DC_BORDER": 40748,
+                "DC_HSTART": 40745,
+                "DC_HSTOP": 40746,
+                "DC_VSTART": 40747,
+                "DC_VSTOP": 40748,
+                "L0_CONFIG": 40749,
+                "L0_MAPBASE": 40750,
+                "L0_TILEBASE": 40751,
+                "L0_HSCROLL_L": 40752,
+                "L0_HSCROLL_H": 40753,
+                "L0_VSCROLL_L": 40754,
+                "L0_VSCROLL_H": 40755,
+                "L1_CONFIG": 40756,
+                "L1_MAPBASE": 40757,
+                "L1_TILEBASE": 40758,
+                "L1_HSCROLL_L": 40759,
+                "L1_HSCROLL_H": 40760,
+                "L1_VSCROLL_L": 40761,
+                "L1_VSCROLL_H": 40762,
+                "AUDIO_CTRL": 40763,
+                "AUDIO_RATE": 40764,
+                "AUDIO_DATA": 40765,
+                "SPI_DATA": 40766,
+                "SPI_CTRL": 40767,
+                "INTERUPT": 788,
+                "INTERUPT_L": 788,
+                "INTERUPT_H": 789,
+                "RAM_BANK": 40801,
+                "top": 17,
+                "C": 2064,
+                "B": 2064,
+                "loop": 2068
+              },
+              "Namespace": "App"
             },
             "Data": [
               {
                 "Data": "DAgKAJ4gMjA2NAAAAAAA",
                 "OriginalText": "\t$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00",
+                "LineNumber": 2,
                 "Address": 2049,
-                "RequiresReval": false
-              },
-              {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #01\r\n",
                 "RequiresReval": false,
-                "Params": "#01",
-                "Address": 2064
-              },
-              {
-                "Data": "hQE=",
-                "OriginalText": "sta $01\r\n",
-                "RequiresReval": false,
-                "Params": "$01",
-                "Address": 2066
-              },
-              {
-                "Data": "ZAE=",
-                "OriginalText": "\r\nstz start\r\n",
-                "RequiresReval": false,
-                "Params": "start",
-                "Address": 2068
-              },
-              {
-                "Data": "qQI=",
-                "OriginalText": "\r\nlda #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2070
-              },
-              {
-                "Data": "jSaf",
-                "OriginalText": "sta ien\r\n",
-                "RequiresReval": false,
-                "Params": "ien",
-                "Address": 2072
-              },
-              {
-                "Data": "pQE=",
-                "OriginalText": "\r\nlda start\r\n",
-                "RequiresReval": false,
-                "Params": "start",
-                "Address": 2075
-              },
-              {
-                "Data": "jSif",
-                "OriginalText": "sta irq_line\r\n",
-                "RequiresReval": false,
-                "Params": "irq_line",
-                "Address": 2077
-              },
-              {
-                "Data": "nCWf",
-                "OriginalText": "\r\nstz ctrl\r\n",
-                "RequiresReval": false,
-                "Params": "ctrl",
-                "Address": 2080
-              },
-              {
-                "Data": "qRE=",
-                "OriginalText": ";      FS10-Cmm\r\nlda #0b00010001\r\n",
-                "RequiresReval": false,
-                "Params": "#0b00010001",
-                "Address": 2083
-              },
-              {
-                "Data": "jSmf",
-                "OriginalText": "sta dc_video\r\n",
-                "RequiresReval": false,
-                "Params": "dc_video",
-                "Address": 2085
-              },
-              {
-                "Data": "qSI=",
-                "OriginalText": "\r\n;      hhwwtbcc\r\nlda #0b00100010 ; tiles 4bp, 128 tiles wide.\r\n",
-                "RequiresReval": false,
-                "Params": "#0b00100010",
-                "Address": 2088
-              },
-              {
-                "Data": "jS2f",
-                "OriginalText": "sta l0_config\r\n",
-                "RequiresReval": false,
-                "Params": "l0_config",
-                "Address": 2090
-              },
-              {
-                "Data": "nC6f",
-                "OriginalText": "\r\nstz l0_mapbase\r\n",
-                "RequiresReval": false,
-                "Params": "l0_mapbase",
-                "Address": 2093
-              },
-              {
-                "Data": "qUA=",
-                "OriginalText": "\r\nlda #64\r\n",
-                "RequiresReval": false,
-                "Params": "#64",
-                "Address": 2096
-              },
-              {
-                "Data": "jSqf",
-                "OriginalText": "sta dc_hscale\r\n",
-                "RequiresReval": false,
-                "Params": "dc_hscale",
-                "Address": 2098
-              },
-              {
-                "Data": "jSuf",
-                "OriginalText": "sta dc_vscale\r\n",
-                "RequiresReval": false,
-                "Params": "dc_vscale",
-                "Address": 2101
-              },
-              {
-                "Data": "qTM=",
-                "OriginalText": "\r\n;      aaaaaahw\r\nlda #0b00110011 ; tiles at $6000\r\n",
-                "RequiresReval": false,
-                "Params": "#0b00110011",
-                "Address": 2104
-              },
-              {
-                "Data": "jS+f",
-                "OriginalText": "sta l0_tilebase\r\n",
-                "RequiresReval": false,
-                "Params": "l0_tilebase",
-                "Address": 2106
-              },
-              {
-                "Data": "IIAI",
-                "OriginalText": "\r\njsr copydata\r\n",
-                "RequiresReval": false,
-                "Params": "copydata",
-                "Address": 2109
-              },
-              {
-                "Data": "qRA=",
-                "OriginalText": "\r\nlda #$10\r\n",
-                "RequiresReval": false,
-                "Params": "#$10",
-                "Address": 2112
-              },
-              {
-                "Data": "jSKf",
-                "OriginalText": "sta addr_h\r\n",
-                "RequiresReval": false,
-                "Params": "addr_h",
-                "Address": 2114
-              },
-              {
-                "Data": "nCGf",
-                "OriginalText": "stz addr_m\r\n",
-                "RequiresReval": false,
-                "Params": "addr_m",
-                "Address": 2117
-              },
-              {
-                "Data": "nCCf",
-                "OriginalText": "stz addr_l\r\n",
-                "RequiresReval": false,
-                "Params": "addr_l",
-                "Address": 2120
-              },
-              {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #$01\r\n",
-                "RequiresReval": false,
-                "Params": "#$01",
-                "Address": 2123
-              },
-              {
-                "Data": "jSOf",
-                "OriginalText": "sta data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2125
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "stz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2128
-              },
-              {
-                "Data": "qQI=",
-                "OriginalText": "lda #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2131
-              },
-              {
-                "Data": "jSOf",
-                "OriginalText": "sta data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2133
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "stz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2136
-              },
-              {
-                "Data": "qQM=",
-                "OriginalText": "lda #$03\r\n",
-                "RequiresReval": false,
-                "Params": "#$03",
-                "Address": 2139
-              },
-              {
-                "Data": "jSOf",
-                "OriginalText": "sta data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2141
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "stz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2144
-              },
-              {
-                "Data": "oBI=",
-                "OriginalText": "\r\n\r\nldy #$12\r\n",
-                "RequiresReval": false,
-                "Params": "#$12",
-                "Address": 2147
-              },
-              {
-                "Data": "ov8=",
-                "OriginalText": "ldx #$ff\r\n",
-                "RequiresReval": false,
-                "Params": "#$ff",
-                "Address": 2149
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "stz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2151
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "stz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2154
-              },
-              {
-                "Data": "yg==",
-                "OriginalText": "dex\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2157
-              },
-              {
-                "Data": "0Pc=",
-                "OriginalText": "bne clearloop\r\n",
-                "RequiresReval": false,
-                "Params": "clearloop",
-                "Address": 2158
-              },
-              {
-                "Data": "iA==",
-                "OriginalText": "dey\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2160
-              },
-              {
-                "Data": "0PI=",
-                "OriginalText": "bne longloop\r\n",
-                "RequiresReval": false,
-                "Params": "longloop",
-                "Address": 2161
-              },
-              {
-                "Data": "qbU=",
-                "OriginalText": "\r\nlda #<vsync\r\n",
-                "RequiresReval": false,
-                "Params": "#<vsync",
-                "Address": 2163
-              },
-              {
-                "Data": "jRQD",
-                "OriginalText": "sta $314\r\n",
-                "RequiresReval": false,
-                "Params": "$314",
-                "Address": 2165
-              },
-              {
-                "Data": "qQg=",
-                "OriginalText": "lda #>vsync\r\n",
-                "RequiresReval": false,
-                "Params": "#>vsync",
-                "Address": 2168
-              },
-              {
-                "Data": "jRUD",
-                "OriginalText": "sta $315\r\n",
-                "RequiresReval": false,
-                "Params": "$315",
-                "Address": 2170
-              },
-              {
-                "Data": "TH0I",
-                "OriginalText": "jmp loop\r\n",
-                "RequiresReval": false,
-                "Params": "loop",
-                "Address": 2173
-              }
-            ]
-          },
-          "copydata": {
-            "Name": "copydata",
-            "Variables": {
-              "_variables": {
-                "address": 24576,
-                "size": 512,
-                "copydata_src": 2205,
-                "noinc": 2219,
-                "copydata_done": 2228
-              }
-            },
-            "Data": [
-              {
-                "Data": "qRA=",
-                "OriginalText": "\r\nlda #^address + $10 ; add on 1byte increment\r\n",
-                "RequiresReval": false,
-                "Params": "#^address+$10",
-                "Address": 2176
-              },
-              {
-                "Data": "jSKf",
-                "OriginalText": "sta addr_h\r\n",
-                "RequiresReval": false,
-                "Params": "addr_h",
-                "Address": 2178
-              },
-              {
-                "Data": "qWA=",
-                "OriginalText": "lda #>address\r\n",
-                "RequiresReval": false,
-                "Params": "#>address",
-                "Address": 2181
-              },
-              {
-                "Data": "jSGf",
-                "OriginalText": "sta addr_m\r\n",
-                "RequiresReval": false,
-                "Params": "addr_m",
-                "Address": 2183
-              },
-              {
-                "Data": "qQA=",
-                "OriginalText": "lda #<address\r\n",
-                "RequiresReval": false,
-                "Params": "#<address",
-                "Address": 2186
-              },
-              {
-                "Data": "jSCf",
-                "OriginalText": "sta addr_l\r\n",
-                "RequiresReval": false,
-                "Params": "addr_l",
-                "Address": 2188
-              },
-              {
-                "Data": "oAA=",
-                "OriginalText": "\r\n; y low value\r\n; x high value\r\nldy #<size\r\n",
-                "RequiresReval": false,
-                "Params": "#<size",
-                "Address": 2191
-              },
-              {
-                "Data": "ogM=",
-                "OriginalText": "ldx #>size+1 ; +1 as we check the end when we reduce x\r\n",
-                "RequiresReval": false,
-                "Params": "#>size+1",
-                "Address": 2193
-              },
-              {
-                "Data": "qVU=",
-                "OriginalText": "\r\nlda #<tile16\r\n",
-                "RequiresReval": false,
-                "Params": "#<tile16",
-                "Address": 2195
-              },
-              {
-                "Data": "jZ4I",
-                "OriginalText": "sta copydata_src + 1\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src+1",
-                "Address": 2197
-              },
-              {
-                "Data": "qQk=",
-                "OriginalText": "lda #>tile16\r\n",
-                "RequiresReval": false,
-                "Params": "#>tile16",
-                "Address": 2200
-              },
-              {
-                "Data": "jZ8I",
-                "OriginalText": "sta copydata_src + 2\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src+2",
-                "Address": 2202
-              },
-              {
-                "Data": "rTQS",
-                "OriginalText": "lda $1234 ; gets modified\r\n",
-                "RequiresReval": false,
-                "Params": "$1234",
-                "Address": 2205
-              },
-              {
-                "Data": "jSOf",
-                "OriginalText": "sta data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2208
-              },
-              {
-                "Data": "7p4I",
-                "OriginalText": "\r\ninc copydata_src + 1\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src+1",
-                "Address": 2211
-              },
-              {
-                "Data": "0AM=",
-                "OriginalText": "bne noinc\r\n",
-                "RequiresReval": false,
-                "Params": "noinc",
-                "Address": 2214
-              },
-              {
-                "Data": "7p8I",
-                "OriginalText": "\r\ninc copydata_src + 2\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src+2",
-                "Address": 2216
-              },
-              {
-                "Data": "iA==",
-                "OriginalText": "dey\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2219
-              },
-              {
-                "Data": "0O8=",
-                "OriginalText": "bne copydata_src\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src",
-                "Address": 2220
-              },
-              {
-                "Data": "yg==",
-                "OriginalText": "\r\ndex\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2222
-              },
-              {
-                "Data": "8AM=",
-                "OriginalText": "beq copydata_done\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_done",
-                "Address": 2223
-              },
-              {
-                "Data": "TJ0I",
-                "OriginalText": "jmp copydata_src\r\n",
-                "RequiresReval": false,
-                "Params": "copydata_src",
-                "Address": 2225
-              },
-              {
-                "Data": "YA==",
-                "OriginalText": "rts\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2228
-              }
-            ]
-          },
-          "vsync": {
-            "Name": "vsync",
-            "Variables": {
-              "_variables": {
-                "skipoffset_reset": 2273,
-                "done": 2283,
-                "setcolour": 2287
-              }
-            },
-            "Data": [
-              {
-                "Data": "rSef",
-                "OriginalText": "\r\nlda isr\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 2229
-              },
-              {
-                "Data": "KQI=",
-                "OriginalText": "and #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2232
-              },
-              {
-                "Data": "8C8=",
-                "OriginalText": "beq done\r\n",
-                "RequiresReval": false,
-                "Params": "done",
-                "Address": 2234
-              },
-              {
-                "Data": "pQA=",
-                "OriginalText": "\r\nlda colourswitch\r\n",
-                "RequiresReval": false,
-                "Params": "colourswitch",
-                "Address": 2236
-              },
-              {
-                "Data": "0C8=",
-                "OriginalText": "bne setcolour\r\n",
-                "RequiresReval": false,
-                "Params": "setcolour",
-                "Address": 2238
-              },
-              {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #$01\r\n",
-                "RequiresReval": false,
-                "Params": "#$01",
-                "Address": 2240
-              },
-              {
-                "Data": "jSKf",
-                "OriginalText": "sta addr_h\r\n",
-                "RequiresReval": false,
-                "Params": "addr_h",
-                "Address": 2242
-              },
-              {
-                "Data": "qfo=",
-                "OriginalText": "lda #$fa\r\n",
-                "RequiresReval": false,
-                "Params": "#$fa",
-                "Address": 2245
-              },
-              {
-                "Data": "jSGf",
-                "OriginalText": "sta addr_m\r\n",
-                "RequiresReval": false,
-                "Params": "addr_m",
-                "Address": 2247
-              },
-              {
-                "Data": "nCCf",
-                "OriginalText": "stz addr_l\r\n",
-                "RequiresReval": false,
-                "Params": "addr_l",
-                "Address": 2250
-              },
-              {
-                "Data": "nCOf",
-                "OriginalText": "\r\nstz data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2253
-              },
-              {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #$01\r\n",
-                "RequiresReval": false,
-                "Params": "#$01",
-                "Address": 2256
-              },
-              {
-                "Data": "hQA=",
-                "OriginalText": "sta colourswitch\r\n",
-                "RequiresReval": false,
-                "Params": "colourswitch",
-                "Address": 2258
-              },
-              {
-                "Data": "5gI=",
-                "OriginalText": "\r\ninc offset\r\n",
-                "RequiresReval": false,
-                "Params": "offset",
-                "Address": 2260
-              },
-              {
-                "Data": "pQI=",
-                "OriginalText": ";lda #8\r\nlda offset\r\n",
-                "RequiresReval": false,
-                "Params": "offset",
-                "Address": 2262
-              },
-              {
-                "Data": "jTCf",
-                "OriginalText": "sta l0_hscroll_l\r\n",
-                "RequiresReval": false,
-                "Params": "l0_hscroll_l",
-                "Address": 2264
-              },
-              {
-                "Data": "yQ8=",
-                "OriginalText": "cmp #$0f\r\n",
-                "RequiresReval": false,
-                "Params": "#$0f",
-                "Address": 2267
-              },
-              {
-                "Data": "0AI=",
-                "OriginalText": "bne skipoffset_reset\r\n",
-                "RequiresReval": false,
-                "Params": "skipoffset_reset",
-                "Address": 2269
-              },
-              {
-                "Data": "ZAI=",
-                "OriginalText": "stz offset\r\n",
-                "RequiresReval": false,
-                "Params": "offset",
-                "Address": 2271
-              },
-              {
-                "Data": "qf8=",
-                "OriginalText": "\r\nlda #$ff\r\n",
-                "RequiresReval": false,
-                "Params": "#$ff",
-                "Address": 2273
-              },
-              {
-                "Data": "jSif",
-                "OriginalText": "sta irq_line\r\n",
-                "RequiresReval": false,
-                "Params": "irq_line",
-                "Address": 2275
-              },
-              {
-                "Data": "qQI=",
-                "OriginalText": "\r\nlda #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2278
-              },
-              {
-                "Data": "jSef",
-                "OriginalText": "sta isr\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 2280
-              },
-              {
-                "Data": "eg==",
-                "OriginalText": "ply\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2283
-              },
-              {
-                "Data": "+g==",
-                "OriginalText": "plx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2284
-              },
-              {
-                "Data": "aA==",
-                "OriginalText": "pla\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2285
-              },
-              {
-                "Data": "QA==",
-                "OriginalText": "rti\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2286
-              },
-              {
-                "Data": "qQE=",
-                "OriginalText": "\r\nlda #$01\r\n",
-                "RequiresReval": false,
-                "Params": "#$01",
-                "Address": 2287
-              },
-              {
-                "Data": "jSKf",
-                "OriginalText": "sta addr_h\r\n",
-                "RequiresReval": false,
-                "Params": "addr_h",
-                "Address": 2289
-              },
-              {
-                "Data": "qfo=",
-                "OriginalText": "lda #$fa\r\n",
-                "RequiresReval": false,
-                "Params": "#$fa",
-                "Address": 2292
-              },
-              {
-                "Data": "jSGf",
-                "OriginalText": "sta addr_m\r\n",
-                "RequiresReval": false,
-                "Params": "addr_m",
-                "Address": 2294
-              },
-              {
-                "Data": "nCCf",
-                "OriginalText": "stz addr_l\r\n",
-                "RequiresReval": false,
-                "Params": "addr_l",
-                "Address": 2297
-              },
-              {
-                "Data": "qQo=",
-                "OriginalText": "\r\nlda #$0a\r\n",
-                "RequiresReval": false,
-                "Params": "#$0a",
-                "Address": 2300
-              },
-              {
-                "Data": "jSOf",
-                "OriginalText": "sta data0\r\n",
-                "RequiresReval": false,
-                "Params": "data0",
-                "Address": 2302
-              },
-              {
-                "Data": "5gE=",
-                "OriginalText": "\r\ninc start\r\n",
-                "RequiresReval": false,
-                "Params": "start",
-                "Address": 2305
-              },
-              {
-                "Data": "pQE=",
-                "OriginalText": "lda start\r\n",
-                "RequiresReval": false,
-                "Params": "start",
-                "Address": 2307
-              },
-              {
-                "Data": "KX8=",
-                "OriginalText": "and #0b01111111\r\n",
-                "RequiresReval": false,
-                "Params": "#0b01111111",
-                "Address": 2309
-              },
-              {
-                "Data": "jSif",
-                "OriginalText": "\r\nsta irq_line\r\n",
-                "RequiresReval": false,
-                "Params": "irq_line",
-                "Address": 2311
-              },
-              {
-                "Data": "ZAA=",
-                "OriginalText": "\r\nstz colourswitch\r\n",
-                "RequiresReval": false,
-                "Params": "colourswitch",
-                "Address": 2314
-              },
-              {
-                "Data": "qQI=",
-                "OriginalText": "\r\nlda #$02\r\n",
-                "RequiresReval": false,
-                "Params": "#$02",
-                "Address": 2316
-              },
-              {
-                "Data": "jSef",
-                "OriginalText": "sta isr\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 2318
-              },
-              {
-                "Data": "eg==",
-                "OriginalText": "\r\nply\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2321
-              },
-              {
-                "Data": "+g==",
-                "OriginalText": "plx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2322
-              },
-              {
-                "Data": "aA==",
-                "OriginalText": "pla\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2323
-              },
-              {
-                "Data": "QA==",
-                "OriginalText": "rti\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 2324
-              }
-            ]
-          },
-          ".Default_4": {
-            "Name": ".Default_4",
-            "Variables": {
-              "_variables": {
-                "data0": 40739,
-                "data1": 40740,
-                "addr_l": 40736,
-                "addr_m": 40737,
-                "addr_h": 40738,
-                "ctrl": 40741,
-                "ien": 40742,
-                "isr": 40743,
-                "irq_line": 40744,
-                "dc_video": 40745,
-                "dc_hscale": 40746,
-                "dc_vscale": 40747,
-                "l0_config": 40749,
-                "l0_mapbase": 40750,
-                "l0_tilebase": 40751,
-                "l0_hscroll_l": 40752,
-                "l0_vscroll_l": 40754,
-                "start": 1,
-                "colourswitch": 0,
-                "offset": 2,
-                "longloop": 2149,
-                "clearloop": 2151,
-                "loop": 2173,
-                "copydata": 2176,
-                "vsync": 2229,
-                "tile8": 2325,
-                "tile16": 2389
-              }
-            },
-            "Data": [
-              {
-                "Data": "ARERAA==",
-                "OriginalText": " $01, $11, $11, $00",
-                "Address": 2325,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAEA==",
-                "OriginalText": " $10, $00, $00, $10",
-                "Address": 2329,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAEA==",
-                "OriginalText": " $10, $00, $00, $10",
-                "Address": 2333,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAEA==",
-                "OriginalText": " $10, $00, $00, $10",
-                "Address": 2337,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAEA==",
-                "OriginalText": " $10, $00, $00, $10",
-                "Address": 2341,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAEA==",
-                "OriginalText": " $10, $00, $00, $10",
-                "Address": 2345,
-                "RequiresReval": false
-              },
-              {
-                "Data": "ARERAA==",
-                "OriginalText": " $01, $11, $11, $00",
-                "Address": 2349,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAAAAA==",
-                "OriginalText": " $00, $00, $00, $00",
-                "Address": 2353,
-                "RequiresReval": false
-              },
-              {
-                "Data": "ERGZmQ==",
-                "OriginalText": " $11, $11, $99, $99",
-                "Address": 2357,
-                "RequiresReval": false
-              },
-              {
-                "Data": "IiKqqg==",
-                "OriginalText": " $22, $22, $aa, $aa",
-                "Address": 2361,
-                "RequiresReval": false
-              },
-              {
-                "Data": "MzO7uw==",
-                "OriginalText": " $33, $33, $bb, $bb",
-                "Address": 2365,
-                "RequiresReval": false
-              },
-              {
-                "Data": "RETMzA==",
-                "OriginalText": " $44, $44, $cc, $cc",
-                "Address": 2369,
-                "RequiresReval": false
-              },
-              {
-                "Data": "VVXd3Q==",
-                "OriginalText": " $55, $55, $dd, $dd",
-                "Address": 2373,
-                "RequiresReval": false
-              },
-              {
-                "Data": "Zmbu7g==",
-                "OriginalText": " $66, $66, $ee, $ee",
-                "Address": 2377,
-                "RequiresReval": false
-              },
-              {
-                "Data": "d3f//w==",
-                "OriginalText": " $77, $77, $ff, $ff",
-                "Address": 2381,
-                "RequiresReval": false
-              },
-              {
-                "Data": "iIgAAA==",
-                "OriginalText": " $88, $88, $00, $00",
-                "Address": 2385,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2389,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2397,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2405,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2413,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2421,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2429,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2437,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2445,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2453,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2461,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2469,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2477,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2485,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2493,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2501,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAAAAAAAAAA=",
-                "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2509,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2517,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2525,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2533,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2541,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2549,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2557,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2565,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2573,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2581,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2589,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2597,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2605,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2613,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2621,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2629,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAAAAAAAAAA=",
-                "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2637,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2645,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2653,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2661,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2669,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2677,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEQAABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $00, $00, $10",
-                "Address": 2685,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2693,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2701,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2709,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2717,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2725,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2733,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2741,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2749,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2757,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAAAAAAAAAA=",
-                "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2765,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2773,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2781,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2789,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2797,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2805,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAABEABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $44, $00, $10",
-                "Address": 2813,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAEREABA=",
-                "OriginalText": " $10, $00, $00, $00, $44, $44, $00, $10",
-                "Address": 2821,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2829,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2837,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2845,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2853,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2861,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2869,
-                "RequiresReval": false
-              },
-              {
-                "Data": "EAAAAAAAABA=",
-                "OriginalText": " $10, $00, $00, $00, $00, $00, $00, $10",
-                "Address": 2877,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AREREREREQA=",
-                "OriginalText": " $01, $11, $11, $11, $11, $11, $11, $00",
-                "Address": 2885,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AAAAAAAAAAA=",
-                "OriginalText": " $00, $00, $00, $00, $00, $00, $00, $00",
-                "Address": 2893,
-                "RequiresReval": false
+                "RequiresRevalNames": []
               }
             ]
           }
         },
-        "Name": "main",
+        "Name": ".Default_0",
         "Variables": {
           "_variables": {
-            "data0": 40739,
-            "data1": 40740,
-            "addr_l": 40736,
-            "addr_m": 40737,
-            "addr_h": 40738,
-            "ctrl": 40741,
-            "ien": 40742,
-            "isr": 40743,
-            "irq_line": 40744,
-            "dc_video": 40745,
-            "dc_hscale": 40746,
-            "dc_vscale": 40747,
-            "l0_config": 40749,
-            "l0_mapbase": 40750,
-            "l0_tilebase": 40751,
-            "l0_hscroll_l": 40752,
-            "l0_vscroll_l": 40754,
-            "start": 1,
-            "colourswitch": 0,
-            "offset": 2,
-            "longloop": 2149,
-            "clearloop": 2151,
-            "loop": 2173,
-            "copydata": 2176,
-            "vsync": 2229,
-            "tile8": 2325,
-            "tile16": 2389
-          }
+            "ADDRx_L": 40736,
+            "ADDRx_M": 40737,
+            "ADDRx_H": 40738,
+            "DATA0": 40739,
+            "DATA1": 40740,
+            "CTRL": 40741,
+            "IEN": 40742,
+            "ISR": 40743,
+            "IRQLINE_L": 40744,
+            "DC_VIDEO": 40745,
+            "DC_HSCALE": 40746,
+            "DC_VSCALE": 40747,
+            "DC_BORDER": 40748,
+            "DC_HSTART": 40745,
+            "DC_HSTOP": 40746,
+            "DC_VSTART": 40747,
+            "DC_VSTOP": 40748,
+            "L0_CONFIG": 40749,
+            "L0_MAPBASE": 40750,
+            "L0_TILEBASE": 40751,
+            "L0_HSCROLL_L": 40752,
+            "L0_HSCROLL_H": 40753,
+            "L0_VSCROLL_L": 40754,
+            "L0_VSCROLL_H": 40755,
+            "L1_CONFIG": 40756,
+            "L1_MAPBASE": 40757,
+            "L1_TILEBASE": 40758,
+            "L1_HSCROLL_L": 40759,
+            "L1_HSCROLL_H": 40760,
+            "L1_VSCROLL_L": 40761,
+            "L1_VSCROLL_H": 40762,
+            "AUDIO_CTRL": 40763,
+            "AUDIO_RATE": 40764,
+            "AUDIO_DATA": 40765,
+            "SPI_DATA": 40766,
+            "SPI_CTRL": 40767,
+            "INTERUPT": 788,
+            "INTERUPT_L": 788,
+            "INTERUPT_H": 789,
+            "RAM_BANK": 40801,
+            "top": 17,
+            "C": 2064,
+            "B": 2064,
+            "loop": 2068
+          },
+          "Namespace": "App"
         }
-      }
-    },
-    "Name": ".Default",
-    "StartAddress": 2049,
-    "Variables": {
-      "_variables": {
-        "sintable": 2901,
-        "datatable": 2901,
-        "somefile": 2901
-      }
-    },
-    "Filename": null,
-    "Address": 2901
-  },
-  "rom": {
-    "Scopes": {
+      },
       ".Default_5": {
         "Procedures": {
-          "startup": {
-            "Name": "startup",
+          "B": {
+            "Name": "B",
             "Variables": {
-              "_variables": {}
+              "_variables": {
+                "inb": 51
+              },
+              "Namespace": "B"
             },
             "Data": [
               {
-                "Data": "TBAI",
-                "OriginalText": "jmp entrypoint\r\n",
+                "Data": "pSI=",
+                "OriginalText": "lda ::A:ina\r\n",
+                "LineNumber": 25,
                 "RequiresReval": false,
-                "Params": "entrypoint",
-                "Address": 49152
+                "RequiresRevalNames": [],
+                "Params": "::A:ina",
+                "Address": 2064
+              },
+              {
+                "Data": "pf8=",
+                "OriginalText": "lda :C:ina\r\n",
+                "LineNumber": 26,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": ":C:ina",
+                "Address": 2066
               }
             ]
           },
-          "irq": {
-            "Name": "irq",
+          ".Default_7": {
+            "Name": ".Default_7",
             "Variables": {
               "_variables": {
-                "has_jump": 49168,
-                "no_handle": 49171
-              }
+                "ADDRx_L": 40736,
+                "ADDRx_M": 40737,
+                "ADDRx_H": 40738,
+                "DATA0": 40739,
+                "DATA1": 40740,
+                "CTRL": 40741,
+                "IEN": 40742,
+                "ISR": 40743,
+                "IRQLINE_L": 40744,
+                "DC_VIDEO": 40745,
+                "DC_HSCALE": 40746,
+                "DC_VSCALE": 40747,
+                "DC_BORDER": 40748,
+                "DC_HSTART": 40745,
+                "DC_HSTOP": 40746,
+                "DC_VSTART": 40747,
+                "DC_VSTOP": 40748,
+                "L0_CONFIG": 40749,
+                "L0_MAPBASE": 40750,
+                "L0_TILEBASE": 40751,
+                "L0_HSCROLL_L": 40752,
+                "L0_HSCROLL_H": 40753,
+                "L0_VSCROLL_L": 40754,
+                "L0_VSCROLL_H": 40755,
+                "L1_CONFIG": 40756,
+                "L1_MAPBASE": 40757,
+                "L1_TILEBASE": 40758,
+                "L1_HSCROLL_L": 40759,
+                "L1_HSCROLL_H": 40760,
+                "L1_VSCROLL_L": 40761,
+                "L1_VSCROLL_H": 40762,
+                "AUDIO_CTRL": 40763,
+                "AUDIO_RATE": 40764,
+                "AUDIO_DATA": 40765,
+                "SPI_DATA": 40766,
+                "SPI_CTRL": 40767,
+                "INTERUPT": 788,
+                "INTERUPT_L": 788,
+                "INTERUPT_H": 789,
+                "RAM_BANK": 40801,
+                "top": 17,
+                "C": 2064,
+                "B": 2064,
+                "loop": 2068
+              },
+              "Namespace": "App"
             },
             "Data": [
               {
-                "Data": "SA==",
-                "OriginalText": "\r\npha\r\n",
+                "Data": "TBQI",
+                "OriginalText": "jmp loop\r\n",
+                "LineNumber": 31,
                 "RequiresReval": false,
-                "Params": "",
-                "Address": 49155
-              },
-              {
-                "Data": "2g==",
-                "OriginalText": "phx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49156
-              },
-              {
-                "Data": "Wg==",
-                "OriginalText": "phy\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49157
-              },
-              {
-                "Data": "rRQD",
-                "OriginalText": "\r\nlda irq_handler\r\n",
-                "RequiresReval": false,
-                "Params": "irq_handler",
-                "Address": 49158
-              },
-              {
-                "Data": "0AU=",
-                "OriginalText": "bne has_jump\r\n",
-                "RequiresReval": false,
-                "Params": "has_jump",
-                "Address": 49161
-              },
-              {
-                "Data": "rRUD",
-                "OriginalText": "lda irq_handler+1\r\n",
-                "RequiresReval": false,
-                "Params": "irq_handler+1",
-                "Address": 49163
-              },
-              {
-                "Data": "8AM=",
-                "OriginalText": "beq no_handle\r\n",
-                "RequiresReval": false,
-                "Params": "no_handle",
-                "Address": 49166
-              },
-              {
-                "Data": "bBQD",
-                "OriginalText": "jmp (irq_handler)\r\n",
-                "RequiresReval": false,
-                "Params": "(irq_handler)",
-                "Address": 49168
-              },
-              {
-                "Data": "rSef",
-                "OriginalText": "lda isr\t\t; clear all flags\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 49171
-              },
-              {
-                "Data": "KQ8=",
-                "OriginalText": "and #$0f\r\n",
-                "RequiresReval": false,
-                "Params": "#$0f",
-                "Address": 49174
-              },
-              {
-                "Data": "jSef",
-                "OriginalText": "sta isr\r\n",
-                "RequiresReval": false,
-                "Params": "isr",
-                "Address": 49176
-              },
-              {
-                "Data": "eg==",
-                "OriginalText": "\r\nply\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49179
-              },
-              {
-                "Data": "+g==",
-                "OriginalText": "plx\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49180
-              },
-              {
-                "Data": "aA==",
-                "OriginalText": "pla\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49181
-              },
-              {
-                "Data": "QA==",
-                "OriginalText": "rti\r\n",
-                "RequiresReval": false,
-                "Params": "",
-                "Address": 49182
-              }
-            ]
-          },
-          ".Default_8": {
-            "Name": ".Default_8",
-            "Variables": {
-              "_variables": {
-                "isr": 40743,
-                "irq_handler": 788,
-                "entrypoint": 2064,
-                "startup": 49152,
-                "irq": 49155
-              }
-            },
-            "Data": [
-              {
-                "Data": "A8A=",
-                "OriginalText": " irq",
-                "Address": 65530,
-                "RequiresReval": false
-              },
-              {
-                "Data": "AMA=",
-                "OriginalText": " startup",
-                "Address": 65532,
-                "RequiresReval": false
-              },
-              {
-                "Data": "A8A=",
-                "OriginalText": " irq",
-                "Address": 65534,
-                "RequiresReval": false
+                "RequiresRevalNames": [],
+                "Params": "loop",
+                "Address": 2068
               }
             ]
           }
@@ -1596,27 +215,107 @@
         "Name": ".Default_5",
         "Variables": {
           "_variables": {
-            "isr": 40743,
-            "irq_handler": 788,
-            "entrypoint": 2064,
-            "startup": 49152,
-            "irq": 49155
-          }
+            "ADDRx_L": 40736,
+            "ADDRx_M": 40737,
+            "ADDRx_H": 40738,
+            "DATA0": 40739,
+            "DATA1": 40740,
+            "CTRL": 40741,
+            "IEN": 40742,
+            "ISR": 40743,
+            "IRQLINE_L": 40744,
+            "DC_VIDEO": 40745,
+            "DC_HSCALE": 40746,
+            "DC_VSCALE": 40747,
+            "DC_BORDER": 40748,
+            "DC_HSTART": 40745,
+            "DC_HSTOP": 40746,
+            "DC_VSTART": 40747,
+            "DC_VSTOP": 40748,
+            "L0_CONFIG": 40749,
+            "L0_MAPBASE": 40750,
+            "L0_TILEBASE": 40751,
+            "L0_HSCROLL_L": 40752,
+            "L0_HSCROLL_H": 40753,
+            "L0_VSCROLL_L": 40754,
+            "L0_VSCROLL_H": 40755,
+            "L1_CONFIG": 40756,
+            "L1_MAPBASE": 40757,
+            "L1_TILEBASE": 40758,
+            "L1_HSCROLL_L": 40759,
+            "L1_HSCROLL_H": 40760,
+            "L1_VSCROLL_L": 40761,
+            "L1_VSCROLL_H": 40762,
+            "AUDIO_CTRL": 40763,
+            "AUDIO_RATE": 40764,
+            "AUDIO_DATA": 40765,
+            "SPI_DATA": 40766,
+            "SPI_CTRL": 40767,
+            "INTERUPT": 788,
+            "INTERUPT_L": 788,
+            "INTERUPT_H": 789,
+            "RAM_BANK": 40801,
+            "top": 17,
+            "C": 2064,
+            "B": 2064,
+            "loop": 2068
+          },
+          "Namespace": "App"
         }
       }
     },
-    "Name": "rom",
-    "StartAddress": 49152,
+    "Name": ".Default",
+    "StartAddress": 2049,
     "Variables": {
       "_variables": {
-        "isr": 40743,
-        "irq_handler": 788,
-        "entrypoint": 2064,
-        "startup": 49152,
-        "irq": 49155
-      }
+        "ADDRx_L": 40736,
+        "ADDRx_M": 40737,
+        "ADDRx_H": 40738,
+        "DATA0": 40739,
+        "DATA1": 40740,
+        "CTRL": 40741,
+        "IEN": 40742,
+        "ISR": 40743,
+        "IRQLINE_L": 40744,
+        "DC_VIDEO": 40745,
+        "DC_HSCALE": 40746,
+        "DC_VSCALE": 40747,
+        "DC_BORDER": 40748,
+        "DC_HSTART": 40745,
+        "DC_HSTOP": 40746,
+        "DC_VSTART": 40747,
+        "DC_VSTOP": 40748,
+        "L0_CONFIG": 40749,
+        "L0_MAPBASE": 40750,
+        "L0_TILEBASE": 40751,
+        "L0_HSCROLL_L": 40752,
+        "L0_HSCROLL_H": 40753,
+        "L0_VSCROLL_L": 40754,
+        "L0_VSCROLL_H": 40755,
+        "L1_CONFIG": 40756,
+        "L1_MAPBASE": 40757,
+        "L1_TILEBASE": 40758,
+        "L1_HSCROLL_L": 40759,
+        "L1_HSCROLL_H": 40760,
+        "L1_VSCROLL_L": 40761,
+        "L1_VSCROLL_H": 40762,
+        "AUDIO_CTRL": 40763,
+        "AUDIO_RATE": 40764,
+        "AUDIO_DATA": 40765,
+        "SPI_DATA": 40766,
+        "SPI_CTRL": 40767,
+        "INTERUPT": 788,
+        "INTERUPT_L": 788,
+        "INTERUPT_H": 789,
+        "RAM_BANK": 40801,
+        "top": 17,
+        "C": 2064,
+        "B": 2064,
+        "loop": 2068
+      },
+      "Namespace": "App"
     },
-    "Filename": "rom.bin",
-    "Address": 65536
+    "Filename": null,
+    "Address": 2071
   }
 }

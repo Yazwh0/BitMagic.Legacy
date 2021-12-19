@@ -14,8 +14,11 @@ namespace BitMagic.Compiler
 
         public Procedure(Scope scope, string name, bool anonymous)
         {
-            Variables = anonymous ? scope.Variables : new Variables(scope.Variables);
             Name = name;
+            Variables = anonymous ? scope.Variables : new Variables(scope.Variables, name);
+            
+            if (!anonymous)
+                scope.Variables.RegisterChild(Variables);
         }
 
         public void AddLine(ILine line)
