@@ -1,8 +1,8 @@
 # BitMagic
 
-BitMagic is currently a template engine and compiler for the Commander X16, although in theory it would work for any 65c02 based machine.
+BitMagic is currently an assembler template engine and compiler for the Commander X16, although in theory it would work for any 6502\65c02 based machine.
 
-BitMagic also includes a work in progress emulator, and eventually will include a Debugger Adaptor to allow development from within tools like Visual Studio Code.
+BitMagic also includes a work in progress emulator, and will eventually include a Debugger Adaptor to allow development from within tools like Visual Studio Code.
 
 ## Compiler
 
@@ -15,6 +15,8 @@ BitMagic uses ASP.NETs Razor template engine to acheive what would commanly be c
 The files that the Razor engine works on have the extension '.csasm'. (in a nod to the .cshtml file extension)
 
 Unlike HTMLs tags which makes differentiation easy, BitMagic will examine each line of the input file. If it stars with a '.', or a three letter asm opcode, it will be flagged as part of the asm file. If not, it will be parsed as C#. You can still use C# on a line of assembler code, using the @ notation.
+
+If you're not familiar with the Razor templating engine, its probably worth reading a few beginners guides first.
 
 Here is an example of some csasm code:
 
@@ -36,7 +38,7 @@ Here is an example of some csasm code:
         sta DATA0
     }
 
-    SetColour(Color.DarkOrchid); // $9932CC, or $93c o nthe X16, and so $3c, $09 when loading into VERA
+    SetColour(Color.DarkOrchid); // $9932CC, or $93c on the X16, and so $3c, $09 when loading into VERA
     SetColour(Color.White);
 
 When compiled this will create a .prg file with the following:

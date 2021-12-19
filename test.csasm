@@ -16,5 +16,5 @@ void SetColour(Color colour)
 	sta DATA0
 }
 
-SetColour(Color.DarkOrchid); // $9932CC, or $93c o nthe X16, and so $3c, $09 when loading into VERA
+SetColour(Color.DarkOrchid); // $9932CC, or $93c on the X16, and so $3c, $09 when loading into VERA
 SetColour(Color.White);
