@@ -79,6 +79,5 @@ namespace BitMagic.Common
             B = b;
             A = a;
         }
-
     }
 }

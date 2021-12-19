@@ -86,7 +86,19 @@ namespace BitMagic.Compiler
             }
 
             var matches = new List<(string Name, int Value)>(1);
-            var regex = new Regex($"^{(name.StartsWith(':') ? ".*" : "")}{name.Replace("::", ":.*:")}$", RegexOptions.Compiled | RegexOptions.Singleline);
+
+            var prev = name;
+            var regexname = name;
+            while(true)
+            {
+                regexname = prev.Replace("::", ":.*:");
+                if (regexname == prev)
+                    break;
+
+                prev = regexname;
+            }
+
+            var regex = new Regex($"^{(name.StartsWith(':') ? ".*" : "")}{regexname}$", RegexOptions.Compiled | RegexOptions.Singleline);
 
             // use pattern matching
             foreach(var kv in GetChildVariables(Namespace))
@@ -97,7 +109,7 @@ namespace BitMagic.Compiler
                     continue;
                 }
 
-                if (kv.Name.EndsWith(":" + name))
+                if (name.StartsWith(':') && kv.Name.EndsWith(name))
                 {
                     matches.Add(kv);
                     continue;

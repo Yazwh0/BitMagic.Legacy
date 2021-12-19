@@ -7,7 +7,7 @@
             "Name": "startup",
             "Variables": {
               "_variables": {},
-              "Values": {}
+              "Namespace": "startup"
             },
             "Data": [
               {
@@ -61,7 +61,7 @@
             "Name": "default_irq_handler",
             "Variables": {
               "_variables": {},
-              "Values": {}
+              "Namespace": "default_irq_handler"
             },
             "Data": [
               {
@@ -133,7 +133,7 @@
             "Name": "brk_handler",
             "Variables": {
               "_variables": {},
-              "Values": {}
+              "Namespace": "brk_handler"
             },
             "Data": [
               {
@@ -178,13 +178,13 @@
             "Name": "irq_handler",
             "Variables": {
               "_variables": {},
-              "Values": {}
+              "Namespace": "irq_handler"
             },
             "Data": [
               {
                 "Data": "SA==",
                 "OriginalText": "\r\npha\r\n",
-                "LineNumber": 43,
+                "LineNumber": 44,
                 "RequiresReval": false,
                 "RequiresRevalNames": [],
                 "Params": "",
@@ -193,7 +193,7 @@
               {
                 "Data": "2g==",
                 "OriginalText": "phx\r\n",
-                "LineNumber": 44,
+                "LineNumber": 45,
                 "RequiresReval": false,
                 "RequiresRevalNames": [],
                 "Params": "",
@@ -202,7 +202,7 @@
               {
                 "Data": "Wg==",
                 "OriginalText": "phy\r\n",
-                "LineNumber": 45,
+                "LineNumber": 46,
                 "RequiresReval": false,
                 "RequiresRevalNames": [],
                 "Params": "",
@@ -211,7 +211,7 @@
               {
                 "Data": "bBQD",
                 "OriginalText": "\r\njmp (INTERUPT)\r\n",
-                "LineNumber": 47,
+                "LineNumber": 48,
                 "RequiresReval": false,
                 "RequiresRevalNames": [],
                 "Params": "(INTERUPT)",
@@ -229,19 +229,13 @@
                 "brk_handler": 49177,
                 "irq_handler": 49181
               },
-              "Values": {
-                "entrypoint": 2064,
-                "startup": 49152,
-                "default_irq_handler": 49165,
-                "brk_handler": 49177,
-                "irq_handler": 49181
-              }
+              "Namespace": "rom"
             },
             "Data": [
               {
                 "Data": "GcA=",
                 "OriginalText": " brk_handler",
-                "LineNumber": 52,
+                "LineNumber": 53,
                 "Address": 65530,
                 "RequiresReval": false,
                 "RequiresRevalNames": []
@@ -249,7 +243,7 @@
               {
                 "Data": "AMA=",
                 "OriginalText": " startup",
-                "LineNumber": 53,
+                "LineNumber": 54,
                 "Address": 65532,
                 "RequiresReval": false,
                 "RequiresRevalNames": []
@@ -257,7 +251,7 @@
               {
                 "Data": "HcA=",
                 "OriginalText": " irq_handler",
-                "LineNumber": 54,
+                "LineNumber": 55,
                 "Address": 65534,
                 "RequiresReval": false,
                 "RequiresRevalNames": []
@@ -274,13 +268,7 @@
             "brk_handler": 49177,
             "irq_handler": 49181
           },
-          "Values": {
-            "entrypoint": 2064,
-            "startup": 49152,
-            "default_irq_handler": 49165,
-            "brk_handler": 49177,
-            "irq_handler": 49181
-          }
+          "Namespace": "rom"
         }
       }
     },
@@ -294,13 +282,7 @@
         "brk_handler": 49177,
         "irq_handler": 49181
       },
-      "Values": {
-        "entrypoint": 2064,
-        "startup": 49152,
-        "default_irq_handler": 49165,
-        "brk_handler": 49177,
-        "irq_handler": 49181
-      }
+      "Namespace": "rom"
     },
     "Filename": null,
     "Address": 65536

@@ -47,10 +47,7 @@
                 "INTERUPT_L": 788,
                 "INTERUPT_H": 789,
                 "RAM_BANK": 40801,
-                "top": 17,
-                "C": 2064,
-                "B": 2064,
-                "loop": 2068
+                "loop": 2064
               },
               "Namespace": "App"
             },
@@ -58,10 +55,91 @@
               {
                 "Data": "DAgKAJ4gMjA2NAAAAAAA",
                 "OriginalText": "\t$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00",
-                "LineNumber": 2,
+                "LineNumber": 3,
                 "Address": 2049,
                 "RequiresReval": false,
                 "RequiresRevalNames": []
+              },
+              {
+                "Data": "TBAI",
+                "OriginalText": "jmp loop\r\n",
+                "LineNumber": 6,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "loop",
+                "Address": 2064
+              },
+              {
+                "Data": "qTw=",
+                "OriginalText": "\r\n\r\nlda #60\r\n",
+                "LineNumber": 9,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#60",
+                "Address": 2067
+              },
+              {
+                "Data": "jSOf",
+                "OriginalText": "sta DATA0\r\n",
+                "LineNumber": 10,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "DATA0",
+                "Address": 2069
+              },
+              {
+                "Data": "qQk=",
+                "OriginalText": "lda #9\r\n",
+                "LineNumber": 11,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#9",
+                "Address": 2072
+              },
+              {
+                "Data": "jSOf",
+                "OriginalText": "sta DATA0\r\n",
+                "LineNumber": 12,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "DATA0",
+                "Address": 2074
+              },
+              {
+                "Data": "qf8=",
+                "OriginalText": "lda #255\r\n",
+                "LineNumber": 13,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#255",
+                "Address": 2077
+              },
+              {
+                "Data": "jSOf",
+                "OriginalText": "sta DATA0\r\n",
+                "LineNumber": 14,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "DATA0",
+                "Address": 2079
+              },
+              {
+                "Data": "qQ8=",
+                "OriginalText": "lda #15\r\n",
+                "LineNumber": 15,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "#15",
+                "Address": 2082
+              },
+              {
+                "Data": "jSOf",
+                "OriginalText": "sta DATA0\r\n",
+                "LineNumber": 16,
+                "RequiresReval": false,
+                "RequiresRevalNames": [],
+                "Params": "DATA0",
+                "Address": 2084
               }
             ]
           }
@@ -109,156 +187,7 @@
             "INTERUPT_L": 788,
             "INTERUPT_H": 789,
             "RAM_BANK": 40801,
-            "top": 17,
-            "C": 2064,
-            "B": 2064,
-            "loop": 2068
-          },
-          "Namespace": "App"
-        }
-      },
-      ".Default_5": {
-        "Procedures": {
-          "B": {
-            "Name": "B",
-            "Variables": {
-              "_variables": {
-                "inb": 51
-              },
-              "Namespace": "B"
-            },
-            "Data": [
-              {
-                "Data": "pSI=",
-                "OriginalText": "lda ::A:ina\r\n",
-                "LineNumber": 25,
-                "RequiresReval": false,
-                "RequiresRevalNames": [],
-                "Params": "::A:ina",
-                "Address": 2064
-              },
-              {
-                "Data": "pf8=",
-                "OriginalText": "lda :C:ina\r\n",
-                "LineNumber": 26,
-                "RequiresReval": false,
-                "RequiresRevalNames": [],
-                "Params": ":C:ina",
-                "Address": 2066
-              }
-            ]
-          },
-          ".Default_7": {
-            "Name": ".Default_7",
-            "Variables": {
-              "_variables": {
-                "ADDRx_L": 40736,
-                "ADDRx_M": 40737,
-                "ADDRx_H": 40738,
-                "DATA0": 40739,
-                "DATA1": 40740,
-                "CTRL": 40741,
-                "IEN": 40742,
-                "ISR": 40743,
-                "IRQLINE_L": 40744,
-                "DC_VIDEO": 40745,
-                "DC_HSCALE": 40746,
-                "DC_VSCALE": 40747,
-                "DC_BORDER": 40748,
-                "DC_HSTART": 40745,
-                "DC_HSTOP": 40746,
-                "DC_VSTART": 40747,
-                "DC_VSTOP": 40748,
-                "L0_CONFIG": 40749,
-                "L0_MAPBASE": 40750,
-                "L0_TILEBASE": 40751,
-                "L0_HSCROLL_L": 40752,
-                "L0_HSCROLL_H": 40753,
-                "L0_VSCROLL_L": 40754,
-                "L0_VSCROLL_H": 40755,
-                "L1_CONFIG": 40756,
-                "L1_MAPBASE": 40757,
-                "L1_TILEBASE": 40758,
-                "L1_HSCROLL_L": 40759,
-                "L1_HSCROLL_H": 40760,
-                "L1_VSCROLL_L": 40761,
-                "L1_VSCROLL_H": 40762,
-                "AUDIO_CTRL": 40763,
-                "AUDIO_RATE": 40764,
-                "AUDIO_DATA": 40765,
-                "SPI_DATA": 40766,
-                "SPI_CTRL": 40767,
-                "INTERUPT": 788,
-                "INTERUPT_L": 788,
-                "INTERUPT_H": 789,
-                "RAM_BANK": 40801,
-                "top": 17,
-                "C": 2064,
-                "B": 2064,
-                "loop": 2068
-              },
-              "Namespace": "App"
-            },
-            "Data": [
-              {
-                "Data": "TBQI",
-                "OriginalText": "jmp loop\r\n",
-                "LineNumber": 31,
-                "RequiresReval": false,
-                "RequiresRevalNames": [],
-                "Params": "loop",
-                "Address": 2068
-              }
-            ]
-          }
-        },
-        "Name": ".Default_5",
-        "Variables": {
-          "_variables": {
-            "ADDRx_L": 40736,
-            "ADDRx_M": 40737,
-            "ADDRx_H": 40738,
-            "DATA0": 40739,
-            "DATA1": 40740,
-            "CTRL": 40741,
-            "IEN": 40742,
-            "ISR": 40743,
-            "IRQLINE_L": 40744,
-            "DC_VIDEO": 40745,
-            "DC_HSCALE": 40746,
-            "DC_VSCALE": 40747,
-            "DC_BORDER": 40748,
-            "DC_HSTART": 40745,
-            "DC_HSTOP": 40746,
-            "DC_VSTART": 40747,
-            "DC_VSTOP": 40748,
-            "L0_CONFIG": 40749,
-            "L0_MAPBASE": 40750,
-            "L0_TILEBASE": 40751,
-            "L0_HSCROLL_L": 40752,
-            "L0_HSCROLL_H": 40753,
-            "L0_VSCROLL_L": 40754,
-            "L0_VSCROLL_H": 40755,
-            "L1_CONFIG": 40756,
-            "L1_MAPBASE": 40757,
-            "L1_TILEBASE": 40758,
-            "L1_HSCROLL_L": 40759,
-            "L1_HSCROLL_H": 40760,
-            "L1_VSCROLL_L": 40761,
-            "L1_VSCROLL_H": 40762,
-            "AUDIO_CTRL": 40763,
-            "AUDIO_RATE": 40764,
-            "AUDIO_DATA": 40765,
-            "SPI_DATA": 40766,
-            "SPI_CTRL": 40767,
-            "INTERUPT": 788,
-            "INTERUPT_L": 788,
-            "INTERUPT_H": 789,
-            "RAM_BANK": 40801,
-            "top": 17,
-            "C": 2064,
-            "B": 2064,
-            "loop": 2068
+            "loop": 2064
           },
           "Namespace": "App"
         }
@@ -308,14 +237,11 @@
         "INTERUPT_L": 788,
         "INTERUPT_H": 789,
         "RAM_BANK": 40801,
-        "top": 17,
-        "C": 2064,
-        "B": 2064,
-        "loop": 2068
+        "loop": 2064
       },
       "Namespace": "App"
     },
     "Filename": null,
-    "Address": 2071
+    "Address": 2087
   }
 }

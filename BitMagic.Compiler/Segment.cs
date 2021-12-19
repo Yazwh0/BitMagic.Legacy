@@ -27,6 +27,7 @@ namespace BitMagic.Compiler
         {
             Name = name;
             Variables = new Variables(globals, name);
+            globals.RegisterChild(Variables);
         }
 
         public Segment(Variables globals, bool anonymous, int startAddress, string name, string? filename = null)

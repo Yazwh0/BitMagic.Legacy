@@ -15,6 +15,9 @@ namespace BitMagic.Emulation
 
         public Emulator(Project project)
         {
+            if (project.Machine == null)
+                throw new ArgumentException(nameof(project.Machine));
+
             _machine = project.Machine;
             _project = project;
         }
@@ -41,7 +44,7 @@ namespace BitMagic.Emulation
         {
             _machine.Cpu.Reset();
 
-            var machineRunner = new MachineRunner(_project.Machine.Cpu.Frequency, CpuFunc, _project.Machine.Display, _project.Machine.Cpu);
+            var machineRunner = new MachineRunner(_machine.Cpu.Frequency, CpuFunc, _machine.Display, _machine.Cpu);
 
             machineRunner.Start();
 

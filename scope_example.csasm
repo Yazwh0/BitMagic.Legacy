@@ -1,0 +1,63 @@
+
+.pad $810
+.loop:
+jmp loop
+
+.scope 
+
+	.proc A
+		.const xyz = $ff
+	;.endproc no .endproc necessary, but its advised!
+
+.endscope
+
+.scope
+
+	.proc B
+		lda App::A:xyz
+		lda App:::xyz
+		lda :::xyz
+		lda ::A:xyz
+		lda :A:xyz
+		lda :xyz
+	.endproc
+
+; no .endscope necessary, its assumed with a .scope
+
+.scope example_c
+
+	.const xyz = $f0
+
+	.proc C
+		lda App::A:xyz
+		lda App:::xyz
+		lda :::xyz
+		lda ::A:xyz
+		lda :A:xyz
+		;lda :xyz breaks, not unique
+		lda xyz ; will be from this scope
+	.endproc
+
+	lda App::A:xyz
+	lda App:::xyz
+	lda :::xyz
+	lda ::A:xyz
+	lda :A:xyz
+	;lda :xyz breaks, not unique
+	lda xyz ; will be from this scope
+
+.endscope
+
+lda DATA0
+
+.scope global_override
+	.const DATA0 = $1111
+
+	lda DATA0
+
+	.proc override
+		.const DATA0 = $2222
+		lda DATA0
+	.endproc
+
+.endscope
