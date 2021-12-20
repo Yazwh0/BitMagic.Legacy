@@ -46,7 +46,7 @@ The compiler can output the list of variables to make it easier to understand.
 
 The code below shows how to get the values that are out of scope.
 
-```
+```asm
     .scope 
 
         .proc A
@@ -184,7 +184,11 @@ The values being loaded into DATA0 match what we expect. (Note, they're displaye
 
 BitMagic also has an emulator!
 
-Its still work in progress, so at this point its not much more than a footnote. There is plenty of work to do here. It currently supports most of the CPUs opcodes. For VERA it supports 2/4/8bpp tile modes and sprites. There is no audio, or any IO. It can't lock at 60fps, and uses far more CPU than the official emulator.
+Its still work in progress, so at this point its not much more than a footnote. There is plenty of work to do here. It currently supports most of the CPUs opcodes. For VERA it supports 2/4/8bpp tile modes and sprites. There is no audio, Kernel, or any IO. It can't lock at 60fps, and uses far more CPU than the official emulator.
+
+It cannot run the official rom, so needs its own. This is build in the 'rom' folder. Its currently just enough to handle the video interrupts and a reset.
+
+Its currently targetting 'R38' compatibility in terms of where the ROM\RAM banks swap register is kept.
 
 The purpose of the emulator is to provide a platform for a debugger that developer IDEs can connect to via 'Debug Adaptor Protocol' so we can develop within VSC or your editor of choice. With all the things we take for granted such as breakpoints, stepping, call stacks, etc.
 
