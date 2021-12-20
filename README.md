@@ -133,6 +133,8 @@ Unlike HTMLs tags which makes differentiation easy, BitMagic will examine each l
 
 If you're not familiar with the Razor templating engine, its probably worth reading a few beginners guides first.
 
+This approach will allow us to do anything we want to generate our code, and we're not limited by the assembler designers imagination.
+
 Here is an example of some csasm code:
 
 ```csharp
@@ -175,10 +177,21 @@ When compiled this will create a .prg file with the following:
 
 The values being loaded into DATA0 match what we expect. (Note, they're displayed in decimal rather than hex.)
 
+There are currently a handful of methods on the default model (can be accessed with the @ -- see above for an example.)
+
+| Name | Description |
+| --- | --- |
+| X16header() | Will output the basic commands to jump to the code at $810. |
+| Bytes(IEnumerable<byte> bytes, int width = 16) | Outputs the bytes as '.byte' code. |
+| Words(IEnumerable<short> words, int width = 16) | Outputs the words as '.word' code. |
+
+More helper functions will be added over time.
+
 ### Todo List
 
 - Improve referencing, maybe via nuget somehow.
 - Create a VSC plugin for basic syntax formatting.
+- Add template re-use, so a template can be compiled to a .dll.
 
 ## Emulator
 
