@@ -57,7 +57,7 @@ lda DATA0
 
 	.proc override
 		.const DATA0 = $2222
-		lda DATA0
+		lda DATA0 ; will load from $2222
 	.endproc
 
 .endscope

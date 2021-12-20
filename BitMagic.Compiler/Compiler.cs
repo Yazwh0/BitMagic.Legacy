@@ -158,7 +158,7 @@ namespace BitMagic.Compiler
                     state.Segment.Address = padto;
                 }, new[] { "address" })
                 .WithParameters(".align", (dict, state) => { 
-                    var boundry = ParseStringToValue(dict["boundry"]);
+                    var boundry = ParseStringToValue(dict["boundary"]);
 
                     if (boundry == 0)
                         return;

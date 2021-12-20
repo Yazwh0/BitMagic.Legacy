@@ -14,3 +14,6 @@ lda #255
 sta DATA0
 lda #15
 sta DATA0
+
+.const foo = 1+1
+ 

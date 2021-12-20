@@ -7,7 +7,7 @@ using System.Drawing;
 jmp loop
 
 // define a function that can be reused, akin to a 'macro'. 
-// It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
+// It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to VERAs DATA0 register.
 void SetColour(Color colour)
 {
 	lda #@((colour.G & 0xf0) + (colour.B >> 4))
@@ -18,3 +18,5 @@ void SetColour(Color colour)
 
 SetColour(Color.DarkOrchid); // $9932CC, or $93c on the X16, and so $3c, $09 when loading into VERA
 SetColour(Color.White);
+
+.const foo = 1+1
