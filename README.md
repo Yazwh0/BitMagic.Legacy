@@ -181,9 +181,9 @@ There are currently a handful of methods on the default model (can be accessed w
 
 | Name | Description |
 | --- | --- |
-| X16header() | Will output the basic commands to jump to the code at $810. |
-| Bytes(IEnumerable<byte> bytes, int width = 16) | Outputs the bytes as '.byte' code. |
-| Words(IEnumerable<short> words, int width = 16) | Outputs the words as '.word' code. |
+| `X16header()` | Will output the basic commands to jump to the code at $810. |
+| `Bytes(IEnumerable<byte> bytes, int width = 16)` | Outputs the bytes as '.byte' code. |
+| `Words(IEnumerable<short> words, int width = 16)` | Outputs the words as '.word' code. |
 
 More helper functions will be added over time.
 
