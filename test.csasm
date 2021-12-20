@@ -10,7 +10,7 @@ jmp loop
 // It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
 void SetColour(Color colour)
 {
-	lda #@(((colour.G >> 4) << 4) + (colour.B >> 4))
+	lda #@((colour.G & 0xf0) + (colour.B >> 4))
 	sta DATA0
 	lda #@(colour.R >> 4)
 	sta DATA0

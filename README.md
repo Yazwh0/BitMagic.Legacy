@@ -21,7 +21,7 @@ If you're not familiar with the Razor templating engine, its probably worth read
 Here is an example of some csasm code:
 
     reference System.Drawing.Primitives; // reference and use system.drawing as it contains the color struct.
-    using System.Drawing;
+    using System.Drawing;git
 
     @X16Header();   // adds a header that will start the application. The first address of code will be $810.
 
@@ -32,7 +32,7 @@ Here is an example of some csasm code:
     // It takes a color as defined in System.Drawing, changes it into 4 bit colour and writes it to the VERA.
     void SetColour(Color colour)
     {
-        lda #@(((colour.G >> 4) << 4) + (colour.B >> 4))
+        lda #@((colour.G & 0xf0) + (colour.B >> 4))
         sta DATA0
         lda #@(colour.R >> 4)
         sta DATA0
