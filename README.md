@@ -14,6 +14,8 @@ It has its own extension '.bmasm', which can either be created manually and comp
 
 The compiler understands normal 6502 notation, and any line that doesn't start with a '.' will be considered to be 6502 asm. This can include expressions when dealing with literal values in asm. A semicolon can be used for comments.
 
+There is a VSC add-in for basic syntax highlighting included in the code. You'll need to pack it and import it manually.
+
 ### Verbs
 
 The following verbs are understood by the compiler:
