@@ -10,7 +10,7 @@ Todo.
 
 ## Template Engine
 
-BitMagic uses ASP.NETs Razor template engine to acheive what would commanly be called 'Macros' in other assembly implementations. In the same way you can use C# to generate HTML pages, we use the engine to generate .asm files.
+BitMagic uses ASP.NETs Razor template engine to achieve what would commonly be called 'Macros' in other assembly implementations. In the same way you can use C# to generate HTML pages, we use the engine to generate .asm files.
 
 The files that the Razor engine works on have the extension '.csasm'. (in a nod to the .cshtml file extension)
 
