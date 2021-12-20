@@ -191,6 +191,7 @@ More helper functions will be added over time.
 
 ### Todo List
 
+- Add segment size and bounds checks.
 - Improve referencing, maybe via nuget somehow.
 - Create a VSC plugin for basic syntax formatting.
 - Add template re-use, so a template can be compiled to a .dll.
