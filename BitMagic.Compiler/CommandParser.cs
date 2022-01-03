@@ -11,7 +11,7 @@ namespace BitMagic.Compiler
     {
         private Regex _firstWord = new Regex("^\\s*(?<result>([.][\\w\\-:]+))(?<line>(.*))$");
 
-        private Dictionary<string, Action<string, int, CompileState>> _lineProcessor = new Dictionary<string, Action<string, int, CompileState>>();
+        private Dictionary<string, Action<SourceFilePosition, CompileState, string>> _lineProcessor = new Dictionary<string, Action<SourceFilePosition, CompileState, string>>();
         private Action<string, CompileState>? _labelProcessor;
 
         private CommandParser()
@@ -25,31 +25,32 @@ namespace BitMagic.Compiler
 
         public CommandParser WithParameters(string verb, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames = null)
         {
-            _lineProcessor.Add(verb, (l, n, s) => ProcesParameters(l, n, s, action, defaultNames));
+            _lineProcessor.Add(verb, (p, s, r) => ProcesParameters(r ,p, s, action, defaultNames));
             return this;
         }
 
-        public CommandParser WithLine(string verb, Action<string, int, CompileState> action) 
+        public CommandParser WithLine(string verb, Action<SourceFilePosition, CompileState> action) 
         {
-            _lineProcessor.Add(verb, (l, n, s) => ProcessLine(l, n, s, action));
+            _lineProcessor.Add(verb, (p, s, r) => ProcessLine(p, s, action));
             return this;
         }
+
         public CommandParser WithLabel(Action<string, CompileState> action) 
         {
             _labelProcessor = action;
             return this;
         }
 
-        public void Process(string line, int lineNumber, CompileState state)
+        public void Process(SourceFilePosition source, CompileState state)
         {
-            if (string.IsNullOrEmpty(line))
+            if (string.IsNullOrEmpty(source.Source))
                 return;
 
-            var result = _firstWord.Match(line);
+            var result = _firstWord.Match(source.Source);
 
             if (!result.Success)
             {
-                throw new CompilerVerbException(line, lineNumber, $"Cannot find verb on line.");
+                throw new CompilerVerbException(source, $"Cannot find verb on line.");
             }
 
             var thisVerb = result.Groups["result"].Value;
@@ -65,18 +66,18 @@ namespace BitMagic.Compiler
             }
 
             if (!_lineProcessor.ContainsKey(thisVerb))
-                throw new CompilerVerbException(line, lineNumber, $"Unknown verb '{thisVerb.Substring(1)}'");
+                throw new CompilerVerbException(source, $"Unknown verb '{thisVerb.Substring(1)}'");
 
             var map = _lineProcessor[thisVerb];
 
-            map(toProcess, lineNumber, state);
+            map(source, state, toProcess);
         }
 
-        private static void ProcesParameters(string line, int lineNumber, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
+        private static void ProcesParameters(string rawParams, SourceFilePosition source, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            if (string.IsNullOrEmpty(line))
+            if (string.IsNullOrEmpty(rawParams))
             {
                 action(parameters, state);
                 return;
@@ -84,7 +85,7 @@ namespace BitMagic.Compiler
 
             var defaultPos = 0;
 
-            var thisArgs = line.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var thisArgs = rawParams.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             for (var argsPos = 0; argsPos < thisArgs.Length; argsPos++)
             {
@@ -99,7 +100,7 @@ namespace BitMagic.Compiler
                 if (idx == -1)
                 {
                     if (defaultNames == null || defaultPos > defaultNames.Count)
-                        throw new Exception($"Unknown parameter {thisArgs[argsPos]} on line {line}");
+                        throw new Exception($"Unknown parameter {thisArgs[argsPos]} at {source.ToString()}");
 
                     parameters.Add(defaultNames[defaultPos++], thisArgs[argsPos]);
                     continue;
@@ -111,9 +112,9 @@ namespace BitMagic.Compiler
             action(parameters, state);
         }
 
-        private static void ProcessLine(string line, int lineNumber, CompileState state, Action<string, int, CompileState> action) => action(line, lineNumber, state);
+        private static void ProcessLine(SourceFilePosition source, CompileState state, Action<SourceFilePosition, CompileState> action) => action(source, state);
 
-        private static void ProcessLabel(string line, int lineNumber, CompileState state, Action<string, int, CompileState> action) => action(line, lineNumber, state);
+        private static void ProcessLabel(SourceFilePosition source, CompileState state, Action<SourceFilePosition, CompileState> action) => action(source, state);
 
 
 /*        private static void Parse(string args,

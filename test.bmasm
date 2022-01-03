@@ -15,5 +15,10 @@ sta DATA0
 lda #15
 sta DATA0
 
-.const foo = 1+1
+.import D:\Documents\Source\BitMagic\testimport.bsasm
+.import D:\Documents\Source\BitMagic\testimport.bsasm
+
+stz $00
+
+.const foo = 1
  

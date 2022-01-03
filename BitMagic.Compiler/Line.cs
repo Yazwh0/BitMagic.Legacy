@@ -15,27 +15,25 @@ namespace BitMagic.Compiler
         public readonly static ExpressionEvaluator _evaluator = new();
 
         public byte[] Data { get; internal set; } = new byte[] { };
-        public string OriginalText { get; }
-        public int LineNumber { get; }
         private ICpuOpCode _opCode;
         public bool RequiresReval { get; internal set; }
         public List<string> RequiresRevalNames { get; } = new List<string>();
         private Procedure _procedure { get; }
         private string _toParse { get; set; }
         private string _original { get; set; }
+        public SourceFilePosition Source { get; }
         public string Params { get; }
         public int Address { get; }
 
-        internal Line(ICpuOpCode opCode, string line, int lineNumber, Procedure proc, int address, string[] parts)
+        internal Line(ICpuOpCode opCode, SourceFilePosition source, Procedure proc, int address, string[] parts)
         {
-            OriginalText = line;
             _procedure = proc;
             _opCode = opCode;
             _toParse = string.Concat(parts).Replace(" ", "");
             _original = _toParse;
             Params = _toParse;
             Address = address;
-            LineNumber = lineNumber;
+            Source = source;
         }
 
         public void ProcessParts(bool finalParse)

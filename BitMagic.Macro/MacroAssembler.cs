@@ -158,7 +158,9 @@ namespace BigMagic.Macro
                         }
                     }
                 });
-                
+
+                await template.SaveToFileAsync("razor.dll");
+
                 var result = await template.RunAsync(i => { });
 
                 _project.Code.Contents = result;

@@ -29,12 +29,23 @@ The following verbs are understood by the compiler:
 | .proc | name | Switches to the named procedure. The procedure's name and address is stored as a constant. |
 | .endproc | | Switches to a new default procedure. |
 | .const | name, value | Sets a constant value. |
+| .importfile | filename | Imports a file as if it were included in the original document. A file will only be included once. |
 | .pad | address | Pads the current state to the target address. |
-| .align | boundary | Pads the current state to the nearest boundary. (Where 'address % boundary' is zero.) |
+| .align | boundary | Pads the current state to the next nearest boundary. (Where '`address % boundary`' is zero.) |
 | .byte | _values_ | Adds the bytes to the application. |
 | .word | _values_ | Adds the words (little endian) to the application. |
 
-All the verbs parameters -- apart from 'byte' and 'word' -- are optional. To specify a parameter, you can either use '_param_ = value', or constants in the order they're listed, or even a mix. Eg `.segment rom address = 0xA000`.
+To specify a parameter, you can either use '_param_ = value', or constants in the order they're listed, or even a mix. Eg `.segment rom address = 0xA000`.
+
+### Import
+
+A project can be broken into different files to ease development. To import a file you can use the `.importfile` verb.
+
+This will include the whole of the files contents at the point of the import verb. There is no segregation performed by the compiler, so ensure you take care and use `.scope` and importantly `.endscope` to ensure there are no problems with overwriting definitions.
+
+The aim is to keep this functionality simple for things like organising a project, while libraries and code reuse will be achieved by the template engine.
+
+For external projects, eventually I'd like to support libraries such as .lib or .o files.
 
 ### Scopes
 
@@ -111,7 +122,7 @@ The code below shows how to get the values that are out of scope.
 
 ### Expressions
 
-For values within the assembler you can use expressions as you'd expect. ^, < and > will work.
+For values within the assembler you can use expressions as you'd expect. `^`, `<` and `>` will work.
 
 Currently expressions can only be in the asm code, not when defining a constant. This will be addressed later.
 
@@ -122,7 +133,6 @@ A big current limitation is that the compiler cannot bring in source from extern
 ### Todo list
 
 - Allow constants to use expressions, so they can be based off each other.
-- Add ability to import data from an external file. One possibility is to compile and then import the 'scopes'.
 - Much better error messages.
 
 ## Template Engine

@@ -8,21 +8,23 @@ namespace BitMagic.Compiler
     public class DataLine : ILine
     {
         public byte[] Data { get; private set; } = new byte[] { };
-        public string OriginalText { get; }
-        public int LineNumber { get; }
+/*        public string OriginalText { get; }
+        public int LineNumber { get; }*/
         public int Address { get; }
         public bool RequiresReval { get; private set; }
         public List<string> RequiresRevalNames { get; } = new List<string>();
         private Procedure _procedure { get; }
         private LineType _lineType { get; }
+        public SourceFilePosition Source { get; }
 
-        internal DataLine(Procedure proc, int lineNumber, string originalText, int address, LineType type)
+        internal DataLine(Procedure proc, SourceFilePosition source, int address, LineType type)
         {
-            OriginalText = originalText;
+            Source = source;
+//            OriginalText = originalText;
             Address = address;
             _procedure = proc;
             _lineType = type;
-            LineNumber = lineNumber;
+//            LineNumber = lineNumber;
         }
 
         internal enum LineType
@@ -33,14 +35,22 @@ namespace BitMagic.Compiler
 
         public void ProcessParts(bool finalParse)
         {
-            var a = 0;
             var data = new List<byte>();
 
-            var toProcess = OriginalText.Trim().ToLower();
+            var toProcess = Source.Source.Trim().ToLower();
 
             var idx = toProcess.IndexOf(';');
             if (idx != -1)
                 toProcess = toProcess.Substring(0, idx);
+
+            idx = toProcess.IndexOf('.');
+
+            if (idx == -1)
+            {
+                throw new Exception("Cannot find data on the line");
+            }
+
+            toProcess = toProcess.Substring(idx + 5).Trim();
 
             RequiresRevalNames.Clear();
             Line._evaluator.PreEvaluateVariable += _evaluator_PreEvaluateVariable;
@@ -57,7 +67,7 @@ namespace BitMagic.Compiler
                 var i = r as int?;
                 
                 if (i == null)
-                    throw new Exception($"Expected value back, actually have {r.GetType().Name} for {r}");
+                    throw new Exception($"Expected int? value back, actually have {r.GetType().Name} for {r}");
 
                 if (_lineType == LineType.IsByte)
                 {
@@ -77,7 +87,7 @@ namespace BitMagic.Compiler
 
         private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
         {
-            if (_procedure.Variables.TryGetValue(e.Name, LineNumber, out var result))
+            if (_procedure.Variables.TryGetValue(e.Name, Source.LineNumber, out var result))
             {
                 e.Value = result;
                 RequiresReval = false;

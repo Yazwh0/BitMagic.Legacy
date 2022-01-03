@@ -62,7 +62,15 @@ namespace BitMagic
             {
                 await project.RomFile.Load();
 
-                project.Machine = new CommanderX16(project.RomFile?.Contents ?? throw new Exception("No rom"));
+                if (project.RomFile?.Contents == null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"No rom file found.");
+                    Console.ResetColor();
+                    return -1;
+                }
+
+                project.Machine = new CommanderX16(project.RomFile.Contents);
             } 
             else
             {
@@ -117,7 +125,7 @@ namespace BitMagic
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Compiler Error: {e.Message}");
-                    Console.WriteLine($"On Line {e.LineNumber}: {e.ErrorDetail}");
+                    Console.WriteLine(e.ErrorDetail);
                     Console.ResetColor();
                     return 1;
                 }

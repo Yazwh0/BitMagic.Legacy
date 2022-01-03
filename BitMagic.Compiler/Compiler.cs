@@ -13,7 +13,6 @@ namespace BitMagic.Compiler
 {
     public abstract class CompilerException : Exception
     {
-        public int LineNumber { get; set; }
         public abstract string ErrorDetail { get; }
 
         public CompilerException(string message) : base(message)
@@ -28,23 +27,47 @@ namespace BitMagic.Compiler
         public CompilerLineException(ILine line, string message) : base(message)
         {
             Line = line;
-            LineNumber = line.LineNumber;
         }
 
-        public override string ErrorDetail => Line.OriginalText.Trim();
+        public override string ErrorDetail => Line.Source.ToString();
     }
 
-    public class CompilerVerbException : CompilerException
+    public abstract class CompilerSourceException : CompilerException
     {
-        public string Line { get; }
+        public SourceFilePosition SourceFile { get; }
 
-        public CompilerVerbException(string line, int lineNumber, string message) : base(message)
+        public CompilerSourceException(SourceFilePosition source, string message) : base(message)
         {
-            Line = line;
-            LineNumber = lineNumber;
+            SourceFile = source;
         }
 
-        public override string ErrorDetail => Line;
+        public override string ErrorDetail => SourceFile.ToString();
+    }
+
+    public class CompilerVerbException : CompilerSourceException
+    {
+        public CompilerVerbException(SourceFilePosition source, string message) : base(source, message)
+        {
+        }
+    }
+
+    public class CompilerFileNotFound : CompilerException
+    {
+        public string Filename { get; }
+
+        public CompilerFileNotFound(string filename) : base ("File not found.")
+        {
+            Filename = filename;
+        }
+
+        public override string ErrorDetail => $"'{Filename}'";
+    }
+
+    public class CompilerUnknownOpcode : CompilerSourceException
+    {
+        public CompilerUnknownOpcode(SourceFilePosition source, string message) : base(source, message)
+        {
+        }
     }
 
     public class Compiler
@@ -167,18 +190,30 @@ namespace BitMagic.Compiler
                     {
                         state.Segment.Address++;
                     }
-                }
-                , new[] { "boundry" })
-                .WithLine(".byte", (paramLine, lineNumber, state) => {
-                    var dataline = new DataLine(state.Procedure, lineNumber, paramLine, state.Segment.Address, DataLine.LineType.IsByte);
+                }, new[] { "boundry" })
+                .WithParameters(".importfile", (dict, state) => {
+                    var t = CompileFile(dict["filename"], state);
+
+                    try
+                    {
+                        t.Wait();
+                    } 
+                    catch(Exception e)
+                    {
+                        throw e.InnerException ?? e;
+                    }
+
+                }, new[] { "filename" })
+                .WithLine(".byte", (source, state) => {
+                    var dataline = new DataLine(state.Procedure, source, state.Segment.Address, DataLine.LineType.IsByte);
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
                     state.Procedure.AddLine(dataline);
                     dataline.WriteToConsole();
                 })
-                .WithLine(".word", (paramLine, lineNumber, state) => {
-                    var dataline = new DataLine(state.Procedure, lineNumber, paramLine, state.Segment.Address, DataLine.LineType.IsWord);
+                .WithLine(".word", (source, state) => {
+                    var dataline = new DataLine(state.Procedure, source, state.Segment.Address, DataLine.LineType.IsWord);
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
@@ -202,9 +237,37 @@ namespace BitMagic.Compiler
 
             var globals = new Variables(_project.Machine.Variables, "App");
 
-            var lines = _project.Code.Contents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.TrimEntries);
-
             var state = new CompileState(globals);
+
+            await CompileFile(_project.Code.Filename ?? _project.Source.Filename ?? "", state, _project.Code.Contents);
+
+            PruneUnusedObjects(state);
+
+            Reval(state);
+
+            if (_project.CompileOptions.DisplayVariables)
+            {
+                Console.WriteLine("Variables:");
+                foreach(var (Name, Value) in globals.GetChildVariables(globals.Namespace))
+                {
+                    Console.WriteLine($"{Name} = ${Value:X2}");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
+            {
+                _project.AssemblerObject.Contents = JsonConvert.SerializeObject(state.Segments, Formatting.Indented);
+                await _project.AssemblerObject.Save();
+            }
+
+            await GenerateDataFile(state);
+        }
+
+        private async Task CompileFile(string fileName, CompileState state, string? contents = null)
+        {
+            contents ??= (await LoadFile(fileName, state));
+
+            var lines = contents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.TrimEntries);
 
             var previousLines = new StringBuilder();
             int lineNumber = 0;
@@ -228,40 +291,41 @@ namespace BitMagic.Compiler
                 if (line.StartsWith('.'))
                 {
                     previousLines.Clear();
-                    ParseCommand(line, lineNumber, state);
+                    var source = new SourceFilePosition { LineNumber = lineNumber, Source = line, Name = _project.Code.Filename ?? _project.Source.Filename ?? "" };
+                    ParseCommand(source, state);
                 }
                 else
                 {
                     var idx = line.IndexOf(';');
-                    
+
                     var parts = (idx == -1 ? line : line[..idx]).Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                     previousLines.AppendLine(line);
-                    ParseAsm(parts, previousLines.ToString(), lineNumber, state);
+                    var source = new SourceFilePosition { LineNumber = lineNumber, Source = previousLines.ToString(), Name = _project.Code.Filename ?? _project.Source.Filename ?? "" };
+                    ParseAsm(parts, source, state);
                     previousLines.Clear();
                 }
             }
+        }
 
-            PruneUnusedObjects(state);
+        private Task<string> LoadFile(string filename, CompileState state)
+        {
+            if (!File.Exists(filename))
+                throw new CompilerFileNotFound(filename);
 
-            Reval(state);
+            var path = Path.GetFullPath(filename);
 
-            if (_project.CompileOptions.DisplayVariables)
+            if (state.Files.Contains(path))
             {
-                Console.WriteLine("Variables:");
-                foreach(var (Name, Value) in globals.GetChildVariables(globals.Namespace))
-                {
-                    Console.WriteLine($"{Name} = ${Value:X2}");
-                }
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Warning: {filename} has allready been imported. This instance will be ignored.");
+                Console.ResetColor();
+                return Task.FromResult("");
             }
 
-            if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
-            {
-                _project.AssemblerObject.Contents = JsonConvert.SerializeObject(state.Segments, Formatting.Indented);
-                await _project.AssemblerObject.Save();
-            }
+            state.Files.Add(path);
 
-            await GenerateDataFile(state);
+            return File.ReadAllTextAsync(path);
         }
 
         private async Task GenerateDataFile(CompileState state)
@@ -385,18 +449,18 @@ namespace BitMagic.Compiler
             }
         }
 
-        private void ParseAsm(string[] parts, string line, int lineNumber, CompileState state)
+        private void ParseAsm(string[] parts, SourceFilePosition source, CompileState state)
         {
             var code = parts[0].ToLower();
 
             if (!_opCodes.ContainsKey(code))
             {
-                throw new Exception($"Unknown opcode {parts[0]}");
+                throw new CompilerUnknownOpcode(source, $"Unknown opcode {parts[0]}");
             }
 
             var opCode = _opCodes[code];
 
-            var toAdd = new Line(opCode, line, lineNumber, state.Procedure, state.Segment.Address, parts[1..]);
+            var toAdd = new Line(opCode, source, state.Procedure, state.Segment.Address, parts[1..]);
 
             toAdd.ProcessParts(false);
             toAdd.WriteToConsole();
@@ -405,7 +469,7 @@ namespace BitMagic.Compiler
             state.Segment.Address += toAdd.Data.Length;
         }
 
-        private void ParseCommand(string line, int lineNumber, CompileState state) => _commandParser.Process(line, lineNumber, state);        
+        private void ParseCommand(SourceFilePosition source, CompileState state) => _commandParser.Process(source, state);        
 
         private int ParseStringToValue(string inp)
         {

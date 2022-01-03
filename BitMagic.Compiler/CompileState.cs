@@ -18,6 +18,8 @@ namespace BitMagic.Compiler
         internal Variables Globals { get; }
         [JsonProperty]
         internal int AnonCounter { get; set; }
+        [JsonProperty]
+        public List<string> Files { get; set; } = new List<string>();
 
         public CompileState(Variables globals)
         {

@@ -19,4 +19,9 @@ void SetColour(Color colour)
 SetColour(Color.DarkOrchid); // $9932CC, or $93c on the X16, and so $3c, $09 when loading into VERA
 SetColour(Color.White);
 
-.const foo = 1+1
+.import D:\Documents\Source\BitMagic\testimport.bsasm
+.import D:\Documents\Source\BitMagic\testimport.bsasm
+
+stz $00
+
+.const foo = 1
