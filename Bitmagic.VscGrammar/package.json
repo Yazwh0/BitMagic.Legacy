@@ -1,7 +1,7 @@
 {
-    "name": "bmasm",
-    "displayName": "bmasm",
-    "description": "BitMagic 6502",
+    "name": "bitmagic",
+    "displayName": "BitMagic",
+    "description": "BitMagic 6502 Template Assembler",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.63.0"
@@ -14,16 +14,29 @@
         "Programming Languages"
     ],
     "contributes": {
-        "languages": [{
+        "languages": [
+        {
             "id": "bmasm",
             "aliases": ["BitMagic X16 Asm", "bmasm"],
             "extensions": [".bmasm"],
-            "configuration": "./language-configuration.json"
+            "configuration": "./language-configuration.bmasm.json"
+        },
+        {
+            "id": "csasm",
+            "aliases": ["BitMagic X16 CS Asm", "csasm"],
+            "extensions": [".csasm"],
+            "configuration": "./language-configuration.csasm.json"
         }],
-        "grammars": [{
+        "grammars": [
+        {            
             "language": "bmasm",
             "scopeName": "source.bmasm",
             "path": "./syntaxes/bmasm.tmLanguage.json"
+        },
+        {
+            "language": "csasm",
+            "scopeName": "source.csasm",
+            "path": "./syntaxes/csasm.tmLanguage.json"
         }]
     }
 }
