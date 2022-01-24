@@ -8,21 +8,6 @@
 	"patterns": [
 		{
 			"include": "#csasm"
-		},
-		{
-			"include": "#preprocessor"
-		},
-		{
-			"include": "#comment"
-		},
-		{
-			"include": "#directives"
-		},
-		{
-			"include": "#declarations"
-		},
-		{
-			"include": "#script-top-level"
 		}
 	],
 	"repository": {
