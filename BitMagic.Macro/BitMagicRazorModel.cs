@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BitMagic.Macro
 {
-    public class RazorModel : RazorEngineTemplateBase
+    public class BitMagicRazorModel : RazorEngineTemplateBase
     {
         public string Bytes(IEnumerable<byte> bytes, int width = 16)
         {
@@ -110,5 +110,10 @@ namespace BitMagic.Macro
         //                                ; ($0000 = end of program)
         //    .byte $00, $00              ; Padding so code starts at $0810
         public string X16Header() => Bytes(new byte[] { 0x0c, 0x08, 0x0a, 0x00, 0x9e, 0x20, 0x32, 0x30, 0x36, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    }
+
+    public class TestModel
+    {
+
     }
 }

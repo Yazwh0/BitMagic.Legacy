@@ -130,7 +130,7 @@ namespace BigMagic.Macro
 
             try
             {
-                var template = await _razorEngine.CompileAsync<RazorModel>(toProcess, a =>
+                var template = await _razorEngine.CompileAsync<BitMagicRazorModel>(toProcess, a =>
                 {
                     var assemblies = new List<Assembly>();
 
