@@ -1590,7 +1590,7 @@ namespace CodingSeb.ExpressionEvaluator
 
                             if (!s.Trim().Equals(string.Empty))
                             {
-                                throw new ExpressionEvaluatorSyntaxErrorException($"Invalid character [{(int)s[0]}:{s}]");
+                                throw new ExpressionEvaluatorSyntaxErrorException($"Invalid character [{(int)s[0]}:{s}] in expression: {expression}");
                             }
                         }
                     }

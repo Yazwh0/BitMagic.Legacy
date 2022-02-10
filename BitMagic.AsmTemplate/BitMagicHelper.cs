@@ -1,15 +1,14 @@
-﻿using RazorEngineCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitMagic.Macro
+namespace BitMagic.AsmTemplate
 {
-    public class BitMagicRazorModel : RazorEngineTemplateBase
+    public static class BitMagicHelper
     {
-        public string Bytes(IEnumerable<byte> bytes, int width = 16)
+        public static void Bytes(IEnumerable<byte> bytes, int width = 16)
         {
             StringBuilder sb = new StringBuilder();
             var cnt = 0;
@@ -33,13 +32,13 @@ namespace BitMagic.Macro
                     sb.AppendLine();
                     cnt = 0;
                     first = true;
-                } 
+                }
             }
-            sb.AppendLine();
-            return sb.ToString();
+
+            Template.WriteLiteral(sb.ToString());
         }
 
-        public string Words(IEnumerable<ushort> words, int width = 16)
+        public static void Words(IEnumerable<ushort> words, int width = 16)
         {
             StringBuilder sb = new StringBuilder();
             var cnt = 0;
@@ -65,11 +64,11 @@ namespace BitMagic.Macro
                     first = true;
                 }
             }
-            sb.AppendLine();
-            return sb.ToString();
+
+            Template.WriteLiteral(sb.ToString());
         }
 
-        public string Words(IEnumerable<short> words, int width = 16)
+        public static void Words(IEnumerable<short> words, int width = 16)
         {
             StringBuilder sb = new StringBuilder();
             var cnt = 0;
@@ -95,8 +94,8 @@ namespace BitMagic.Macro
                     first = true;
                 }
             }
-            sb.AppendLine();
-            return sb.ToString();
+
+            Template.WriteLiteral(sb.ToString());
         }
 
         //    .byte $0C, $08              ; $080C - pointer to next line of BASIC code
@@ -109,11 +108,6 @@ namespace BitMagic.Macro
         //                                ; 2-byte pointer to next line of BASIC code
         //                                ; ($0000 = end of program)
         //    .byte $00, $00              ; Padding so code starts at $0810
-        public string X16Header() => Bytes(new byte[] { 0x0c, 0x08, 0x0a, 0x00, 0x9e, 0x20, 0x32, 0x30, 0x36, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    }
-
-    public class TestModel
-    {
-
+        public static void X16Header() => Bytes(new byte[] { 0x0c, 0x08, 0x0a, 0x00, 0x9e, 0x20, 0x32, 0x30, 0x36, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00 });
     }
 }

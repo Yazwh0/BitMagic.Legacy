@@ -30,7 +30,8 @@ The following verbs are understood by the compiler:
 | .endproc | | Switches to a new default procedure. |
 | .const | name, value | Sets a constant value. |
 | .importfile | filename | Imports a file as if it were included in the original document. A file will only be included once. |
-| .pad | address | Pads the current state to the target address. |
+| .org | address | Sets the current state to the target address. |
+| .pad | size | Increases the address by size bytes. |
 | .align | boundary | Pads the current state to the next nearest boundary. (Where '`address % boundary`' is zero.) |
 | .byte | _values_ | Adds the bytes to the application. |
 | .word | _values_ | Adds the words (little endian) to the application. |

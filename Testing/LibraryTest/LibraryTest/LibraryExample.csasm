@@ -1,0 +1,21 @@
+
+public static class Library
+{
+    public static void UnrolledExample(int rollCount)
+    {
+        ; Generated on @(DateTime.Now.ToString("dd MMM yyyy HH:mm:ss"))
+        ; Unrolled code, @(rollCount) steps.
+        for (var i = 0; i < rollCount; i++)
+        {
+            lda #@(i)
+            ; etc
+        }
+        rts
+        .
+        BM.Bytes(new byte[] {1, 2, 3}); // will create ".byte $01, $02, $03"
+
+        .proc foo
+            
+        .endproc
+    }
+}

@@ -93,7 +93,7 @@
 			"patterns": [{
 				"comment": "6502 Opcodes",
 				"name": "entity.name.function.bmasm.6502",
-				"match": "\\b(?i:adc|and|asl|bcc|bcs|beq|bit|bmi|bne|bpl|brk|bvc|bvs|clc|cld|cli|clv|cmp|cpx|cpy|dec|dex|dey|eor|inc|inx|iny|jmp|jsr|lda|ldx|ldy|lsr|nop|ora|pha|php|pla|plp|rol|ror|rti|rts|sbc|sec|sed|sei|sta|stx|sty|tax|tay|tsx|txa|txs|tya)\\b"
+				"match": "\\b(?i:adc|and|asl|bcc|bcs|beq|bit|bmi|bne|bpl|brk|bvc|bvs|clc|cld|cli|clv|cmp|cpx|cpy|dec|dex|dey|eor|inc|inx|iny|jmp|jsr|lda|ldx|ldy|lsr|nop|ora|pha|php|pla|plp|rol|ror|rti|rts|sbc|sec|sed|sei|sta|stx|sty|stp|tax|tay|tsx|txa|txs|tya)\\b"
 			}, {
 				"comment": "65C02 Opcodes",
 				"name": "entity.name.function.bmasm.65c02",
@@ -103,7 +103,7 @@
 		"pseudofunctions": {
 			"patterns": [{
 				"name": "entity.name.function.pseudofunction.bmasm",
-				"match": "\\.(?i:byte|word|definesegment|segment|const|pad|align|importfile)\\b"
+				"match": "\\.(?i:byte|word|definesegment|segment|const|pad|align|importfile|org)\\b"
 			}]
 		},
 		"blockstarts": {

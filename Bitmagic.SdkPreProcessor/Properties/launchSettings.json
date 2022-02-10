@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Bitmagic.SdkPreProcessor": {
+      "commandName": "Project",
+      "commandLineArgs": "--recursive=true --extension=cse --base-folder=D:\\Documents\\Source\\BitMagic\\Bitmagic.SdkPreProcessor\\Test *.csasm"
+    }
+  }
+}

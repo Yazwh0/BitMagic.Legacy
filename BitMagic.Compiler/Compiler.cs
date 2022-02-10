@@ -70,6 +70,18 @@ namespace BitMagic.Compiler
         }
     }
 
+    public class CompilerSegmentTooLarge : CompilerException
+    {
+        internal Segment Segment { get; }
+
+        internal CompilerSegmentTooLarge(Segment segment) : base("Segment too large.")
+        {
+            Segment = segment;
+        }
+
+        public override string ErrorDetail => $"Maxsize is ${Segment.MaxSize:X4}, but the segment is ${Segment.Address - Segment.StartAddress:X4}";
+    }
+
     public class Compiler
     {
         private readonly Project _project;        
@@ -125,6 +137,11 @@ namespace BitMagic.Compiler
                         segment.StartAddress = segment.Address;
                     }
 
+                    if (dict.ContainsKey("maxsize"))
+                    {
+                        segment.MaxSize = ParseStringToValue(dict["maxsize"]);
+                    }
+
                     if (dict.ContainsKey("filename"))
                     {
                         var filename = dict["filename"];
@@ -138,7 +155,7 @@ namespace BitMagic.Compiler
                     state.Segment = segment;
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
-                }, new[] { "name", "address", "filename" })
+                }, new[] { "name", "address", "filename", "maxsize" })
                 .WithParameters(".endsegment", (dict, state) => {
                     state.Segment = state.Segments[".Default"];
                     state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
@@ -173,13 +190,18 @@ namespace BitMagic.Compiler
                         state.Procedure.Variables.SetValue(kv.Key, ParseStringToValue(kv.Value));
                     }
                 }, new[] { "name", "value" })
-                .WithParameters(".pad", (dict, state) => {
+                .WithParameters(".org", (dict, state) => {
                     var padto = ParseStringToValue(dict["address"]);
                     if (padto < state.Segment.Address)
                         throw new Exception($"pad with destination of ${padto:X4}, but segment address is already ${state.Segment.Address:X4}");
 
                     state.Segment.Address = padto;
                 }, new[] { "address" })
+                .WithParameters(".pad", (dict, state) => {
+                    var size = ParseStringToValue(dict["size"]);
+
+                    state.Segment.Address += size;
+                }, new[] { "size" })
                 .WithParameters(".align", (dict, state) => { 
                     var boundry = ParseStringToValue(dict["boundary"]);
 
@@ -190,7 +212,7 @@ namespace BitMagic.Compiler
                     {
                         state.Segment.Address++;
                     }
-                }, new[] { "boundry" })
+                }, new[] { "boundary" })
                 .WithParameters(".importfile", (dict, state) => {
                     var t = CompileFile(dict["filename"], state);
 
@@ -235,6 +257,43 @@ namespace BitMagic.Compiler
                 _opCodes.Add(opCode.Code.ToLower(), opCode);
             }
 
+            //var sb = new StringBuilder();
+            //// test
+            //var i = 0;
+            //var j = 0;
+            //foreach(var opCode in _project.Machine.Cpu.OpCodes)
+            //{
+            //    foreach (var m in opCode.Modes)
+            //    {
+            //        sb.Append($"{opCode.Code}\t");
+            //        sb.AppendLine(m switch {
+            //            AccessMode.Implied => "",
+            //            AccessMode.Accumulator => "",     // A
+            //            AccessMode.Immediate => "#$44",       // #$44
+            //            AccessMode.ZeroPage => "$44",        // $44
+            //            AccessMode.ZeroPageX => "$44, X",       // $44, X
+            //            AccessMode.ZeroPageY => "$44, Y",       // $44, Y
+            //            AccessMode.Absolute => "$4433",        // $4400
+            //            AccessMode.AbsoluteX => "$4433, X",       // $4400, X        
+            //            AccessMode.AbsoluteY => "$4433, Y",       // $4400, Y
+            //            AccessMode.Indirect => "($4433)",        // ($4444)
+            //            AccessMode.IndirectX => "($44, X)",       // ($44, X)
+            //            AccessMode.IndirectY => "($44), Y",       // ($44), Y
+            //            AccessMode.IndAbsoluteX => "($4433, X)",    // ($4444, X)
+            //            AccessMode.Relative => $"reldest_{i}",        // #$ff for branch instruction,
+            //            AccessMode.ZeroPageIndirect => "($44)",// ($44)})
+            //            _ => throw new Exception()
+            //        });
+            //        sb.AppendLine($".byte $00, ${j++:X2} ,$00");
+            //        if (m == AccessMode.Relative)
+            //        {
+            //            sb.AppendLine($".reldest_{i++}:");
+            //        }
+            //    }
+            //}
+            //File.WriteAllText(@"d:\documents\source\bitmagic\test.asm", sb.ToString());
+
+
             var globals = new Variables(_project.Machine.Variables, "App");
 
             var state = new CompileState(globals);
@@ -244,6 +303,26 @@ namespace BitMagic.Compiler
             PruneUnusedObjects(state);
 
             Reval(state);
+
+            if (_project.CompileOptions.DisplaySegments)
+            {
+                foreach (var segment in state.Segments.Values)
+                {
+                    Console.WriteLine("{0,-25} {1,-5} {2,-5} {3,-5}", "Segment", "Start", "Size", "End");
+                    Console.WriteLine($"{segment.Name,-25} ${segment.StartAddress:X4} ${segment.Address - segment.StartAddress:X4} ${segment.Address:X4}");
+                }
+            }
+
+            foreach (var segment in state.Segments.Values)
+            {
+                if (segment.MaxSize != 0)
+                {
+                    if (segment.Address - segment.StartAddress > segment.MaxSize)
+                    {
+                        throw new CompilerSegmentTooLarge(segment);
+                    }
+                }
+            }
 
             if (_project.CompileOptions.DisplayVariables)
             {
@@ -288,17 +367,19 @@ namespace BitMagic.Compiler
                     continue;
                 }
 
-                if (line.StartsWith('.'))
+                var idx = line.IndexOf(';');
+
+                var thisLine = (idx == -1 ? line : line[..idx]);
+
+                if (thisLine.StartsWith('.'))
                 {
                     previousLines.Clear();
-                    var source = new SourceFilePosition { LineNumber = lineNumber, Source = line, Name = _project.Code.Filename ?? _project.Source.Filename ?? "" };
+                    var source = new SourceFilePosition { LineNumber = lineNumber, Source = thisLine, Name = _project.Code.Filename ?? _project.Source.Filename ?? "" };
                     ParseCommand(source, state);
                 }
                 else
                 {
-                    var idx = line.IndexOf(';');
-
-                    var parts = (idx == -1 ? line : line[..idx]).Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = thisLine.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                     previousLines.AppendLine(line);
                     var source = new SourceFilePosition { LineNumber = lineNumber, Source = previousLines.ToString(), Name = _project.Code.Filename ?? _project.Source.Filename ?? "" };

@@ -113,5 +113,6 @@ namespace BitMagic.Common
     public class CompileOptions
     {
         public bool DisplayVariables { get; set; }
+        public bool DisplaySegments { get; set; }
     }
 }

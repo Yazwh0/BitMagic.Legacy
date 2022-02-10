@@ -64,22 +64,24 @@ namespace BitMagic.Compiler
             if (isValue)
                 _toParse = _toParse.Substring(1);
 
+            var isY = _toParse.EndsWith(",Y", StringComparison.CurrentCultureIgnoreCase);
+            if (isY)
+            {
+                _toParse = _toParse.Substring(0, _toParse.Length - 2);
+            }
+
             var isIndiect = _toParse.StartsWith('(') && _toParse.EndsWith(')');
             if (isIndiect)
             {
                 _toParse = _toParse.Substring(1, _toParse.Length - 2);
             }
-            var isX = _toParse.EndsWith(",X");
-            var isY = _toParse.EndsWith(",Y");
+            var isX = _toParse.EndsWith(",X", StringComparison.CurrentCultureIgnoreCase);
+            var isNowY = _toParse.EndsWith(",Y", StringComparison.CurrentCultureIgnoreCase);
+            isY = isY || isNowY;
 
-            if (isY || isX)
+            if (isNowY || isX)
             {
                 _toParse = _toParse.Substring(0, _toParse.Length - 2);
-            }
-
-            if (_toParse.EndsWith("foo"))
-            {
-                Debug.Assert(false);
             }
 
             RequiresRevalNames.Clear();
@@ -87,7 +89,7 @@ namespace BitMagic.Compiler
             var result = (int)_evaluator.Evaluate(_toParse);
             _evaluator.PreEvaluateVariable -= _evaluator_PreEvaluateVariable;
 
-            var singleByte = (result & 0xff) == result;
+            var singleByte = isValue ? (result > -128 && result < 256) : (result & 0xff) == result;
             var isRelative = _opCode.Modes.Count() == 1 && _opCode.Modes.FirstOrDefault() == AccessMode.Relative;
 
             var thisMode = (isValue, isIndiect, isX, isY, singleByte, isRelative) switch
@@ -103,19 +105,22 @@ namespace BitMagic.Compiler
                 (false, false, false, true, false, false) => AccessMode.AbsoluteY,
 
                 (false, true, false, false, false, false) => AccessMode.Indirect,
-                (false, true, true, false, true, false) => AccessMode.ZeroPageX,
-                (false, true, false, true, true, false) => AccessMode.ZeroPageY,
+                (false, true, true, false, true, false) => AccessMode.IndirectX,
+                (false, true, false, true, true, false) => AccessMode.IndirectY,
 
                 (false, true, true, false, false, false) => AccessMode.IndAbsoluteX,
                 (false, false, false, false, false, true) => AccessMode.Relative,
+                (false, true, false, false, true, false) => AccessMode.ZeroPageIndirect,
 
-                _ => throw new Exception($"Unhandled mode select for {_toParse}")
+                _ => throw new Exception($"Unhandled mode select for {_original}")
             };
 
             if (thisMode == AccessMode.Relative)
             {
                 var offset = result - Address - 2; // -2 for the branch command
                 Data = new[] { _opCode.GetOpCode(thisMode), (byte)offset };
+                if ((offset > 128 || offset < -127) && (!RequiresReval || finalParse)) 
+                    throw new CompilerBranchToFarException(this, $"Branch too far. Trying to branch {offset} bytes.");
             }
             else if (singleByte)
             {
@@ -151,5 +156,17 @@ namespace BitMagic.Compiler
             Console.Write($"${Address:X4}:{(RequiresReval ? "* " : "  ")}{string.Join(", ", Data.Select(a => $"${a:X2}")),-22}");
             Console.WriteLine($"{_opCode.Code}\t{Params}");
         }
+    }
+
+    public class CompilerBranchToFarException : CompilerException
+    {
+        public ILine Line { get; }
+
+        public CompilerBranchToFarException(ILine line, string message) : base(message)
+        {
+            Line = line;
+        }
+
+        public override string ErrorDetail => Line.Source.ToString();
     }
 }

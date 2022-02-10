@@ -13,22 +13,7 @@
 	"repository": {
 		"csasm":{
 			"patterns":[
-				{"include" : "source.bmasm"},
-				{
-					"name" : "meta.embedded.block.csasm",
-					"begin": "@{",
-					"end": "}",
-					"beginCaptures": { "0": { "name" : "punctuation.curlybrace.transition.csasm"}},
-					"endCaptures": { "0": { "name" : "punctuation.curlybrace.transition.csasm"}},
-					"patterns" : 
-					[
-						{ "include" : "source.bmasm" },		
-						{ "include" : "#comment" },		
-						{ "include" : "#directives" },		
-						{ "include" : "#declarations" },	
-						{ "include" : "#script-top-level" }			
-					]
-				},
+				{ "include" : "source.bmasm" },
 				{
 					"name" : "meta.embedded.line.csasm",
 					"match": "(@\\()(.*)(\\))",
@@ -38,27 +23,14 @@
 						"2" : {
 							"patterns" : 
 							[
+								{ "include" : "#preprocessor" },		
 								{ "include" : "#comment" },		
 								{ "include" : "#directives" },		
 								{ "include" : "#declarations" },	
 								{ "include" : "#script-top-level" }	
 							]
-						},						
+						},
 						"3": { "name" : "punctuation.curlybrace.transition.csasm"}
-					}					
-				},
-				{
-					"name": "meta.embedded.function.csasm",
-					"match": "(@)(\\w+\\(.*\\))",
-					"captures" : {
-						"1": { "name" : "punctuation.curlybrace.transition.csasm" },
-						"2": { 
-							"patterns" : [
-								{ "include" : "#directives" },
-								{ "include" : "#declarations" },
-								{ "include" : "#script-top-level" }
-							]
-						}
 					}
 				}
 			]

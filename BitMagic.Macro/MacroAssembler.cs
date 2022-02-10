@@ -1,6 +1,9 @@
-﻿using BitMagic.Common;
-using BitMagic.Macro;
-using RazorEngineCore;
+﻿using BitMagic.AsmTemplate;
+using BitMagic.AsmTemplateEngine;
+using BitMagic.Common;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,18 +17,14 @@ namespace BigMagic.Macro
     // converts .csasm to 
     public class MacroAssembler
     {
-        private readonly RazorEngine _razorEngine;
         private Project? _project = null;
 
         private List<string> _references = new List<string>();
+        private List<string> _assemblyFilenames = new List<string>();
 
         public MacroAssembler()
         {
-            var config = new RazorEngineCompilationOptions();
-
-            config.TemplateNamespace = "bitmagic.asm";
-            _razorEngine = new RazorEngine();
-        }
+       }
 
         public async Task ProcessFile(Project project)
         {
@@ -49,11 +48,19 @@ namespace BigMagic.Macro
             var output = new StringBuilder();
             var userHeader = new StringBuilder();
 
-            output.AppendLine($"@* PreProcessor Result of {_project.Source.Filename} *@");
-            output.AppendLine("");
-            output.AppendLine("@{");
-
-            var commands = new HashSet<string>(_project.Machine.Cpu.OpCodes.Select(i => i.Code));
+            output.AppendLine("using System;");
+            output.AppendLine("using System.Linq;");
+            output.AppendLine("using System.Collections;");
+            output.AppendLine("using System.Collections.Generic;");
+            output.AppendLine("using System.Threading.Tasks;");
+            output.AppendLine("using BM = BitMagic.AsmTemplate.BitMagicHelper;");
+            output.AppendLine($"// PreProcessor Result of {_project.Source.Filename}");
+            output.AppendLine("namespace BitMagic.App");
+            output.AppendLine("{");
+            output.AppendLine("public class Template : BitMagic.AsmTemplate.ITemplateRunner");
+            output.AppendLine("{");
+            output.AppendLine("\tpublic async Task Execute()");
+            output.AppendLine("\t{");
 
             foreach (var line in lines)
             {
@@ -62,19 +69,12 @@ namespace BigMagic.Macro
                 // emtpy line
                 if (string.IsNullOrWhiteSpace(trimmed))
                 {
-                    output.AppendLine("@:");
                     continue;
                 }
 
                 if (trimmed.StartsWith("using"))
                 {
-                    var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    var name = parts[1];
-
-                    if (name.EndsWith(';'))
-                        name = name.Substring(0, name.Length - 1);
-
-                    userHeader.AppendLine($"@using {name}");
+                    userHeader.AppendLine(trimmed);
                     continue;
                 }
 
@@ -90,32 +90,29 @@ namespace BigMagic.Macro
                     continue;
                 }
 
-                // lines starting with a period, eg .byte, .word
-                if (trimmed.StartsWith('.'))
+                if (trimmed.StartsWith("assembly"))
                 {
-                    output.AppendLine($"@:{trimmed}");
+                    var name = trimmed.Substring("assembly ".Length);
+
+                    var idx = name.IndexOf(';');
+
+                    if (idx >= 0)
+                        name = name.Substring(0, idx);
+                    
+                    _assemblyFilenames.Add(name);
                     continue;
                 }
 
-                // lines starting with a semicolon are comments
-                if (trimmed.StartsWith(';'))
-                {
-                    output.AppendLine($"@:{trimmed}");
-                    continue;
-                }
-
-                // asm
-                if (commands.Any(i => trimmed.StartsWith(i, StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    output.AppendLine($"@:{trimmed}");
-                    continue;
-                }
-                
                 output.AppendLine(line);
             }
 
-            output.AppendLine("} @* PreProcessor End *@");
-            _project.PreProcess.Contents = userHeader.ToString() + output.ToString();
+            output.AppendLine("\t}");
+            output.AppendLine("}");
+            output.AppendLine("}");
+
+            var engine = CsasmEngine.CreateEngine();
+
+            _project.PreProcess.Contents = engine.Process(userHeader.ToString() + output.ToString());
 
             if (!string.IsNullOrWhiteSpace(_project.PreProcess.Filename))
                 await _project.PreProcess.Save();
@@ -128,51 +125,111 @@ namespace BigMagic.Macro
 
             var toProcess = _project.PreProcess.Contents;
 
-            try
+            if (toProcess == null)
+                throw new ArgumentNullException(nameof(toProcess));
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(toProcess);
+
+            var assemblies = new List<Assembly>();
+
+            assemblies.AddRange(new[] {
+                    typeof(object).Assembly,
+                    Assembly.Load(new AssemblyName("Microsoft.CSharp")),
+                    Assembly.Load(new AssemblyName("System.Runtime")),
+                    typeof(System.Collections.IList).Assembly,
+                    typeof(System.Collections.Generic.IEnumerable<>).Assembly,
+                    Assembly.Load(new AssemblyName("System.Linq")),
+                    Assembly.Load(new AssemblyName("System.Linq.Expressions")),
+                    Assembly.Load(new AssemblyName("netstandard")),
+                    typeof(BitMagicHelper).Assembly
+            });
+
+            foreach(var assemblyFilename in _assemblyFilenames)
             {
-                var template = await _razorEngine.CompileAsync<BitMagicRazorModel>(toProcess, a =>
+                var assemblyInclude = Assembly.LoadFrom(assemblyFilename);
+                if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
+                    Console.WriteLine($"Adding File Assembly: {assemblyInclude.FullName}");
+
+                assemblies.Add(assemblyInclude);
+            }
+
+            foreach (var include in _references)
+            {
+                var assemblyInclude = Assembly.Load(include);
+                if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
+                    Console.WriteLine($"Adding Referenced Assembly: {include}");
+
+                assemblies.Add(assemblyInclude);
+            }
+
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                !string.IsNullOrEmpty(_project.PreProcess.Filename) ? Path.GetFileName(_project.PreProcess.Filename) : Path.GetFileName(_project.Source.Filename),
+                new[] { syntaxTree },
+                assemblies.Select(ass => { return MetadataReference.CreateFromFile(ass.Location); }),
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            MemoryStream memoryStream = new MemoryStream();
+
+            EmitResult emitResult = compilation.Emit(memoryStream);
+
+            if (!emitResult.Success)
+            {
+                var exception = new CompilationException()
                 {
-                    var assemblies = new List<Assembly>();
+                    Errors = emitResult.Diagnostics.ToList(),
+                    GeneratedCode = toProcess
+                };
 
-                    a.Options.TemplateNamespace = "BitMagic.Asm";
+                throw exception;
+            }
 
-                    if (!string.IsNullOrEmpty(_project.PreProcess.Filename))
-                        a.Options.TemplateFilename = Path.GetFileName(_project.PreProcess.Filename);
+            memoryStream.Position = 0;
 
-                    foreach (var include in _references)
-                    {
-                        var assembly = Assembly.Load(include);
-                        if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
-                            Console.WriteLine($"Adding Referenced Assembly: {include}");
-                        a.AddAssemblyReference(assembly);
+            // save dll only if the PreProcess file is being written as this means we're debugging.
+            if (!string.IsNullOrWhiteSpace(_project.PreProcess.Filename))
+            {
+                using (FileStream fileStream = new FileStream(
+                    path: Path.Combine(Path.GetDirectoryName(_project.PreProcess.Filename) ?? throw new Exception(), Path.GetFileNameWithoutExtension(_project.PreProcess.Filename) + ".dll"),
+                    mode: FileMode.OpenOrCreate,
+                    access: FileAccess.Write,
+                    share: FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true))
+                {
+                    await memoryStream.CopyToAsync(fileStream);
+                }
+            }
 
-                        assemblies.Add(assembly);
-                    }
+            Template.StartProject();
 
-                    if ((_project.Options.VerboseDebugging & ApplicationPart.Macro) != 0)
-                    {
-                        Console.WriteLine("Referenced Assemblies:");
-                        foreach (var ass in a.Options.ReferencedAssemblies)
-                        {
-                            Console.WriteLine(ass.FullName);
-                        }
-                    }
-                });
+            var assembly = Assembly.Load(memoryStream.ToArray());
 
-                await template.SaveToFileAsync("razor.dll");
+            var runner = Activator.CreateInstance(assembly.GetType($"BitMagic.App.Template") ?? throw new Exception("BitMagic.App.Template not in compiled dll.")) as ITemplateRunner;
 
-                var result = await template.RunAsync(i => { });
+            if (runner == null)
+                throw new Exception("Temlpate is not a ITemplateRunner");
 
-                _project.Code.Contents = result;
+            await runner.Execute();
+
+            _project.Code.Contents = Template.ToString;
                 if (!string.IsNullOrWhiteSpace(_project.Code.Filename))
                     await _project.Code.Save();
+        }
+    }
 
-            }
-            catch (Exception e)
+    internal class CompilationException : Exception {
+        public List<Diagnostic> Errors { get; set; } = new List<Diagnostic>();
+
+        public string GeneratedCode { get; set; } = "";
+
+        public override string Message
+        {
+            get
             {
-                Console.WriteLine(e.Message);
-                throw;
+                string errors = string.Join("\n", this.Errors.Where(w => w.IsWarningAsError || w.Severity == DiagnosticSeverity.Error));
+                return "Unable to compile template: " + errors;
             }
         }
     }
+
 }

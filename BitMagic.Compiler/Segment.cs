@@ -23,6 +23,13 @@ namespace BitMagic.Compiler
         [JsonProperty]
         public int Address { get; set; }
 
+        [JsonProperty]
+        public int MaxSize { get; set; }
+
+        // tbd
+        //[JsonProperty]
+        //public bool DataOnly { get; set; }
+
         public Segment(Variables globals, string name)
         {
             Name = name;

@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		asmcompare.asm = asmcompare.asm
 		scope_example.csasm = scope_example.csasm
 		test.bmasm = test.bmasm
 		test.compiled.json = test.compiled.json
@@ -20,8 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		test.prg = test.prg
 		testimport.bsasm = testimport.bsasm
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorEngineCore", "..\RazorEngineCore\RazorEngineCore\RazorEngineCore.csproj", "{07D000C9-E2AF-4A01-AB34-627B3C210A1D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Compiler", "BitMagic.Compiler\BitMagic.Compiler.csproj", "{FA9BC30C-68C1-4A7B-AB04-4814357C01E5}"
 EndProject
@@ -34,6 +33,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Emulator", "BitMagic.Emulator\BitMagic.Emulator.csproj", "{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigMagic.DebugServer", "BigMagic.DebugServer\BigMagic.DebugServer.csproj", "{336B12A9-C555-431D-B30A-246E076EC981}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.AsmTemplateEngine", "Bitmagic.AsmTemplateEngine\BitMagic.AsmTemplateEngine.csproj", "{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bitmagic.SdkPreProcessor", "Bitmagic.SdkPreProcessor\Bitmagic.SdkPreProcessor.csproj", "{858F3913-75EA-4F0D-B40E-053B6E73AB0F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.AsmTemplate", "BitMagic.AsmTemplate\BitMagic.AsmTemplate.csproj", "{212E57E0-2C20-4888-999F-C0D909936240}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,10 +54,6 @@ Global
 		{E9B5BB8D-12ED-40FE-BE3E-8666552BA664}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9B5BB8D-12ED-40FE-BE3E-8666552BA664}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9B5BB8D-12ED-40FE-BE3E-8666552BA664}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07D000C9-E2AF-4A01-AB34-627B3C210A1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07D000C9-E2AF-4A01-AB34-627B3C210A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07D000C9-E2AF-4A01-AB34-627B3C210A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07D000C9-E2AF-4A01-AB34-627B3C210A1D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FA9BC30C-68C1-4A7B-AB04-4814357C01E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA9BC30C-68C1-4A7B-AB04-4814357C01E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA9BC30C-68C1-4A7B-AB04-4814357C01E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -77,6 +78,18 @@ Global
 		{336B12A9-C555-431D-B30A-246E076EC981}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{858F3913-75EA-4F0D-B40E-053B6E73AB0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{858F3913-75EA-4F0D-B40E-053B6E73AB0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{858F3913-75EA-4F0D-B40E-053B6E73AB0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{858F3913-75EA-4F0D-B40E-053B6E73AB0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212E57E0-2C20-4888-999F-C0D909936240}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212E57E0-2C20-4888-999F-C0D909936240}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212E57E0-2C20-4888-999F-C0D909936240}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212E57E0-2C20-4888-999F-C0D909936240}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BitMagic.AsmTemplate\BitMagic.AsmTemplate.csproj" />
+    <Using Include="BitMagic.AsmTemplate.BitMagicHelper" Alias="BM" />
+  </ItemGroup>
+
+  <Target Name="csasm" BeforeTargets="BeforeBuild">
+    <Exec Command="D:\Documents\Source\BitMagic\Bitmagic.SdkPreProcessor\bin\Debug\net6.0\Bitmagic.SdkPreProcessor --recursive=true --base-folder=$(MSBuildProjectDirectory) *.csasm"/>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+  </ItemGroup>  
+
+</Project>

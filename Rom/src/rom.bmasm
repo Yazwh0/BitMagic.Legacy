@@ -49,7 +49,7 @@
 
 .endproc
 
-.pad $fffa
+.org $fffa
 .word brk_handler
 .word startup
 .word irq_handler

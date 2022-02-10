@@ -1,0 +1,103 @@
+﻿using System.IO.Compression;
+using System.IO;
+
+namespace Compression;
+
+public static class Deflator
+{
+    public static byte[] Deflate(byte[] input)
+    {
+        using var outputStream = new MemoryStream();
+        using var compressedStream = new DeflateStream(outputStream, CompressionLevel.SmallestSize);
+
+        compressedStream.Write(input, 0, input.Length);
+        compressedStream.Flush();
+        compressedStream.Close();
+
+        var toReturn = outputStream.ToArray();
+
+        return toReturn;
+    }
+}
+
+public static partial class Inflator
+{
+    public static byte Source {get; internal set;} // needed until we get a better .const parser
+
+    public static void SetSourceZp(byte zpAddress)
+    {
+        Source = zpAddress;
+        .scope Inflate
+        .const inflateZp = @(zpAddress)
+        .endscope
+    }
+
+    public static void InflateToRam(string sourceLabel, ushort destinationAddr)
+    {
+        lda #<@(sourceLabel)
+        sta inflateZp
+        lda #>@(sourceLabel)
+        sta inflateZp+1
+
+        lda #<@(destinationAddr)
+        sta inflateZp+2
+        lda #>@(destinationAddr)
+        sta inflateZp+3
+        jsr :Inflate:inflate_to_ram
+    }
+
+    public static void InflateToVram(string sourceLabel, uint destinationAddr)
+    {
+        lda #<@(sourceLabel)
+        sta inflateZp
+        lda #>@(sourceLabel)
+        sta inflateZp+1
+
+        stz CTRL
+
+        lda #<@(destinationAddr)
+        sta ADDRx_L
+
+        lda #>@(destinationAddr)
+        sta ADDRx_M
+
+        lda #^@(destinationAddr)+$10
+        sta ADDRx_H
+
+        jsr :Inflate:inflate_to_vram
+    }
+
+    public static void DefineScratchArea()
+    {
+        .scope Inflate
+            .literalSymbolCodeLength:        
+            .pad $100
+
+            .controlSymbolCodeLength:
+            .pad @(1+29+2 + 30)
+
+
+            .nBitCode_clearFrom:
+            .nBitCode_literalCount:
+            .pad 32
+
+            .nBitCode_controlCount:
+            .pad 32
+
+            .nBitCode_literalOffset:
+            .pad 32
+
+            .nBitCode_controlOffset:
+            .pad 32
+
+            .allLiteralsCodeLength:
+            .pad 1
+
+            .codeToLiteralSymbol:
+            .pad $100
+
+            .codeToControlSymbol:
+            .pad @(1+29+2 + 30)
+        .endscope
+    }
+}

@@ -1,0 +1,85 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"bsasm",
+			"Colors",
+			"copydone",
+			"copyloop",
+			"coreclr",
+			"Defalte",
+			"endproc",
+			"endscope",
+			"Inflator",
+			"Labors",
+			"Lanczos",
+			"lookback",
+			"Octree",
+			"proc",
+			"Resamplers",
+			"tochange",
+			"ushort"
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [		
+			{
+				"type": "coreclr",
+				"name": "Build Example",				
+				"preLaunchTask": "Build",
+				"request": "launch",
+				"program": "${workspaceFolder}/../../BitMagic/bin/Debug/net6.0/BitMagic.exe",
+				"args": [ 
+					"--razor-file=${workspaceFolder}/DisplayImageX16/src/main.csasm",
+					"--bmasm-file=${workspaceFolder}/DisplayImageX16/src/main.bsasm",
+					"--output-file=${workspaceFolder}/DisplayImageX16/test.prg",
+					"razor",
+					"compile"
+				],
+				"cwd": "${workspaceFolder}",
+				"stopAtEntry": false,
+				"console": "internalConsole",
+				"logging": {
+					"moduleLoad": false
+				}
+			}
+
+		]
+	},
+	"tasks" :{
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Build Compression",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder}/Compression"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
+				"label": "Build Image Processor",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder}/ImageProcessor"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
+				"label": "Build",
+				"dependsOn" : [ "Build Compression", "Build Image Processor" ]
+			}
+		]
+	}
+}

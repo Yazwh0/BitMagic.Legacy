@@ -1,10 +1,15 @@
 *.dll
 .vs/*
-*/bin/*
-*/obj/*
+**/bin/*
+**/obj/*
 */node_modules/*
 */.vs/*
 *.vsix
 *.diagsession
 *.bin
 *.prg
+**/.vscode/*
+*.cache
+*.suo
+**/.vs/*
+**/Compare/*

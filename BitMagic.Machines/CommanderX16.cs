@@ -104,9 +104,9 @@ namespace BitMagic.Machines
             {"SPI_DATA", 0x9F3E},
             {"SPI_CTRL", 0x9F3F},
 
-            {"INTERUPT", 0x0314},
-            {"INTERUPT_L", 0x0314},
-            {"INTERUPT_H", 0x0315},
+            {"INTERRUPT", 0x0314},
+            {"INTERRUPT_L", 0x0314},
+            {"INTERRUPT_H", 0x0315},
 
             {"RAM_BANK", 0x9F61}
         };
