@@ -1,8 +1,0 @@
-
-.proc importedproc
-
-	lda $abcd
-	sta DATA0
-
-.endproc
-

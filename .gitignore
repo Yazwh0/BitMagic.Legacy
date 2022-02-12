@@ -13,3 +13,7 @@
 *.suo
 **/.vs/*
 **/Compare/*
+*.prg
+test.*
+asmcompare.asm
+output.png
