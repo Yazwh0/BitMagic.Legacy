@@ -81,7 +81,8 @@ namespace BitMagic
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;//| ApplicationPart.Emulator;
 
-            //project.CompileOptions.DisplayVariables = true;
+            project.CompileOptions.DisplayCode = true;
+            project.CompileOptions.DisplayVariables = true;
             project.CompileOptions.DisplaySegments= true;
 
             if (_args.Contains("razor"))

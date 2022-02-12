@@ -7,11 +7,12 @@ using Vera;
 
     BM.X16Header(); // byte code to start execution.
 
+    VideoMemory.SetCopyZpWordAddress(0x00); // define where in ZP the copy can use.
     Inflator.SetSourceZp(0x00); // define where in ZP we can use for inflating. 
 
-    Video.Mode(Layers.None); // disable all layers while the image inflates.
+    Video.Mode(Layers.None); // disable all layers and sprites while the image inflates.
 
-    Video.Scaling(Resolution.Half);
+    Video.Scaling(Resolution.Half); // 320x240
 
     Video.LayerBitmap(ConfigLayer.Layer0, Depth.Bpp_8, BitmapWidth.Half_320, 0x1000);
 
@@ -29,57 +30,25 @@ using Vera;
 
     var imageData = ImageAsset.LoadFullImage(@"Assets\bliss.bmp");
 
-    ; copy palette to VRAM
-    lda #$11
-    sta ADDRx_H
-    lda #$fa
-    sta ADDRx_M
-    stz ADDRx_L
+    ; copy palette to vera
+    VideoMemory.Copy("palette", 0x1fa00, imageData.X16Colours.Length);
 
-    var length = imageData.X16Colours.Length;
-    var thisIteration = (length > 0xff) ? 0xff : length;
-
-    ; crap copy loop
-    ;stp
-    ldx #@(thisIteration)
-    .copyloop:
-    lda palette
-    sta DATA0
-    inc copyloop+1
-    dex
-    bne copyloop
-
-    if (length > thisIteration)
-    {
-        .tochange:
-        bne copydone ; gets updated, beq will be false first time
-        inc copyloop+2
-        ldx #@(length - 0xff) ; length - 0xff to not clear
-        lda #$f0 ; beq
-        sta tochange
-        bra copyloop
-        .copydone:
-    }
-
-    ; turn on layer 0 to show the image.
-    Video.Mode(Layers.Layer0);
+    Video.Mode(Layers.Layer0); // turn on layer 0 to show the image.
 
     ; infinite loop
     .loop:
         jmp loop
 
-    ; decompressor code. need to call this to generate the .proc
-    Inflator.InflateToVramCode();
-
-    var compressed = Deflator.Deflate(imageData.Pixels);
+    Inflator.InflateToVramCode(); // decompressor proc code.
+    
+    VideoMemory.CopyProc(); // copy proc code.
  
-    .align $100
     .palette:
     BM.Bytes(imageData.X16Colours);
     
+    var compressed = Deflator.Deflate(imageData.Pixels);
     ; Source data is @(imageData.Pixels.Length) bytes.
     ; Compressed data is $@(compressed.Length.ToString("X4")) bytes.
-
     .compressed_data:
     BM.Bytes(compressed);
 

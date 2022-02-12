@@ -13,13 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		asmcompare.asm = asmcompare.asm
 		scope_example.csasm = scope_example.csasm
-		test.bmasm = test.bmasm
-		test.compiled.json = test.compiled.json
-		test.csasm = test.csasm
-		test.csasm.pre = test.csasm.pre
-		test.original.csasm = test.original.csasm
-		test.prg = test.prg
-		testimport.bsasm = testimport.bsasm
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Compiler", "BitMagic.Compiler\BitMagic.Compiler.csproj", "{FA9BC30C-68C1-4A7B-AB04-4814357C01E5}"
@@ -39,6 +32,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bitmagic.SdkPreProcessor", "Bitmagic.SdkPreProcessor\Bitmagic.SdkPreProcessor.csproj", "{858F3913-75EA-4F0D-B40E-053B6E73AB0F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.AsmTemplate", "BitMagic.AsmTemplate\BitMagic.AsmTemplate.csproj", "{212E57E0-2C20-4888-999F-C0D909936240}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{AF58444A-16E2-4ACD-A88C-DABDD1E0921F}"
+	ProjectSection(SolutionItems) = preProject
+		Testing\test.asm = Testing\test.asm
+		Testing\test.bmasm = Testing\test.bmasm
+		Testing\test.compiled.json = Testing\test.compiled.json
+		Testing\test.csasm = Testing\test.csasm
+		Testing\test.csasm.dll = Testing\test.csasm.dll
+		Testing\test.csasm.pre = Testing\test.csasm.pre
+		Testing\test.dll = Testing\test.dll
+		Testing\test.original.csasm = Testing\test.original.csasm
+		Testing\test.prg = Testing\test.prg
+		Testing\testimport.bsasm = Testing\testimport.bsasm
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

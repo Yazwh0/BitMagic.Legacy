@@ -114,5 +114,7 @@ namespace BitMagic.Common
     {
         public bool DisplayVariables { get; set; }
         public bool DisplaySegments { get; set; }
+        public bool DisplayCode { get; set; }
+        public bool DisplayData { get; set; }
     }
 }

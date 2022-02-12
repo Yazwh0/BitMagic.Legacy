@@ -1,0 +1,117 @@
+
+namespace Vera;
+
+public static class VideoMemory
+{
+    private static byte _zpWorkAddress = 0;
+    private static bool _copyWorkAddressSet = false;
+
+    public static void SetCopyZpWordAddress(byte zpWordAddress)
+    {
+        if (!_copyWorkAddressSet) 
+        {
+            _zpWorkAddress = zpWordAddress;      
+            _copyWorkAddressSet = true;
+        }
+        else if (_zpWorkAddress != zpWordAddress)
+        {
+            throw new Exception("Copy called with an zp address that is not the same as a previous call.");
+        }
+    }
+
+    public static void Copy(int source, int dest, int count, byte zpWordAddress)
+    {
+        SetCopyZpWordAddress(zpWordAddress);
+        
+        Copy(source, dest, count);
+    }
+
+    public static void Copy(object source, int dest, int count)
+    {
+        if (!_copyWorkAddressSet)
+        {
+            throw new Exception("Copy called but zpWordAddress is not set.");
+        }
+
+        int addressPart = (dest & 0xf0000) >> 16;
+        lda #@(addressPart + 0x10)
+        sta ADDRx_H
+
+        addressPart = (dest & 0xff00) >> 8; 
+
+        if (addressPart == 0)
+        {
+            stz ADDRx_M
+        } 
+        else 
+        {
+            lda #@(addressPart)
+            sta ADDRx_M
+        }
+
+        addressPart = dest & 0xff;
+
+        if (addressPart == 0)
+        {
+            stz ADDRx_L
+        } 
+        else 
+        {
+            lda #@(addressPart)
+            sta ADDRx_L
+        }
+
+        lda #<@(source)
+        sta @(_zpWorkAddress)
+        lda #>@(source)
+        sta @(_zpWorkAddress)+1
+
+        ldx #>@(count)
+        ldy #<@(count)
+        sty :CopyProcScope:CopyToVram:end_check+1
+
+        jsr :CopyProcScope:CopyToVram
+    }
+
+    public static void CopyProc(byte zpWordAddress)
+    {
+        SetCopyZpWordAddress(zpWordAddress);
+        
+        CopyProc();
+    }
+
+    public static void CopyProc()
+    {
+        if (!_copyWorkAddressSet)
+        {
+            throw new Exception("CopyProc called but zpWordAddress is not set.");
+        }
+        .scope CopyProcScope
+        .proc CopyToVram
+
+        ;sty end_check+1
+        ldy #0
+
+        .loop:
+        lda (@(_zpWorkAddress)), y
+        sta DATA0
+        iny
+        bne loop
+
+        inc @(_zpWorkAddress)+1
+        dex
+        bne loop
+
+        .remain_loop:
+        lda (@(_zpWorkAddress)), y
+        sta DATA0
+        iny
+        .end_check:
+        cpy #$aa ; gets updated
+        bne remain_loop
+
+        rts
+        .endproc
+        .endscope
+    }
+}

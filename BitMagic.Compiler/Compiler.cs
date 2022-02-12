@@ -167,7 +167,8 @@ namespace BitMagic.Compiler
                     state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
                 }, new[] { "name" })
                 .WithParameters(".endscope", (dict, state) => { 
-                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true); 
+                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
+                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
                 })
                 .WithParameters(".proc", (dict, state) => {
                     var name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedProc_{state.AnonCounter++}";
@@ -232,7 +233,8 @@ namespace BitMagic.Compiler
                     state.Segment.Address += dataline.Data.Length;
 
                     state.Procedure.AddLine(dataline);
-                    dataline.WriteToConsole();
+                    if (_project.CompileOptions.DisplayData)
+                        dataline.WriteToConsole();
                 })
                 .WithLine(".word", (source, state) => {
                     var dataline = new DataLine(state.Procedure, source, state.Segment.Address, DataLine.LineType.IsWord);
@@ -240,7 +242,8 @@ namespace BitMagic.Compiler
                     state.Segment.Address += dataline.Data.Length;
 
                     state.Procedure.AddLine(dataline);
-                    dataline.WriteToConsole();
+                    if (_project.CompileOptions.DisplayData)
+                        dataline.WriteToConsole();
                 });
         }
 
@@ -302,7 +305,15 @@ namespace BitMagic.Compiler
 
             PruneUnusedObjects(state);
 
-            Reval(state);
+            try
+            {
+                Reval(state);
+            } 
+            catch
+            {
+                DisplayVariables(globals);
+                throw;
+            }
 
             if (_project.CompileOptions.DisplaySegments)
             {
@@ -324,14 +335,7 @@ namespace BitMagic.Compiler
                 }
             }
 
-            if (_project.CompileOptions.DisplayVariables)
-            {
-                Console.WriteLine("Variables:");
-                foreach(var (Name, Value) in globals.GetChildVariables(globals.Namespace))
-                {
-                    Console.WriteLine($"{Name} = ${Value:X2}");
-                }
-            }
+            DisplayVariables(globals);
 
             if (!string.IsNullOrWhiteSpace(_project.AssemblerObject.Filename))
             {
@@ -339,7 +343,19 @@ namespace BitMagic.Compiler
                 await _project.AssemblerObject.Save();
             }
 
-            await GenerateDataFile(state);
+            await GenerateDataFile(state); 
+        }
+
+        private void DisplayVariables(Variables globals)
+        {
+            if (_project.CompileOptions.DisplayVariables)
+            {
+                Console.WriteLine("Variables:");
+                foreach (var (Name, Value) in globals.GetChildVariables(globals.Namespace))
+                {
+                    Console.WriteLine($"{Name} = ${Value:X2}");
+                }
+            }
         }
 
         private async Task CompileFile(string fileName, CompileState state, string? contents = null)
@@ -439,26 +455,24 @@ namespace BitMagic.Compiler
                     toSave.Add((byte)((address & 0xff00) >> 8));
                 }
 
-                foreach (var segment in segments)
+                foreach (var proc in segments.SelectMany(s => s.Scopes.Values).SelectMany(p => p.Procedures.Values).OrderBy(p => p.StartAddress))
                 {
-                    foreach (var scope in segment.Scopes.Values)
+                    foreach (var line in proc.Data)
                     {
-                        foreach (var proc in scope.Procedures.Values)
+                        if (address < line.Address)
                         {
-                            foreach (var line in proc.Data)
+                            for (var i = address; i < line.Address; i++)
                             {
-                                if (address != line.Address)
-                                {
-                                    for (var i = address; i < line.Address; i++)
-                                    {
-                                        toSave.Add(0x00);
-                                        address++;
-                                    }
-                                }
-                                toSave.AddRange(line.Data);
-                                address += line.Data.Length;
+                                toSave.Add(0x00);
+                                address++;
                             }
                         }
+                        else if(address > line.Address)
+                        {
+                            throw new Exception($"Lines address ${line.Address:X4} to output is behind the position in the output ${address:X4} in proc {proc.Name}.");
+                        }
+                        toSave.AddRange(line.Data);
+                        address += line.Data.Length;
                     }
                 }
 
@@ -544,7 +558,9 @@ namespace BitMagic.Compiler
             var toAdd = new Line(opCode, source, state.Procedure, state.Segment.Address, parts[1..]);
 
             toAdd.ProcessParts(false);
-            toAdd.WriteToConsole();
+
+            if (_project.CompileOptions.DisplayCode)
+                toAdd.WriteToConsole();
 
             state.Procedure.AddLine(toAdd);
             state.Segment.Address += toAdd.Data.Length;

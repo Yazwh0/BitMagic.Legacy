@@ -35,23 +35,23 @@ public static partial class Inflator
     public static void InflateToRam(string sourceLabel, ushort destinationAddr)
     {
         lda #<@(sourceLabel)
-        sta inflateZp
+        sta :Inflate:inflateZp
         lda #>@(sourceLabel)
-        sta inflateZp+1
+        sta :Inflate:inflateZp+1
 
         lda #<@(destinationAddr)
-        sta inflateZp+2
+        sta :Inflate:inflateZp+2
         lda #>@(destinationAddr)
-        sta inflateZp+3
+        sta :Inflate:inflateZp+3
         jsr :Inflate:inflate_to_ram
     }
 
     public static void InflateToVram(string sourceLabel, uint destinationAddr)
     {
         lda #<@(sourceLabel)
-        sta inflateZp
+        sta :Inflate:inflateZp
         lda #>@(sourceLabel)
-        sta inflateZp+1
+        sta :Inflate:inflateZp+1
 
         stz CTRL
 

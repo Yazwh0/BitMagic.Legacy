@@ -29,9 +29,9 @@ stz DATA0
 stz DATA0
 ; call decompress
 lda #<compressed_data
-sta inflateZp
+sta :Inflate:inflateZp
 lda #>compressed_data
-sta inflateZp+1
+sta :Inflate:inflateZp+1
 stz CTRL
 lda #<4096
 sta ADDRx_L
@@ -40,37 +40,26 @@ sta ADDRx_M
 lda #^4096+$10
 sta ADDRx_H
 jsr :Inflate:inflate_to_vram
-; copy palette to VRAM
-lda #$11
+; copy palette to vera
+lda #17
 sta ADDRx_H
-lda #$fa
+lda #250
 sta ADDRx_M
 stz ADDRx_L
-; crap copy loop
-;stp
-ldx #255
-.copyloop:
-lda palette
-sta DATA0
-inc copyloop+1
-dex
-bne copyloop
-.tochange:
-bne copydone ; gets updated, beq will be false first time
-inc copyloop+2
-ldx #129 ; length - 0xff to not clear
-lda #$f0 ; beq
-sta tochange
-bra copyloop
-.copydone:
-; turn on layer 0 to show the image.
+lda #<palette
+sta 0
+lda #>palette
+sta 0+1
+ldx #>384
+ldy #<384
+sty :CopyProcScope:CopyToVram:end_check+1
+jsr :CopyProcScope:CopyToVram
 ;     |.s10.coo
 lda #0b00010001
 sta DC_VIDEO
 ; infinite loop
 .loop:
 jmp loop
-; decompressor code. need to call this to generate the .proc
 ; inflate taken from https://github.com/pfusik/zlib6502/blob/master/inflate.asx
 .scope Inflate
 .proc inflate_to_vram
@@ -560,7 +549,28 @@ rts
 .byte	3,32,0
 .endproc        
 .endscope
-.align $100
+.scope CopyProcScope
+.proc CopyToVram
+;sty end_check+1
+ldy #0
+.loop:
+lda (0), y
+sta DATA0
+iny
+bne loop
+inc 0+1
+dex
+bne loop
+.remain_loop:
+lda (0), y
+sta DATA0
+iny
+.end_check:
+cpy #$aa ; gets updated
+bne remain_loop
+rts
+.endproc
+.endscope
 .palette:
 .byte	$9F, $04, $9F, $03, $AF, $05, $CF, $09, $CF, $0A, $AF, $06, $9F, $06, $9F, $05
 .byte	$AF, $07, $BF, $09, $DF, $0B, $EF, $0D, $FF, $0F, $FF, $0E, $EF, $0B, $EF, $0C

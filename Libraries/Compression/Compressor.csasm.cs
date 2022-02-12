@@ -35,23 +35,23 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@".endscope");
     public static void InflateToRam(string sourceLabel, ushort destinationAddr)
     {
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #<{sourceLabel}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #>{sourceLabel}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp+1");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp+1");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #<{destinationAddr}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp+2");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp+2");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #>{destinationAddr}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp+3");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp+3");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"jsr :Inflate:inflate_to_ram");
     }
 
     public static void InflateToVram(string sourceLabel, uint destinationAddr)
     {
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #<{sourceLabel}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #>{sourceLabel}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateZp+1");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:inflateZp+1");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"stz CTRL");
 

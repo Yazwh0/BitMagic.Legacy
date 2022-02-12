@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BitMagic.Compiler
 {
@@ -11,6 +12,18 @@ namespace BitMagic.Compiler
         public Variables Variables { get; }
         [JsonProperty]
         public List<ILine> Data { get; set; } = new List<ILine>();
+
+        public int? StartAddress => Data.FirstOrDefault()?.Address ?? null;
+        public int? EndAddress {
+            get {
+                var line = Data.LastOrDefault();
+
+                if (line == null)
+                    return null;                
+
+                return line.Address + line.Data.Length - 1;
+            }
+        }
 
         public Procedure(Scope scope, string name, bool anonymous)
         {
