@@ -1,0 +1,123 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Vera;
+
+[Flags]
+public enum Layers
+{
+    None = 0,
+    Layer0  = 0b00010000,
+    Layer1  = 0b00100000,
+    Sprites = 0b01000000
+}
+
+public enum OutputMode
+{
+    Disabled,
+    VGA,
+    NTSC,
+    RGB_Interlaced
+}
+
+public enum Resolution
+{
+    [Display(Name = "640x480")]
+    Full,
+    [Display(Name = "320x240")]
+    Half
+}
+
+public enum ConfigLayer 
+{
+    Layer0,
+    Layer1
+}
+
+public enum Depth
+{
+    Bpp_1,
+    Bpp_2,
+    Bpp_4,
+    Bpp_8
+}
+
+public enum BitmapWidth
+{
+    Half_320,
+    Full_640
+}
+
+public static class Video {
+
+    public static void Mode(Layers layers, OutputMode mode = OutputMode.VGA, bool chromaDisable = false)
+    {
+        int output = 0;
+
+        if (chromaDisable)
+            output = output & 0b100;
+        
+        output = output + (int)layers;
+        output = output + (int)mode;
+
+        ;     |.s10.coo
+        lda #0b@(Convert.ToString(output, 2).PadLeft(8, '0'))
+        sta DC_VIDEO
+    }
+
+    public static void Scaling(Resolution resolution)
+    {
+        var scale = resolution switch {
+            Resolution.Full => 128,
+            Resolution.Half => 64,
+            _ => throw new Exception($"Unhandled resolution {resolution}")
+        };
+
+        ; Set resolution to @(resolution)
+        lda #@(scale)
+        sta DC_HSCALE
+        sta DC_VSCALE
+    }
+
+    public static void LayerBitmap(ConfigLayer layer, Depth depth, BitmapWidth width, int baseAddress, int paletteOffset = 0)
+    {
+        var prefix = layer switch {
+            ConfigLayer.Layer0 => "L0",
+            ConfigLayer.Layer1 => "L1",
+            _ => throw new Exception($"Unhandled layer {layer}")
+        };
+
+        var config = (int)depth;
+        config = config + 0b100; // bitmap
+
+        ;   256 Bitmap mode
+        ;   |       bdd
+        lda #0b@(Convert.ToString(config, 2).PadLeft(8, '0'))
+        sta @(prefix)_CONFIG
+        var mapBase = (baseAddress >> 11) << 2;
+        mapBase += (int)width;
+
+        ;   Base address $@(baseAddress.ToString("X4"))
+        ;   Width @(width)
+        if (mapBase == 0)
+        {
+            stz @(prefix)_TILEBASE
+        } 
+        else 
+        {
+            lda #@(mapBase)
+            sta @(prefix)_TILEBASE
+        }
+
+        ;   Palette Offset
+        if (paletteOffset == 0)
+        {
+            stz @(prefix)_HSCROLL_L
+        } 
+        else 
+        {
+            lda #paletteOffset
+            sta @(prefix)_HSCROLL_L
+        }
+    }
+
+}
