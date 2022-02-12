@@ -1,0 +1,100 @@
+assembly ..\..\libraries\Compression\bin\Debug\net6.0\Compression.dll;
+assembly ..\..\libraries\ImageProcessor\bin\Debug\net6.0\ImageProcessor.dll;
+using Compression;
+using ImageProcessor;
+
+    BM.X16Header(); // byte code to start execution
+
+    Inflator.SetSourceZp(0x00); // define where in ZP we can use for inflating. 
+
+    ; set to no video
+    ;      fs10 coo
+    lda #0b00000001
+    sta DC_VIDEO
+
+    lda #64;128         ; 2:1 scale so 320x240, 128 is 1:1
+    sta DC_HSCALE
+    sta DC_VSCALE
+
+    ;            bdd
+    lda #0b0000_0111
+    sta L0_CONFIG
+
+    stz L0_MAPBASE
+    stz L0_TILEBASE
+    stz L0_HSCROLL_L
+    stz L0_HSCROLL_H
+
+    ; in case colour 0 is not black!
+    lda #$11
+    sta ADDRx_H
+    lda #$fa
+    sta ADDRx_M
+    stz ADDRx_L
+    stz DATA0
+    stz DATA0
+
+    ; call decompress
+    Inflator.InflateToVram("compressed_data", 0x0000);
+
+    var imageData = ImageAsset.LoadFullImage(@"Assets\bliss.bmp");
+
+    ; copy palette to VRAM
+    lda #$11
+    sta ADDRx_H
+    lda #$fa
+    sta ADDRx_M
+    stz ADDRx_L
+
+    var length = imageData.X16Colours.Length;
+    var thisIteration = (length > 0xff) ? 0xff : length;
+
+    ; crap copy loop
+    ;stp
+    ldx #@(thisIteration)
+    .copyloop:
+    lda palette
+    sta DATA0
+    inc copyloop+1
+    dex
+    bne copyloop
+
+    if (length > thisIteration)
+    {
+        .tochange:
+        bne copydone ; gets updated, beq will be false first time
+        inc copyloop+2
+        ldx #@(length - 0xff) ; length - 0xff to not clear
+        lda #$f0 ; beq
+        sta tochange
+        bra copyloop
+        .copydone:
+    }
+
+        ; set to 256 mode
+    lda #0b00010001
+    sta DC_VIDEO
+
+    ; infinite loop
+    .loop:
+        jmp loop
+
+    ; decompressor code. need to call this to generate the .proc
+    Inflator.InflateToVramCode();
+
+    var compressed = Deflator.Deflate(imageData.Pixels);
+ 
+    .align $100
+    .palette:
+    BM.Bytes(imageData.X16Colours);
+    
+    ; Source data is @(imageData.Pixels.Length) bytes.
+    ; Compressed data is $@(compressed.Length.ToString("X4")) bytes.
+    ;.align $100
+    .compressed_data:
+    BM.Bytes(compressed);
+
+    ; scratch space for decompression.
+    .align $100
+    Inflator.DefineScratchArea();
+

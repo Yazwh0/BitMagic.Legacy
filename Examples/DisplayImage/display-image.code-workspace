@@ -52,7 +52,8 @@
 				"console": "internalConsole",
 				"logging": {
 					"moduleLoad": false
-				}
+				},
+				"postDebugTask": "Run Emulator"
 			}
 
 		]
@@ -85,6 +86,19 @@
 			{
 				"label": "Build",
 				"dependsOn" : [ "Build Compression", "Build Image Processor" ]
+			},
+			{
+				"label": "Run Emulator",
+				"type": "shell",
+				"command": "c:\\dev\\X16emu\\x16emu.exe",
+				"args": [
+					"-prg",
+					"DisplayImageX16\\test.prg",
+					"-debug",
+					"-run",
+					"-scale",
+					"2"
+				]
 			}
 		]
 	}
