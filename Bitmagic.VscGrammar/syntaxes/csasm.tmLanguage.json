@@ -5,15 +5,20 @@
 	],
 	"name": "BitMagic X16 CS Asm",
 	"scopeName": "source.csasm",
-	"patterns": [
-		{
-			"include": "#csasm"
-		}
+	"patterns": [		
+			{ "include" : "#csasm" },
+			{ "include" : "#preprocessor" },		
+			{ "include" : "#comment" },		
+			{ "include" : "#directives" },		
+			{ "include" : "#declarations" },	
+			{ "include" : "#script-top-level" }		
 	],
 	"repository": {
 		"csasm":{
 			"patterns":[
 				{ "include" : "source.bmasm" },
+				{ "include" : "#assembly-references"},
+				{ "include" : "#comment" },		
 				{
 					"name" : "meta.embedded.line.csasm",
 					"match": "(@\\()(.*)(\\))",
@@ -27,13 +32,39 @@
 								{ "include" : "#comment" },		
 								{ "include" : "#directives" },		
 								{ "include" : "#declarations" },	
-								{ "include" : "#script-top-level" }	
+								{ "include" : "#script-top-level" }
 							]
 						},
 						"3": { "name" : "punctuation.curlybrace.transition.csasm"}
 					}
 				}
 			]
+		},
+		"assembly-references": {
+			"patterns": [{
+				"begin": "\\b(assembly)\\s*(\\\".*\\\")\\s*",
+				"beginCaptures": {
+					"1": {
+						"name": "keyword.other.assembly.csasm"
+					},
+					"2:": {
+						"name": "entity.name.type.assembly.csasm"
+					}
+				},
+				"end": "(?=;)"
+			},
+			{
+				"begin": "\\b(assembly)\\s*([^;]]*)\\s*",
+				"beginCaptures": {
+					"1": {
+						"name": "keyword.other.assembly.csasm"
+					},
+					"2:": {
+						"name": "entity.name.type.assembly.csasm"
+					}
+				},
+				"end": "(?=;)"
+			}]
 		},
 		"directives": {
 			"patterns": [

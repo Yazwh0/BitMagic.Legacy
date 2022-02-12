@@ -20,16 +20,26 @@
 			"Defalte",
 			"endproc",
 			"endscope",
+			"HSCALE",
+			"HSCROLL",
 			"Inflator",
 			"Labors",
 			"Lanczos",
 			"lookback",
+			"MAPBASE",
 			"Octree",
 			"proc",
 			"Resamplers",
+			"TILEBASE",
 			"tochange",
-			"ushort"
-		]
+			"ushort",
+			"VSCALE"
+		],
+		"files.exclude": {
+			"**/.vs/**": true,
+			"**/bin/**": true,
+			"**/obj/**": true
+		}
 	},
 	"launch": {
 		"version": "0.2.0",

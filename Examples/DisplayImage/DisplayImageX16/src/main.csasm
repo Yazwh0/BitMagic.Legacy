@@ -1,5 +1,5 @@
-assembly ..\..\libraries\Compression\bin\Debug\net6.0\Compression.dll;
-assembly ..\..\libraries\ImageProcessor\bin\Debug\net6.0\ImageProcessor.dll;
+assembly "..\..\libraries\Compression\bin\Debug\net6.0\Compression.dll";
+assembly "..\..\libraries\ImageProcessor\bin\Debug\net6.0\ImageProcessor.dll";
 using Compression;
 using ImageProcessor;
 
