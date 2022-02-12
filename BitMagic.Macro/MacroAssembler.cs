@@ -98,7 +98,19 @@ namespace BigMagic.Macro
 
                     if (idx >= 0)
                         name = name.Substring(0, idx);
-                    
+
+                    name = name.Trim();
+
+                    if (name == "\"\"" || string.IsNullOrWhiteSpace(name))
+                    {
+                        continue;
+                    }
+
+                    if (name.StartsWith('"') && name.EndsWith('"'))
+                    {
+                        name = name.Substring(1, name.Length - 2);
+                    }
+
                     _assemblyFilenames.Add(name);
                     continue;
                 }
