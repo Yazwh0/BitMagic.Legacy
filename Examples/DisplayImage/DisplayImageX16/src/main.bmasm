@@ -2,20 +2,23 @@
 .scope Inflate
 .const inflateZp = 0
 .endscope
-; set to no video
-;      fs10 coo
+;     |.s10.coo
 lda #0b00000001
 sta DC_VIDEO
-lda #64;128         ; 2:1 scale so 320x240, 128 is 1:1
+; Set resolution to Half
+lda #64
 sta DC_HSCALE
 sta DC_VSCALE
-;            bdd
-lda #0b0000_0111
+;   256 Bitmap mode
+;   |       bdd
+lda #0b00000111
 sta L0_CONFIG
-stz L0_MAPBASE
-stz L0_TILEBASE
+;   Base address $1000
+;   Width Half_320
+lda #8
+sta L0_TILEBASE
+;   Palette Offset
 stz L0_HSCROLL_L
-stz L0_HSCROLL_H
 ; in case colour 0 is not black!
 lda #$11
 sta ADDRx_H
@@ -30,11 +33,11 @@ sta inflateZp
 lda #>compressed_data
 sta inflateZp+1
 stz CTRL
-lda #<0
+lda #<4096
 sta ADDRx_L
-lda #>0
+lda #>4096
 sta ADDRx_M
-lda #^0+$10
+lda #^4096+$10
 sta ADDRx_H
 jsr :Inflate:inflate_to_vram
 ; copy palette to VRAM
@@ -60,7 +63,8 @@ lda #$f0 ; beq
 sta tochange
 bra copyloop
 .copydone:
-; set to 256 mode
+; turn on layer 0 to show the image.
+;     |.s10.coo
 lda #0b00010001
 sta DC_VIDEO
 ; infinite loop
@@ -585,7 +589,6 @@ rts
 
 ; Source data is 76800 bytes.
 ; Compressed data is $7AC1 bytes.
-;.align $100
 .compressed_data:
 .byte	$B4, $BD, $8B, $7F, $23, $E9, $75, $1D, $08, $02, $85, $57, $A1, $51, $D5, $20
 .byte	$0B, $9A, $E9, $99, $B6, $F9, $96, $69, $D2, $2D, $3B, $F6, $C6, $B6, $FC, $10

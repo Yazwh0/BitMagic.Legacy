@@ -1,29 +1,19 @@
-assembly "..\..\libraries\Compression\bin\Debug\net6.0\Compression.dll";
-assembly "..\..\libraries\ImageProcessor\bin\Debug\net6.0\ImageProcessor.dll";
+assembly "..\..\Libraries\Compression\bin\Debug\net6.0\Compression.dll";
+assembly "..\..\Libraries\ImageProcessor\bin\Debug\net6.0\ImageProcessor.dll";
+assembly "..\..\Libraries\Vera\bin\Debug\net6.0\Vera.dll";
 using Compression;
 using ImageProcessor;
+using Vera;
 
-    BM.X16Header(); // byte code to start execution
+    BM.X16Header(); // byte code to start execution.
 
     Inflator.SetSourceZp(0x00); // define where in ZP we can use for inflating. 
 
-    ; set to no video
-    ;      fs10 coo
-    lda #0b00000001
-    sta DC_VIDEO
+    Video.Mode(Layers.None); // disable all layers while the image inflates.
 
-    lda #64;128         ; 2:1 scale so 320x240, 128 is 1:1
-    sta DC_HSCALE
-    sta DC_VSCALE
+    Video.Scaling(Resolution.Half);
 
-    ;            bdd
-    lda #0b0000_0111
-    sta L0_CONFIG
-
-    stz L0_MAPBASE
-    stz L0_TILEBASE
-    stz L0_HSCROLL_L
-    stz L0_HSCROLL_H
+    Video.LayerBitmap(ConfigLayer.Layer0, Depth.Bpp_8, BitmapWidth.Half_320, 0x1000);
 
     ; in case colour 0 is not black!
     lda #$11
@@ -35,7 +25,7 @@ using ImageProcessor;
     stz DATA0
 
     ; call decompress
-    Inflator.InflateToVram("compressed_data", 0x0000);
+    Inflator.InflateToVram("compressed_data", 0x1000);
 
     var imageData = ImageAsset.LoadFullImage(@"Assets\bliss.bmp");
 
@@ -71,9 +61,8 @@ using ImageProcessor;
         .copydone:
     }
 
-        ; set to 256 mode
-    lda #0b00010001
-    sta DC_VIDEO
+    ; turn on layer 0 to show the image.
+    Video.Mode(Layers.Layer0);
 
     ; infinite loop
     .loop:
@@ -90,7 +79,7 @@ using ImageProcessor;
     
     ; Source data is @(imageData.Pixels.Length) bytes.
     ; Compressed data is $@(compressed.Length.ToString("X4")) bytes.
-    ;.align $100
+
     .compressed_data:
     BM.Bytes(compressed);
 

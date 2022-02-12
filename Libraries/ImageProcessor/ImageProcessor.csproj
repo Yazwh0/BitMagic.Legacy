@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <Target Name="csasm" BeforeTargets="BeforeBuild">
-    <Exec Command="D:\Documents\Source\BitMagic\Bitmagic.SdkPreProcessor\bin\Debug\net6.0\Bitmagic.SdkPreProcessor --recursive=true --base-folder=$(MSBuildProjectDirectory) *.csasm"/>
+    <Exec Command="..\..\Bitmagic.SdkPreProcessor\bin\Debug\net6.0\Bitmagic.SdkPreProcessor --recursive=true --base-folder=$(MSBuildProjectDirectory) *.csasm"/>
   </Target>
 
   <ItemGroup>

@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "..\\..\\Libraries\\ImageProcessor"
+		},
+		{
+			"path": "..\\..\\Libraries\\Vera"
 		}
 	],
 	"settings": {
@@ -39,7 +42,12 @@
 			"**/.vs/**": true,
 			"**/bin/**": true,
 			"**/obj/**": true
-		}
+		},
+		"explorer.experimental.fileNesting.enabled" : true,
+		"explorer.experimental.fileNesting.expand": false,
+		"explorer.experimental.fileNesting.patterns": {
+			"*.csasm": "$(capture).csasm.cs, $(capture).bmasm",
+		},
 	},
 	"launch": {
 		"version": "0.2.0",
@@ -52,7 +60,7 @@
 				"program": "${workspaceFolder:DisplayImage}/../../BitMagic/bin/Debug/net6.0/BitMagic.exe",
 				"args": [ 
 					"--razor-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.csasm",
-					"--bmasm-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.bsasm",
+					"--bmasm-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.bmasm",
 					"--output-file=${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg",
 					"razor",
 					"compile"
@@ -71,6 +79,12 @@
 	"tasks" :{
 		"version": "2.0.0",
 		"tasks": [
+			{
+				"label" : "Clean PRG",
+				"type": "shell",
+				"command": "Remove-Item ${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg -ErrorAction SilentlyContinue ; exit 0",
+				"problemMatcher": [],
+			},
 			{
 				"label": "Build Compression",
 				"type": "shell",
@@ -94,8 +108,19 @@
 				"group" : "build"
 			},
 			{
+				"label": "Build Vera",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder:Vera}"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
 				"label": "Build",
-				"dependsOn" : [ "Build Compression", "Build Image Processor" ]
+				"dependsOn" : [ "Clean PRG", "Build Compression", "Build Image Processor", "Build Vera" ]
 			},
 			{
 				"label": "Run Emulator",
