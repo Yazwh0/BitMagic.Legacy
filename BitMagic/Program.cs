@@ -8,7 +8,6 @@ using System.Diagnostics;
 using BitMagic.Emulation;
 using System.CommandLine;
 using System.Linq;
-using BigMagic.DebugServer;
 
 namespace BitMagic
 {

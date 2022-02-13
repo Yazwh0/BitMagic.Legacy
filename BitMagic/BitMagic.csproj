@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BigMagic.DebugServer\BigMagic.DebugServer.csproj" />
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Compiler\BitMagic.Compiler.csproj" />
     <ProjectReference Include="..\BitMagic.Emulator\BitMagic.Emulator.csproj" />
