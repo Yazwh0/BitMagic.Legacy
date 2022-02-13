@@ -1,5 +1,7 @@
 # BitMagic the Compiler
 
+**Note: Not all opcodes are supported. Please see the section at the bottom.**
+
 The compiler takes the output of the Template Engine, or hand written `.bmasm` files and compiles it into machine code that can be run on the end machine or emulator.
 
 The compiler is simpler than most compilers as it lacks features like 'Macros' or 'libraries'.
@@ -56,15 +58,12 @@ The code below shows how to get the values that are out of scope.
 
 ```asm
 .scope 
-
     .proc A
         .const xyz = $ff
     ;.endproc no .endproc necessary, but its advised!
-
 .endscope
 
 .scope
-
     .proc B
         lda App::A:xyz
         lda App:::xyz
@@ -77,7 +76,6 @@ The code below shows how to get the values that are out of scope.
 ; no .endscope necessary, its assumed with a .scope
 
 .scope example_c
-
     .const xyz = $f0
 
     .proc C
@@ -97,7 +95,6 @@ The code below shows how to get the values that are out of scope.
     lda :A:xyz
     ;lda :xyz breaks, not unique
     lda xyz ; will be from this scope
-
 .endscope
 
 lda DATA0
@@ -111,7 +108,6 @@ lda DATA0
         .const DATA0 = $2222
         lda DATA0 ; will load from $2222
     .endproc
-
 .endscope
 ```
 
@@ -125,8 +121,13 @@ The Expression code does need to be reworked as there are some issues with it. I
 
 Currently expressions can only be in the asm code, not when defining a constant. This is on the todo list.
 
+### Unsupported 65c02 OpCodes
+
+*tbd.*
+
 ### Todo
 
+- Implement all OpCodes.
 - Create object files to aid basic debugging.
 - Allow scopes to share variables between segments.
 - Rework Expression code.
