@@ -19,3 +19,5 @@ asmcompare.asm
 output.png
 .ionide/*
 Debugger/**/*
+.fake
+.ionide

@@ -33,8 +33,8 @@ Lines that start with a '.' indicate a verb to the compiler. Some have parameter
 | .org | address | Sets the current state to the target address. |
 | .pad | size | Increases the address by size bytes. |
 | .align | boundary | Pads the current state to the next nearest boundary. (Where '`address % boundary`' is zero.) |
-| .byte | _values_ | Adds the bytes to the application. |
-| .word | _values_ | Adds the words (little endian) to the application. |
+| .byte | *values* | Adds the bytes to the application. |
+| .word | *values* | Adds the words (little endian) to the application. |
 
 ## Import
 
