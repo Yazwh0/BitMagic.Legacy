@@ -18,7 +18,7 @@ Clone the repo.
 
 Open `BitMagic.sln` in your favourite c# editor. I use Visual Studio 2022. Set the build configuration to Debug and build everything. We need to do this as there is not yet a installer, so even if you just want to write code for the X16 you still need to create the applications.
 
-If you use Visual Studio Code its worth building and installing the [extension](BitMagic.VscGrammar/README.md)).
+If you use Visual Studio Code its worth building and installing the [extension](BitMagic.VscGrammar/README.md).
 
 Open the VSC workspace in `Examples\DisplayImage` for a practical example of how a project can be put together. If you want to see this example you can do so [here](https://www.commanderx16.com/forum/index.php?/files/file/228-bitmagic-example/).
 
