@@ -21,3 +21,9 @@ Open `BitMagic.sln` in your favourite c# editor. I use Visual Studio 2022. Set t
 If you use Visual Studio Code its worth building and installing the [extension](BitMagic.VscGrammar/README.md)).
 
 Open the VSC workspace in `Examples\DisplayImage` for a practical example of how a project can be put together. If you want to see this example you can do so [here](https://www.commanderx16.com/forum/index.php?/files/file/228-bitmagic-example/).
+
+## License
+
+Unless otherwise stated (generally code from others that falls under a difference license) all the code is under GLP-3.0. Applications written using BitMagic however are license free, unless a library is used with a specific license. (The Compression library for example.)
+
+That said a friendly nod would be appreciated!
