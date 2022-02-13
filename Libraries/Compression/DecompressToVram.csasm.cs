@@ -101,7 +101,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"cpy	#144");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"rol	");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateCompressed_setLiteralCodeLength:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	literalSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:literalSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"beq	inflateCompressed_setControlCodeLength");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; fixed Huffman control codes:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; :24  dta 7");
@@ -119,7 +119,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"cpy	#CONTROL_SYMBOLS");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@";scs:sta	controlSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs skip_5");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	controlSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:controlSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".skip_5:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"iny");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bne	inflateCompressed_setCodeLengths");
@@ -173,7 +173,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	inflateDynamic_symbol");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateDynamic_storeLength:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcc	inflateDynamic_controlSymbolCodeLength");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	literalSymbolCodeLength,x ; +");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:literalSymbolCodeLength,x ; +");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"inx");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	#1");
 
@@ -188,14 +188,13 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	inflateDynamic_primaryCodes");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcc	inflateDynamic_storeControl");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; the code lengths we skip here were zero-initialized");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; in inflateCompressed_setControlCodeLength");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";sne:ldx	#LENGTH_SYMBOLS");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bne skip_2");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	#LENGTH_SYMBOLS");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".skip_2:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"ora	#DISTANCE_TREE");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateDynamic_storeControl:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	controlSymbolCodeLength,x ; +");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:controlSymbolCodeLength,x ; +");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"inx");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	inflateDynamic_allCodes");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcc	inflateDynamic_storeNext");
@@ -245,12 +244,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"lsr	");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"jsr	getAMinus1BitsMax8");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateCodes_setOffsetLowByte:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";inc");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";sta inflateCodes_lookback");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x dec - i added this");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";eor	#$ff");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateCodes_lookback");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x sta	inflateCodes_sourcePointer");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	getBits_base");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	#10");
@@ -260,12 +254,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"jsr	getBits");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"clc");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateCodes_setOffsetHighByte:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";eor #$ff");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta inflateCodes_lookback+1");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x eor	#$ff");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x adc	outputPointer+1");
-            
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x sta	inflateCodes_sourcePointer+1");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; copy addr from data0 to data1 minus inflateCodes_lookback ");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; already in data0");
@@ -336,7 +325,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@".inflateDynamic_getTempCodeLengths
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	#GET_3_BITS");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"jsr	getBits");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy	inflateDynamic_tempSymbols,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	literalSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:literalSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy	#0");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"inx");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	inflateDynamic_tempCodes");
@@ -350,25 +339,25 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"tya");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	lda	#0");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";sta:rne	nBitCode_clearFrom,y+");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".loop_1:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta nBitCode_clearFrom,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta :Inflate:nBitCode_clearFrom,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"iny");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bne loop_1");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; Count number of codes of each length");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	ldy	#0");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".buildHuffmanTree_countCodeLengths:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	literalSymbolCodeLength,y");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	nBitCode_literalCount,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	:Inflate:literalSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	:Inflate:nBitCode_literalCount,x");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bne skip_4");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";sne:stx	allLiteralsCodeLength");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"stx	allLiteralsCodeLength");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stx	:Inflate:allLiteralsCodeLength");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".skip_4:");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpy	#CONTROL_SYMBOLS");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs	buildHuffmanTree_noControlSymbol");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	controlSymbolCodeLength,y");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	nBitCode_controlCount,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	:Inflate:controlSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	:Inflate:nBitCode_controlCount,x");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".buildHuffmanTree_noControlSymbol:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"iny");
@@ -379,10 +368,10 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	#-4*TREE_SIZE");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".buildHuffmanTree_calculateOffsets:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; !problem!");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	nBitCode_literalOffset+64-$100,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:nBitCode_literalOffset+64-$100,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";add	nBitCode_literalCount+4*TREE_SIZE-$100,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"clc");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	nBitCode_literalCount+64-$100,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	:Inflate:nBitCode_literalCount+64-$100,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"inx");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bne	buildHuffmanTree_calculateOffsets");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; Put symbols in their place in the sorted array");
@@ -390,19 +379,19 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@";	ldy	#0");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".buildHuffmanTree_assignCode:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tya");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	literalSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	:Inflate:literalSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";ldy:inc	nBitCode_literalOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy	nBitCode_literalOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	nBitCode_literalOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	codeToLiteralSymbol,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy	:Inflate:nBitCode_literalOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	:Inflate:nBitCode_literalOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:codeToLiteralSymbol,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tay");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"cpy	#CONTROL_SYMBOLS");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs	buildHuffmanTree_noControlSymbol2");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	controlSymbolCodeLength,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx	:Inflate:controlSymbolCodeLength,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";ldy:inc	nBitCode_controlOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy nBitCode_controlOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	nBitCode_controlOffset,x");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	codeToControlSymbol,y");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy :Inflate:nBitCode_controlOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"inc	:Inflate:nBitCode_controlOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta	:Inflate:codeToControlSymbol,y");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tay");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".buildHuffmanTree_noControlSymbol2:");
@@ -427,19 +416,19 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"rol	");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"inx");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs	fetchCode_ge256");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; are all 256 literal codes of this length?");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	allLiteralsCodeLength");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"cpx	:Inflate:allLiteralsCodeLength");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"beq	fetchCode_allLiterals");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; is it literal code of length X?");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";sub	nBitCode_literalCount,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sec");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	nBitCode_literalCount,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	:Inflate:nBitCode_literalCount,x");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs	fetchCode_notLiteral");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; literal code");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	clc");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	nBitCode_literalOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	:Inflate:nBitCode_literalOffset,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tax");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	codeToLiteralSymbol,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	:Inflate:codeToLiteralSymbol,x");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".fetchCode_allLiterals:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"clc");
@@ -448,19 +437,19 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"rts");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; code >= 256, must be control");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".fetchCode_ge256:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	sec");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	nBitCode_literalCount,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	:Inflate:nBitCode_literalCount,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sec");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; is it control code of length X?");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".fetchCode_notLiteral:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	sec");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	nBitCode_controlCount,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sbc	:Inflate:nBitCode_controlCount,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"bcs	fetchCode_nextBit");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; control code");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	clc");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	nBitCode_controlOffset,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"adc	:Inflate:nBitCode_controlOffset,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tax");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	codeToControlSymbol,x");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda	:Inflate:codeToControlSymbol,x");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"and	#$1f	; make distance symbols zero-based");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"tax");
 BitMagic.AsmTemplate.Template.WriteLiteral($@";	sec");
@@ -522,10 +511,6 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"rts");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; Copy a previously written byte");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".copyByte:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x ldy	outputPointer");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x lda	(inflateCodes_sourcePointer),y");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x ldy	#0");
-
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #1");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta CTRL");
 
@@ -535,19 +520,12 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"dec ADDRx_L");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"stz CTRL");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda DATA1");
-            // cmp #$61
-            // bne skip
-            // stp
 BitMagic.AsmTemplate.Template.WriteLiteral($@".skip:");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"; Write a byte");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".storeByte:");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";	ldy	#0 ; y is always zero here. sta data0");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"; maybe can switch this depending on the write destination?");
-
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta DATA0");
-
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"lda ADDRx_H");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"pha");
@@ -571,16 +549,6 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"pla ");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta ADDRx_M");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"pla");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"sta ADDRx_H");
-
-BitMagic.AsmTemplate.Template.WriteLiteral($@";lda #0");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";tay");
-
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x sta	(outputPointer),y");
-
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x inc	outputPointer");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x bne	storeByte_return");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x inc	outputPointer+1");
-BitMagic.AsmTemplate.Template.WriteLiteral($@";x inc	inflateCodes_sourcePointer+1");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@".storeByte_return:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"rts            ");

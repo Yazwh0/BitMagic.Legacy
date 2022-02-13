@@ -100,10 +100,6 @@ namespace BitMagic.Compiler
 
                     state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
                 })
-/*                .WithParameters(".definesegment", (dict, state) => {
-
-
-                }, new[] { "name", "address", "filename" })*/
                 .WithParameters(".segment", (dict, state) => {
                     Segment segment;
 
@@ -581,13 +577,5 @@ namespace BitMagic.Compiler
 
             throw new Exception($"Cannot parse {inp} into an int");
         }
-
-/*        private Segment GetSegment(string name)
-        {
-            if (_segments.ContainsKey(name))
-                return _segments[name];
-
-            throw new Exception($"Unknown segment {name}");
-        }*/
     }
 }

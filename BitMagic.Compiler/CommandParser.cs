@@ -75,7 +75,7 @@ namespace BitMagic.Compiler
 
         private static void ProcesParameters(string rawParams, SourceFilePosition source, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            var parameters = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(rawParams))
             {
@@ -99,7 +99,7 @@ namespace BitMagic.Compiler
 
                 if (idx == -1)
                 {
-                    if (defaultNames == null || defaultPos > defaultNames.Count)
+                    if (defaultNames == null || defaultPos >= defaultNames.Count)
                         throw new Exception($"Unknown parameter {thisArgs[argsPos]} at {source.ToString()}");
 
                     parameters.Add(defaultNames[defaultPos++], thisArgs[argsPos]);

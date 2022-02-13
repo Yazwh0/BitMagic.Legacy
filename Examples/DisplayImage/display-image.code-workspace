@@ -23,6 +23,7 @@
 			"Defalte",
 			"endproc",
 			"endscope",
+			"endsegment",
 			"HSCALE",
 			"HSCROLL",
 			"Inflator",

@@ -53,6 +53,6 @@ using Vera;
     BM.Bytes(compressed);
 
     ; scratch space for decompression.
-    .align $100
+    .segment Variables, $400
     Inflator.DefineScratchArea();
-
+    .endsegment

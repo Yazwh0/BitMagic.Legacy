@@ -103,15 +103,14 @@
 		"pseudofunctions": {
 			"patterns": [{
 				"name": "entity.name.function.pseudofunction.bmasm",
-				"match": "\\.(?i:byte|word|definesegment|segment|const|pad|align|importfile|org)\\b"
+				"match": "\\.(?i:byte|word|const|pad|align|importfile|org)\\b"
 			}]
 		},
 		"blockstarts": {
 			"patterns": [{
 				"name": "keyword.control.block.bmasm",
 				"contentName": "entity.name.function.bmasm",
-				"begin": "\\.(?i:proc|scope|segment)\\s*",
-				"end": "\\s"
+				"match": "\\.(?i:proc|scope|segment)\\b"
 			}]
 		},		
 		"blockends": {

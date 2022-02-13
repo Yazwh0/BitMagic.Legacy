@@ -101,7 +101,7 @@ public static partial class Inflator
             rol	
 
         .inflateCompressed_setLiteralCodeLength:
-            sta	literalSymbolCodeLength,y
+            sta	:Inflate:literalSymbolCodeLength,y
             beq	inflateCompressed_setControlCodeLength
         ; fixed Huffman control codes:
         ; :24  dta 7
@@ -119,7 +119,7 @@ public static partial class Inflator
 
             ;scs:sta	controlSymbolCodeLength,y
             bcs skip_5
-            sta	controlSymbolCodeLength,y
+            sta	:Inflate:controlSymbolCodeLength,y
         .skip_5:
             iny
             bne	inflateCompressed_setCodeLengths
@@ -173,7 +173,7 @@ public static partial class Inflator
 
         .inflateDynamic_storeLength:
             bcc	inflateDynamic_controlSymbolCodeLength
-            sta	literalSymbolCodeLength,x ; +
+            sta	:Inflate:literalSymbolCodeLength,x ; +
             inx
             cpx	#1
 
@@ -188,14 +188,13 @@ public static partial class Inflator
             bcc	inflateDynamic_storeControl
         ; the code lengths we skip here were zero-initialized
         ; in inflateCompressed_setControlCodeLength
-            ;sne:ldx	#LENGTH_SYMBOLS
             bne skip_2
             ldx	#LENGTH_SYMBOLS
         .skip_2:
             ora	#DISTANCE_TREE
 
         .inflateDynamic_storeControl:
-            sta	controlSymbolCodeLength,x ; +
+            sta	:Inflate:controlSymbolCodeLength,x ; +
             inx
             cpx	inflateDynamic_allCodes
             bcc	inflateDynamic_storeNext
@@ -245,12 +244,7 @@ public static partial class Inflator
             jsr	getAMinus1BitsMax8
 
         .inflateCodes_setOffsetLowByte:
-            ;inc
-            ;sta inflateCodes_lookback
-            ;x dec - i added this
-            ;eor	#$ff
             sta inflateCodes_lookback
-            ;x sta	inflateCodes_sourcePointer
 
             lda	getBits_base
             cpx	#10
@@ -260,12 +254,7 @@ public static partial class Inflator
             clc
 
         .inflateCodes_setOffsetHighByte:
-            ;eor #$ff
             sta inflateCodes_lookback+1
-            ;x eor	#$ff
-            ;x adc	outputPointer+1
-            
-            ;x sta	inflateCodes_sourcePointer+1
 
             ; copy addr from data0 to data1 minus inflateCodes_lookback 
             ; already in data0
@@ -336,7 +325,7 @@ public static partial class Inflator
             lda	#GET_3_BITS
             jsr	getBits
             ldy	inflateDynamic_tempSymbols,x
-            sta	literalSymbolCodeLength,y
+            sta	:Inflate:literalSymbolCodeLength,y
             ldy	#0
             inx
             cpx	inflateDynamic_tempCodes
@@ -350,25 +339,25 @@ public static partial class Inflator
         ;	lda	#0
             ;sta:rne	nBitCode_clearFrom,y+
         .loop_1:
-            sta nBitCode_clearFrom,y
+            sta :Inflate:nBitCode_clearFrom,y
             iny
             bne loop_1
         ; Count number of codes of each length
         ;	ldy	#0
 
         .buildHuffmanTree_countCodeLengths:
-            ldx	literalSymbolCodeLength,y
-            inc	nBitCode_literalCount,x
+            ldx	:Inflate:literalSymbolCodeLength,y
+            inc	:Inflate:nBitCode_literalCount,x
 
             bne skip_4
             ;sne:stx	allLiteralsCodeLength
-            stx	allLiteralsCodeLength
+            stx	:Inflate:allLiteralsCodeLength
             .skip_4:
 
             cpy	#CONTROL_SYMBOLS
             bcs	buildHuffmanTree_noControlSymbol
-            ldx	controlSymbolCodeLength,y
-            inc	nBitCode_controlCount,x
+            ldx	:Inflate:controlSymbolCodeLength,y
+            inc	:Inflate:nBitCode_controlCount,x
 
         .buildHuffmanTree_noControlSymbol:
             iny
@@ -379,10 +368,10 @@ public static partial class Inflator
 
         .buildHuffmanTree_calculateOffsets:
         ; !problem!
-            sta	nBitCode_literalOffset+64-$100,x
+            sta	:Inflate:nBitCode_literalOffset+64-$100,x
             ;add	nBitCode_literalCount+4*TREE_SIZE-$100,x
             clc
-            adc	nBitCode_literalCount+64-$100,x
+            adc	:Inflate:nBitCode_literalCount+64-$100,x
             inx
             bne	buildHuffmanTree_calculateOffsets
         ; Put symbols in their place in the sorted array
@@ -390,19 +379,19 @@ public static partial class Inflator
 
         .buildHuffmanTree_assignCode:
             tya
-            ldx	literalSymbolCodeLength,y
+            ldx	:Inflate:literalSymbolCodeLength,y
             ;ldy:inc	nBitCode_literalOffset,x
-            ldy	nBitCode_literalOffset,x
-            inc	nBitCode_literalOffset,x
-            sta	codeToLiteralSymbol,y
+            ldy	:Inflate:nBitCode_literalOffset,x
+            inc	:Inflate:nBitCode_literalOffset,x
+            sta	:Inflate:codeToLiteralSymbol,y
             tay
             cpy	#CONTROL_SYMBOLS
             bcs	buildHuffmanTree_noControlSymbol2
-            ldx	controlSymbolCodeLength,y
+            ldx	:Inflate:controlSymbolCodeLength,y
             ;ldy:inc	nBitCode_controlOffset,x
-            ldy nBitCode_controlOffset,x
-            inc	nBitCode_controlOffset,x
-            sta	codeToControlSymbol,y
+            ldy :Inflate:nBitCode_controlOffset,x
+            inc	:Inflate:nBitCode_controlOffset,x
+            sta	:Inflate:codeToControlSymbol,y
             tay
 
         .buildHuffmanTree_noControlSymbol2:
@@ -427,19 +416,19 @@ public static partial class Inflator
             inx
             bcs	fetchCode_ge256
         ; are all 256 literal codes of this length?
-            cpx	allLiteralsCodeLength
+            cpx	:Inflate:allLiteralsCodeLength
             beq	fetchCode_allLiterals
         ; is it literal code of length X?
             ;sub	nBitCode_literalCount,x
             sec
-            sbc	nBitCode_literalCount,x
+            sbc	:Inflate:nBitCode_literalCount,x
 
             bcs	fetchCode_notLiteral
         ; literal code
         ;	clc
-            adc	nBitCode_literalOffset,x
+            adc	:Inflate:nBitCode_literalOffset,x
             tax
-            lda	codeToLiteralSymbol,x
+            lda	:Inflate:codeToLiteralSymbol,x
 
         .fetchCode_allLiterals:
             clc
@@ -448,19 +437,19 @@ public static partial class Inflator
         ; code >= 256, must be control
         .fetchCode_ge256:
         ;	sec
-            sbc	nBitCode_literalCount,x
+            sbc	:Inflate:nBitCode_literalCount,x
             sec
 
         ; is it control code of length X?
         .fetchCode_notLiteral:
         ;	sec
-            sbc	nBitCode_controlCount,x
+            sbc	:Inflate:nBitCode_controlCount,x
             bcs	fetchCode_nextBit
         ; control code
         ;	clc
-            adc	nBitCode_controlOffset,x
+            adc	:Inflate:nBitCode_controlOffset,x
             tax
-            lda	codeToControlSymbol,x
+            lda	:Inflate:codeToControlSymbol,x
             and	#$1f	; make distance symbols zero-based
             tax
         ;	sec
@@ -522,10 +511,6 @@ public static partial class Inflator
 
         ; Copy a previously written byte
         .copyByte:
-            ;x ldy	outputPointer
-            ;x lda	(inflateCodes_sourcePointer),y
-            ;x ldy	#0
-
             lda #1
             sta CTRL
 
@@ -535,19 +520,12 @@ public static partial class Inflator
             stz CTRL
 
             lda DATA1
-            // cmp #$61
-            // bne skip
-            // stp
             .skip:
 
         ; Write a byte
         .storeByte:
-        ;	ldy	#0 ; y is always zero here. sta data0
-        ; maybe can switch this depending on the write destination?
-
 
             sta DATA0
-
 
             lda ADDRx_H
             pha
@@ -571,16 +549,6 @@ public static partial class Inflator
             sta ADDRx_M
             pla
             sta ADDRx_H
-
-            ;lda #0
-            ;tay
-
-            ;x sta	(outputPointer),y
-
-            ;x inc	outputPointer
-            ;x bne	storeByte_return
-            ;x inc	outputPointer+1
-            ;x inc	inflateCodes_sourcePointer+1
 
         .storeByte_return:
             rts            
