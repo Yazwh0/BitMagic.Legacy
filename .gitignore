@@ -17,3 +17,4 @@
 test.*
 asmcompare.asm
 output.png
+.ionide/*

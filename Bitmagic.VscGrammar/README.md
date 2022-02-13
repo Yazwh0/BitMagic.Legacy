@@ -1,4 +1,4 @@
-# BitMagic ASM
+# BitMagic the Visual Studio Code Extension
 
 VSC Syntax highlights for CSASM and BMASM files.
 
