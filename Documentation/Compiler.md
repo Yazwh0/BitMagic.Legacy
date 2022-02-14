@@ -123,7 +123,31 @@ Currently expressions can only be in the asm code, not when defining a constant.
 
 ### Unsupported 65c02 OpCodes
 
-*tbd.*
+| Byte | OpCode | Mode |
+| --- | --- | --- |
+| $0F | BBR0 | |
+| $1F | BBR1 | |
+| $2F | BBR2 | |
+| $3F | BBR3 | |
+| $4F | BBR4 | |
+| $5F | BBR5 | |
+| $6F | BBR6 | |
+| $7F | BBR7 | |
+| $8F | BBS0 | |
+| $9F | BBS1 | |
+| $AF | BBS2 | |
+| $BF | BBS3 | |
+| $CF | BBS4 | |
+| $DF | BBS5 | |
+| $EF | BBS6 | |
+| $FF | BBS7 | |
+| $89 | BIT | Immediate |
+| $34 | BIT | ZP, X |
+| $3C | BIT | Abs, X |
+| $14 | TRB | ZP |
+| $1C | TRB | Abs |
+| $04 | TSB | ZP |
+| $0C | TSB | Abs |
 
 ### Todo
 
