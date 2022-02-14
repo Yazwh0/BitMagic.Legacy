@@ -169,8 +169,6 @@ namespace BitMagic
 
             if (_args.Contains("debug"))
             {
-                var debugger = new EmulatorDebugger(project);
-                
             }
 
             Console.WriteLine("Done.");
