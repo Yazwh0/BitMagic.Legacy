@@ -141,13 +141,6 @@ Currently expressions can only be in the asm code, not when defining a constant.
 | $DF | BBS5 | |
 | $EF | BBS6 | |
 | $FF | BBS7 | |
-| $89 | BIT | Immediate |
-| $34 | BIT | ZP, X |
-| $3C | BIT | Abs, X |
-| $14 | TRB | ZP |
-| $1C | TRB | Abs |
-| $04 | TSB | ZP |
-| $0C | TSB | Abs |
 
 ### Todo
 

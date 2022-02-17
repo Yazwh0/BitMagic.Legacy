@@ -260,12 +260,13 @@ namespace BitMagic.Compiler
             //// test
             //var i = 0;
             //var j = 0;
-            //foreach(var opCode in _project.Machine.Cpu.OpCodes)
+            //foreach (var opCode in _project.Machine.Cpu.OpCodes)
             //{
             //    foreach (var m in opCode.Modes)
             //    {
-            //        sb.Append($"{opCode.Code}\t");
-            //        sb.AppendLine(m switch {
+            //        sb.Append($"'{opCode.GetOpCode(m):X2}\t{opCode.Code}\t");
+            //        sb.AppendLine(m switch
+            //        {
             //            AccessMode.Implied => "",
             //            AccessMode.Accumulator => "",     // A
             //            AccessMode.Immediate => "#$44",       // #$44
@@ -283,14 +284,14 @@ namespace BitMagic.Compiler
             //            AccessMode.ZeroPageIndirect => "($44)",// ($44)})
             //            _ => throw new Exception()
             //        });
-            //        sb.AppendLine($".byte $00, ${j++:X2} ,$00");
-            //        if (m == AccessMode.Relative)
-            //        {
-            //            sb.AppendLine($".reldest_{i++}:");
-            //        }
+            //        //sb.AppendLine($".byte $00, ${j++:X2} ,$00");
+            //        //if (m == AccessMode.Relative)
+            //        //{
+            //        //    sb.AppendLine($".reldest_{i++}:");
+            //        //}
             //    }
             //}
-            //File.WriteAllText(@"d:\documents\source\bitmagic\test.asm", sb.ToString());
+            //File.WriteAllText(@"d:\documents\source\bitmagic\opcodes.asm", sb.ToString());
 
 
             var globals = new Variables(_project.Machine.Variables, "App");
