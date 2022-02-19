@@ -46,11 +46,11 @@ The aim is to keep this functionality simple for things like organising a projec
 
 ## Scopes
 
-Constant values, including the addresses for procedures are scoped by Globals -> Segment -> Scope -> Procedure.
+Constant values, including the addresses for procedures are scoped by Globals -> Scope -> Procedure.
 
-When the compiler is looking for a value, it will consider the current procedure first, before going up the tree to the scope, then segment, then globals.
+When the compiler is looking for a value, it will consider the current procedure first, before going up the tree to the scope, then globals.
 
-You can break out of that by using colons to indicate the scope of what you're trying to find. Each layer is separated by a colon, so for fully qualified value it would be `App:SegmentName:ScopeName:ProcName:ValueName`. If the segment\scope\procedure isn't named then the 'anonymous' parts will not be considered.
+You can break out of that by using colons to indicate the scope of what you're trying to find. Each layer is separated by a colon, so for fully qualified value it would be `App:ScopeName:ProcName:ValueName`. If the procedure isn't named then its name will not be considered, making the lookup `App:ScopeName:ValueName`.
 
 The compiler can output the list of variables to make it easier to understand.
 
@@ -65,7 +65,7 @@ The code below shows how to get the values that are out of scope.
 
 .scope
     .proc B
-        lda App::A:xyz
+        lda App::A:xyz ; all these are $ff
         lda App:::xyz
         lda :::xyz
         lda ::A:xyz
@@ -79,39 +79,25 @@ The code below shows how to get the values that are out of scope.
     .const xyz = $f0
 
     .proc C
-        lda App::A:xyz
+        lda App::A:xyz ; all these are $ff
         lda App:::xyz
         lda :::xyz
         lda ::A:xyz
         lda :A:xyz
         ;lda :xyz breaks, not unique
-        lda xyz ; will be from this scope
+        lda xyz ; will be $f0 from this scope
     .endproc
 
-    lda App::A:xyz
+    lda App::A:xyz ; all these are $ff
     lda App:::xyz
     lda :::xyz
     lda ::A:xyz
     lda :A:xyz
     ;lda :xyz breaks, not unique
-    lda xyz ; will be from this scope
-.endscope
-
-lda DATA0
-
-.scope global_override
-    .const DATA0 = $1111
-
-    lda DATA0
-
-    .proc override
-        .const DATA0 = $2222
-        lda DATA0 ; will load from $2222
-    .endproc
+    lda example_c:xyz ; will be $f0 from this scope, note no procedure name
+    lda xyz ; will be $f0 from this scope
 .endscope
 ```
-
-Currently if there is a scope with the same name in different segments they do not share variables. This is likely to change in the future to cut down on the noise. I'm not sure if this will be explicit or implicit sharing, but I do think it needs to be done.
 
 ### Expressions
 
@@ -146,6 +132,5 @@ Currently expressions can only be in the asm code, not when defining a constant.
 
 - Implement all OpCodes.
 - Create object files to aid basic debugging.
-- Allow scopes to share variables between segments.
 - Rework Expression code.
 - Allow Expressions in constant creation.
