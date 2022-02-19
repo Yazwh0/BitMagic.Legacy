@@ -110,7 +110,7 @@
 			"patterns": [{
 				"name": "keyword.control.block.bmasm",
 				"contentName": "entity.name.function.bmasm",
-				"match": "\\.(?i:proc|scope|segment)\\b"
+				"match": "\\.(?i:proc|scope|segment|machine)\\b"
 			}]
 		},		
 		"blockends": {
