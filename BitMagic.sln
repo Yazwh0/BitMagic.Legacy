@@ -25,8 +25,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Cpu", "BitMagic.Cp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.Emulator", "BitMagic.Emulator\BitMagic.Emulator.csproj", "{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigMagic.DebugServer", "BigMagic.DebugServer\BigMagic.DebugServer.csproj", "{336B12A9-C555-431D-B30A-246E076EC981}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.AsmTemplateEngine", "Bitmagic.AsmTemplateEngine\BitMagic.AsmTemplateEngine.csproj", "{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bitmagic.SdkPreProcessor", "Bitmagic.SdkPreProcessor\Bitmagic.SdkPreProcessor.csproj", "{858F3913-75EA-4F0D-B40E-053B6E73AB0F}"
@@ -81,10 +79,6 @@ Global
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B631CC1C-E58A-422D-8FB3-66B886BE3C1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{336B12A9-C555-431D-B30A-246E076EC981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{336B12A9-C555-431D-B30A-246E076EC981}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{336B12A9-C555-431D-B30A-246E076EC981}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCF1A45A-3DA7-4481-9E91-15CC9FF33A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
