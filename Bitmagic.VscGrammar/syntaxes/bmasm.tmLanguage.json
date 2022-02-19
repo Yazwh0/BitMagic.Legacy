@@ -3,9 +3,6 @@
 	"name": "BitMagic X16 Asm",
 	"patterns": [
 		{
-			"include": "#keywords"
-		},
-		{
 			"include": "#strings"
 		},
 		{
@@ -38,12 +35,6 @@
 			"patterns": [{
 				"name": "comment.line.bmasm",
 				"match": ";.*$"
-			}]
-		},
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.bmasm",
-				"match": "\\b(if|while|for|return)\\b"
 			}]
 		},
 		"literals": {
@@ -79,11 +70,7 @@
 			"patterns": [{
 				"name": "keyword.operators.immediate.bmasm",
 				"match": "[#|^|<|>]"
-			}, 
-			{
-				"name": "keyword.operators.word.bmasm",
-				"match": "\\.(?i:mod|bitnot|bitand|bitor|shl|shr|and|or|not|xor)\\b"
-			}, 
+			},
 			{
 				"name": "keyword.operators.misc.bmasm",
 				"match": "=|<>|:=|\\+|-|\\*|/|\\&|~|\\||<<|>>|\\&\\&|\\|\\||!|<|>|<=|>="	
