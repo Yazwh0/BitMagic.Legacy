@@ -134,3 +134,4 @@ Currently expressions can only be in the asm code, not when defining a constant.
 - Create object files to aid basic debugging.
 - Rework Expression code.
 - Allow Expressions in constant creation.
+- Add machine \ CPU switches to make compiler useful for different machines.

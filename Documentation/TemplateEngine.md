@@ -117,3 +117,4 @@ The non-library `.csasm` files have a few special keywords for references as the
 
 - Change the pre-processor so it is CPU agnostic.
 - Add some beautifier to the `bmasm` that the process creates to make it easier to read.
+- Add object to runtime so the code understands the target.
