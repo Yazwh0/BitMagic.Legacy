@@ -45,6 +45,7 @@ namespace BitMagic.Compiler
         {
             _parent = parent;
             Namespace = @namespace;
+            _parent.RegisterChild(this);
         }
 
         public Variables(string @namespace)

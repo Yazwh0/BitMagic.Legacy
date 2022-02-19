@@ -15,9 +15,6 @@ namespace BitMagic.Compiler
         public Variables Variables { get; }
 
         [JsonProperty]
-        public readonly Dictionary<string, Scope> Scopes = new Dictionary<string, Scope>();
-
-        [JsonProperty]
         public string? Filename { get; set; }
 
         [JsonProperty]
@@ -26,9 +23,9 @@ namespace BitMagic.Compiler
         [JsonProperty]
         public int MaxSize { get; set; }
 
-        // tbd
-        //[JsonProperty]
-        //public bool DataOnly { get; set; }
+        [JsonProperty]
+        public readonly Dictionary<string, Procedure> Procedures = new Dictionary<string, Procedure>();
+
 
         public Segment(Variables globals, string name)
         {
@@ -39,10 +36,9 @@ namespace BitMagic.Compiler
 
         public Segment(Variables globals, bool anonymous, int startAddress, string name, string? filename = null)
         {
-            Variables = anonymous ? globals : new Variables(globals, name);
+            Variables = new Variables(globals, name);
 
-            if (!anonymous)
-                globals.RegisterChild(Variables);
+            globals.RegisterChild(Variables);
 
             StartAddress = startAddress;
             Address = startAddress;
@@ -50,12 +46,12 @@ namespace BitMagic.Compiler
             Filename = filename;
         }
 
-        public Scope GetScope(string name, bool anonymous)
+        public Procedure GetProcedure(string name, Scope scope, bool anonymous)
         {
-            if (!Scopes.ContainsKey(name))
-                Scopes.Add(name, new Scope(this, name, anonymous));
+            if (!Procedures.ContainsKey(name))
+                Procedures.Add(name, new Procedure(scope, name, anonymous));
 
-            return Scopes[name];
+            return Procedures[name];
         }
     }
 }

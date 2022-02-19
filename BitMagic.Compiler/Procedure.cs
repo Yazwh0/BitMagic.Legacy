@@ -29,9 +29,6 @@ namespace BitMagic.Compiler
         {
             Name = name;
             Variables = anonymous ? scope.Variables : new Variables(scope.Variables, name);
-            
-            if (!anonymous)
-                scope.Variables.RegisterChild(Variables);
         }
 
         public void AddLine(ILine line)

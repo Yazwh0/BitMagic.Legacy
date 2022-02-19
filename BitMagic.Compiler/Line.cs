@@ -95,6 +95,7 @@ namespace BitMagic.Compiler
             var thisMode = (isValue, isIndiect, isX, isY, singleByte, isRelative) switch
             {
                 (true, false, false, false, true, false) => AccessMode.Immediate,
+                (true, false, false, false, false, false) => AccessMode.Immediate,
 
                 (false, false, false, false, true, false) => AccessMode.ZeroPage,
                 (false, false, true, false, true, false) => AccessMode.ZeroPageX,

@@ -115,16 +115,16 @@ namespace BitMagic.Compiler
 
                     if (dict.ContainsKey("address"))
                     {
-                        foreach (var scope in segment.Scopes)
-                        {
-                            foreach (var proc in scope.Value.Procedures)
+                        //foreach (var scope in segment.Scopes)
+                        //{
+                            foreach (var proc in segment.Procedures)
                             {
                                 if (proc.Value.Data.Any())
                                 {
                                     throw new Exception($"Cannot modify segment start address when it already has data. {segment.Name}");
                                 }
                             }
-                        }
+                        //}
                     }
 
                     if (dict.ContainsKey("address"))
@@ -149,30 +149,30 @@ namespace BitMagic.Compiler
                     }
 
                     state.Segment = segment;
-                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
+                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
                 }, new[] { "name", "address", "filename", "maxsize" })
                 .WithParameters(".endsegment", (dict, state) => {
-                    state.Segment = state.Segments[".Default"];
-                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                    state.Segment = state.Segments[".DefaultSegment"];
+                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
+                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
                 })
                 .WithParameters(".scope", (dict, state) => {
                     string name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedScope_{state.AnonCounter++}";
-                    state.Scope = state.Segment.GetScope(name, false);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                    state.Scope = state.ScopeFactory.GetScope(name);
+                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
                 }, new[] { "name" })
                 .WithParameters(".endscope", (dict, state) => { 
-                    state.Scope = state.Segment.GetScope($".Default_{state.AnonCounter++}", true);
-                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
+                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
                 })
                 .WithParameters(".proc", (dict, state) => {
                     var name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedProc_{state.AnonCounter++}";
-                    state.Procedure = state.Scope.GetProcedure(name, false);
+                    state.Procedure = state.Segment.GetProcedure(name, state.Scope, false);
                     state.Scope.Variables.SetValue(name, state.Segment.Address);
                 }, new[] { "name" })
                 .WithParameters(".endproc", (dict, state) => {
-                    state.Procedure = state.Scope.GetProcedure($".Default_{state.AnonCounter++}", true);
+                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
                 })
                 .WithParameters(".const", (dict, state) => {
                     // .const foo $ff
@@ -314,9 +314,9 @@ namespace BitMagic.Compiler
 
             if (_project.CompileOptions.DisplaySegments)
             {
+                Console.WriteLine("{0,-25} {1,-5} {2,-5} {3,-5}", "Segment", "Start", "Size", "End");
                 foreach (var segment in state.Segments.Values)
                 {
-                    Console.WriteLine("{0,-25} {1,-5} {2,-5} {3,-5}", "Segment", "Start", "Size", "End");
                     Console.WriteLine($"{segment.Name,-25} ${segment.StartAddress:X4} ${segment.Address - segment.StartAddress:X4} ${segment.Address:X4}");
                 }
             }
@@ -452,7 +452,7 @@ namespace BitMagic.Compiler
                     toSave.Add((byte)((address & 0xff00) >> 8));
                 }
 
-                foreach (var proc in segments.SelectMany(s => s.Scopes.Values).SelectMany(p => p.Procedures.Values).OrderBy(p => p.StartAddress))
+                foreach (var proc in segments.SelectMany(p => p.Procedures.Values).OrderBy(p => p.StartAddress))
                 {
                     foreach (var line in proc.Data)
                     {
@@ -497,21 +497,21 @@ namespace BitMagic.Compiler
         {
             foreach(var segment in state.Segments.Values)
             {
-                foreach (var scope in segment.Scopes.Values)
-                {
-                    foreach (var procName in scope.Procedures.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
+                //foreach (var scope in segment.Scopes.Values)
+                //{
+                    foreach (var procName in segment.Procedures.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
                     {
-                        scope.Procedures.Remove(procName);
+                        segment.Procedures.Remove(procName);
                     }
-                }
+                //}
 
-                foreach(var scopeName in segment.Scopes.Where(i => !i.Value.Procedures.Any()).Select(i => i.Key).ToArray())
-                {
-                    segment.Scopes.Remove(scopeName);
-                }
+                //foreach(var scopeName in segment.Scopes.Where(i => !i.Value.Procedures.Any()).Select(i => i.Key).ToArray())
+                //{
+                //    segment.Scopes.Remove(scopeName);
+                //}
             }
 
-            foreach(var segmentName in state.Segments.Values.Where(i => !i.Scopes.Any()).Select(i => i.Name).ToArray())
+            foreach(var segmentName in state.Segments.Values.Where(i => !i.Procedures.Any()).Select(i => i.Name).ToArray())
             {
                 state.Segments.Remove(segmentName);
             }
@@ -522,9 +522,9 @@ namespace BitMagic.Compiler
             Console.WriteLine("Revaluations:");
             foreach (var segment in state.Segments.Values)
             {
-                foreach(var scope in segment.Scopes.Values)
-                {
-                    foreach(var proc in scope.Procedures.Values)
+                //foreach(var scope in segment.Scopes.Values)
+                //{
+                    foreach(var proc in segment.Procedures.Values)
                     {
                         foreach (var line in proc.Data.Where(l => l.RequiresReval))
                         {
@@ -537,7 +537,7 @@ namespace BitMagic.Compiler
                             }
                         }
                     }
-                }
+                //}
             }
         }
 

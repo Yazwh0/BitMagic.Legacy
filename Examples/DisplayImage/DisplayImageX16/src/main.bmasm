@@ -137,7 +137,7 @@ lda	#4
 cpy	#144
 rol	
 .inflateCompressed_setLiteralCodeLength:
-sta	:Inflate:literalSymbolCodeLength,y
+sta	literalSymbolCodeLength,y
 beq	inflateCompressed_setControlCodeLength
 ; fixed Huffman control codes:
 ; :24  dta 7
@@ -153,7 +153,7 @@ adc	#2-DISTANCE_TREE
 cpy	#CONTROL_SYMBOLS
 ;scs:sta	controlSymbolCodeLength,y
 bcs skip_5
-sta	:Inflate:controlSymbolCodeLength,y
+sta	controlSymbolCodeLength,y
 .skip_5:
 iny
 bne	inflateCompressed_setCodeLengths
@@ -199,7 +199,7 @@ plp
 ldx	inflateDynamic_symbol
 .inflateDynamic_storeLength:
 bcc	inflateDynamic_controlSymbolCodeLength
-sta	:Inflate:literalSymbolCodeLength,x ; +
+sta	literalSymbolCodeLength,x ; +
 inx
 cpx	#1
 .inflateDynamic_storeNext:
@@ -217,7 +217,7 @@ ldx	#LENGTH_SYMBOLS
 .skip_2:
 ora	#DISTANCE_TREE
 .inflateDynamic_storeControl:
-sta	:Inflate:controlSymbolCodeLength,x ; +
+sta	controlSymbolCodeLength,x ; +
 inx
 cpx	inflateDynamic_allCodes
 bcc	inflateDynamic_storeNext
@@ -325,7 +325,7 @@ bne	inflateDynamic_getHeader
 lda	#GET_3_BITS
 jsr	getBits
 ldy	inflateDynamic_tempSymbols,x
-sta	:Inflate:literalSymbolCodeLength,y
+sta	literalSymbolCodeLength,y
 ldy	#0
 inx
 cpx	inflateDynamic_tempCodes
@@ -338,22 +338,22 @@ tya
 ;	lda	#0
 ;sta:rne	nBitCode_clearFrom,y+
 .loop_1:
-sta :Inflate:nBitCode_clearFrom,y
+sta nBitCode_clearFrom,y
 iny
 bne loop_1
 ; Count number of codes of each length
 ;	ldy	#0
 .buildHuffmanTree_countCodeLengths:
-ldx	:Inflate:literalSymbolCodeLength,y
-inc	:Inflate:nBitCode_literalCount,x
+ldx	literalSymbolCodeLength,y
+inc	nBitCode_literalCount,x
 bne skip_4
 ;sne:stx	allLiteralsCodeLength
-stx	:Inflate:allLiteralsCodeLength
+stx	allLiteralsCodeLength
 .skip_4:
 cpy	#CONTROL_SYMBOLS
 bcs	buildHuffmanTree_noControlSymbol
-ldx	:Inflate:controlSymbolCodeLength,y
-inc	:Inflate:nBitCode_controlCount,x
+ldx	controlSymbolCodeLength,y
+inc	nBitCode_controlCount,x
 .buildHuffmanTree_noControlSymbol:
 iny
 bne	buildHuffmanTree_countCodeLengths
@@ -362,29 +362,29 @@ bne	buildHuffmanTree_countCodeLengths
 ldx	#-4*TREE_SIZE
 .buildHuffmanTree_calculateOffsets:
 ; !problem!
-sta	:Inflate:nBitCode_literalOffset+64-$100,x
+sta	nBitCode_literalOffset+64-$100,x
 ;add	nBitCode_literalCount+4*TREE_SIZE-$100,x
 clc
-adc	:Inflate:nBitCode_literalCount+64-$100,x
+adc	nBitCode_literalCount+64-$100,x
 inx
 bne	buildHuffmanTree_calculateOffsets
 ; Put symbols in their place in the sorted array
 ;	ldy	#0
 .buildHuffmanTree_assignCode:
 tya
-ldx	:Inflate:literalSymbolCodeLength,y
+ldx	literalSymbolCodeLength,y
 ;ldy:inc	nBitCode_literalOffset,x
-ldy	:Inflate:nBitCode_literalOffset,x
-inc	:Inflate:nBitCode_literalOffset,x
-sta	:Inflate:codeToLiteralSymbol,y
+ldy	nBitCode_literalOffset,x
+inc	nBitCode_literalOffset,x
+sta	codeToLiteralSymbol,y
 tay
 cpy	#CONTROL_SYMBOLS
 bcs	buildHuffmanTree_noControlSymbol2
-ldx	:Inflate:controlSymbolCodeLength,y
+ldx	controlSymbolCodeLength,y
 ;ldy:inc	nBitCode_controlOffset,x
-ldy :Inflate:nBitCode_controlOffset,x
-inc	:Inflate:nBitCode_controlOffset,x
-sta	:Inflate:codeToControlSymbol,y
+ldy nBitCode_controlOffset,x
+inc	nBitCode_controlOffset,x
+sta	codeToControlSymbol,y
 tay
 .buildHuffmanTree_noControlSymbol2:
 iny
@@ -405,36 +405,36 @@ rol
 inx
 bcs	fetchCode_ge256
 ; are all 256 literal codes of this length?
-cpx	:Inflate:allLiteralsCodeLength
+cpx	allLiteralsCodeLength
 beq	fetchCode_allLiterals
 ; is it literal code of length X?
 ;sub	nBitCode_literalCount,x
 sec
-sbc	:Inflate:nBitCode_literalCount,x
+sbc	nBitCode_literalCount,x
 bcs	fetchCode_notLiteral
 ; literal code
 ;	clc
-adc	:Inflate:nBitCode_literalOffset,x
+adc	nBitCode_literalOffset,x
 tax
-lda	:Inflate:codeToLiteralSymbol,x
+lda	codeToLiteralSymbol,x
 .fetchCode_allLiterals:
 clc
 rts
 ; code >= 256, must be control
 .fetchCode_ge256:
 ;	sec
-sbc	:Inflate:nBitCode_literalCount,x
+sbc	nBitCode_literalCount,x
 sec
 ; is it control code of length X?
 .fetchCode_notLiteral:
 ;	sec
-sbc	:Inflate:nBitCode_controlCount,x
+sbc	nBitCode_controlCount,x
 bcs	fetchCode_nextBit
 ; control code
 ;	clc
-adc	:Inflate:nBitCode_controlOffset,x
+adc	nBitCode_controlOffset,x
 tax
-lda	:Inflate:codeToControlSymbol,x
+lda	codeToControlSymbol,x
 and	#$1f	; make distance symbols zero-based
 tax
 ;	sec
