@@ -15,6 +15,6 @@ namespace BitMagic.Common
         (bool framedone, int nextCpuTick, bool releaseVideo) IncrementDisplay();
         AutoResetEvent[] DisplayEvents { get; }
         AutoResetEvent[] DisplayStart { get; }
-        ICpu Cpu { get; }
+        ICpuEmulator Cpu { get; }
     }
 }

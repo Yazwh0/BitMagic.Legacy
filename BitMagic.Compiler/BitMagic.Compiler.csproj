@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />
+    <ProjectReference Include="..\BitMagic.Machines\BitMagic.Machines.csproj" />
   </ItemGroup>
 
 </Project>

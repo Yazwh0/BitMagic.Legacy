@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BitMagic.Cpu
 {
-    public interface I6502 : ICpu
+    public interface I6502 : ICpuEmulator
     {
         public new I6502Registers Registers { get; }
         public void Push(byte value);
@@ -17,9 +17,10 @@ namespace BitMagic.Cpu
 
     public class WDC65c02 : I6502
     {
+        public string Name => "WDC65c02";
         public IEnumerable<ICpuOpCode> OpCodes => _opCodes;
         public I6502Registers Registers { get; } = new _6502Registers();
-        IRegisters ICpu.Registers => Registers;
+        IRegisters ICpuEmulator.Registers => Registers;
         public IMemory _memory;
         public const int _stackStart = 0x100;
         public bool HasInterrupt { get; internal set; }

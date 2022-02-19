@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitMagic.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace BitMagic.AsmTemplate
 {
     public static class BitMagicHelper
     {
+        public static IMachine? Machine { get; internal set; }
+
         public static void Bytes(IEnumerable<byte> bytes, int width = 16)
         {
             StringBuilder sb = new StringBuilder();

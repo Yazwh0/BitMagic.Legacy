@@ -3,9 +3,14 @@
 namespace BitMagic.Common
 {
     public interface ICpu
+    { 
+        public string Name { get; }
+        IEnumerable<ICpuOpCode> OpCodes { get; }
+    }
+
+    public interface ICpuEmulator : ICpu
     {
         void Reset();
-        IEnumerable<ICpuOpCode> OpCodes { get; }
         IRegisters Registers { get; }
         void SetProgramCounter(int address);
         int ClockTick(IMemory memory, bool debugOutput);

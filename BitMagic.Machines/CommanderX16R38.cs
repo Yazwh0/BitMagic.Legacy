@@ -6,23 +6,37 @@ using System.Collections.Generic;
 
 namespace BitMagic.Machines
 {
-    public class CommanderX16 : IMachine
+    public class CommanderX16R38 : IMachineEmulator
     {
-        private IMemory Memory { get; }
+        private IMemory? Memory { get; set; }
+        IMemory IMachineEmulator.Memory => Memory ?? throw new NullReferenceException();
 
-        public ICpu Cpu { get; internal set; }
+        public ICpuEmulator? Cpu { get; internal set; }
+        ICpuEmulator IMachineEmulator.Cpu => Cpu ?? throw new NotImplementedException();
+        ICpu IMachine.Cpu => Cpu ?? throw new NotImplementedException();
 
-        public string Name => "Commander X16 R38";
+        public string Name => "CommanderX16";
+        public int Version => 38;
 
-        IMemory IMachine.Memory => Memory;
+        public Vera? Vera { get; private set; }
+        public IDisplay Display => Vera ?? throw new NullReferenceException();
 
-        public IDisplay Display => Vera;
-        public Vera Vera { get; }
-
-        private CommanderX16Defaults _defaultVariables = new();
+        private CommanderX16R38Defaults _defaultVariables = new();
         public IVariables Variables => _defaultVariables;
+        public bool Initialised { get; private set; } = false;
 
-        public CommanderX16(byte[] rom)
+        private byte[]? _rom;
+
+        public CommanderX16R38()
+        {
+        }
+
+        public void SetRom(byte[] rom)
+        {
+            _rom = rom;
+        }
+
+        public void Build()
         {
             var banks = new List<IMemory>();
 
@@ -35,7 +49,7 @@ namespace BitMagic.Machines
 
             for (var i = 0; i < 8; i++)
             {
-                roms.Add(new MemoryMap(0, 0x4000, new IMemoryBlock[] { new Rom($"ROM Bank {i}", 0x4000, i == 0 ? rom : null) }));
+                roms.Add(new MemoryMap(0, 0x4000, new IMemoryBlock[] { new Rom($"ROM Bank {i}", 0x4000, i == 0 ? _rom : null) }));
             }
 
             var stack = new Ram("Stack", 0x100);
@@ -60,10 +74,12 @@ namespace BitMagic.Machines
             });
 
             Cpu = new WDC65c02(Memory, 8000000);
+
+            Initialised = true;
         }
     }
 
-    internal class CommanderX16Defaults : IVariables
+    internal class CommanderX16R38Defaults : IVariables
     {
         private static Dictionary<string, int> _defaults = new Dictionary<string, int>
         {

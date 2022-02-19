@@ -18,6 +18,7 @@
 			"patterns":[
 				{ "include" : "source.bmasm" },
 				{ "include" : "#assembly-references"},
+				{ "include" : "#machine"},
 				{ "include" : "#comment" },		
 				{
 					"name" : "meta.embedded.line.csasm",
@@ -55,6 +56,32 @@
 			},
 			{
 				"begin": "\\b(assembly)\\s*([^;]]*)\\s*",
+				"beginCaptures": {
+					"1": {
+						"name": "keyword.other.assembly.csasm"
+					},
+					"2:": {
+						"name": "entity.name.type.assembly.csasm"
+					}
+				},
+				"end": "(?=;)"
+			}]
+		},
+		"machine" : {
+			"patterns": [{
+				"begin": "\\b(machine)\\s*(\\\".*\\\")\\s*",
+				"beginCaptures": {
+					"1": {
+						"name": "keyword.other.assembly.csasm"
+					},
+					"2:": {
+						"name": "entity.name.type.assembly.csasm"
+					}
+				},
+				"end": "(?=;)"
+			},
+			{
+				"begin": "\\b(machine)\\s*([^;]]*)\\s*",
 				"beginCaptures": {
 					"1": {
 						"name": "keyword.other.assembly.csasm"

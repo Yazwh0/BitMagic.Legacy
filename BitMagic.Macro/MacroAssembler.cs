@@ -1,6 +1,7 @@
 ﻿using BitMagic.AsmTemplate;
 using BitMagic.AsmTemplateEngine;
 using BitMagic.Common;
+using BitMagic.Machines;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -14,7 +15,24 @@ using System.Threading.Tasks;
 
 namespace BigMagic.Macro
 {
-    // converts .csasm to 
+    public abstract class MacroException : Exception
+    {
+        public abstract string ErrorDetail { get; }
+
+        public MacroException(string message) : base(message)
+        {
+        }
+    }
+
+    public class MachineNotSetException : MacroException
+    {
+        public MachineNotSetException() : base("Machine not set.")
+        {
+        }
+
+        public override string ErrorDetail => "Set a machine using 'machine' or command line argument.";
+    }
+
     public class MacroAssembler
     {
         private Project? _project = null;
@@ -72,6 +90,26 @@ namespace BigMagic.Macro
                     continue;
                 }
 
+                if (trimmed.StartsWith("machine"))
+                {
+                    if (_project.Machine != null)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"Warning: Machine has allready been set but is being overriden by a 'machine' directive.");
+                        Console.ResetColor();
+                    }
+                    output.AppendLine($".{trimmed}"); // pass it to the bmasm
+
+                    var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    var name = parts[1];
+
+                    if (name.EndsWith(';'))
+                        name = name.Substring(0, name.Length - 1);
+
+                    _project.Machine = MachineFactory.GetMachine(name);
+                    continue;
+                }
+
                 if (trimmed.StartsWith("using"))
                 {
                     userHeader.AppendLine(trimmed);
@@ -115,6 +153,11 @@ namespace BigMagic.Macro
                     continue;
                 }
 
+                if (_project.Machine == null)
+                {
+                    throw new MachineNotSetException();
+                }
+
                 output.AppendLine(line);
             }
 
@@ -153,7 +196,8 @@ namespace BigMagic.Macro
                     Assembly.Load(new AssemblyName("System.Linq")),
                     Assembly.Load(new AssemblyName("System.Linq.Expressions")),
                     Assembly.Load(new AssemblyName("netstandard")),
-                    typeof(BitMagicHelper).Assembly
+                    typeof(BitMagicHelper).Assembly,
+                    typeof(IMachineRunner).Assembly
             });
 
             foreach(var assemblyFilename in _assemblyFilenames)
@@ -212,7 +256,7 @@ namespace BigMagic.Macro
                 }
             }
 
-            Template.StartProject();
+            Template.StartProject(_project);
 
             var assembly = Assembly.Load(memoryStream.ToArray());
 

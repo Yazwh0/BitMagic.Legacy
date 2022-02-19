@@ -46,9 +46,9 @@ namespace BitMagic.Emulation
 
         public double CpuFrequency { get; init; }
 
-        public ICpu Cpu { get; }
+        public ICpuEmulator Cpu { get; }
 
-        public MachineRunner(double deltaHtz, Action<object?> cpuThread, IDisplay display, ICpu cpu)
+        public MachineRunner(double deltaHtz, Action<object?> cpuThread, IDisplay display, ICpuEmulator cpu)
         {
             CpuFrequency = deltaHtz;
             Display = display;

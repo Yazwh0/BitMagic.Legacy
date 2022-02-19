@@ -10,7 +10,7 @@ namespace BitMagic.Emulation
 {
     public class Emulator
     {
-        private IMachine _machine { get; }
+        private IMachineEmulator _machine { get; }
         private Project _project;
 
         public Emulator(Project project)

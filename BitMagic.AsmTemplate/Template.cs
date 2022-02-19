@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using BitMagic.Common;
+using BitMagic.Machines;
+using System.Text;
 
 namespace BitMagic.AsmTemplate
 {
@@ -11,8 +13,9 @@ namespace BitMagic.AsmTemplate
             _output.AppendLine(literal);
         }
 
-        public static void StartProject()
+        public static void StartProject(Project project)
         {
+            BitMagicHelper.Machine = project.Machine;
             _output.Clear();
         }
 

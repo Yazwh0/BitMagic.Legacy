@@ -1,5 +1,6 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu;
+using BitMagic.Machines;
 using CodingSeb.ExpressionEvaluator;
 using Newtonsoft.Json;
 using System;
@@ -82,6 +83,41 @@ namespace BitMagic.Compiler
         public override string ErrorDetail => $"Maxsize is ${Segment.MaxSize:X4}, but the segment is ${Segment.Address - Segment.StartAddress:X4}";
     }
 
+    public class MachineAlreadySetException : CompilerException
+    {
+        public string ExistingMachineName { get; }
+        public string NewMachineName { get; }
+
+        public MachineAlreadySetException(string existing, string newName) : base("Machine is already set.")
+        {
+            ExistingMachineName = existing;
+            NewMachineName = newName;
+        }
+
+        public override string ErrorDetail => $"Machine is already set to {ExistingMachineName}, but is being changed to {NewMachineName}.";
+    }
+
+    public class MachineNotSetException : CompilerException
+    {
+        public MachineNotSetException() : base("Machine not set.")
+        {
+        }
+
+        public override string ErrorDetail => "Set a machine using '.machine' or command line argument.";
+    }
+
+    public class MachineNotKnownException : CompilerException
+    {
+        public string MachineName { get; }
+
+        public MachineNotKnownException(string name) : base("Machine not known.")
+        {
+            MachineName = name;
+        }
+
+        public override string ErrorDetail => $"Unknown machine '{MachineName}'.";
+    }
+
     public class Compiler
     {
         private readonly Project _project;        
@@ -100,6 +136,30 @@ namespace BitMagic.Compiler
 
                     state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
                 })
+                .WithParameters(".machine", (dict, state) =>
+                {
+                    var newMachine = MachineFactory.GetMachine(dict["name"]);
+
+                    if (newMachine == null)
+                        throw new MachineNotKnownException(dict["name"]);
+
+                    if (project.Machine != null && newMachine.Name != project.Machine.Name && newMachine.Version != project.Machine.Version)
+                        throw new MachineAlreadySetException(project.Machine.Name, dict["name"]);
+
+                    if (project.Machine == null)
+                    {
+                        project.Machine = newMachine;
+                    }
+
+                    if (!project.Machine.Initialised)
+                    {
+                        project.Machine.SetRom(new byte[0x4000]);
+                        project.Machine.Build();
+                    }
+
+                    InitFromMachine(state);
+
+                }, new[] { "name" })
                 .WithParameters(".segment", (dict, state) => {
                     Segment segment;
 
@@ -115,16 +175,13 @@ namespace BitMagic.Compiler
 
                     if (dict.ContainsKey("address"))
                     {
-                        //foreach (var scope in segment.Scopes)
-                        //{
-                            foreach (var proc in segment.Procedures)
+                        foreach (var proc in segment.Procedures)
+                        {
+                            if (proc.Value.Data.Any())
                             {
-                                if (proc.Value.Data.Any())
-                                {
-                                    throw new Exception($"Cannot modify segment start address when it already has data. {segment.Name}");
-                                }
+                                throw new Exception($"Cannot modify segment start address when it already has data. {segment.Name}");
                             }
-                        //}
+                        }
                     }
 
                     if (dict.ContainsKey("address"))
@@ -248,13 +305,6 @@ namespace BitMagic.Compiler
             if (_project.Code.Contents == null)
                 throw new ArgumentNullException(nameof(_project.Code.Contents));
 
-            if (_project.Machine == null)
-                throw new ArgumentNullException(nameof(_project.Machine));
-
-            foreach(var opCode in _project.Machine.Cpu.OpCodes)
-            {
-                _opCodes.Add(opCode.Code.ToLower(), opCode);
-            }
 
             //var sb = new StringBuilder();
             //// test
@@ -293,8 +343,7 @@ namespace BitMagic.Compiler
             //}
             //File.WriteAllText(@"d:\documents\source\bitmagic\opcodes.asm", sb.ToString());
 
-
-            var globals = new Variables(_project.Machine.Variables, "App");
+            var globals = new Variables("App");
 
             var state = new CompileState(globals);
 
@@ -341,6 +390,22 @@ namespace BitMagic.Compiler
             }
 
             await GenerateDataFile(state); 
+        }
+        private void InitFromMachine(CompileState state)
+        {
+            if (_project.Machine == null)
+                throw new NullReferenceException();
+
+            _opCodes.Clear();
+            foreach (var opCode in _project.Machine.Cpu.OpCodes)
+            {
+                _opCodes.Add(opCode.Code.ToLower(), opCode);
+            }
+
+            foreach (var kv in _project.Machine.Variables.Values)
+            {
+                state.Globals.SetValue(kv.Key, kv.Value);
+            }
         }
 
         private void DisplayVariables(Variables globals)
@@ -497,18 +562,10 @@ namespace BitMagic.Compiler
         {
             foreach(var segment in state.Segments.Values)
             {
-                //foreach (var scope in segment.Scopes.Values)
-                //{
-                    foreach (var procName in segment.Procedures.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
-                    {
-                        segment.Procedures.Remove(procName);
-                    }
-                //}
-
-                //foreach(var scopeName in segment.Scopes.Where(i => !i.Value.Procedures.Any()).Select(i => i.Key).ToArray())
-                //{
-                //    segment.Scopes.Remove(scopeName);
-                //}
+                foreach (var procName in segment.Procedures.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
+                {
+                    segment.Procedures.Remove(procName);
+                }
             }
 
             foreach(var segmentName in state.Segments.Values.Where(i => !i.Procedures.Any()).Select(i => i.Name).ToArray())
@@ -522,27 +579,27 @@ namespace BitMagic.Compiler
             Console.WriteLine("Revaluations:");
             foreach (var segment in state.Segments.Values)
             {
-                //foreach(var scope in segment.Scopes.Values)
-                //{
-                    foreach(var proc in segment.Procedures.Values)
+                foreach (var proc in segment.Procedures.Values)
+                {
+                    foreach (var line in proc.Data.Where(l => l.RequiresReval))
                     {
-                        foreach (var line in proc.Data.Where(l => l.RequiresReval))
-                        {
-                            line.ProcessParts(true);
-                            line.WriteToConsole();
+                        line.ProcessParts(true);
+                        line.WriteToConsole();
 
-                            if (line.RequiresReval)
-                            {
-                                throw new CompilerLineException(line, $"Unknown name {string.Join(", ", line.RequiresRevalNames.Select(i => $"'{i}'"))}");
-                            }
+                        if (line.RequiresReval)
+                        {
+                            throw new CompilerLineException(line, $"Unknown name {string.Join(", ", line.RequiresRevalNames.Select(i => $"'{i}'"))}");
                         }
                     }
-                //}
+                }
             }
         }
 
         private void ParseAsm(string[] parts, SourceFilePosition source, CompileState state)
         {
+            if (_project.Machine == null)
+                throw new MachineNotSetException();
+
             var code = parts[0].ToLower();
 
             if (!_opCodes.ContainsKey(code))

@@ -69,11 +69,17 @@ namespace BitMagic
                     return -1;
                 }
 
-                project.Machine = new CommanderX16(project.RomFile.Contents);
+                var machine = MachineFactory.GetMachine(Machine.CommanderX16R38);
+                machine.SetRom(project.RomFile.Contents);
+                machine.Build(); // todo: turn this into a proper factory
+                project.Machine = machine;
             } 
             else
             {
-                project.Machine = new CommanderX16(new byte[0x4000]);
+                //var machine = MachineFactory.GetMachine(Machine.CommanderX16R38);
+                //machine.SetRom(new byte[0x4000]);
+                //machine.Build(); // todo: turn this into a proper factory
+                //project.Machine = machine;
             }
 
             project.LoadTime = stopWatch.Elapsed;
