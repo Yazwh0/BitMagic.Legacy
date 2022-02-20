@@ -124,6 +124,7 @@ namespace BitMagic.Machines
             {"INTERRUPT_L", 0x0314},
             {"INTERRUPT_H", 0x0315},
 
+            {"ROM_BANK", 0x9F60},
             {"RAM_BANK", 0x9F61}
         };
 
