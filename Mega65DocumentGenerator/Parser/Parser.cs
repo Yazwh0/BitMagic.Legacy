@@ -112,14 +112,19 @@ namespace Mega65Parser
             {
                 var allText = File.ReadAllText(Path.Combine(_basePath, "inst." + code));
 
-                //allText = allText.Replace(@"$\leftarrow$", "<-");
-                //allText = allText.Replace(@"$\rightarrow$", "->");
-                //allText = allText.Replace(@"$AND$", "&&");
-                //allText = allText.Replace(@"$OR$", "||");
+                allText = allText.Replace(@"$\leftarrow$", "<-");
+                allText = allText.Replace(@"$\rightarrow$", "->");
+                allText = allText.Replace(@"$AND$", "&");
+                allText = allText.Replace(@"$OR$", "|");
+                allText = allText.Replace(@"$or$", "|");
+                allText = allText.Replace(@"$xor$", "xor");
+                allText = allText.Replace(@"$XOR$", "xor");
                 allText = allText.Replace(@"$>>$", ">>");
                 allText = allText.Replace(@"$<<$", "<<");
                 allText = allText.Replace(@"$>$", ">");
                 allText = allText.Replace(@"$<$", "<");
+                allText = allText.Replace(@"$+$", "+");
+                allText = allText.Replace(@"$-$", "-");
                 allText = allText.ReplaceLineEndings();
 
                 var description = new CodeDescription();

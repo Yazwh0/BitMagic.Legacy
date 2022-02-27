@@ -16,7 +16,7 @@
 ## ADC
 
 **Add with carry**\
-A $\leftarrow$ A$+$M$+$C\
+A <- A+M+C\
 Flags: N Z C V
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -47,7 +47,7 @@ indicates that a signed overflow has occurred.
 ## AND
 
 **Binary AND**\
-A $\leftarrow$ A $AND$ M\
+A <- A & M\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -74,7 +74,7 @@ Side effects:
 ## ASL
 
 **Arithmetic Shift Left**\
-A $\leftarrow$ A<<1 $or$ M $\leftarrow$ M<<1\
+A <- A<<1 | M <- M<<1\
 Flags: N Z C M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -97,7 +97,7 @@ Side effects:
 ## ASR
 
 **Arithmetic Shift Right**\
-A $\leftarrow$ A>>1 $or$ M $\leftarrow$ M>>1\
+A <- A>>1 | M <- M>>1\
 Flags: N Z C M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -119,7 +119,7 @@ Side effects:
 ## ASW
 
 **Arithmetic Shift Word Left**\
-M $\leftarrow$ M<<1\
+M <- M<<1\
 Flags: N Z C M M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -141,7 +141,7 @@ if bit 7 of the upper byte is set after the operation, else it will be cleared.
 ## BBR0
 
 **Branch on Bit 0 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -154,7 +154,7 @@ in the indicated base-page memory location.
 ## BBR1
 
 **Branch on Bit 1 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -167,7 +167,7 @@ in the indicated base-page memory location.
 ## BBR2
 
 **Branch on Bit 2 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -180,7 +180,7 @@ in the indicated base-page memory location.
 ## BBR3
 
 **Branch on Bit 3 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -193,7 +193,7 @@ in the indicated base-page memory location.
 ## BBR4
 
 **Branch on Bit 4 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -206,7 +206,7 @@ in the indicated base-page memory location.
 ## BBR5
 
 **Branch on Bit 5 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ in the indicated base-page memory location.
 ## BBR6
 
 **Branch on Bit 6 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -232,7 +232,7 @@ in the indicated base-page memory location.
 ## BBR7
 
 **Branch on Bit 7 Reset**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -245,7 +245,7 @@ in the indicated base-page memory location.
 ## BBS0
 
 **Branch on Bit 0 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -258,7 +258,7 @@ in the indicated base-page memory location.
 ## BBS1
 
 **Branch on Bit 1 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -271,7 +271,7 @@ in the indicated base-page memory location.
 ## BBS2
 
 **Branch on Bit 2 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -284,7 +284,7 @@ in the indicated base-page memory location.
 ## BBS3
 
 **Branch on Bit 3 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -297,7 +297,7 @@ in the indicated base-page memory location.
 ## BBS4
 
 **Branch on Bit 4 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -310,7 +310,7 @@ in the indicated base-page memory location.
 ## BBS5
 
 **Branch on Bit 5 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -323,7 +323,7 @@ in the indicated base-page memory location.
 ## BBS6
 
 **Branch on Bit 6 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -336,7 +336,7 @@ in the indicated base-page memory location.
 ## BBS7
 
 **Branch on Bit 7 Set**\
-PC $\leftarrow$ PC + R8\
+PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -349,8 +349,8 @@ in the indicated base-page memory location.
 ## BCC
 
 **Branch on Carry Flag Clear**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -363,8 +363,8 @@ Carry Flag is clear.
 ## BCS
 
 **Branch on Carry Flag Set**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -377,8 +377,8 @@ Carry Flag is set.
 ## BEQ
 
 **Branch on Zero Flag Set**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -391,7 +391,7 @@ Zero Flag is set.
 ## BIT
 
 **Perform Bit Test**\
-N $\leftarrow$ M(7), V $\leftarrow$ M(6), Z $\leftarrow$ A $AND$ M\
+N <- M(7), V <- M(6), Z <- A & M\
 Flags: N Z V
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -411,13 +411,13 @@ Side effects:
 
 - The N flag will be set if the bit 7 of the memory location is set, else it will be cleared.
 - The V flag will be set if the bit 6 of the memory location is set, else it will be cleared.
-- The Z flag will be set if the result of A $AND$ M is zero, else it will be cleared.
+- The Z flag will be set if the result of A & M is zero, else it will be cleared.
 
 ## BMI
 
 **Branch on Negative Flag Set**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -430,8 +430,8 @@ Negative Flag is set.
 ## BNE
 
 **Branch on Zero Flag Clear**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -444,8 +444,8 @@ Zero Flag is clear.
 ## BPL
 
 **Branch on Negative Flag Clear**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -458,7 +458,7 @@ Negative Flag is clear.
 ## BRA
 
 **Branch Unconditionally**\
-PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -470,7 +470,7 @@ This instruction branches to the indicated address.
 ## BRK
 
 **Break to Interrupt**\
-PC $\leftarrow$ (\$FFFE)\
+PC <- (\$FFFE)\
 Flags: M M M M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -507,7 +507,7 @@ be used to return or jump directly to the code byte after the BRK.
 ## BSR
 
 **Branch Sub-Routine**\
-PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -523,8 +523,8 @@ provides a relative-addressed alternative to JSR.
 ## BVC
 
 **Branch on Overflow Flag Clear**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -537,8 +537,8 @@ Overflow (V) Flag is clear.
 ## BVS
 
 **Branch on Overflow Flag Set**\
-6502:PC $\leftarrow$ PC + R8\
-4510:PC $\leftarrow$ PC + R8 $or$ PC $\leftarrow$ PC + R16\
+6502:PC <- PC + R8\
+4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -551,7 +551,7 @@ Overflow (V) Flag is set.
 ## CLC
 
 **Clear Carry Flag**\
-C $\leftarrow$ 0\
+C <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -566,7 +566,7 @@ Side effects:
 ## CLD
 
 **Clear Decimal Flag**\
-D $\leftarrow$ 0\
+D <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -583,7 +583,7 @@ Side effects:
 ## CLE
 
 **Clear Extended Stack Disable Flag**\
-E $\leftarrow$ 0\
+E <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -601,7 +601,7 @@ Side effects:
 ## CLI
 
 **Clear Interrupt Disable Flag**\
-I $\leftarrow$ 0\
+I <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -617,7 +617,7 @@ Side effects:
 ## CLV
 
 **Clear Overflow Flag**\
-V $\leftarrow$ 0\
+V <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -645,14 +645,14 @@ Flags: N Z C
  | Indirect, Y | CMP (\$nn),Y | $D1 | 2 |
  | Indirect, Z | CMP (\$nn),Z | $D2 | 2 |
 
-This instruction performs A $-$ M, and sets the processor flags accordingly,
+This instruction performs A - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
 
 Side effects:
 
-- The N flag will be set if the result of A $-$ M is negative, i.e. bit 7 is set in the result, else it will be cleared.
-- The C flag will be set if the result of A $-$ M is zero or positive, i.e., if A is not less than M, else it will be cleared.
-- The Z flag will be set if the result of A $-$ M is zero, else it will be cleared.
+- The N flag will be set if the result of A - M is negative, i.e. bit 7 is set in the result, else it will be cleared.
+- The C flag will be set if the result of A - M is zero or positive, i.e., if A is not less than M, else it will be cleared.
+- The Z flag will be set if the result of A - M is zero, else it will be cleared.
 
 ## CPX
 
@@ -664,14 +664,14 @@ Flags: N Z C
  | Zero Page | CPX \$nn | $E4 | 2 |
  | Absolute | CPX \$nnnn | $EC | 3 |
 
-This instruction performs X $-$ M, and sets the processor flags accordingly,
+This instruction performs X - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
 
 Side effects:
 
-- The N flag will be set if the result of X $-$ M is negative, i.e. bit 7 is set in the result, else it will be cleared.
-- The C flag will be set if the result of X $-$ M is zero or positive, i.e., if X is not less than M, else it will be cleared.
-- The Z flag will be set if the result of X $-$ M is zero, else it will be cleared.
+- The N flag will be set if the result of X - M is negative, i.e. bit 7 is set in the result, else it will be cleared.
+- The C flag will be set if the result of X - M is zero or positive, i.e., if X is not less than M, else it will be cleared.
+- The Z flag will be set if the result of X - M is zero, else it will be cleared.
 
 ## CPY
 
@@ -683,14 +683,14 @@ Flags: N Z C
  | Zero Page | CPY \$nn | $C4 | 2 |
  | Absolute | CPY \$nnnn | $CC | 3 |
 
-This instruction performs Y $-$ M, and sets the processor flags accordingly,
+This instruction performs Y - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
 
 Side effects:
 
-- The N flag will be set if the result of Y $-$ M is negative, i.e. bit 7 is set in the result, else it will be cleared.
-- The C flag will be set if the result of Y $-$ M is zero or positive, i.e., if Y is not less than M, else it will be cleared.
-- The Z flag will be set if the result of Y $-$ M is zero, else it will be cleared.
+- The N flag will be set if the result of Y - M is negative, i.e. bit 7 is set in the result, else it will be cleared.
+- The C flag will be set if the result of Y - M is zero or positive, i.e., if Y is not less than M, else it will be cleared.
+- The Z flag will be set if the result of Y - M is zero, else it will be cleared.
 
 ## CPZ
 
@@ -702,19 +702,19 @@ Flags: N Z C
  | Zero Page | CPZ \$nn | $D4 | 2 |
  | Absolute | CPZ \$nnnn | $DC | 3 |
 
-This instruction performs Z $-$ M, and sets the processor flags accordingly,
+This instruction performs Z - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
 
 Side effects:
 
-- The N flag will be set if the result of Z $-$ M is negative, i.e. bit 7 is set in the result, else it will be cleared.
-- The C flag will be set if the result of Z $-$ M is zero or positive, i.e., if Z is not less than M, else it will be cleared.
-- The Z flag will be set if the result of Z $-$ M is zero, else it will be cleared.
+- The N flag will be set if the result of Z - M is negative, i.e. bit 7 is set in the result, else it will be cleared.
+- The C flag will be set if the result of Z - M is zero or positive, i.e., if Z is not less than M, else it will be cleared.
+- The Z flag will be set if the result of Z - M is zero, else it will be cleared.
 
 ## DEC
 
 **Decrement Memory or Accumulator**\
-A $\leftarrow$ A - 1 $or$ M $\leftarrow$ M - 1\
+A <- A - 1 | M <- M - 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -735,7 +735,7 @@ Side effects:
 ## DEW
 
 **Decrement Memory Word**\
-M16 $\leftarrow$ M16 - 1\
+M16 <- M16 - 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -754,7 +754,7 @@ Side effects:
 ## DEX
 
 **Decrement X Register**\
-X $\leftarrow$ X - 1\
+X <- X - 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -770,7 +770,7 @@ Side effects:
 ## DEY
 
 **Decrement Y Register**\
-Y $\leftarrow$ Y - 1\
+Y <- Y - 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -786,7 +786,7 @@ Side effects:
 ## DEZ
 
 **Decrement Z Register**\
-Z $\leftarrow$ Z - 1\
+Z <- Z - 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -831,7 +831,7 @@ is not set.
 ## EOR
 
 **Binary Exclusive OR**\
-A $\leftarrow$ A $XOR$ M\
+A <- A xor M\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -858,7 +858,7 @@ Side effects:
 ## INC
 
 **Increment Memory or Accumulator**\
-A $\leftarrow$ A + 1 $or$ M $\leftarrow$ M + 1\
+A <- A + 1 | M <- M + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -879,7 +879,7 @@ Side effects:
 ## INW
 
 **Increment Memory Word**\
-M16 $\leftarrow$ M16 + 1\
+M16 <- M16 + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -898,7 +898,7 @@ Side effects:
 ## INX
 
 **Increment X Register**\
-X $\leftarrow$ X + 1\
+X <- X + 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -914,7 +914,7 @@ Side effects:
 ## INY
 
 **Increment Y Register**\
-Y $\leftarrow$ Y + 1\
+Y <- Y + 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -930,7 +930,7 @@ Side effects:
 ## INZ
 
 **Increment Z Register**\
-Z $\leftarrow$ Y + 1\
+Z <- Y + 1\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -946,7 +946,7 @@ Side effects:
 ## JMP
 
 **Jump to Address**\
-PC $\leftarrow$ M2:M1\
+PC <- M2:M1\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -961,7 +961,7 @@ execution to continue from that address.
 ## JSR
 
 **Jump to Sub-Routine**\
-PC $\leftarrow$ M2:M1, Stack $\leftarrow$ PCH:PCL\
+PC <- M2:M1, Stack <- PCH:PCL\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -988,7 +988,7 @@ before setting the Program Counter (PC) register.
 ## LDA
 
 **Load Accumulator**\
-A $\leftarrow$ M\
+A <- M\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1014,7 +1014,7 @@ Side effects:
 ## LDX
 
 **Load X Register**\
-X $\leftarrow$ M\
+X <- M\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1035,7 +1035,7 @@ Side effects:
 ## LDY
 
 **Load Y Register**\
-Y $\leftarrow$ M\
+Y <- M\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1056,7 +1056,7 @@ Side effects:
 ## LDZ
 
 **Load Z Register**\
-Z $\leftarrow$ M\
+Z <- M\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1075,7 +1075,7 @@ Side effects:
 ## LSR
 
 **Logical Shift Right**\
-A $\leftarrow$ A>>1, C $\leftarrow$ A(0) $or$ M $\leftarrow$ M>>1\
+A <- A>>1, C <- A(0) | M <- M>>1\
 Flags: N Z C M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1122,7 +1122,7 @@ blocked from occurring until an EOM (NOP) instruction is encountered.
 ## NEG
 
 **Negate Accumulator**\
-A $\leftarrow$ -A\
+A <- -A\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1139,7 +1139,7 @@ Side effects:
 ## ORA
 
 **Decrement Memory or Accumulator**\
-A $\leftarrow$ A + 1 $or$ M $\leftarrow$ M + 1\
+A <- A + 1 | M <- M + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1166,7 +1166,7 @@ Side effects:
 ## PHA
 
 **Push Accumulator Register onto the Stack**\
-STACK $\leftarrow$ A, SP $\leftarrow$ SP - 1\
+STACK <- A, SP <- SP - 1\
 Flags: M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1178,7 +1178,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 ## PHP
 
 **Push Processor Flags onto the Stack**\
-STACK $\leftarrow$ P, SP $\leftarrow$ SP - 1\
+STACK <- P, SP <- SP - 1\
 Flags: M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1190,7 +1190,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 ## PHW
 
 **Push Word onto the Stack**\
-STACK $\leftarrow$ M1:M2, SP $\leftarrow$ SP - 2\
+STACK <- M1:M2, SP <- SP - 2\
 N+Z+M+M+\
 Flags: -
  | Mode | Syntax | Hex | Len |
@@ -1205,7 +1205,7 @@ onto the stack, and decrements the value of the Stack Pointer by 2.
 ## PHX
 
 **Push X Register onto the Stack**\
-STACK $\leftarrow$ X, SP $\leftarrow$ SP - 1\
+STACK <- X, SP <- SP - 1\
 Flags: M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1217,7 +1217,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 ## PHY
 
 **Push Y Register onto the Stack**\
-STACK $\leftarrow$ Y, SP $\leftarrow$ SP - 1\
+STACK <- Y, SP <- SP - 1\
 Flags: M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1229,7 +1229,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 ## PHZ
 
 **Push Z Register onto the Stack**\
-STACK $\leftarrow$ z, SP $\leftarrow$ SP - 1\
+STACK <- z, SP <- SP - 1\
 Flags: M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1241,7 +1241,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 ## PLA
 
 **Pull Accumulator Register from the Stack**\
-A $\leftarrow$ STACK, SP $\leftarrow$ SP + 1\
+A <- STACK, SP <- SP + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1254,7 +1254,7 @@ Stack Pointer by 1.
 ## PLP
 
 **Pull Processor Flags from the Stack**\
-A $\leftarrow$ STACK, SP $\leftarrow$ SP + 1\
+A <- STACK, SP <- SP + 1\
 Flags: N Z M I C D V
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1270,7 +1270,7 @@ NOTE: This instruction does NOT replace the Extended Stack Disable Flag
 ## PLX
 
 **Pull X Register from the Stack**\
-X $\leftarrow$ STACK, SP $\leftarrow$ SP + 1\
+X <- STACK, SP <- SP + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1283,7 +1283,7 @@ Stack Pointer by 1.
 ## PLY
 
 **Pull Y Register from the Stack**\
-Y $\leftarrow$ STACK, SP $\leftarrow$ SP + 1\
+Y <- STACK, SP <- SP + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1296,7 +1296,7 @@ Stack Pointer by 1.
 ## PLZ
 
 **Pull Z Register from the Stack**\
-Z $\leftarrow$ STACK, SP $\leftarrow$ SP + 1\
+Z <- STACK, SP <- SP + 1\
 Flags: N Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1309,7 +1309,7 @@ Stack Pointer by 1.
 ## RMB0
 
 **Reset Bit 0 in Base Page**\
-M(0) $\leftarrow$ 0\
+M(0) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1321,7 +1321,7 @@ No flags are modified, regardless of the result.
 ## RMB1
 
 **Reset Bit 1 in Base Page**\
-M(1) $\leftarrow$ 0\
+M(1) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1333,7 +1333,7 @@ No flags are modified, regardless of the result.
 ## RMB2
 
 **Reset Bit 2 in Base Page**\
-M(2) $\leftarrow$ 0\
+M(2) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1345,7 +1345,7 @@ No flags are modified, regardless of the result.
 ## RMB3
 
 **Reset Bit 3 in Base Page**\
-M(3) $\leftarrow$ 0\
+M(3) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1357,7 +1357,7 @@ No flags are modified, regardless of the result.
 ## RMB4
 
 **Reset Bit 4 in Base Page**\
-M(4) $\leftarrow$ 0\
+M(4) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1369,7 +1369,7 @@ No flags are modified, regardless of the result.
 ## RMB5
 
 **Reset Bit 5 in Base Page**\
-M(5) $\leftarrow$ 0\
+M(5) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1381,7 +1381,7 @@ No flags are modified, regardless of the result.
 ## RMB6
 
 **Reset Bit 6 in Base Page**\
-M(6) $\leftarrow$ 0\
+M(6) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1393,7 +1393,7 @@ No flags are modified, regardless of the result.
 ## RMB7
 
 **Reset Bit 7 in Base Page**\
-M(7) $\leftarrow$ 0\
+M(7) <- 0\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1405,7 +1405,7 @@ No flags are modified, regardless of the result.
 ## ROL
 
 **Rotate Left Memory or Accumulator**\
-M $\leftarrow$ M<<1, C $\leftarrow$ M(7), M(0) $\leftarrow$ C\
+M <- M<<1, C <- M(7), M(0) <- C\
 Flags: N Z C M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1428,7 +1428,7 @@ Side effects:
 ## ROR
 
 **Rotate Right Memory or Accumulator**\
-M $\leftarrow$ M>>1, C $\leftarrow$ M(0), M(7) $\leftarrow$ C\
+M <- M>>1, C <- M(0), M(7) <- C\
 Flags: N Z C M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1451,7 +1451,7 @@ Side effects:
 ## ROW
 
 **Rotate Word Left**\
-M2:M1 $\leftarrow$ M2:M1<<1, C $\leftarrow$ M2(7), M1(0) $\leftarrow$ C\
+M2:M1 <- M2:M1<<1, C <- M2(7), M1(0) <- C\
 N+Z+C+M+M+\
 Flags: -
  | Mode | Syntax | Hex | Len |
@@ -1472,7 +1472,7 @@ Side effects:
 ## RTI
 
 **Return From Interrupt**\
-P $\leftarrow$ STACK, PC $\leftarrow$ STACK, SP $\leftarrow$ SP + 3\
+P <- STACK, PC <- STACK, SP <- SP + 3\
 Flags: N V C V D I
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1489,7 +1489,7 @@ flags are set by this instruction.
 ## RTS
 
 **Return From Subroutine**\
-PC $\leftarrow$ STACK + N, SP $\leftarrow$ SP + 2 + N\
+PC <- STACK + N, SP <- SP + 2 + N\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1503,7 +1503,7 @@ a routine to return to its caller.
 ## SBC
 
 **Subtract With Carry**\
-A $\leftarrow$ - M - 1 + C\
+A <- - M - 1 + C\
 Flags: N Z C V
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1517,24 +1517,24 @@ Flags: N Z C V
  | Indirect, Y | SBC (\$nn),Y | $F1 | 2 |
  | Indirect, Z | SBC (\$nn),Z | $F2 | 2 |
 
-This instruction performs A $-$ M - 1 + C, and sets the processor flags accordingly.
+This instruction performs A - M - 1 + C, and sets the processor flags accordingly.
 The result is stored in the Accumulator Register.
 
 NOTE: This instruction is affected by the status of the Decimal Flag.
 
 Side effects:
 
-- The N flag will be set if the result of A $-$ M is negative, i.e. bit 7 is set in the result, else it will be cleared.
-- The C flag will be set if the result of A $-$ M is zero or positive, i.e., if A is not less than M, else it will be cleared.
+- The N flag will be set if the result of A - M is negative, i.e. bit 7 is set in the result, else it will be cleared.
+- The C flag will be set if the result of A - M is zero or positive, i.e., if A is not less than M, else it will be cleared.
 - The V flag will be set if the result has a different sign to both of the
 arguments, else it will be cleared. If the flag is set, this
 indicates that a signed overflow has occurred.
-- The Z flag will be set if the result of A $-$ M is zero, else it will be cleared.
+- The Z flag will be set if the result of A - M is zero, else it will be cleared.
 
 ## SEC
 
 **Set Carry Flag**\
-C $\leftarrow$ 1\
+C <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1549,7 +1549,7 @@ Side effects:
 ## SED
 
 **Set Decimal Flag**\
-D $\leftarrow$ 1\
+D <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1569,7 +1569,7 @@ Side effects:
 ## SEE
 
 **Set Extended Stack Disable Flag**\
-E $\leftarrow$ 1\
+E <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1588,7 +1588,7 @@ Side effects:
 ## SEI
 
 **Set Interrupt Disable Flag**\
-I $\leftarrow$ 1\
+I <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1606,7 +1606,7 @@ Side effects:
 ## SMB0
 
 **Set Bit 0 in Base Page**\
-M(0) $\leftarrow$ 1\
+M(0) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1618,7 +1618,7 @@ No flags are modified, regardless of the result.
 ## SMB1
 
 **Set Bit 1 in Base Page**\
-M(1) $\leftarrow$ 1\
+M(1) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1630,7 +1630,7 @@ No flags are modified, regardless of the result.
 ## SMB2
 
 **Set Bit 2 in Base Page**\
-M(2) $\leftarrow$ 1\
+M(2) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1642,7 +1642,7 @@ No flags are modified, regardless of the result.
 ## SMB3
 
 **Set Bit 3 in Base Page**\
-M(3) $\leftarrow$ 1\
+M(3) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1654,7 +1654,7 @@ No flags are modified, regardless of the result.
 ## SMB4
 
 **Set Bit 4 in Base Page**\
-M(4) $\leftarrow$ 1\
+M(4) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1666,7 +1666,7 @@ No flags are modified, regardless of the result.
 ## SMB5
 
 **Set Bit 5 in Base Page**\
-M(5) $\leftarrow$ 1\
+M(5) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1678,7 +1678,7 @@ No flags are modified, regardless of the result.
 ## SMB6
 
 **Set Bit 6 in Base Page**\
-M(6) $\leftarrow$ 1\
+M(6) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1690,7 +1690,7 @@ No flags are modified, regardless of the result.
 ## SMB7
 
 **Set Bit 7 in Base Page**\
-M(7) $\leftarrow$ 1\
+M(7) <- 1\
 Flags: M M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1702,7 +1702,7 @@ No flags are modified, regardless of the result.
 ## STA
 
 **Store Accumulator**\
-M $\leftarrow$ A\
+M <- A\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1722,7 +1722,7 @@ into the indicated location.
 ## STX
 
 **Store X Register**\
-M $\leftarrow$ X\
+M <- X\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1737,7 +1737,7 @@ into the indicated location.
 ## STY
 
 **Store Y Register**\
-M $\leftarrow$ Y\
+M <- Y\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1752,7 +1752,7 @@ into the indicated location.
 ## STZ
 
 **Store Z Register**\
-M $\leftarrow$ Z\
+M <- Z\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1767,7 +1767,7 @@ into the indicated location.
 ## TAB
 
 **Transfer Accumulator into Base Page Register**\
-B $\leftarrow$ A\
+B <- A\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1780,7 +1780,7 @@ the 6502's Zero-Page into any page of memory.
 ## TAX
 
 **Transfer Accumulator Register into the X Register**\
-X $\leftarrow$ A\
+X <- A\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1796,7 +1796,7 @@ Side effects:
 ## TAY
 
 **Transfer Accumulator Register into the Y Register**\
-Y $\leftarrow$ A\
+Y <- A\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1812,7 +1812,7 @@ Side effects:
 ## TAZ
 
 **Transfer Accumulator Register into the Z Register**\
-Z $\leftarrow$ A\
+Z <- A\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1828,7 +1828,7 @@ Side effects:
 ## TBA
 
 **Transfer Base Page Register into the Accumulator**\
-A $\leftarrow$ B\
+A <- B\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1845,7 +1845,7 @@ Side effects:
 ## TRB
 
 **Test and Reset Bit**\
-M $\leftarrow$ M $AND$ ($NOT$ A)\
+M <- M & ($NOT$ A)\
 Flags: Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1871,7 +1871,7 @@ execution of the instruction.
 ## TSB
 
 **Test and Set Bit**\
-M $\leftarrow$ M $OR$ A\
+M <- M | A\
 Flags: Z M
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1897,7 +1897,7 @@ execution of the instruction.
 ## TSX
 
 **Transfer Stack Pointer High Register into the X Register**\
-X $\leftarrow$ SPH\
+X <- SPH\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1914,7 +1914,7 @@ Side effects:
 ## TSY
 
 **Transfer Stack Pointer High Register into the Y Register**\
-Y $\leftarrow$ SPH\
+Y <- SPH\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1931,7 +1931,7 @@ Side effects:
 ## TXA
 
 **Transfer X Register into the Accumulator Register**\
-A $\leftarrow$ X\
+A <- X\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1948,7 +1948,7 @@ Side effects:
 ## TXS
 
 **Transfer X Register into Stack Pointer Low Register**\
-SPL $\leftarrow$ X\
+SPL <- X\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1960,7 +1960,7 @@ register to the contents of the X Register.
 ## TYA
 
 **Transfer Y Register into the Accumulator Register**\
-A $\leftarrow$ Y\
+A <- Y\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1977,7 +1977,7 @@ Side effects:
 ## TYS
 
 **Transfer Y Register into Stack Pointer High Register**\
-SPH $\leftarrow$ Y\
+SPH <- Y\
 Flags: -
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
@@ -1993,7 +1993,7 @@ Flag (E) is clear.
 ## TZA
 
 **Transfer Z Register into the Accumulator Register**\
-A $\leftarrow$ Z\
+A <- Z\
 Flags: N Z
  | Mode | Syntax | Hex | Len |
  | --- | --- | --- | --- |
