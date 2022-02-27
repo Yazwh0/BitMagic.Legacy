@@ -12,6 +12,9 @@ namespace Mega65Parser
         public string Code { get; set; } = "";
         public int OpCode { get; set; }
         public string Parameters { get; set; } = "";
+        public int Cycles { get; set; }
+        public List<char> CycleNotes { get; set; } = new List<char>();
+        public string CycleNotesAsString => string.Concat(CycleNotes);
     }
 
     public class CodeDescription
@@ -38,6 +41,8 @@ namespace Mega65Parser
         public List<Instruction> Instructions = new List<Instruction>();
         public Dictionary<string, CodeDescription> Explanation = new Dictionary<string, CodeDescription>();
         public Dictionary<string, ParameterDescription> ParametersOrder = new Dictionary<string, ParameterDescription>();
+        public Dictionary<char, string> CycleNotes;
+
         public string? ChipName { get; set; }
 
         public Parser(string basePath)
@@ -65,6 +70,14 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"(\$nn,SP),Y", Name = "Indirect SP, Y", ByteCount = 1, Order = 150},
                     new ParameterDescription{ Parameter = @"#\$nnnn", Name = "Immediate Word",  ByteCount = 2, Order = 15},
             });
+            CycleNotes = new Dictionary<char, string> {
+                { '?', "Cycles not in source documentation." },
+                { 'p', "Add one cycle if indexing crosses a page boundary." },
+                { 'r', "Add one cycle if clock speed is at 40 MHz." },
+                { 's', "Instruction requires 2 cycles when CPU is run at 1MHz or 2MHz." },
+                { 'b', "Add one cycle if branch is taken." },
+                { 'm', "Subtract non-bus cycles when at 40MHz."}
+            };
         }
         
 
@@ -79,10 +92,48 @@ namespace Mega65Parser
         public void Parse(string chipName)
         {
             LoadOpCodes(chipName);
-
+            LoadCycles(chipName);
             LoadDescription();
             ChipName = chipName;
         }   
+
+        private void LoadCycles(string chipName)
+        {
+            var allLines = File.ReadAllLines(Path.Join(_basePath, chipName + ".cycles"));
+
+            foreach(var line in allLines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    break;
+
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+
+                if (int.TryParse(parts[0], System.Globalization.NumberStyles.HexNumber, null, out var opCode))
+                {
+                    var instruction = Instructions.First(i => i.OpCode == opCode);
+
+                    if ("0123456789".Contains(parts[parts.Length - 1][0]))
+                    {
+                        instruction.Cycles = int.Parse($"{parts[parts.Length - 1][0]}");
+                        var notes = parts[parts.Length - 1][1..];
+                        foreach(var c in notes)
+                        {
+                            if ("^${}".Contains(c))
+                                continue;
+
+                            instruction.CycleNotes.Add(c);
+                        }
+                    }
+                }
+            }
+
+            foreach (var i in Instructions.Where(i => i.Cycles == 0))
+            {
+                i.CycleNotes.Add('?');
+            }
+
+        }
 
         private void LoadOpCodes(string chipName)
         {

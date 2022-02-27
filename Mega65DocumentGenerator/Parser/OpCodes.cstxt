@@ -34,6 +34,7 @@ public static class CpuDocumentationGenerator
             }
             .@(sb)
         }
+        var cycleNotes = new List<Char>();
         foreach(var group in instructions)
         {
             var explanation = parser.Explanation[group.Key];
@@ -45,14 +46,30 @@ public static class CpuDocumentationGenerator
                 .@(exp)\
             }
             .Flags: @(explanation.Flags)
-            . | Mode | Syntax | Hex | Len |
-            . | --- | --- | --- | --- |
+            . | Mode | Syntax | Hex | Len | Cycles |
+            . | --- | --- | --- | --- | --- |
+            cycleNotes.Clear();
             foreach(var ip in parser.Instructions.
                     Where(i => i.Code == group.Key).
                     Select(i => (Instruction: i, Description: parser.ParametersOrder[i.Parameters])).
                     OrderBy(ip => ip.Description.Order))
             {
-                . | @(ip.Description.Name) | @(ip.Instruction.Code) @(ip.Instruction.Parameters) | $@(ip.Instruction.OpCode:X2) | @(ip.Description.ByteCount + 1) |
+                . | @(ip.Description.Name) | @(ip.Instruction.Code) @(ip.Instruction.Parameters) | $@(ip.Instruction.OpCode:X2) | @(ip.Description.ByteCount + 1) | @(ip.Instruction.Cycles)<sup>@(ip.Instruction.CycleNotesAsString)</sup> |
+                cycleNotes.AddRange(ip.Instruction.CycleNotes);
+            }
+            if (cycleNotes.Any())
+            {
+                .
+                var notes = cycleNotes.Distinct().OrderBy(c => c).ToArray();
+                for(var i = 0; i < notes.Length; i++)
+                {
+                    if (i == notes.Length - 1)
+                    {
+                        . <sup>@(notes[i])</sup> @(parser.CycleNotes[notes[i]])
+                    } else {
+                        . <sup>@(notes[i])</sup> @(parser.CycleNotes[notes[i]])\
+                    }
+                }
             }
             if (!string.IsNullOrWhiteSpace(explanation.ExplanationText))
             {

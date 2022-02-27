@@ -28,17 +28,20 @@ Free Documentation License v1.3 can be found at [https://www.gnu.org/licenses/fd
 **Add with carry**\
 A <- A+M+C\
 Flags: N Z C V
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | ADC #\$nn | $69 | 2 |
- | Zero Page | ADC \$nn | $65 | 2 |
- | Zero Page, X | ADC \$nn,X | $75 | 2 |
- | Absolute | ADC \$nnnn | $6D | 3 |
- | Absolute, X | ADC \$nnnn,X | $7D | 3 |
- | Absolute, Y | ADC \$nnnn,Y | $79 | 3 |
- | Indirect, X | ADC (\$nn,X) | $61 | 2 |
- | Indirect, Y | ADC (\$nn),Y | $71 | 2 |
- | Indirect, Z | ADC (\$nn),Z | $72 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | ADC #\$nn | $69 | 2 | 2<sup></sup> |
+ | Zero Page | ADC \$nn | $65 | 2 | 3<sup>r</sup> |
+ | Zero Page, X | ADC \$nn,X | $75 | 2 | 3<sup>r</sup> |
+ | Absolute | ADC \$nnnn | $6D | 3 | 4<sup>r</sup> |
+ | Absolute, X | ADC \$nnnn,X | $7D | 3 | 4<sup>r</sup> |
+ | Absolute, Y | ADC \$nnnn,Y | $79 | 3 | 4<sup>r</sup> |
+ | Indirect, X | ADC (\$nn,X) | $61 | 2 | 5<sup>r</sup> |
+ | Indirect, Y | ADC (\$nn),Y | $71 | 2 | 5<sup>rp</sup> |
+ | Indirect, Z | ADC (\$nn),Z | $72 | 2 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction adds the argument to the contents of the Accumulator
 Register and the Carry Flag.
@@ -59,17 +62,20 @@ indicates that a signed overflow has occurred.
 **Binary AND**\
 A <- A & M\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | AND #\$nn | $29 | 2 |
- | Zero Page | AND \$nn | $25 | 2 |
- | Zero Page, X | AND \$nn,X | $35 | 2 |
- | Absolute | AND \$nnnn | $2D | 3 |
- | Absolute, X | AND \$nnnn,X | $3D | 3 |
- | Absolute, Y | AND \$nnnn,Y | $39 | 3 |
- | Indirect, X | AND (\$nn,X) | $21 | 2 |
- | Indirect, Y | AND (\$nn),Y | $31 | 2 |
- | Indirect, Z | AND (\$nn),Z | $32 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | AND #\$nn | $29 | 2 | 2<sup></sup> |
+ | Zero Page | AND \$nn | $25 | 2 | 3<sup>r</sup> |
+ | Zero Page, X | AND \$nn,X | $35 | 2 | 4<sup>rp</sup> |
+ | Absolute | AND \$nnnn | $2D | 3 | 4<sup>r</sup> |
+ | Absolute, X | AND \$nnnn,X | $3D | 3 | 4<sup>rp</sup> |
+ | Absolute, Y | AND \$nnnn,Y | $39 | 3 | 4<sup>r</sup> |
+ | Indirect, X | AND (\$nn,X) | $21 | 2 | 5<sup>rp</sup> |
+ | Indirect, Y | AND (\$nn),Y | $31 | 2 | 5<sup>rp</sup> |
+ | Indirect, Z | AND (\$nn),Z | $32 | 2 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instructions performs a binary AND operation of the argument with the
 accumulator, and stores the result in the accumulator. Only bits that were
@@ -86,13 +92,16 @@ Side effects:
 **Arithmetic Shift Left**\
 A <- A<<1 | M <- M<<1\
 Flags: N Z C M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | ASL A | $0A | 1 |
- | Zero Page | ASL \$nn | $06 | 2 |
- | Zero Page, X | ASL \$nn,X | $16 | 2 |
- | Absolute | ASL \$nnnn | $0E | 3 |
- | Absolute, X | ASL \$nnnn,X | $1E | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | ASL A | $0A | 1 | 1<sup></sup> |
+ | Zero Page | ASL \$nn | $06 | 2 | 4<sup>r</sup> |
+ | Zero Page, X | ASL \$nn,X | $16 | 2 | 4<sup>r</sup> |
+ | Absolute | ASL \$nnnn | $0E | 3 | 5<sup>r</sup> |
+ | Absolute, X | ASL \$nnnn,X | $1E | 3 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction shifts either the Accumulator or contents
 of the provided memory location one bit left.  Bit 0 will be
@@ -109,11 +118,14 @@ Side effects:
 **Arithmetic Shift Right**\
 A <- A>>1 | M <- M>>1\
 Flags: N Z C M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | ASR A | $43 | 1 |
- | Zero Page | ASR \$nn | $44 | 2 |
- | Zero Page, X | ASR \$nn,X | $54 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | ASR A | $43 | 1 | 1<sup></sup> |
+ | Zero Page | ASR \$nn | $44 | 2 | 4<sup>r</sup> |
+ | Zero Page, X | ASR \$nn,X | $54 | 2 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction shifts either the Accumulator or contents
 of the provided memory location one bit right.  Bit 7 is considered
@@ -131,9 +143,11 @@ Side effects:
 **Arithmetic Shift Word Left**\
 M <- M<<1\
 Flags: N Z C M M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Absolute | ASW \$nnnn | $CB | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Absolute | ASW \$nnnn | $CB | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction shifts a 16-bit value in memory left one bit.
 
@@ -153,9 +167,11 @@ if bit 7 of the upper byte is set after the operation, else it will be cleared.
 **Branch on Bit 0 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR0 \$nn,\$rr | $0F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR0 \$nn,\$rr | $0F | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 0 is clear
@@ -166,9 +182,11 @@ in the indicated base-page memory location.
 **Branch on Bit 1 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR1 \$nn,\$rr | $1F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR1 \$nn,\$rr | $1F | 3 | 5<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if
 bit 1 is clear
@@ -179,9 +197,11 @@ in the indicated base-page memory location.
 **Branch on Bit 2 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR2 \$nn,\$rr | $2F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR2 \$nn,\$rr | $2F | 3 | 5<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if
 bit 2 is clear
@@ -192,9 +212,11 @@ in the indicated base-page memory location.
 **Branch on Bit 3 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR3 \$nn,\$rr | $3F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR3 \$nn,\$rr | $3F | 3 | 4<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if
 bit 3 is clear
@@ -205,9 +227,12 @@ in the indicated base-page memory location.
 **Branch on Bit 4 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR4 \$nn,\$rr | $4F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR4 \$nn,\$rr | $4F | 3 | 4<sup>rb</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction branches to the indicated address if
 bit 4 is clear
@@ -218,9 +243,12 @@ in the indicated base-page memory location.
 **Branch on Bit 5 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR5 \$nn,\$rr | $5F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR5 \$nn,\$rr | $5F | 3 | 4<sup>rb</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction branches to the indicated address if
 bit 5 is clear
@@ -231,9 +259,12 @@ in the indicated base-page memory location.
 **Branch on Bit 6 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR6 \$nn,\$rr | $6F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR6 \$nn,\$rr | $6F | 3 | 4<sup>rb</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction branches to the indicated address if
 bit 6 is clear
@@ -244,9 +275,11 @@ in the indicated base-page memory location.
 **Branch on Bit 7 Reset**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR7 \$nn,\$rr | $7F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBR7 \$nn,\$rr | $7F | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 7 is clear
@@ -257,9 +290,11 @@ in the indicated base-page memory location.
 **Branch on Bit 0 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS0 \$nn,\$rr | $8F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS0 \$nn,\$rr | $8F | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 0 is set
@@ -270,9 +305,11 @@ in the indicated base-page memory location.
 **Branch on Bit 1 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS1 \$nn,\$rr | $9F | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS1 \$nn,\$rr | $9F | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 1 is set
@@ -283,9 +320,11 @@ in the indicated base-page memory location.
 **Branch on Bit 2 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS2 \$nn,\$rr | $AF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS2 \$nn,\$rr | $AF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 2 is set
@@ -296,9 +335,11 @@ in the indicated base-page memory location.
 **Branch on Bit 3 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS3 \$nn,\$rr | $BF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS3 \$nn,\$rr | $BF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 3 is set
@@ -309,9 +350,11 @@ in the indicated base-page memory location.
 **Branch on Bit 4 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS4 \$nn,\$rr | $CF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS4 \$nn,\$rr | $CF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 4 is set
@@ -322,9 +365,11 @@ in the indicated base-page memory location.
 **Branch on Bit 5 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS5 \$nn,\$rr | $DF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS5 \$nn,\$rr | $DF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 5 is set
@@ -335,9 +380,11 @@ in the indicated base-page memory location.
 **Branch on Bit 6 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS6 \$nn,\$rr | $EF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS6 \$nn,\$rr | $EF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 6 is set
@@ -348,9 +395,11 @@ in the indicated base-page memory location.
 **Branch on Bit 7 Set**\
 PC <- PC + R8\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page, Relative | BBS7 \$nn,\$rr | $FF | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page, Relative | BBS7 \$nn,\$rr | $FF | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if
 bit 7 is set
@@ -362,10 +411,12 @@ in the indicated base-page memory location.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BCC \$rr | $90 | 2 |
- | Relative Word | BCC \$rrrr | $93 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BCC \$rr | $90 | 2 | 0<sup>?</sup> |
+ | Relative Word | BCC \$rrrr | $93 | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if the
 Carry Flag is clear.
@@ -376,10 +427,12 @@ Carry Flag is clear.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BCS \$rr | $B0 | 2 |
- | Relative Word | BCS \$rrrr | $B3 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BCS \$rr | $B0 | 2 | 0<sup>?</sup> |
+ | Relative Word | BCS \$rrrr | $B3 | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if the
 Carry Flag is set.
@@ -390,10 +443,12 @@ Carry Flag is set.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BEQ \$rr | $F0 | 2 |
- | Relative Word | BEQ \$rrrr | $F3 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BEQ \$rr | $F0 | 2 | 0<sup>?</sup> |
+ | Relative Word | BEQ \$rrrr | $F3 | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if the
 Zero Flag is set.
@@ -403,13 +458,17 @@ Zero Flag is set.
 **Perform Bit Test**\
 N <- M(7), V <- M(6), Z <- A & M\
 Flags: N Z V
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | BIT #\$nn | $89 | 2 |
- | Zero Page | BIT \$nn | $24 | 2 |
- | Zero Page, X | BIT \$nn,X | $34 | 2 |
- | Absolute | BIT \$nnnn | $2C | 3 |
- | Absolute, X | BIT \$nnnn,X | $3C | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | BIT #\$nn | $89 | 2 | 0<sup>?</sup> |
+ | Zero Page | BIT \$nn | $24 | 2 | 3<sup>r</sup> |
+ | Zero Page, X | BIT \$nn,X | $34 | 2 | 3<sup>rp</sup> |
+ | Absolute | BIT \$nnnn | $2C | 3 | 4<sup>r</sup> |
+ | Absolute, X | BIT \$nnnn,X | $3C | 3 | 4<sup>rp</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.\
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction is used to test the bits stored in a memory location.
 Bits 6 and 7 of the memory location's contents are directly copied into
@@ -429,10 +488,13 @@ Side effects:
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BMI \$rr | $30 | 2 |
- | Relative Word | BMI \$rrrr | $33 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BMI \$rr | $30 | 2 | 2<sup>r</sup> |
+ | Relative Word | BMI \$rrrr | $33 | 3 | 3<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction branches to the indicated address if the
 Negative Flag is set.
@@ -443,10 +505,12 @@ Negative Flag is set.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BNE \$rr | $D0 | 2 |
- | Relative Word | BNE \$rrrr | $D3 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BNE \$rr | $D0 | 2 | 0<sup>?</sup> |
+ | Relative Word | BNE \$rrrr | $D3 | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address if the
 Zero Flag is clear.
@@ -457,10 +521,12 @@ Zero Flag is clear.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BPL \$rr | $10 | 2 |
- | Relative Word | BPL \$rrrr | $13 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BPL \$rr | $10 | 2 | 2<sup>b</sup> |
+ | Relative Word | BPL \$rrrr | $13 | 3 | 3<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if the
 Negative Flag is clear.
@@ -470,10 +536,12 @@ Negative Flag is clear.
 **Branch Unconditionally**\
 PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BRA \$rr | $80 | 2 |
- | Relative Word | BRA \$rrrr | $83 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BRA \$rr | $80 | 2 | 0<sup>?</sup> |
+ | Relative Word | BRA \$rrrr | $83 | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction branches to the indicated address.
 
@@ -482,9 +550,9 @@ This instruction branches to the indicated address.
 **Break to Interrupt**\
 PC <- (\$FFFE)\
 Flags: M M M M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | BRK  | $00 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | BRK  | $00 | 1 | 7<sup></sup> |
 
 The break command causes the microprocessor to go through an
 interrupt sequence under program control.
@@ -519,9 +587,11 @@ be used to return or jump directly to the code byte after the BRK.
 **Branch Sub-Routine**\
 PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative Word | BSR \$rrrr | $63 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative Word | BSR \$rrrr | $63 | 3 | 3<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address, saving
 the address of the caller on the stack, so that the routine
@@ -536,10 +606,12 @@ provides a relative-addressed alternative to JSR.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BVC \$rr | $50 | 2 |
- | Relative Word | BVC \$rrrr | $53 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BVC \$rr | $50 | 2 | 2<sup>b</sup> |
+ | Relative Word | BVC \$rrrr | $53 | 3 | 3<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if the
 Overflow (V) Flag is clear.
@@ -550,10 +622,12 @@ Overflow (V) Flag is clear.
 6502:PC <- PC + R8\
 4510:PC <- PC + R8 | PC <- PC + R16\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Relative | BVS \$rr | $70 | 2 |
- | Relative Word | BVS \$rrrr | $73 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Relative | BVS \$rr | $70 | 2 | 2<sup>b</sup> |
+ | Relative Word | BVS \$rrrr | $73 | 3 | 3<sup>b</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.
 
 This instruction branches to the indicated address if the
 Overflow (V) Flag is set.
@@ -563,9 +637,9 @@ Overflow (V) Flag is set.
 **Clear Carry Flag**\
 C <- 0\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | CLC  | $18 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | CLC  | $18 | 1 | 1<sup></sup> |
 
 This instruction clears the Carry Flag.
 
@@ -578,9 +652,11 @@ Side effects:
 **Clear Decimal Flag**\
 D <- 0\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | CLD  | $D8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | CLD  | $D8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction clears the Decimal Flag.
 Arithmetic operations will use normal binary arithmetic, instead of
@@ -595,9 +671,9 @@ Side effects:
 **Clear Extended Stack Disable Flag**\
 E <- 0\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | CLE  | $02 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | CLE  | $02 | 1 | 1<sup></sup> |
 
 This instruction clears the Extended Stack Disable Flag.
 This causes the stack to be able to exceed 256 bytes in
@@ -613,9 +689,9 @@ Side effects:
 **Clear Interrupt Disable Flag**\
 I <- 0\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | CLI  | $58 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | CLI  | $58 | 1 | 1<sup></sup> |
 
 This instruction clears the Interrupt Disable Flag.
 Interrupts will now be able to occur.
@@ -629,9 +705,11 @@ Side effects:
 **Clear Overflow Flag**\
 V <- 0\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | CLV  | $B8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | CLV  | $B8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction clears the Overflow Flag.
 
@@ -643,17 +721,19 @@ Side effects:
 
 **Compare Accumulator**\
 Flags: N Z C
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | CMP #\$nn | $C9 | 2 |
- | Zero Page | CMP \$nn | $C5 | 2 |
- | Zero Page, X | CMP \$nn,X | $D5 | 2 |
- | Absolute | CMP \$nnnn | $CD | 3 |
- | Absolute, X | CMP \$nnnn,X | $DD | 3 |
- | Absolute, Y | CMP \$nnnn,Y | $D9 | 3 |
- | Indirect, X | CMP (\$nn,X) | $C1 | 2 |
- | Indirect, Y | CMP (\$nn),Y | $D1 | 2 |
- | Indirect, Z | CMP (\$nn),Z | $D2 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | CMP #\$nn | $C9 | 2 | 0<sup>?</sup> |
+ | Zero Page | CMP \$nn | $C5 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | CMP \$nn,X | $D5 | 2 | 0<sup>?</sup> |
+ | Absolute | CMP \$nnnn | $CD | 3 | 0<sup>?</sup> |
+ | Absolute, X | CMP \$nnnn,X | $DD | 3 | 0<sup>?</sup> |
+ | Absolute, Y | CMP \$nnnn,Y | $D9 | 3 | 0<sup>?</sup> |
+ | Indirect, X | CMP (\$nn,X) | $C1 | 2 | 0<sup>?</sup> |
+ | Indirect, Y | CMP (\$nn),Y | $D1 | 2 | 0<sup>?</sup> |
+ | Indirect, Z | CMP (\$nn),Z | $D2 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction performs A - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
@@ -668,11 +748,13 @@ Side effects:
 
 **Compare X Register**\
 Flags: N Z C
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | CPX #\$nn | $E0 | 2 |
- | Zero Page | CPX \$nn | $E4 | 2 |
- | Absolute | CPX \$nnnn | $EC | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | CPX #\$nn | $E0 | 2 | 0<sup>?</sup> |
+ | Zero Page | CPX \$nn | $E4 | 2 | 0<sup>?</sup> |
+ | Absolute | CPX \$nnnn | $EC | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction performs X - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
@@ -687,11 +769,13 @@ Side effects:
 
 **Compare Y Register**\
 Flags: N Z C
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | CPY #\$nn | $C0 | 2 |
- | Zero Page | CPY \$nn | $C4 | 2 |
- | Absolute | CPY \$nnnn | $CC | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | CPY #\$nn | $C0 | 2 | 0<sup>?</sup> |
+ | Zero Page | CPY \$nn | $C4 | 2 | 0<sup>?</sup> |
+ | Absolute | CPY \$nnnn | $CC | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction performs Y - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
@@ -706,11 +790,13 @@ Side effects:
 
 **Compare Z Register**\
 Flags: N Z C
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | CPZ #\$nn | $C2 | 2 |
- | Zero Page | CPZ \$nn | $D4 | 2 |
- | Absolute | CPZ \$nnnn | $DC | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | CPZ #\$nn | $C2 | 2 | 0<sup>?</sup> |
+ | Zero Page | CPZ \$nn | $D4 | 2 | 0<sup>?</sup> |
+ | Absolute | CPZ \$nnnn | $DC | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction performs Z - M, and sets the processor flags accordingly,
 but does not modify the contents of the Accumulator Register.
@@ -726,13 +812,15 @@ Side effects:
 **Decrement Memory or Accumulator**\
 A <- A - 1 | M <- M - 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | DEC A | $3A | 1 |
- | Zero Page | DEC \$nn | $C6 | 2 |
- | Zero Page, X | DEC \$nn,X | $D6 | 2 |
- | Absolute | DEC \$nnnn | $CE | 3 |
- | Absolute, X | DEC \$nnnn,X | $DE | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | DEC A | $3A | 1 | 1<sup></sup> |
+ | Zero Page | DEC \$nn | $C6 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | DEC \$nn,X | $D6 | 2 | 0<sup>?</sup> |
+ | Absolute | DEC \$nnnn | $CE | 3 | 0<sup>?</sup> |
+ | Absolute, X | DEC \$nnnn,X | $DE | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction decrements the Accumulator Register or indicated
 memory location.
@@ -747,9 +835,11 @@ Side effects:
 **Decrement Memory Word**\
 M16 <- M16 - 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | DEW \$nn | $C3 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | DEW \$nn | $C3 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction decrements the indicated memory word in the Base Page.  The low numbered
 address contains the least significant bits. For example, if memory location \$12
@@ -766,9 +856,11 @@ Side effects:
 **Decrement X Register**\
 X <- X - 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | DEX  | $CA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | DEX  | $CA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction decrements the X Register.
 
@@ -782,9 +874,11 @@ Side effects:
 **Decrement Y Register**\
 Y <- Y - 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | DEY  | $88 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | DEY  | $88 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction decrements the Y Register.
 
@@ -798,9 +892,9 @@ Side effects:
 **Decrement Z Register**\
 Z <- Z - 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | DEZ  | $3B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | DEZ  | $3B | 1 | 1<sup></sup> |
 
 This instruction decrements the Z Register.
 
@@ -813,9 +907,11 @@ Side effects:
 
 **End of Mapping Sequence / No-Operation**\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | EOM  | $EA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | EOM  | $EA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 In contrast with the 6502, the NOP instruction on the 45GS02 performs two
 additional roles when in 4502 mode.
@@ -843,17 +939,20 @@ is not set.
 **Binary Exclusive OR**\
 A <- A xor M\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | EOR #\$nn | $49 | 2 |
- | Zero Page | EOR \$nn | $45 | 2 |
- | Zero Page, X | EOR \$nn,X | $55 | 2 |
- | Absolute | EOR \$nnnn | $4D | 3 |
- | Absolute, X | EOR \$nnnn,X | $5D | 3 |
- | Absolute, Y | EOR \$nnnn,Y | $59 | 3 |
- | Indirect, X | EOR (\$nn,X) | $41 | 2 |
- | Indirect, Y | EOR (\$nn),Y | $51 | 2 |
- | Indirect, Z | EOR (\$nn),Z | $52 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | EOR #\$nn | $49 | 2 | 2<sup></sup> |
+ | Zero Page | EOR \$nn | $45 | 2 | 3<sup>r</sup> |
+ | Zero Page, X | EOR \$nn,X | $55 | 2 | 3<sup>p</sup> |
+ | Absolute | EOR \$nnnn | $4D | 3 | 4<sup>r</sup> |
+ | Absolute, X | EOR \$nnnn,X | $5D | 3 | 4<sup>rp</sup> |
+ | Absolute, Y | EOR \$nnnn,Y | $59 | 3 | 4<sup>rp</sup> |
+ | Indirect, X | EOR (\$nn,X) | $41 | 2 | 5<sup>r</sup> |
+ | Indirect, Y | EOR (\$nn),Y | $51 | 2 | 5<sup>rp</sup> |
+ | Indirect, Z | EOR (\$nn),Z | $52 | 2 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instructions performs a binary XOR operation of the argument with the
 accumulator, and stores the result in the accumulator. Only bits that were
@@ -870,13 +969,15 @@ Side effects:
 **Increment Memory or Accumulator**\
 A <- A + 1 | M <- M + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | INC A | $1A | 1 |
- | Zero Page | INC \$nn | $E6 | 2 |
- | Zero Page, X | INC \$nn,X | $F6 | 2 |
- | Absolute | INC \$nnnn | $EE | 3 |
- | Absolute, X | INC \$nnnn,X | $FE | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | INC A | $1A | 1 | 1<sup></sup> |
+ | Zero Page | INC \$nn | $E6 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | INC \$nn,X | $F6 | 2 | 0<sup>?</sup> |
+ | Absolute | INC \$nnnn | $EE | 3 | 0<sup>?</sup> |
+ | Absolute, X | INC \$nnnn,X | $FE | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction increments the Accumulator Register or indicated
 memory location.
@@ -891,9 +992,11 @@ Side effects:
 **Increment Memory Word**\
 M16 <- M16 + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | INW \$nn | $E3 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | INW \$nn | $E3 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction increments the indicated memory word in the Base Page.  The low numbered
 address contains the least significant bits. For example, if memory location \$12
@@ -910,9 +1013,11 @@ Side effects:
 **Increment X Register**\
 X <- X + 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | INX  | $E8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | INX  | $E8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction increments the X Register, i.e., adds 1 to it.
 
@@ -926,9 +1031,11 @@ Side effects:
 **Increment Y Register**\
 Y <- Y + 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | INY  | $C8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | INY  | $C8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction increments the Y Register, i.e., adds 1 to it.
 
@@ -942,9 +1049,9 @@ Side effects:
 **Increment Z Register**\
 Z <- Y + 1\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | INZ  | $1B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | INZ  | $1B | 1 | 1<sup></sup> |
 
 This instruction increments the Z Register, i.e., adds 1 to it.
 
@@ -958,11 +1065,14 @@ Side effects:
 **Jump to Address**\
 PC <- M2:M1\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Absolute | JMP \$nnnn | $4C | 3 |
- | Indirect Word | JMP (\$nnnn) | $6C | 3 |
- | Indirect Word, X | JMP (\$nnnn,X) | $7C | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Absolute | JMP \$nnnn | $4C | 3 | 3<sup></sup> |
+ | Indirect Word | JMP (\$nnnn) | $6C | 3 | 5<sup>r</sup> |
+ | Indirect Word, X | JMP (\$nnnn,X) | $7C | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction sets the Program Counter (PC) Register
 to the address indicated by the instruction, causing
@@ -973,11 +1083,15 @@ execution to continue from that address.
 **Jump to Sub-Routine**\
 PC <- M2:M1, Stack <- PCH:PCL\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Absolute | JSR \$nnnn | $20 | 3 |
- | Indirect Word | JSR (\$nnnn) | $22 | 3 |
- | Indirect Word, X | JSR (\$nnnn,X) | $23 | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Absolute | JSR \$nnnn | $20 | 3 | 5<sup>s</sup> |
+ | Indirect Word | JSR (\$nnnn) | $22 | 3 | 5<sup>r</sup> |
+ | Indirect Word, X | JSR (\$nnnn,X) | $23 | 3 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.\
+ <sup>s</sup> Instruction requires 2 cycles when CPU is run at 1MHz or 2MHz.
 
 This instruction saves the address of the instruction
 following the JSR instruction onto the stack, and
@@ -1000,18 +1114,20 @@ before setting the Program Counter (PC) register.
 **Load Accumulator**\
 A <- M\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | LDA #\$nn | $A9 | 2 |
- | Zero Page | LDA \$nn | $A5 | 2 |
- | Zero Page, X | LDA \$nn,X | $B5 | 2 |
- | Absolute | LDA \$nnnn | $AD | 3 |
- | Absolute, X | LDA \$nnnn,X | $BD | 3 |
- | Absolute, Y | LDA \$nnnn,Y | $B9 | 3 |
- | Indirect, X | LDA (\$nn,X) | $A1 | 2 |
- | Indirect, Y | LDA (\$nn),Y | $B1 | 2 |
- | Indirect, Z | LDA (\$nn),Z | $B2 | 2 |
- | Indirect SP, Y | LDA (\$nn,SP),Y | $E2 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | LDA #\$nn | $A9 | 2 | 0<sup>?</sup> |
+ | Zero Page | LDA \$nn | $A5 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | LDA \$nn,X | $B5 | 2 | 0<sup>?</sup> |
+ | Absolute | LDA \$nnnn | $AD | 3 | 0<sup>?</sup> |
+ | Absolute, X | LDA \$nnnn,X | $BD | 3 | 0<sup>?</sup> |
+ | Absolute, Y | LDA \$nnnn,Y | $B9 | 3 | 0<sup>?</sup> |
+ | Indirect, X | LDA (\$nn,X) | $A1 | 2 | 0<sup>?</sup> |
+ | Indirect, Y | LDA (\$nn),Y | $B1 | 2 | 0<sup>?</sup> |
+ | Indirect, Z | LDA (\$nn),Z | $B2 | 2 | 0<sup>?</sup> |
+ | Indirect SP, Y | LDA (\$nn,SP),Y | $E2 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Accumulator Register with the indicated
 value, or with the contents of the indicated location.
@@ -1026,13 +1142,15 @@ Side effects:
 **Load X Register**\
 X <- M\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | LDX #\$nn | $A2 | 2 |
- | Zero Page | LDX \$nn | $A6 | 2 |
- | Zero Page, Y | LDX \$nn,Y | $B6 | 2 |
- | Absolute | LDX \$nnnn | $AE | 3 |
- | Absolute, Y | LDX \$nnnn,Y | $BE | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | LDX #\$nn | $A2 | 2 | 0<sup>?</sup> |
+ | Zero Page | LDX \$nn | $A6 | 2 | 0<sup>?</sup> |
+ | Zero Page, Y | LDX \$nn,Y | $B6 | 2 | 0<sup>?</sup> |
+ | Absolute | LDX \$nnnn | $AE | 3 | 0<sup>?</sup> |
+ | Absolute, Y | LDX \$nnnn,Y | $BE | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the X Register with the indicated
 value, or with the contents of the indicated location.
@@ -1047,13 +1165,15 @@ Side effects:
 **Load Y Register**\
 Y <- M\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | LDY #\$nn | $A0 | 2 |
- | Zero Page | LDY \$nn | $A4 | 2 |
- | Zero Page, X | LDY \$nn,X | $B4 | 2 |
- | Absolute | LDY \$nnnn | $AC | 3 |
- | Absolute, X | LDY \$nnnn,X | $BC | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | LDY #\$nn | $A0 | 2 | 0<sup>?</sup> |
+ | Zero Page | LDY \$nn | $A4 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | LDY \$nn,X | $B4 | 2 | 0<sup>?</sup> |
+ | Absolute | LDY \$nnnn | $AC | 3 | 0<sup>?</sup> |
+ | Absolute, X | LDY \$nnnn,X | $BC | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Y Register with the indicated
 value, or with the contents of the indicated location.
@@ -1068,11 +1188,13 @@ Side effects:
 **Load Z Register**\
 Z <- M\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | LDZ #\$nn | $A3 | 2 |
- | Absolute | LDZ \$nnnn | $AB | 3 |
- | Absolute, X | LDZ \$nnnn,X | $BB | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | LDZ #\$nn | $A3 | 2 | 0<sup>?</sup> |
+ | Absolute | LDZ \$nnnn | $AB | 3 | 0<sup>?</sup> |
+ | Absolute, X | LDZ \$nnnn,X | $BB | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Z Register with the indicated
 value, or with the contents of the indicated location.
@@ -1087,13 +1209,16 @@ Side effects:
 **Logical Shift Right**\
 A <- A>>1, C <- A(0) | M <- M>>1\
 Flags: N Z C M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | LSR A | $4A | 1 |
- | Zero Page | LSR \$nn | $46 | 2 |
- | Zero Page, X | LSR \$nn,X | $56 | 2 |
- | Absolute | LSR \$nnnn | $4E | 3 |
- | Absolute, X | LSR \$nnnn,X | $5E | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | LSR A | $4A | 1 | 1<sup></sup> |
+ | Zero Page | LSR \$nn | $46 | 2 | 4<sup>r</sup> |
+ | Zero Page, X | LSR \$nn,X | $56 | 2 | 3<sup>rp</sup> |
+ | Absolute | LSR \$nnnn | $4E | 3 | 5<sup>r</sup> |
+ | Absolute, X | LSR \$nnnn,X | $5E | 3 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction shifts either the Accumulator or contents
 of the provided memory location one bit right.  Bit 7 will be
@@ -1109,9 +1234,9 @@ Side effects:
 
 **Set Memory Map**\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | MAP  | $5C | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | MAP  | $5C | 1 | 1<sup></sup> |
 
 This instruction sets the C65 or MEGA65 style memory map, depending
 on the values in the Accumulator, X, Y and Z registers.
@@ -1134,9 +1259,9 @@ blocked from occurring until an EOM (NOP) instruction is encountered.
 **Negate Accumulator**\
 A <- -A\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | NEG A | $42 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | NEG A | $42 | 1 | 1<sup></sup> |
 
 This instruction replaces the contents of the Accumulator Register with the
 twos-complement of the contents of the Accumulator Register.
@@ -1151,17 +1276,20 @@ Side effects:
 **Decrement Memory or Accumulator**\
 A <- A + 1 | M <- M + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | ORA #\$nn | $09 | 2 |
- | Zero Page | ORA \$nn | $05 | 2 |
- | Zero Page, X | ORA \$nn,X | $15 | 2 |
- | Absolute | ORA \$nnnn | $0D | 3 |
- | Absolute, X | ORA \$nnnn,X | $1D | 3 |
- | Absolute, Y | ORA \$nnnn,Y | $19 | 3 |
- | Indirect, X | ORA (\$nn,X) | $01 | 2 |
- | Indirect, Y | ORA (\$nn),Y | $11 | 2 |
- | Indirect, Z | ORA (\$nn),Z | $12 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | ORA #\$nn | $09 | 2 | 2<sup></sup> |
+ | Zero Page | ORA \$nn | $05 | 2 | 3<sup>r</sup> |
+ | Zero Page, X | ORA \$nn,X | $15 | 2 | 3<sup>r</sup> |
+ | Absolute | ORA \$nnnn | $0D | 3 | 4<sup>r</sup> |
+ | Absolute, X | ORA \$nnnn,X | $1D | 3 | 4<sup>rp</sup> |
+ | Absolute, Y | ORA \$nnnn,Y | $19 | 3 | 4<sup>r</sup> |
+ | Indirect, X | ORA (\$nn,X) | $01 | 2 | 6<sup>rp</sup> |
+ | Indirect, Y | ORA (\$nn),Y | $11 | 2 | 5<sup>rp</sup> |
+ | Indirect, Z | ORA (\$nn),Z | $12 | 2 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instructions performs a binary OR operation of the argument with the
 accumulator, and stores the result in the accumulator. Only bits that were
@@ -1178,9 +1306,9 @@ Side effects:
 **Push Accumulator Register onto the Stack**\
 STACK <- A, SP <- SP - 1\
 Flags: M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PHA  | $48 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PHA  | $48 | 1 | 2<sup></sup> |
 
 This instruction pushes the contents of the Accumulator Register
 onto the stack, and decrements the value of the Stack Pointer by 1.
@@ -1190,9 +1318,9 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 **Push Processor Flags onto the Stack**\
 STACK <- P, SP <- SP - 1\
 Flags: M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PHP  | $08 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PHP  | $08 | 1 | 2<sup></sup> |
 
 This instruction pushes the contents of the Processor Flags
 onto the stack, and decrements the value of the Stack Pointer by 1.
@@ -1203,10 +1331,12 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 STACK <- M1:M2, SP <- SP - 2\
 N+Z+M+M+\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate Word | PHW #\$nnnn | $F4 | 3 |
- | Absolute | PHW \$nnnn | $FC | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate Word | PHW #\$nnnn | $F4 | 3 | 0<sup>?</sup> |
+ | Absolute | PHW \$nnnn | $FC | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction pushes either a 16-bit literal value or the memory
 word indicated
@@ -1217,9 +1347,11 @@ onto the stack, and decrements the value of the Stack Pointer by 2.
 **Push X Register onto the Stack**\
 STACK <- X, SP <- SP - 1\
 Flags: M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PHX  | $DA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PHX  | $DA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction pushes the contents of the X Register
 onto the stack, and decrements the value of the Stack Pointer by 1.
@@ -1229,9 +1361,9 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 **Push Y Register onto the Stack**\
 STACK <- Y, SP <- SP - 1\
 Flags: M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PHY  | $5A | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PHY  | $5A | 1 | 2<sup></sup> |
 
 This instruction pushes the contents of the Y Register
 onto the stack, and decrements the value of the Stack Pointer by 1.
@@ -1241,9 +1373,11 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 **Push Z Register onto the Stack**\
 STACK <- z, SP <- SP - 1\
 Flags: M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PHZ  | $DB | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PHZ  | $DB | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction pushes the contents of the Z Register
 onto the stack, and decrements the value of the Stack Pointer by 1.
@@ -1253,9 +1387,11 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 **Pull Accumulator Register from the Stack**\
 A <- STACK, SP <- SP + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PLA  | $68 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PLA  | $68 | 1 | 4<sup>m</sup> |
+
+ <sup>m</sup> Subtract non-bus cycles when at 40MHz.
 
 This instruction replaces the contents of the Accumulator Register
 with the top value from the stack, and increments the value of the
@@ -1266,9 +1402,11 @@ Stack Pointer by 1.
 **Pull Processor Flags from the Stack**\
 A <- STACK, SP <- SP + 1\
 Flags: N Z M I C D V
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PLP  | $28 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PLP  | $28 | 1 | 4<sup>m</sup> |
+
+ <sup>m</sup> Subtract non-bus cycles when at 40MHz.
 
 This instruction replaces the contents of the Processor Flags
 with the top value from the stack, and increments the value of the
@@ -1282,9 +1420,11 @@ NOTE: This instruction does NOT replace the Extended Stack Disable Flag
 **Pull X Register from the Stack**\
 X <- STACK, SP <- SP + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PLX  | $FA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PLX  | $FA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction replaces the contents of the X Register
 with the top value from the stack, and increments the value of the
@@ -1295,9 +1435,11 @@ Stack Pointer by 1.
 **Pull Y Register from the Stack**\
 Y <- STACK, SP <- SP + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PLY  | $7A | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PLY  | $7A | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction replaces the contents of the Y Register
 with the top value from the stack, and increments the value of the
@@ -1308,9 +1450,11 @@ Stack Pointer by 1.
 **Pull Z Register from the Stack**\
 Z <- STACK, SP <- SP + 1\
 Flags: N Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | PLZ  | $FB | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | PLZ  | $FB | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction replaces the contents of the Z Register
 with the top value from the stack, and increments the value of the
@@ -1321,9 +1465,12 @@ Stack Pointer by 1.
 **Reset Bit 0 in Base Page**\
 M(0) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB0 \$nn | $07 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB0 \$nn | $07 | 2 | 4<sup>rb</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit zero of the indicated address.
 No flags are modified, regardless of the result.
@@ -1333,9 +1480,12 @@ No flags are modified, regardless of the result.
 **Reset Bit 1 in Base Page**\
 M(1) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB1 \$nn | $17 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB1 \$nn | $17 | 2 | 4<sup>rb</sup> |
+
+ <sup>b</sup> Add one cycle if branch is taken.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 1 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1345,9 +1495,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 2 in Base Page**\
 M(2) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB2 \$nn | $27 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB2 \$nn | $27 | 2 | 4<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 2 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1357,9 +1509,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 3 in Base Page**\
 M(3) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB3 \$nn | $37 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB3 \$nn | $37 | 2 | 4<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 3 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1369,9 +1523,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 4 in Base Page**\
 M(4) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB4 \$nn | $47 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB4 \$nn | $47 | 2 | 4<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 4 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1381,9 +1537,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 5 in Base Page**\
 M(5) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB5 \$nn | $57 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB5 \$nn | $57 | 2 | 4<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 5 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1393,9 +1551,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 6 in Base Page**\
 M(6) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB6 \$nn | $67 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB6 \$nn | $67 | 2 | 5<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction clears bit 6 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1405,9 +1565,11 @@ No flags are modified, regardless of the result.
 **Reset Bit 7 in Base Page**\
 M(7) <- 0\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | RMB7 \$nn | $77 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | RMB7 \$nn | $77 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction clears bit 7 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1417,13 +1579,16 @@ No flags are modified, regardless of the result.
 **Rotate Left Memory or Accumulator**\
 M <- M<<1, C <- M(7), M(0) <- C\
 Flags: N Z C M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | ROL A | $2A | 1 |
- | Zero Page | ROL \$nn | $26 | 2 |
- | Zero Page, X | ROL \$nn,X | $36 | 2 |
- | Absolute | ROL \$nnnn | $2E | 3 |
- | Absolute, X | ROL \$nnnn,X | $3E | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | ROL A | $2A | 1 | 1<sup></sup> |
+ | Zero Page | ROL \$nn | $26 | 2 | 4<sup>r</sup> |
+ | Zero Page, X | ROL \$nn,X | $36 | 2 | 5<sup>rp</sup> |
+ | Absolute | ROL \$nnnn | $2E | 3 | 5<sup>r</sup> |
+ | Absolute, X | ROL \$nnnn,X | $3E | 3 | 5<sup>rp</sup> |
+
+ <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction shifts either the Accumulator or contents
 of the provided memory location one bit left.  Bit 0 will be
@@ -1440,13 +1605,16 @@ Side effects:
 **Rotate Right Memory or Accumulator**\
 M <- M>>1, C <- M(0), M(7) <- C\
 Flags: N Z C M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Accumulator | ROR A | $6A | 1 |
- | Zero Page | ROR \$nn | $66 | 2 |
- | Zero Page, X | ROR \$nn,X | $76 | 2 |
- | Absolute | ROR \$nnnn | $6E | 3 |
- | Absolute, X | ROR \$nnnn,X | $7E | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Accumulator | ROR A | $6A | 1 | 1<sup></sup> |
+ | Zero Page | ROR \$nn | $66 | 2 | 5<sup>r</sup> |
+ | Zero Page, X | ROR \$nn,X | $76 | 2 | 0<sup>?</sup> |
+ | Absolute | ROR \$nnnn | $6E | 3 | 6<sup>r</sup> |
+ | Absolute, X | ROR \$nnnn,X | $7E | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.\
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction shifts either the Accumulator or contents
 of the provided memory location one bit right.  Bit 7 will be
@@ -1464,9 +1632,11 @@ Side effects:
 M2:M1 <- M2:M1<<1, C <- M2(7), M1(0) <- C\
 N+Z+C+M+M+\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Absolute | ROW \$nnnn | $EB | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Absolute | ROW \$nnnn | $EB | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction rotates the contents of the indicated memory word one bit
 left.  Bit 0 of the low byte will be
@@ -1484,9 +1654,11 @@ Side effects:
 **Return From Interrupt**\
 P <- STACK, PC <- STACK, SP <- SP + 3\
 Flags: N V C V D I
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | RTI  | $40 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | RTI  | $40 | 1 | 6<sup>m</sup> |
+
+ <sup>m</sup> Subtract non-bus cycles when at 40MHz.
 
 This instruction pops the processor flags from the stack, and then
 pops the Program Counter (PC) register from the stack, allowing
@@ -1501,10 +1673,12 @@ flags are set by this instruction.
 **Return From Subroutine**\
 PC <- STACK + N, SP <- SP + 2 + N\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | RTS  | $60 | 1 |
- | Immediate | RTS #\$nn | $62 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | RTS  | $60 | 1 | 6<sup>m</sup> |
+ | Immediate | RTS #\$nn | $62 | 2 | 4<sup></sup> |
+
+ <sup>m</sup> Subtract non-bus cycles when at 40MHz.
 
 This instruction adds optional argument to the Stack Pointer (SP) Register, and then
 pops the Program Counter (PC) register from the stack, allowing
@@ -1515,17 +1689,19 @@ a routine to return to its caller.
 **Subtract With Carry**\
 A <- - M - 1 + C\
 Flags: N Z C V
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Immediate | SBC #\$nn | $E9 | 2 |
- | Zero Page | SBC \$nn | $E5 | 2 |
- | Zero Page, X | SBC \$nn,X | $F5 | 2 |
- | Absolute | SBC \$nnnn | $ED | 3 |
- | Absolute, X | SBC \$nnnn,X | $FD | 3 |
- | Absolute, Y | SBC \$nnnn,Y | $F9 | 3 |
- | Indirect, X | SBC (\$nn,X) | $E1 | 2 |
- | Indirect, Y | SBC (\$nn),Y | $F1 | 2 |
- | Indirect, Z | SBC (\$nn),Z | $F2 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Immediate | SBC #\$nn | $E9 | 2 | 0<sup>?</sup> |
+ | Zero Page | SBC \$nn | $E5 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | SBC \$nn,X | $F5 | 2 | 0<sup>?</sup> |
+ | Absolute | SBC \$nnnn | $ED | 3 | 0<sup>?</sup> |
+ | Absolute, X | SBC \$nnnn,X | $FD | 3 | 0<sup>?</sup> |
+ | Absolute, Y | SBC \$nnnn,Y | $F9 | 3 | 0<sup>?</sup> |
+ | Indirect, X | SBC (\$nn,X) | $E1 | 2 | 0<sup>?</sup> |
+ | Indirect, Y | SBC (\$nn),Y | $F1 | 2 | 0<sup>?</sup> |
+ | Indirect, Z | SBC (\$nn),Z | $F2 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction performs A - M - 1 + C, and sets the processor flags accordingly.
 The result is stored in the Accumulator Register.
@@ -1546,9 +1722,9 @@ indicates that a signed overflow has occurred.
 **Set Carry Flag**\
 C <- 1\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | SEC  | $38 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | SEC  | $38 | 1 | 1<sup></sup> |
 
 This instruction sets the Carry Flag.
 
@@ -1561,9 +1737,11 @@ Side effects:
 **Set Decimal Flag**\
 D <- 1\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | SED  | $F8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | SED  | $F8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets the Decimal Flag.
 Binary arithmetic will now use Binary-Coded Decimal (BCD) mode.
@@ -1581,9 +1759,9 @@ Side effects:
 **Set Extended Stack Disable Flag**\
 E <- 1\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | SEE  | $03 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | SEE  | $03 | 1 | 1<sup></sup> |
 
 This instruction sets the Extended Stack Disable Flag.
 This causes the stack to operate as on the 6502, i.e.,
@@ -1600,9 +1778,11 @@ Side effects:
 **Set Interrupt Disable Flag**\
 I <- 1\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | SEI  | $78 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | SEI  | $78 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets the Interrupt Disable Flag.
 Normal (IRQ) interrupts will no longer be able to occur.
@@ -1618,9 +1798,11 @@ Side effects:
 **Set Bit 0 in Base Page**\
 M(0) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB0 \$nn | $87 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB0 \$nn | $87 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit zero of the indicated address.
 No flags are modified, regardless of the result.
@@ -1630,9 +1812,11 @@ No flags are modified, regardless of the result.
 **Set Bit 1 in Base Page**\
 M(1) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB1 \$nn | $97 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB1 \$nn | $97 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 1 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1642,9 +1826,11 @@ No flags are modified, regardless of the result.
 **Set Bit 2 in Base Page**\
 M(2) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB2 \$nn | $A7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB2 \$nn | $A7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 2 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1654,9 +1840,11 @@ No flags are modified, regardless of the result.
 **Set Bit 3 in Base Page**\
 M(3) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB3 \$nn | $B7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB3 \$nn | $B7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 3 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1666,9 +1854,11 @@ No flags are modified, regardless of the result.
 **Set Bit 4 in Base Page**\
 M(4) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB4 \$nn | $C7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB4 \$nn | $C7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 4 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1678,9 +1868,11 @@ No flags are modified, regardless of the result.
 **Set Bit 5 in Base Page**\
 M(5) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB5 \$nn | $D7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB5 \$nn | $D7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 5 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1690,9 +1882,11 @@ No flags are modified, regardless of the result.
 **Set Bit 6 in Base Page**\
 M(6) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB6 \$nn | $E7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB6 \$nn | $E7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 6 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1702,9 +1896,11 @@ No flags are modified, regardless of the result.
 **Set Bit 7 in Base Page**\
 M(7) <- 1\
 Flags: M M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | SMB7 \$nn | $F7 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | SMB7 \$nn | $F7 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets bit 7 of the indicated address.
 No flags are modified, regardless of the result.
@@ -1714,17 +1910,19 @@ No flags are modified, regardless of the result.
 **Store Accumulator**\
 M <- A\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | STA \$nn | $85 | 2 |
- | Zero Page, X | STA \$nn,X | $95 | 2 |
- | Absolute | STA \$nnnn | $8D | 3 |
- | Absolute, X | STA \$nnnn,X | $9D | 3 |
- | Absolute, Y | STA \$nnnn,Y | $99 | 3 |
- | Indirect, X | STA (\$nn,X) | $81 | 2 |
- | Indirect, Y | STA (\$nn),Y | $91 | 2 |
- | Indirect, Z | STA (\$nn),Z | $92 | 2 |
- | Indirect SP, Y | STA (\$nn,SP),Y | $82 | 2 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | STA \$nn | $85 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | STA \$nn,X | $95 | 2 | 0<sup>?</sup> |
+ | Absolute | STA \$nnnn | $8D | 3 | 0<sup>?</sup> |
+ | Absolute, X | STA \$nnnn,X | $9D | 3 | 0<sup>?</sup> |
+ | Absolute, Y | STA \$nnnn,Y | $99 | 3 | 0<sup>?</sup> |
+ | Indirect, X | STA (\$nn,X) | $81 | 2 | 0<sup>?</sup> |
+ | Indirect, Y | STA (\$nn),Y | $91 | 2 | 0<sup>?</sup> |
+ | Indirect, Z | STA (\$nn),Z | $92 | 2 | 0<sup>?</sup> |
+ | Indirect SP, Y | STA (\$nn,SP),Y | $82 | 2 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction stores the contents of the Accumulator Register
 into the indicated location.
@@ -1734,12 +1932,14 @@ into the indicated location.
 **Store X Register**\
 M <- X\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | STX \$nn | $86 | 2 |
- | Zero Page, Y | STX \$nn,Y | $96 | 2 |
- | Absolute | STX \$nnnn | $8E | 3 |
- | Absolute, Y | STX \$nnnn,Y | $9B | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | STX \$nn | $86 | 2 | 0<sup>?</sup> |
+ | Zero Page, Y | STX \$nn,Y | $96 | 2 | 0<sup>?</sup> |
+ | Absolute | STX \$nnnn | $8E | 3 | 0<sup>?</sup> |
+ | Absolute, Y | STX \$nnnn,Y | $9B | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction stores the contents of the X Register
 into the indicated location.
@@ -1749,12 +1949,14 @@ into the indicated location.
 **Store Y Register**\
 M <- Y\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | STY \$nn | $84 | 2 |
- | Zero Page, X | STY \$nn,X | $94 | 2 |
- | Absolute | STY \$nnnn | $8C | 3 |
- | Absolute, X | STY \$nnnn,X | $8B | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | STY \$nn | $84 | 2 | 0<sup>?</sup> |
+ | Zero Page, X | STY \$nn,X | $94 | 2 | 0<sup>?</sup> |
+ | Absolute | STY \$nnnn | $8C | 3 | 0<sup>?</sup> |
+ | Absolute, X | STY \$nnnn,X | $8B | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction stores the contents of the Y Register
 into the indicated location.
@@ -1764,12 +1966,14 @@ into the indicated location.
 **Store Z Register**\
 M <- Z\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | STZ \$nn | $64 | 2 |
- | Zero Page, X | STZ \$nn,X | $74 | 2 |
- | Absolute | STZ \$nnnn | $9C | 3 |
- | Absolute, X | STZ \$nnnn,X | $9E | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | STZ \$nn | $64 | 2 | 3<sup></sup> |
+ | Zero Page, X | STZ \$nn,X | $74 | 2 | 3<sup></sup> |
+ | Absolute | STZ \$nnnn | $9C | 3 | 0<sup>?</sup> |
+ | Absolute, X | STZ \$nnnn,X | $9E | 3 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction stores the contents of the Z Register
 into the indicated location.
@@ -1779,9 +1983,9 @@ into the indicated location.
 **Transfer Accumulator into Base Page Register**\
 B <- A\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TAB  | $5B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TAB  | $5B | 1 | 1<sup></sup> |
 
 This instruction sets the Base Page register to the contents
 of the Accumulator Register.  This allows the relocation of
@@ -1792,9 +1996,11 @@ the 6502's Zero-Page into any page of memory.
 **Transfer Accumulator Register into the X Register**\
 X <- A\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TAX  | $AA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TAX  | $AA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the X Register with the contents of the Accumulator Register.
 
@@ -1808,9 +2014,11 @@ Side effects:
 **Transfer Accumulator Register into the Y Register**\
 Y <- A\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TAY  | $A8 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TAY  | $A8 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Y Register with the contents of the Accumulator Register.
 
@@ -1824,9 +2032,9 @@ Side effects:
 **Transfer Accumulator Register into the Z Register**\
 Z <- A\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TAZ  | $4B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TAZ  | $4B | 1 | 1<sup></sup> |
 
 This instruction loads the Z Register with the contents of the Accumulator Register.
 
@@ -1840,9 +2048,11 @@ Side effects:
 **Transfer Base Page Register into the Accumulator**\
 A <- B\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TBA  | $7B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TBA  | $7B | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Accumulator Register with the contents
 of the Base Page Register.
@@ -1857,10 +2067,12 @@ Side effects:
 **Test and Reset Bit**\
 M <- M & ($NOT$ A)\
 Flags: Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | TRB \$nn | $14 | 2 |
- | Absolute | TRB \$nnnn | $1C | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | TRB \$nn | $14 | 2 | 5<sup>r</sup> |
+ | Absolute | TRB \$nnnn | $1C | 3 | 4<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction sets performs a binary AND of the negation of the Accumulator Register
 and the indicated memory location, storing the result there. That is,
@@ -1883,10 +2095,12 @@ execution of the instruction.
 **Test and Set Bit**\
 M <- M | A\
 Flags: Z M
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Zero Page | TSB \$nn | $04 | 2 |
- | Absolute | TSB \$nnnn | $0C | 3 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Zero Page | TSB \$nn | $04 | 2 | 3<sup>r</sup> |
+ | Absolute | TSB \$nnnn | $0C | 3 | 5<sup>r</sup> |
+
+ <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
 This instruction sets performs a binary OR of the Accumulator Register
 and the indicated memory location, storing the result there. That is,
@@ -1909,9 +2123,11 @@ execution of the instruction.
 **Transfer Stack Pointer High Register into the X Register**\
 X <- SPH\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TSX  | $BA | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TSX  | $BA | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the X Register with the contents of the Stack Pointer High (SPL)
 Register.
@@ -1926,9 +2142,9 @@ Side effects:
 **Transfer Stack Pointer High Register into the Y Register**\
 Y <- SPH\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TSY  | $0B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TSY  | $0B | 1 | 1<sup></sup> |
 
 This instruction loads the Y Register with the contents of the Stack Pointer High (SPH)
 Register.
@@ -1943,9 +2159,11 @@ Side effects:
 **Transfer X Register into the Accumulator Register**\
 A <- X\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TXA  | $8A | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TXA  | $8A | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Accumulator Register with the contents
 of the X Register.
@@ -1960,9 +2178,11 @@ Side effects:
 **Transfer X Register into Stack Pointer Low Register**\
 SPL <- X\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TXS  | $9A | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TXS  | $9A | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction sets the low byte of the Stack Pointer (SPL)
 register to the contents of the X Register.
@@ -1972,9 +2192,11 @@ register to the contents of the X Register.
 **Transfer Y Register into the Accumulator Register**\
 A <- Y\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TYA  | $98 | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TYA  | $98 | 1 | 0<sup>?</sup> |
+
+ <sup>?</sup> Cycles not in source documentation.
 
 This instruction loads the Accumulator Register with the contents
 of the Y Register.
@@ -1989,9 +2211,9 @@ Side effects:
 **Transfer Y Register into Stack Pointer High Register**\
 SPH <- Y\
 Flags: -
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TYS  | $2B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TYS  | $2B | 1 | 1<sup></sup> |
 
 This instruction sets the high byte of the Stack Pointer (SPH)
 register to the contents of the Y Register.  This allows
@@ -2005,9 +2227,9 @@ Flag (E) is clear.
 **Transfer Z Register into the Accumulator Register**\
 A <- Z\
 Flags: N Z
- | Mode | Syntax | Hex | Len |
- | --- | --- | --- | --- |
- | Implied | TZA  | $6B | 1 |
+ | Mode | Syntax | Hex | Len | Cycles |
+ | --- | --- | --- | --- | --- |
+ | Implied | TZA  | $6B | 1 | 1<sup></sup> |
 
 This instruction loads the Accumulator Register with the contents
 of the Z Register.

@@ -34,6 +34,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"| --- | --- | --- | --- | --- | --
             }
 BitMagic.AsmTemplate.Template.WriteLiteral($@"{sb}");
         }
+        var cycleNotes = new List<Char>();
         foreach(var group in instructions)
         {
             var explanation = parser.Explanation[group.Key];
@@ -45,14 +46,30 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"**{explanation.Description}**\");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"{exp}\");
             }
 BitMagic.AsmTemplate.Template.WriteLiteral($@"Flags: {explanation.Flags}");
-BitMagic.AsmTemplate.Template.WriteLiteral($@" | Mode | Syntax | Hex | Len |");
-BitMagic.AsmTemplate.Template.WriteLiteral($@" | --- | --- | --- | --- |");
+BitMagic.AsmTemplate.Template.WriteLiteral($@" | Mode | Syntax | Hex | Len | Cycles |");
+BitMagic.AsmTemplate.Template.WriteLiteral($@" | --- | --- | --- | --- | --- |");
+            cycleNotes.Clear();
             foreach(var ip in parser.Instructions.
                     Where(i => i.Code == group.Key).
                     Select(i => (Instruction: i, Description: parser.ParametersOrder[i.Parameters])).
                     OrderBy(ip => ip.Description.Order))
             {
-BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | ${ip.Instruction.OpCode:X2} | {ip.Description.ByteCount + 1} |");
+BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | ${ip.Instruction.OpCode:X2} | {ip.Description.ByteCount + 1} | {ip.Instruction.Cycles}<sup>{ip.Instruction.CycleNotesAsString}</sup> |");
+                cycleNotes.AddRange(ip.Instruction.CycleNotes);
+            }
+            if (cycleNotes.Any())
+            {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"");
+                var notes = cycleNotes.Distinct().OrderBy(c => c).ToArray();
+                for(var i = 0; i < notes.Length; i++)
+                {
+                    if (i == notes.Length - 1)
+                    {
+BitMagic.AsmTemplate.Template.WriteLiteral($@" <sup>{notes[i]}</sup> {parser.CycleNotes[notes[i]]}");
+                    } else {
+BitMagic.AsmTemplate.Template.WriteLiteral($@" <sup>{notes[i]}</sup> {parser.CycleNotes[notes[i]]}\");
+                    }
+                }
             }
             if (!string.IsNullOrWhiteSpace(explanation.ExplanationText))
             {
