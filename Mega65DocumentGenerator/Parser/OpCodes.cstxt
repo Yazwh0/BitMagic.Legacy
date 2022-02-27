@@ -1,0 +1,56 @@
+using Mega65Parser;
+using System.Text;
+namespace Mega65Processor;
+
+public static class CpuDocumentationGenerator
+{
+    public static void Output(Parser parser)
+    {
+        var instructions = parser.Instructions.GroupBy(i => i.Code).OrderBy(i => i.Key).ToArray();
+        var sb = new StringBuilder();
+        .# @(parser.ChipName) Instructions
+        .
+        .## All Instructions
+        .
+        int size = 16;
+        .| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+        .| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+        for(var i = 0; i < instructions.Length; i += size-1)
+        {
+            var thisLine = instructions.Skip(i).Take(size-1);
+            sb.Clear();
+            sb.Append("|");
+            foreach(var item in thisLine.Select(i => i.Key))
+            {
+                sb.Append($" [{item}](#{item}) |");
+            }
+            .@(sb)
+        }
+        foreach(var group in instructions)
+        {
+            var explanation = parser.Explanation[group.Key];
+            .
+            .## @(group.Key)
+            .
+            .**@(explanation.Description)**\
+            foreach(var exp in explanation.Explanations) {
+                .@(exp)\
+            }
+            .Flags: @(explanation.Flags)
+            . | Mode | Syntax | Hex | Len |
+            . | --- | --- | --- | --- |
+            foreach(var ip in parser.Instructions.
+                    Where(i => i.Code == group.Key).
+                    Select(i => (Instruction: i, Description: parser.ParametersOrder[i.Parameters])).
+                    OrderBy(ip => ip.Description.Order))
+            {
+                . | @(ip.Description.Name) | @(ip.Instruction.Code) @(ip.Instruction.Parameters) | $@(ip.Instruction.OpCode:X2) | @(ip.Description.ByteCount + 1) |
+            }
+            if (!string.IsNullOrWhiteSpace(explanation.ExplanationText))
+            {
+                .
+                .@(explanation.ExplanationText)
+            }
+        }
+    }
+}

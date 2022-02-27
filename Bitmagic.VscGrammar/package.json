@@ -26,6 +26,12 @@
             "aliases": ["BitMagic X16 CS Asm", "csasm"],
             "extensions": [".csasm"],
             "configuration": "./language-configuration.csasm.json"
+        },
+        {
+            "id": "cstxt",
+            "aliases": ["BitMagic X16 CS Text", "cstxt"],
+            "extensions": [".cstxt"],
+            "configuration": "./language-configuration.cstxt.json"
         }],
         "grammars": [
         {            
@@ -37,6 +43,11 @@
             "language": "csasm",
             "scopeName": "source.csasm",
             "path": "./syntaxes/csasm.tmLanguage.json"
+        },
+        {
+            "language": "cstxt",
+            "scopeName": "source.cstxt",
+            "path": "./syntaxes/cstxt.tmLanguage.json"
         }]
     }
 }

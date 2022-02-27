@@ -99,7 +99,6 @@ namespace BitMagic.Cpu
             new Tsb()
         };
 
-        //private Dictionary<byte, (CpuOpCode operation, AccessMode Mode, int Timing)> _operations;
         private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
 
         public WDC65c02(IMemory memory, double frequency)

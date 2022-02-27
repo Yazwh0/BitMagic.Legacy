@@ -1,4 +1,5 @@
 ﻿using BitMagic.AsmTemplateEngine;
+using System.Text.RegularExpressions;
 
 namespace BitMagic.SdkPreProcessor
 {
@@ -11,19 +12,27 @@ namespace BitMagic.SdkPreProcessor
         /// <param name="baseFolder">Base folder useful with recursive and wildcards</param>
         /// <param name="recursive">Also check subfolders</param>
         /// <param name="extension">Extension for the created files. Defaults to cs.</param>
+        /// <param name="template">Template name that defines which lines are c# and which are for the underlying.</param>
         /// <param name="args">csasm files to process</param>
         /// <returns></returns>
         /// 
-        static async Task<int> Main(string? outputFolder = null, string? baseFolder = null, bool recursive = false, string extension = "cs", string[]? args = null)
+        static async Task<int> Main(string? outputFolder = null, string? baseFolder = null, bool recursive = false, 
+            string extension = "cs", string template = "csasm", string[]? args = null)
         {
-            Console.WriteLine("BitMagic c# PreProcessor");
+            Console.WriteLine("BitMagic C# Template PreProcessor");
             if (args == null)
             {
                 Console.Error.WriteLine("No files specified.");
                 return 1;
             }
 
-            var engine = CsasmEngine.CreateEngine();
+            var engine = template.ToLower() switch { 
+                "csasm" => CsasmEngine.CreateEngine(),
+                "text" => CreateTextEngine(),
+                _ => CsasmEngine.CreateEngine()
+            };
+
+            Console.WriteLine($"Using Template Engine : {engine.TemplateName}");
 
             foreach(var inputFilename in args)
             {
@@ -52,5 +61,12 @@ namespace BitMagic.SdkPreProcessor
 
             return 0;
         }
+
+        private static ITemplateEngine CreateTextEngine() => TemplateEngineBuilder
+            .As("text")
+            .WithUnderlying(new Regex(@"^\s*(?<line>([\.].*))$", RegexOptions.Compiled))
+            .WithCSharpInline(new Regex(@"(?<csharp>(@[^\s](?:[^\(\)]|(?<open>\()|(?<-open>\)))+(?(open)(?!))\)))", RegexOptions.Compiled), new Regex(@"(@\()(?<csharp>(.*))(\))", RegexOptions.Compiled))
+            .RequiresTidyup(".")
+            .Build();
     }
 }

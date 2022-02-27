@@ -9,24 +9,17 @@ namespace BitMagic.AsmTemplateEngine
 {
     public interface ITemplateEngineBuilder
     {
-        public ITemplateEngineBuilder WithAsmLine(Regex search);
+        public ITemplateEngineBuilder WithUnderlying(Regex search);
         public ITemplateEngineBuilder WithCSharpInline(Regex search, Regex substitue);
         public ITemplateEngine Build();
+        public ITemplateEngineBuilder RequiresTidyup(string marker);
     }
 
     public static class TemplateEngineBuilder
     {
-        public static ITemplateEngineBuilder WithCSharp(Regex search, Regex substitue)
+        public static ITemplateEngineBuilder As(string name)
         {
-            var toReturn = new TemplateEngineBuilderStep();
-            toReturn._csharpLines.Add((search, substitue));
-            return toReturn;
-        }
-        public static ITemplateEngineBuilder WithAsmLine(Regex search)
-        {
-            var toReturn = new TemplateEngineBuilderStep();
-            toReturn._asmLines.Add(search);
-            return toReturn;
+            return new TemplateEngineBuilderStep(name);
         }
     }
 
@@ -34,8 +27,16 @@ namespace BitMagic.AsmTemplateEngine
     {
         internal List<Regex> _asmLines = new List<Regex>();
         internal List<(Regex Seach, Regex Subtituet)> _csharpLines = new List<(Regex Search, Regex Substitue)>();
+        internal string _name;
+        internal bool _requiresTidyup = false;
+        internal string _tidyMarker = "";
 
-        public ITemplateEngineBuilder WithAsmLine(Regex search)
+        internal TemplateEngineBuilderStep(string name)
+        {
+            _name = name;
+        }
+
+        public ITemplateEngineBuilder WithUnderlying(Regex search)
         {
             _asmLines.Add(search);
             return this;
@@ -47,9 +48,16 @@ namespace BitMagic.AsmTemplateEngine
             return this;
         }
 
+        public ITemplateEngineBuilder RequiresTidyup(string marker)
+        {
+            _requiresTidyup = true;
+            _tidyMarker = marker;
+            return this;
+        }
+
         public ITemplateEngine Build()
         {
-            return new TemplateEngine(_asmLines, _csharpLines);
+            return new TemplateEngine(_name, _asmLines, _csharpLines, _requiresTidyup, _tidyMarker);
         }
     }
 }

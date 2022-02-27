@@ -1,0 +1,104 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"bsasm",
+			"Colors",
+			"copydone",
+			"copyloop",
+			"coreclr",
+			"Defalte",
+			"endproc",
+			"endscope",
+			"endsegment",
+			"HSCALE",
+			"HSCROLL",
+			"Inflator",
+			"Labors",
+			"Lanczos",
+			"lookback",
+			"MAPBASE",
+			"Octree",
+			"proc",
+			"Resamplers",
+			"TILEBASE",
+			"tochange",
+			"ushort",
+			"VSCALE"
+		],
+		"files.exclude": {
+			"**/.vs/**": true,
+			"**/bin/**": true,
+			"**/obj/**": true
+		},
+		"explorer.experimental.fileNesting.enabled" : true,
+		"explorer.experimental.fileNesting.expand": false,
+		"explorer.experimental.fileNesting.patterns": {
+			"*.csasm": "$(capture).csasm.cs, $(capture).bmasm",
+		},
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [		
+			{
+				"type": "coreclr",
+				"name": "Build Example",				
+				"preLaunchTask": "Build",
+				"request": "launch",
+				"program": "${workspaceFolder:DisplayImage}/../../BitMagic/bin/Debug/net6.0/BitMagic.exe",
+				"args": [ 
+					"--razor-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.csasm",
+					"--bmasm-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.bmasm",
+					"--output-file=${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg",
+					"razor",
+					"compile"
+				],
+				"cwd": "${workspaceFolder:DisplayImage}",
+				"stopAtEntry": false,
+				"console": "internalConsole",
+				"logging": {
+					"moduleLoad": false
+				},
+				"postDebugTask": "Run Emulator"
+			}
+
+		]
+	},
+	"tasks" :{
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Build Parser",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder:Compression}"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
+				"label": "Build",
+				"dependsOn" : [ "Build Parser" ]
+			},
+			{
+				"label": "Run Emulator",
+				"type": "shell",
+				"command": "c:\\dev\\X16emu\\x16emu.exe",
+				"args": [
+					"-prg",
+					"DisplayImageX16\\test.prg",
+					"-debug",
+					"-run",
+					"-scale",
+					"2"
+				]
+			}
+		]
+	}
+}

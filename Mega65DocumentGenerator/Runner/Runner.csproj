@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Parser\Mega65Parser.csproj" />
+  </ItemGroup>
+
+    <Target Name="parser" BeforeTargets="BeforeBuild">
+	    <Exec Command="dotnet build ..\Parser\Mega65Parser.csproj"/>
+    </Target>
+
+</Project>

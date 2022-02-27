@@ -5,6 +5,7 @@ namespace BitMagic.AsmTemplateEngine
 {
     public interface ITemplateEngine
     {
+        public string TemplateName { get; }
         public string Process(string input);
     }
 
@@ -12,11 +13,18 @@ namespace BitMagic.AsmTemplateEngine
     {
         private Regex[] _lineParsers = Array.Empty<Regex>();
         private (Regex Search, Regex Substitute)[] _inLineCSharp = Array.Empty<(Regex, Regex)>();
+        public string TemplateName { get; }
+        public bool RequiresTidyup { get; }
+        public string TidyMarker { get; }
 
-        internal TemplateEngine(IEnumerable<Regex> lineParsers, IEnumerable<(Regex Search, Regex Substitute)> inLineParsers)
+        internal TemplateEngine(string name, IEnumerable<Regex> lineParsers, IEnumerable<(Regex Search, Regex Substitute)> inLineParsers,
+            bool requiresTidyup = false, string tidyMarker = "")
         {
+            TemplateName = name;
             _lineParsers = lineParsers.ToArray();
             _inLineCSharp = inLineParsers.ToArray();
+            RequiresTidyup = requiresTidyup;
+            TidyMarker = tidyMarker;
         }
 
         public string Process(string input)
@@ -56,7 +64,7 @@ namespace BitMagic.AsmTemplateEngine
 
         public string ProcessAsmLine(string input)
         {
-            var output = input; //.Replace().Replace(@"{", @"\{").Replace(@"}", @"\}");
+            var output = input;
 
             foreach(var r in _inLineCSharp)
             {
@@ -67,8 +75,21 @@ namespace BitMagic.AsmTemplateEngine
 
             //output = output.Replace("\"", "\\\"");
 
-            if (output == ".")
-                output = "";
+            if (RequiresTidyup)
+            {
+                output = output.Trim();
+                if (!string.IsNullOrEmpty(TidyMarker))
+                {
+                    var idx = output.IndexOf(TidyMarker);
+                    if (idx != -1)
+                        output = output[(idx + 1)..];
+                }
+            }
+            else
+            {
+                if (output == ".")
+                    output = "";
+            }
 
             return $"BitMagic.AsmTemplate.Template.WriteLiteral($@\"{output}\");";
         }
