@@ -15,9 +15,9 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"");
         int size = 16;
 BitMagic.AsmTemplate.Template.WriteLiteral($@"| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
-        for(var i = 0; i < instructions.Length; i += size-1)
+        for(var i = 0; i < instructions.Length; i += size)
         {
-            var thisLine = instructions.Skip(i).Take(size-1);
+            var thisLine = instructions.Skip(i).Take(size);
             sb.Clear();
             sb.Append("|");
             foreach(var item in thisLine.Select(i => i.Key))
