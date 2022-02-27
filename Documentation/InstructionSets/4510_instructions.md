@@ -2,16 +2,18 @@
 
 ## All Instructions
 
-| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [ADC](#ADC) | [AND](#AND) | [ASL](#ASL) | [ASR](#ASR) | [ASW](#ASW) | [BBR0](#BBR0) | [BBR1](#BBR1) | [BBR2](#BBR2) | [BBR3](#BBR3) | [BBR4](#BBR4) | [BBR5](#BBR5) | [BBR6](#BBR6) | [BBR7](#BBR7) | [BBS0](#BBS0) | [BBS1](#BBS1) | [BBS2](#BBS2) |
-| [BBS3](#BBS3) | [BBS4](#BBS4) | [BBS5](#BBS5) | [BBS6](#BBS6) | [BBS7](#BBS7) | [BCC](#BCC) | [BCS](#BCS) | [BEQ](#BEQ) | [BIT](#BIT) | [BMI](#BMI) | [BNE](#BNE) | [BPL](#BPL) | [BRA](#BRA) | [BRK](#BRK) | [BSR](#BSR) | [BVC](#BVC) |
-| [BVS](#BVS) | [CLC](#CLC) | [CLD](#CLD) | [CLE](#CLE) | [CLI](#CLI) | [CLV](#CLV) | [CMP](#CMP) | [CPX](#CPX) | [CPY](#CPY) | [CPZ](#CPZ) | [DEC](#DEC) | [DEW](#DEW) | [DEX](#DEX) | [DEY](#DEY) | [DEZ](#DEZ) | [EOM](#EOM) |
-| [EOR](#EOR) | [INC](#INC) | [INW](#INW) | [INX](#INX) | [INY](#INY) | [INZ](#INZ) | [JMP](#JMP) | [JSR](#JSR) | [LDA](#LDA) | [LDX](#LDX) | [LDY](#LDY) | [LDZ](#LDZ) | [LSR](#LSR) | [MAP](#MAP) | [NEG](#NEG) | [ORA](#ORA) |
-| [PHA](#PHA) | [PHP](#PHP) | [PHW](#PHW) | [PHX](#PHX) | [PHY](#PHY) | [PHZ](#PHZ) | [PLA](#PLA) | [PLP](#PLP) | [PLX](#PLX) | [PLY](#PLY) | [PLZ](#PLZ) | [RMB0](#RMB0) | [RMB1](#RMB1) | [RMB2](#RMB2) | [RMB3](#RMB3) | [RMB4](#RMB4) |
-| [RMB5](#RMB5) | [RMB6](#RMB6) | [RMB7](#RMB7) | [ROL](#ROL) | [ROR](#ROR) | [ROW](#ROW) | [RTI](#RTI) | [RTS](#RTS) | [SBC](#SBC) | [SEC](#SEC) | [SED](#SED) | [SEE](#SEE) | [SEI](#SEI) | [SMB0](#SMB0) | [SMB1](#SMB1) | [SMB2](#SMB2) |
-| [SMB3](#SMB3) | [SMB4](#SMB4) | [SMB5](#SMB5) | [SMB6](#SMB6) | [SMB7](#SMB7) | [STA](#STA) | [STX](#STX) | [STY](#STY) | [STZ](#STZ) | [TAB](#TAB) | [TAX](#TAX) | [TAY](#TAY) | [TAZ](#TAZ) | [TBA](#TBA) | [TRB](#TRB) | [TSB](#TSB) |
-| [TSX](#TSX) | [TSY](#TSY) | [TXA](#TXA) | [TXS](#TXS) | [TYA](#TYA) | [TYS](#TYS) | [TZA](#TZA) |
+| |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [ADC](#ADC) | [AND](#AND) | [ASL](#ASL) | [ASR](#ASR) | [ASW](#ASW) | [BBR0](#BBR0) | [BBR1](#BBR1) | [BBR2](#BBR2) | [BBR3](#BBR3) | [BBR4](#BBR4) | [BBR5](#BBR5) | [BBR6](#BBR6) |
+| [BBR7](#BBR7) | [BBS0](#BBS0) | [BBS1](#BBS1) | [BBS2](#BBS2) | [BBS3](#BBS3) | [BBS4](#BBS4) | [BBS5](#BBS5) | [BBS6](#BBS6) | [BBS7](#BBS7) | [BCC](#BCC) | [BCS](#BCS) | [BEQ](#BEQ) |
+| [BIT](#BIT) | [BMI](#BMI) | [BNE](#BNE) | [BPL](#BPL) | [BRA](#BRA) | [BRK](#BRK) | [BSR](#BSR) | [BVC](#BVC) | [BVS](#BVS) | [CLC](#CLC) | [CLD](#CLD) | [CLE](#CLE) |
+| [CLI](#CLI) | [CLV](#CLV) | [CMP](#CMP) | [CPX](#CPX) | [CPY](#CPY) | [CPZ](#CPZ) | [DEC](#DEC) | [DEW](#DEW) | [DEX](#DEX) | [DEY](#DEY) | [DEZ](#DEZ) | [EOM](#EOM) |
+| [EOR](#EOR) | [INC](#INC) | [INW](#INW) | [INX](#INX) | [INY](#INY) | [INZ](#INZ) | [JMP](#JMP) | [JSR](#JSR) | [LDA](#LDA) | [LDX](#LDX) | [LDY](#LDY) | [LDZ](#LDZ) |
+| [LSR](#LSR) | [MAP](#MAP) | [NEG](#NEG) | [ORA](#ORA) | [PHA](#PHA) | [PHP](#PHP) | [PHW](#PHW) | [PHX](#PHX) | [PHY](#PHY) | [PHZ](#PHZ) | [PLA](#PLA) | [PLP](#PLP) |
+| [PLX](#PLX) | [PLY](#PLY) | [PLZ](#PLZ) | [RMB0](#RMB0) | [RMB1](#RMB1) | [RMB2](#RMB2) | [RMB3](#RMB3) | [RMB4](#RMB4) | [RMB5](#RMB5) | [RMB6](#RMB6) | [RMB7](#RMB7) | [ROL](#ROL) |
+| [ROR](#ROR) | [ROW](#ROW) | [RTI](#RTI) | [RTS](#RTS) | [SBC](#SBC) | [SEC](#SEC) | [SED](#SED) | [SEE](#SEE) | [SEI](#SEI) | [SMB0](#SMB0) | [SMB1](#SMB1) | [SMB2](#SMB2) |
+| [SMB3](#SMB3) | [SMB4](#SMB4) | [SMB5](#SMB5) | [SMB6](#SMB6) | [SMB7](#SMB7) | [STA](#STA) | [STX](#STX) | [STY](#STY) | [STZ](#STZ) | [TAB](#TAB) | [TAX](#TAX) | [TAY](#TAY) |
+| [TAZ](#TAZ) | [TBA](#TBA) | [TRB](#TRB) | [TSB](#TSB) | [TSX](#TSX) | [TSY](#TSY) | [TXA](#TXA) | [TXS](#TXS) | [TYA](#TYA) | [TYS](#TYS) | [TZA](#TZA) |
 
 ## ADC
 

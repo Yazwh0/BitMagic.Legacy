@@ -12,9 +12,9 @@ public static class CpuDocumentationGenerator
         .
         .## All Instructions
         .
-        int size = 16;
-        .| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-        .| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+        int size = 12;
+        .| |  |  |  |  |  |  |  |  |  |  |  |
+        .| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
         for(var i = 0; i < instructions.Length; i += size)
         {
             var thisLine = instructions.Skip(i).Take(size);

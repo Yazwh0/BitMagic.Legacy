@@ -12,9 +12,9 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"# {parser.ChipName} Instructions")
 BitMagic.AsmTemplate.Template.WriteLiteral($@"");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"## All Instructions");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"");
-        int size = 16;
-BitMagic.AsmTemplate.Template.WriteLiteral($@"| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        int size = 12;
+BitMagic.AsmTemplate.Template.WriteLiteral($@"| |  |  |  |  |  |  |  |  |  |  |  |");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
         for(var i = 0; i < instructions.Length; i += size)
         {
             var thisLine = instructions.Skip(i).Take(size);
