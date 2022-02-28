@@ -208,7 +208,7 @@ namespace Mega65Parser
                 linePos++;
                 if (allLines[linePos].Length >= 2 && allLines[linePos][1] == '+')
                 {
-                    description.Flags = allLines[linePos++].Replace("+", " ").Trim();
+                    description.Flags = allLines[linePos++].Replace("+", " ").Trim().Replace("M", "");
                 }
 
                 if (string.IsNullOrWhiteSpace(description.Flags))

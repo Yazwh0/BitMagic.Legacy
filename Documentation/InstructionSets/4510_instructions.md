@@ -91,7 +91,7 @@ Side effects:
 
 **Arithmetic Shift Left**\
 A <- A<<1 | M <- M<<1\
-Flags: N Z C M
+Flags: N Z C 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ASL A | $0A | 1 | 1<sup></sup> |
@@ -117,7 +117,7 @@ Side effects:
 
 **Arithmetic Shift Right**\
 A <- A>>1 | M <- M>>1\
-Flags: N Z C M
+Flags: N Z C 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ASR A | $43 | 1 | 1<sup></sup> |
@@ -142,7 +142,7 @@ Side effects:
 
 **Arithmetic Shift Word Left**\
 M <- M<<1\
-Flags: N Z C M M M
+Flags: N Z C   
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Absolute | ASW \$nnnn | $CB | 3 | 0<sup>?</sup> |
@@ -549,7 +549,7 @@ This instruction branches to the indicated address.
 
 **Break to Interrupt**\
 PC <- (\$FFFE)\
-Flags: M M M M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | BRK  | $00 | 1 | 7<sup></sup> |
@@ -811,7 +811,7 @@ Side effects:
 
 **Decrement Memory or Accumulator**\
 A <- A - 1 | M <- M - 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | DEC A | $3A | 1 | 1<sup></sup> |
@@ -834,7 +834,7 @@ Side effects:
 
 **Decrement Memory Word**\
 M16 <- M16 - 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | DEW \$nn | $C3 | 2 | 0<sup>?</sup> |
@@ -968,7 +968,7 @@ Side effects:
 
 **Increment Memory or Accumulator**\
 A <- A + 1 | M <- M + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | INC A | $1A | 1 | 1<sup></sup> |
@@ -991,7 +991,7 @@ Side effects:
 
 **Increment Memory Word**\
 M16 <- M16 + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | INW \$nn | $E3 | 2 | 0<sup>?</sup> |
@@ -1113,7 +1113,7 @@ before setting the Program Counter (PC) register.
 
 **Load Accumulator**\
 A <- M\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDA #\$nn | $A9 | 2 | 0<sup>?</sup> |
@@ -1141,7 +1141,7 @@ Side effects:
 
 **Load X Register**\
 X <- M\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDX #\$nn | $A2 | 2 | 0<sup>?</sup> |
@@ -1164,7 +1164,7 @@ Side effects:
 
 **Load Y Register**\
 Y <- M\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDY #\$nn | $A0 | 2 | 0<sup>?</sup> |
@@ -1187,7 +1187,7 @@ Side effects:
 
 **Load Z Register**\
 Z <- M\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDZ #\$nn | $A3 | 2 | 0<sup>?</sup> |
@@ -1208,7 +1208,7 @@ Side effects:
 
 **Logical Shift Right**\
 A <- A>>1, C <- A(0) | M <- M>>1\
-Flags: N Z C M
+Flags: N Z C 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | LSR A | $4A | 1 | 1<sup></sup> |
@@ -1275,7 +1275,7 @@ Side effects:
 
 **Decrement Memory or Accumulator**\
 A <- A + 1 | M <- M + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | ORA #\$nn | $09 | 2 | 2<sup></sup> |
@@ -1305,7 +1305,7 @@ Side effects:
 
 **Push Accumulator Register onto the Stack**\
 STACK <- A, SP <- SP - 1\
-Flags: M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PHA  | $48 | 1 | 2<sup></sup> |
@@ -1317,7 +1317,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 
 **Push Processor Flags onto the Stack**\
 STACK <- P, SP <- SP - 1\
-Flags: M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PHP  | $08 | 1 | 2<sup></sup> |
@@ -1346,7 +1346,7 @@ onto the stack, and decrements the value of the Stack Pointer by 2.
 
 **Push X Register onto the Stack**\
 STACK <- X, SP <- SP - 1\
-Flags: M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PHX  | $DA | 1 | 0<sup>?</sup> |
@@ -1360,7 +1360,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 
 **Push Y Register onto the Stack**\
 STACK <- Y, SP <- SP - 1\
-Flags: M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PHY  | $5A | 1 | 2<sup></sup> |
@@ -1372,7 +1372,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 
 **Push Z Register onto the Stack**\
 STACK <- z, SP <- SP - 1\
-Flags: M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PHZ  | $DB | 1 | 0<sup>?</sup> |
@@ -1386,7 +1386,7 @@ onto the stack, and decrements the value of the Stack Pointer by 1.
 
 **Pull Accumulator Register from the Stack**\
 A <- STACK, SP <- SP + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PLA  | $68 | 1 | 4<sup>m</sup> |
@@ -1401,7 +1401,7 @@ Stack Pointer by 1.
 
 **Pull Processor Flags from the Stack**\
 A <- STACK, SP <- SP + 1\
-Flags: N Z M I C D V
+Flags: N Z  I C D V
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PLP  | $28 | 1 | 4<sup>m</sup> |
@@ -1419,7 +1419,7 @@ NOTE: This instruction does NOT replace the Extended Stack Disable Flag
 
 **Pull X Register from the Stack**\
 X <- STACK, SP <- SP + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PLX  | $FA | 1 | 0<sup>?</sup> |
@@ -1434,7 +1434,7 @@ Stack Pointer by 1.
 
 **Pull Y Register from the Stack**\
 Y <- STACK, SP <- SP + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PLY  | $7A | 1 | 0<sup>?</sup> |
@@ -1449,7 +1449,7 @@ Stack Pointer by 1.
 
 **Pull Z Register from the Stack**\
 Z <- STACK, SP <- SP + 1\
-Flags: N Z M
+Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Implied | PLZ  | $FB | 1 | 0<sup>?</sup> |
@@ -1464,7 +1464,7 @@ Stack Pointer by 1.
 
 **Reset Bit 0 in Base Page**\
 M(0) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB0 \$nn | $07 | 2 | 4<sup>rb</sup> |
@@ -1479,7 +1479,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 1 in Base Page**\
 M(1) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB1 \$nn | $17 | 2 | 4<sup>rb</sup> |
@@ -1494,7 +1494,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 2 in Base Page**\
 M(2) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB2 \$nn | $27 | 2 | 4<sup>r</sup> |
@@ -1508,7 +1508,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 3 in Base Page**\
 M(3) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB3 \$nn | $37 | 2 | 4<sup>r</sup> |
@@ -1522,7 +1522,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 4 in Base Page**\
 M(4) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB4 \$nn | $47 | 2 | 4<sup>r</sup> |
@@ -1536,7 +1536,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 5 in Base Page**\
 M(5) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB5 \$nn | $57 | 2 | 4<sup>r</sup> |
@@ -1550,7 +1550,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 6 in Base Page**\
 M(6) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB6 \$nn | $67 | 2 | 5<sup>r</sup> |
@@ -1564,7 +1564,7 @@ No flags are modified, regardless of the result.
 
 **Reset Bit 7 in Base Page**\
 M(7) <- 0\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | RMB7 \$nn | $77 | 2 | 0<sup>?</sup> |
@@ -1578,7 +1578,7 @@ No flags are modified, regardless of the result.
 
 **Rotate Left Memory or Accumulator**\
 M <- M<<1, C <- M(7), M(0) <- C\
-Flags: N Z C M M
+Flags: N Z C  
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ROL A | $2A | 1 | 1<sup></sup> |
@@ -1604,7 +1604,7 @@ Side effects:
 
 **Rotate Right Memory or Accumulator**\
 M <- M>>1, C <- M(0), M(7) <- C\
-Flags: N Z C M M
+Flags: N Z C  
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ROR A | $6A | 1 | 1<sup></sup> |
@@ -1797,7 +1797,7 @@ Side effects:
 
 **Set Bit 0 in Base Page**\
 M(0) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB0 \$nn | $87 | 2 | 0<sup>?</sup> |
@@ -1811,7 +1811,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 1 in Base Page**\
 M(1) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB1 \$nn | $97 | 2 | 0<sup>?</sup> |
@@ -1825,7 +1825,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 2 in Base Page**\
 M(2) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB2 \$nn | $A7 | 2 | 0<sup>?</sup> |
@@ -1839,7 +1839,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 3 in Base Page**\
 M(3) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB3 \$nn | $B7 | 2 | 0<sup>?</sup> |
@@ -1853,7 +1853,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 4 in Base Page**\
 M(4) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB4 \$nn | $C7 | 2 | 0<sup>?</sup> |
@@ -1867,7 +1867,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 5 in Base Page**\
 M(5) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB5 \$nn | $D7 | 2 | 0<sup>?</sup> |
@@ -1881,7 +1881,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 6 in Base Page**\
 M(6) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB6 \$nn | $E7 | 2 | 0<sup>?</sup> |
@@ -1895,7 +1895,7 @@ No flags are modified, regardless of the result.
 
 **Set Bit 7 in Base Page**\
 M(7) <- 1\
-Flags: M M
+Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | SMB7 \$nn | $F7 | 2 | 0<sup>?</sup> |
@@ -2066,7 +2066,7 @@ Side effects:
 
 **Test and Reset Bit**\
 M <- M & ($NOT$ A)\
-Flags: Z M
+Flags: Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | TRB \$nn | $14 | 2 | 5<sup>r</sup> |
@@ -2094,7 +2094,7 @@ execution of the instruction.
 
 **Test and Set Bit**\
 M <- M | A\
-Flags: Z M
+Flags: Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Zero Page | TSB \$nn | $04 | 2 | 3<sup>r</sup> |
