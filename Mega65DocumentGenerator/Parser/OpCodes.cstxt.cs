@@ -54,7 +54,8 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@" | --- | --- | --- | --- | --- |")
                     Select(i => (Instruction: i, Description: parser.ParametersOrder[i.Parameters])).
                     OrderBy(ip => ip.Description.Order))
             {
-BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | ${ip.Instruction.OpCode:X2} | {ip.Description.ByteCount + 1} | {ip.Instruction.Cycles}<sup>{ip.Instruction.CycleNotesAsString}</sup> |");
+                string cycles = ip.Instruction.Cycles != 0 ? ip.Instruction.Cycles.ToString() : "";
+BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | ${ip.Instruction.OpCode:X2} | {ip.Description.ByteCount + 1} | {cycles}<sup>{ip.Instruction.CycleNotesAsString}</sup> |");
                 cycleNotes.AddRange(ip.Instruction.CycleNotes);
             }
             if (cycleNotes.Any())

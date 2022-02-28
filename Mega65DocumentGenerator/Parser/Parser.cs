@@ -58,6 +58,7 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"\$nnnn", Name = "Absolute", ByteCount = 2, Order = 40},
                     new ParameterDescription{ Parameter = @"\$nnnn,X", Name = "Absolute, X", ByteCount = 2, Order = 50},
                     new ParameterDescription{ Parameter = @"\$nnnn,Y", Name = "Absolute, Y", ByteCount = 2, Order = 60},
+                    new ParameterDescription{ Parameter = @"(\$nn)", Name = "Indirect",  ByteCount = 2, Order = 65},
                     new ParameterDescription{ Parameter = @"(\$nn,X)", Name = "Indirect, X", ByteCount = 1, Order = 70},
                     new ParameterDescription{ Parameter = @"(\$nn),Y", Name = "Indirect, Y", ByteCount = 1, Order = 80},
                     new ParameterDescription{ Parameter = @"(\$nn),Z", Name = "Indirect, Z", ByteCount = 1, Order = 90},
@@ -69,6 +70,8 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"(\$nnnn,X)", Name = "Indirect Word, X", ByteCount = 2, Order = 63},
                     new ParameterDescription{ Parameter = @"(\$nn,SP),Y", Name = "Indirect SP, Y", ByteCount = 1, Order = 150},
                     new ParameterDescription{ Parameter = @"#\$nnnn", Name = "Immediate Word",  ByteCount = 2, Order = 15},
+                    new ParameterDescription{ Parameter = @"[\$nn],Z", Name = "",  ByteCount = 2, Order = 15},
+                    new ParameterDescription{ Parameter = @"[\$nn]", Name = "",  ByteCount = 2, Order = 15},
             });
             CycleNotes = new Dictionary<char, string> {
                 { '?', "Cycles not in source documentation." },
@@ -76,7 +79,9 @@ namespace Mega65Parser
                 { 'r', "Add one cycle if clock speed is at 40 MHz." },
                 { 's', "Instruction requires 2 cycles when CPU is run at 1MHz or 2MHz." },
                 { 'b', "Add one cycle if branch is taken." },
-                { 'm', "Subtract non-bus cycles when at 40MHz."}
+                { 'm', "Subtract non-bus cycles when at 40MHz."},
+                { 'd', "Subtract one cycle when CPU is at 3.5MHz."},
+                { 'i', "Add one cycle if clock speed is at 40 MHz."}
             };
         }
         
@@ -111,12 +116,25 @@ namespace Mega65Parser
 
                 if (int.TryParse(parts[0], System.Globalization.NumberStyles.HexNumber, null, out var opCode))
                 {
-                    var instruction = Instructions.First(i => i.OpCode == opCode);
+                    var instruction = Instructions.FirstOrDefault(i => i.OpCode == opCode);
 
-                    if ("0123456789".Contains(parts[parts.Length - 1][0]))
+                    if (instruction == null)
+                        continue;
+
+                    if (Char.IsDigit(parts[parts.Length - 1][0]))
                     {
-                        instruction.Cycles = int.Parse($"{parts[parts.Length - 1][0]}");
-                        var notes = parts[parts.Length - 1][1..];
+                        string notes = "";
+                        if (parts[parts.Length - 1].Length > 1 && Char.IsDigit(parts[parts.Length - 1][1]))
+                        {
+                            instruction.Cycles = int.Parse($"{parts[parts.Length - 1][0..2]}");
+                            notes = parts[parts.Length - 1][2..];
+                        }
+                        else
+                        {
+                            instruction.Cycles = int.Parse($"{parts[parts.Length - 1][0]}");
+                            notes = parts[parts.Length - 1][1..];
+                        }
+                        
                         foreach(var c in notes)
                         {
                             if ("^${}".Contains(c))
