@@ -37,8 +37,8 @@ Flags: N Z C V
  | Absolute, X | ADC \$nnnn,X | $7D | 3 | 4<sup>r</sup> |
  | Absolute, Y | ADC \$nnnn,Y | $79 | 3 | 4<sup>r</sup> |
  | Indirect, X | ADC (\$nn,X) | $61 | 2 | 5<sup>r</sup> |
- | Indirect, Y | ADC (\$nn),Y | $71 | 2 | 5<sup>rp</sup> |
- | Indirect, Z | ADC (\$nn),Z | $72 | 2 | 5<sup>rp</sup> |
+ | Indirect, Y | ADC (\$nn),Y | $71 | 2 | 5<sup>pr</sup> |
+ | Indirect, Z | ADC (\$nn),Z | $72 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -66,13 +66,13 @@ Flags: N Z
  | --- | --- | --- | --- | --- |
  | Immediate | AND #\$nn | $29 | 2 | 2<sup></sup> |
  | Zero Page | AND \$nn | $25 | 2 | 3<sup>r</sup> |
- | Zero Page, X | AND \$nn,X | $35 | 2 | 4<sup>rp</sup> |
+ | Zero Page, X | AND \$nn,X | $35 | 2 | 4<sup>pr</sup> |
  | Absolute | AND \$nnnn | $2D | 3 | 4<sup>r</sup> |
- | Absolute, X | AND \$nnnn,X | $3D | 3 | 4<sup>rp</sup> |
+ | Absolute, X | AND \$nnnn,X | $3D | 3 | 4<sup>pr</sup> |
  | Absolute, Y | AND \$nnnn,Y | $39 | 3 | 4<sup>r</sup> |
- | Indirect, X | AND (\$nn,X) | $21 | 2 | 5<sup>rp</sup> |
- | Indirect, Y | AND (\$nn),Y | $31 | 2 | 5<sup>rp</sup> |
- | Indirect, Z | AND (\$nn),Z | $32 | 2 | 5<sup>rp</sup> |
+ | Indirect, X | AND (\$nn,X) | $21 | 2 | 5<sup>pr</sup> |
+ | Indirect, Y | AND (\$nn),Y | $31 | 2 | 5<sup>pr</sup> |
+ | Indirect, Z | AND (\$nn),Z | $32 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -98,7 +98,7 @@ Flags: N Z C
  | Zero Page | ASL \$nn | $06 | 2 | 4<sup>r</sup> |
  | Zero Page, X | ASL \$nn,X | $16 | 2 | 4<sup>r</sup> |
  | Absolute | ASL \$nnnn | $0E | 3 | 5<sup>r</sup> |
- | Absolute, X | ASL \$nnnn,X | $1E | 3 | 5<sup>rp</sup> |
+ | Absolute, X | ASL \$nnnn,X | $1E | 3 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -122,7 +122,7 @@ Flags: N Z C
  | --- | --- | --- | --- | --- |
  | Accumulator | ASR A | $43 | 1 | 1<sup></sup> |
  | Zero Page | ASR \$nn | $44 | 2 | 4<sup>r</sup> |
- | Zero Page, X | ASR \$nn,X | $54 | 2 | 5<sup>rp</sup> |
+ | Zero Page, X | ASR \$nn,X | $54 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -229,7 +229,7 @@ PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR4 \$nn,\$rr | $4F | 3 | 4<sup>rb</sup> |
+ | Zero Page, Relative | BBR4 \$nn,\$rr | $4F | 3 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -245,7 +245,7 @@ PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR5 \$nn,\$rr | $5F | 3 | 4<sup>rb</sup> |
+ | Zero Page, Relative | BBR5 \$nn,\$rr | $5F | 3 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -261,7 +261,7 @@ PC <- PC + R8\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page, Relative | BBR6 \$nn,\$rr | $6F | 3 | 4<sup>rb</sup> |
+ | Zero Page, Relative | BBR6 \$nn,\$rr | $6F | 3 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -462,9 +462,9 @@ Flags: N Z V
  | --- | --- | --- | --- | --- |
  | Immediate | BIT #\$nn | $89 | 2 | <sup>?</sup> |
  | Zero Page | BIT \$nn | $24 | 2 | 3<sup>r</sup> |
- | Zero Page, X | BIT \$nn,X | $34 | 2 | 3<sup>rp</sup> |
+ | Zero Page, X | BIT \$nn,X | $34 | 2 | 3<sup>pr</sup> |
  | Absolute | BIT \$nnnn | $2C | 3 | 4<sup>r</sup> |
- | Absolute, X | BIT \$nnnn,X | $3C | 3 | 4<sup>rp</sup> |
+ | Absolute, X | BIT \$nnnn,X | $3C | 3 | 4<sup>pr</sup> |
 
  <sup>?</sup> Cycles not in source documentation.\
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
@@ -945,11 +945,11 @@ Flags: N Z
  | Zero Page | EOR \$nn | $45 | 2 | 3<sup>r</sup> |
  | Zero Page, X | EOR \$nn,X | $55 | 2 | 3<sup>p</sup> |
  | Absolute | EOR \$nnnn | $4D | 3 | 4<sup>r</sup> |
- | Absolute, X | EOR \$nnnn,X | $5D | 3 | 4<sup>rp</sup> |
- | Absolute, Y | EOR \$nnnn,Y | $59 | 3 | 4<sup>rp</sup> |
+ | Absolute, X | EOR \$nnnn,X | $5D | 3 | 4<sup>pr</sup> |
+ | Absolute, Y | EOR \$nnnn,Y | $59 | 3 | 4<sup>pr</sup> |
  | Indirect, X | EOR (\$nn,X) | $41 | 2 | 5<sup>r</sup> |
- | Indirect, Y | EOR (\$nn),Y | $51 | 2 | 5<sup>rp</sup> |
- | Indirect, Z | EOR (\$nn),Z | $52 | 2 | 5<sup>rp</sup> |
+ | Indirect, Y | EOR (\$nn),Y | $51 | 2 | 5<sup>pr</sup> |
+ | Indirect, Z | EOR (\$nn),Z | $52 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1087,7 +1087,7 @@ Flags: -
  | --- | --- | --- | --- | --- |
  | Absolute | JSR \$nnnn | $20 | 3 | 5<sup>s</sup> |
  | Indirect Word | JSR (\$nnnn) | $22 | 3 | 5<sup>r</sup> |
- | Indirect Word, X | JSR (\$nnnn,X) | $23 | 3 | 5<sup>rp</sup> |
+ | Indirect Word, X | JSR (\$nnnn,X) | $23 | 3 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.\
@@ -1213,9 +1213,9 @@ Flags: N Z C
  | --- | --- | --- | --- | --- |
  | Accumulator | LSR A | $4A | 1 | 1<sup></sup> |
  | Zero Page | LSR \$nn | $46 | 2 | 4<sup>r</sup> |
- | Zero Page, X | LSR \$nn,X | $56 | 2 | 3<sup>rp</sup> |
+ | Zero Page, X | LSR \$nn,X | $56 | 2 | 3<sup>pr</sup> |
  | Absolute | LSR \$nnnn | $4E | 3 | 5<sup>r</sup> |
- | Absolute, X | LSR \$nnnn,X | $5E | 3 | 5<sup>rp</sup> |
+ | Absolute, X | LSR \$nnnn,X | $5E | 3 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1282,11 +1282,11 @@ Flags: N Z
  | Zero Page | ORA \$nn | $05 | 2 | 3<sup>r</sup> |
  | Zero Page, X | ORA \$nn,X | $15 | 2 | 3<sup>r</sup> |
  | Absolute | ORA \$nnnn | $0D | 3 | 4<sup>r</sup> |
- | Absolute, X | ORA \$nnnn,X | $1D | 3 | 4<sup>rp</sup> |
+ | Absolute, X | ORA \$nnnn,X | $1D | 3 | 4<sup>pr</sup> |
  | Absolute, Y | ORA \$nnnn,Y | $19 | 3 | 4<sup>r</sup> |
- | Indirect, X | ORA (\$nn,X) | $01 | 2 | 6<sup>rp</sup> |
- | Indirect, Y | ORA (\$nn),Y | $11 | 2 | 5<sup>rp</sup> |
- | Indirect, Z | ORA (\$nn),Z | $12 | 2 | 5<sup>rp</sup> |
+ | Indirect, X | ORA (\$nn,X) | $01 | 2 | 6<sup>pr</sup> |
+ | Indirect, Y | ORA (\$nn),Y | $11 | 2 | 5<sup>pr</sup> |
+ | Indirect, Z | ORA (\$nn),Z | $12 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1467,7 +1467,7 @@ M(0) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB0 \$nn | $07 | 2 | 4<sup>rb</sup> |
+ | Zero Page | RMB0 \$nn | $07 | 2 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1482,7 +1482,7 @@ M(1) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB1 \$nn | $17 | 2 | 4<sup>rb</sup> |
+ | Zero Page | RMB1 \$nn | $17 | 2 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1583,9 +1583,9 @@ Flags: N Z C
  | --- | --- | --- | --- | --- |
  | Accumulator | ROL A | $2A | 1 | 1<sup></sup> |
  | Zero Page | ROL \$nn | $26 | 2 | 4<sup>r</sup> |
- | Zero Page, X | ROL \$nn,X | $36 | 2 | 5<sup>rp</sup> |
+ | Zero Page, X | ROL \$nn,X | $36 | 2 | 5<sup>pr</sup> |
  | Absolute | ROL \$nnnn | $2E | 3 | 5<sup>r</sup> |
- | Absolute, X | ROL \$nnnn,X | $3E | 3 | 5<sup>rp</sup> |
+ | Absolute, X | ROL \$nnnn,X | $3E | 3 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.

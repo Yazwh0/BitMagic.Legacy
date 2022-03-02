@@ -55,7 +55,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@" | --- | --- | --- | --- | --- |")
                     OrderBy(ip => ip.Description.Order))
             {
                 string cycles = ip.Instruction.Cycles != 0 ? ip.Instruction.Cycles.ToString() : "";
-BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | ${ip.Instruction.OpCode:X2} | {ip.Description.ByteCount + 1} | {cycles}<sup>{ip.Instruction.CycleNotesAsString}</sup> |");
+BitMagic.AsmTemplate.Template.WriteLiteral($@" | {ip.Description.Name} | {ip.Instruction.Code} {ip.Instruction.Parameters} | {ip.Instruction.OpCodeDisplay()} | {ip.Description.ByteCount + ip.Instruction.InstructionLength()} | {cycles}<sup>{ip.Instruction.CycleNotesDisplay}</sup> |");
                 cycleNotes.AddRange(ip.Instruction.CycleNotes);
             }
             if (cycleNotes.Any())

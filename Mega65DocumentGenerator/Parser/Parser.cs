@@ -11,10 +11,47 @@ namespace Mega65Parser
     {
         public string Code { get; set; } = "";
         public int OpCode { get; set; }
+        public string OpCodeDisplay()
+        {
+            var code = OpCode;
+
+            var opCodes = new List<string>();
+            while (true) {
+                opCodes.Add((code & 0xff).ToString("X2"));
+                code = code >> 8;
+                if (code == 0)
+                    break;
+                else
+                    opCodes.Add(" ");
+            }
+            var sb = new StringBuilder();
+            sb.Append("$");
+            opCodes.Reverse();
+            foreach (var op in opCodes)
+            {
+                sb.Append(op);
+            }
+
+            return sb.ToString();
+        }
+        public int InstructionLength()
+        {
+            var toReturn = 0;
+            var code = OpCode;
+            while (true)
+            {
+                toReturn++;
+                code = code >> 8;
+                if (code == 0)
+                    break;
+            }
+            return toReturn;
+        }
+
         public string Parameters { get; set; } = "";
         public int Cycles { get; set; }
         public List<char> CycleNotes { get; set; } = new List<char>();
-        public string CycleNotesAsString => string.Concat(CycleNotes);
+        public string CycleNotesDisplay => string.Concat(CycleNotes.OrderBy(i => i));
     }
 
     public class CodeDescription
@@ -58,11 +95,11 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"\$nnnn", Name = "Absolute", ByteCount = 2, Order = 40},
                     new ParameterDescription{ Parameter = @"\$nnnn,X", Name = "Absolute, X", ByteCount = 2, Order = 50},
                     new ParameterDescription{ Parameter = @"\$nnnn,Y", Name = "Absolute, Y", ByteCount = 2, Order = 60},
-                    new ParameterDescription{ Parameter = @"(\$nn)", Name = "Indirect",  ByteCount = 2, Order = 65},
+                    new ParameterDescription{ Parameter = @"(\$nn)", Name = "Indirect",  ByteCount = 1, Order = 65},
                     new ParameterDescription{ Parameter = @"(\$nn,X)", Name = "Indirect, X", ByteCount = 1, Order = 70},
                     new ParameterDescription{ Parameter = @"(\$nn),Y", Name = "Indirect, Y", ByteCount = 1, Order = 80},
                     new ParameterDescription{ Parameter = @"(\$nn),Z", Name = "Indirect, Z", ByteCount = 1, Order = 90},
-                    new ParameterDescription{ Parameter = @"\$nn,\$rr", Name = "Zero Page, Relative", ByteCount = 2, Order = 90},
+                    new ParameterDescription{ Parameter = @"\$nn,\$rr", Name = "Zero Page, Relative", ByteCount = 2, Order = 92},
                     new ParameterDescription{ Parameter = @"\$rr", Name = "Relative", ByteCount = 1, Order = 100},
                     new ParameterDescription{ Parameter = @"\$rrrr", Name = "Relative Word", ByteCount = 2, Order = 110},
                     new ParameterDescription{ Parameter = @"(\$rrrr)", Name = "Indirect Word", ByteCount = 2, Order = 120},
@@ -70,8 +107,8 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"(\$nnnn,X)", Name = "Indirect Word, X", ByteCount = 2, Order = 63},
                     new ParameterDescription{ Parameter = @"(\$nn,SP),Y", Name = "Indirect SP, Y", ByteCount = 1, Order = 150},
                     new ParameterDescription{ Parameter = @"#\$nnnn", Name = "Immediate Word",  ByteCount = 2, Order = 15},
-                    new ParameterDescription{ Parameter = @"[\$nn],Z", Name = "",  ByteCount = 2, Order = 15},
-                    new ParameterDescription{ Parameter = @"[\$nn]", Name = "",  ByteCount = 2, Order = 15},
+                    new ParameterDescription{ Parameter = @"[\$nn],Z", Name = "Indirect Quad, Z",  ByteCount = 1, Order = 91},
+                    new ParameterDescription{ Parameter = @"[\$nn]", Name = "Indirect Quad",  ByteCount = 1, Order = 66},
             });
             CycleNotes = new Dictionary<char, string> {
                 { '?', "Cycles not in source documentation." },
