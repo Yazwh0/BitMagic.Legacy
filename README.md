@@ -38,6 +38,15 @@ If you use Visual Studio Code its worth building and installing the [extension](
 
 Open the VSC workspace in `Examples\DisplayImage` for a practical example of how a project can be put together. If you want to see this example you can do so [here](https://www.commanderx16.com/forum/index.php?/files/file/228-bitmagic-example/).
 
+## Mega 65
+
+Mega 65 (4502 / 45GS02) support should be added in the near future.
+
+For reference a copy of the instruction sets can be found here:
+
+- [4502](Documentation/InstructionSets/4510_instructions.md)
+- [45GS02](Documentation/InstructionSets/45GS02_instructions.md)
+
 ## License
 
 Unless otherwise stated (generally code from others that falls under a difference license) all the code is under GLP-3.0. Applications written using BitMagic however are license free, unless a library is used with a specific license. (The Compression library for example.)
