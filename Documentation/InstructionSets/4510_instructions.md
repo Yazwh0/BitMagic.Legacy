@@ -31,8 +31,8 @@ Flags: N Z C V
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | ADC #\$nn | $69 | 2 | 2<sup></sup> |
- | Zero Page | ADC \$nn | $65 | 2 | 3<sup>r</sup> |
- | Zero Page, X | ADC \$nn,X | $75 | 2 | 3<sup>r</sup> |
+ | Base Page | ADC \$nn | $65 | 2 | 3<sup>r</sup> |
+ | Base Page, X | ADC \$nn,X | $75 | 2 | 3<sup>r</sup> |
  | Absolute | ADC \$nnnn | $6D | 3 | 4<sup>r</sup> |
  | Absolute, X | ADC \$nnnn,X | $7D | 3 | 4<sup>r</sup> |
  | Absolute, Y | ADC \$nnnn,Y | $79 | 3 | 4<sup>r</sup> |
@@ -65,8 +65,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | AND #\$nn | $29 | 2 | 2<sup></sup> |
- | Zero Page | AND \$nn | $25 | 2 | 3<sup>r</sup> |
- | Zero Page, X | AND \$nn,X | $35 | 2 | 4<sup>pr</sup> |
+ | Base Page | AND \$nn | $25 | 2 | 3<sup>r</sup> |
+ | Base Page, X | AND \$nn,X | $35 | 2 | 4<sup>pr</sup> |
  | Absolute | AND \$nnnn | $2D | 3 | 4<sup>r</sup> |
  | Absolute, X | AND \$nnnn,X | $3D | 3 | 4<sup>pr</sup> |
  | Absolute, Y | AND \$nnnn,Y | $39 | 3 | 4<sup>r</sup> |
@@ -95,8 +95,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ASL A | $0A | 1 | 1<sup></sup> |
- | Zero Page | ASL \$nn | $06 | 2 | 4<sup>r</sup> |
- | Zero Page, X | ASL \$nn,X | $16 | 2 | 4<sup>r</sup> |
+ | Base Page | ASL \$nn | $06 | 2 | 4<sup>r</sup> |
+ | Base Page, X | ASL \$nn,X | $16 | 2 | 4<sup>r</sup> |
  | Absolute | ASL \$nnnn | $0E | 3 | 5<sup>r</sup> |
  | Absolute, X | ASL \$nnnn,X | $1E | 3 | 5<sup>pr</sup> |
 
@@ -121,8 +121,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ASR A | $43 | 1 | 1<sup></sup> |
- | Zero Page | ASR \$nn | $44 | 2 | 4<sup>r</sup> |
- | Zero Page, X | ASR \$nn,X | $54 | 2 | 5<sup>pr</sup> |
+ | Base Page | ASR \$nn | $44 | 2 | 4<sup>r</sup> |
+ | Base Page, X | ASR \$nn,X | $54 | 2 | 5<sup>pr</sup> |
 
  <sup>p</sup> Add one cycle if indexing crosses a page boundary.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -461,8 +461,8 @@ Flags: N Z V
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | BIT #\$nn | $89 | 2 | <sup>?</sup> |
- | Zero Page | BIT \$nn | $24 | 2 | 3<sup>r</sup> |
- | Zero Page, X | BIT \$nn,X | $34 | 2 | 3<sup>pr</sup> |
+ | Base Page | BIT \$nn | $24 | 2 | 3<sup>r</sup> |
+ | Base Page, X | BIT \$nn,X | $34 | 2 | 3<sup>pr</sup> |
  | Absolute | BIT \$nnnn | $2C | 3 | 4<sup>r</sup> |
  | Absolute, X | BIT \$nnnn,X | $3C | 3 | 4<sup>pr</sup> |
 
@@ -724,8 +724,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | CMP #\$nn | $C9 | 2 | <sup>?</sup> |
- | Zero Page | CMP \$nn | $C5 | 2 | <sup>?</sup> |
- | Zero Page, X | CMP \$nn,X | $D5 | 2 | <sup>?</sup> |
+ | Base Page | CMP \$nn | $C5 | 2 | <sup>?</sup> |
+ | Base Page, X | CMP \$nn,X | $D5 | 2 | <sup>?</sup> |
  | Absolute | CMP \$nnnn | $CD | 3 | <sup>?</sup> |
  | Absolute, X | CMP \$nnnn,X | $DD | 3 | <sup>?</sup> |
  | Absolute, Y | CMP \$nnnn,Y | $D9 | 3 | <sup>?</sup> |
@@ -751,7 +751,7 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | CPX #\$nn | $E0 | 2 | <sup>?</sup> |
- | Zero Page | CPX \$nn | $E4 | 2 | <sup>?</sup> |
+ | Base Page | CPX \$nn | $E4 | 2 | <sup>?</sup> |
  | Absolute | CPX \$nnnn | $EC | 3 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
@@ -772,7 +772,7 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | CPY #\$nn | $C0 | 2 | <sup>?</sup> |
- | Zero Page | CPY \$nn | $C4 | 2 | <sup>?</sup> |
+ | Base Page | CPY \$nn | $C4 | 2 | <sup>?</sup> |
  | Absolute | CPY \$nnnn | $CC | 3 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
@@ -793,7 +793,7 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | CPZ #\$nn | $C2 | 2 | <sup>?</sup> |
- | Zero Page | CPZ \$nn | $D4 | 2 | <sup>?</sup> |
+ | Base Page | CPZ \$nn | $D4 | 2 | <sup>?</sup> |
  | Absolute | CPZ \$nnnn | $DC | 3 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
@@ -815,8 +815,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | DEC A | $3A | 1 | 1<sup></sup> |
- | Zero Page | DEC \$nn | $C6 | 2 | <sup>?</sup> |
- | Zero Page, X | DEC \$nn,X | $D6 | 2 | <sup>?</sup> |
+ | Base Page | DEC \$nn | $C6 | 2 | <sup>?</sup> |
+ | Base Page, X | DEC \$nn,X | $D6 | 2 | <sup>?</sup> |
  | Absolute | DEC \$nnnn | $CE | 3 | <sup>?</sup> |
  | Absolute, X | DEC \$nnnn,X | $DE | 3 | <sup>?</sup> |
 
@@ -837,7 +837,7 @@ M16 <- M16 - 1\
 Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | DEW \$nn | $C3 | 2 | <sup>?</sup> |
+ | Base Page | DEW \$nn | $C3 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -942,8 +942,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | EOR #\$nn | $49 | 2 | 2<sup></sup> |
- | Zero Page | EOR \$nn | $45 | 2 | 3<sup>r</sup> |
- | Zero Page, X | EOR \$nn,X | $55 | 2 | 3<sup>p</sup> |
+ | Base Page | EOR \$nn | $45 | 2 | 3<sup>r</sup> |
+ | Base Page, X | EOR \$nn,X | $55 | 2 | 3<sup>p</sup> |
  | Absolute | EOR \$nnnn | $4D | 3 | 4<sup>r</sup> |
  | Absolute, X | EOR \$nnnn,X | $5D | 3 | 4<sup>pr</sup> |
  | Absolute, Y | EOR \$nnnn,Y | $59 | 3 | 4<sup>pr</sup> |
@@ -972,8 +972,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | INC A | $1A | 1 | 1<sup></sup> |
- | Zero Page | INC \$nn | $E6 | 2 | <sup>?</sup> |
- | Zero Page, X | INC \$nn,X | $F6 | 2 | <sup>?</sup> |
+ | Base Page | INC \$nn | $E6 | 2 | <sup>?</sup> |
+ | Base Page, X | INC \$nn,X | $F6 | 2 | <sup>?</sup> |
  | Absolute | INC \$nnnn | $EE | 3 | <sup>?</sup> |
  | Absolute, X | INC \$nnnn,X | $FE | 3 | <sup>?</sup> |
 
@@ -994,7 +994,7 @@ M16 <- M16 + 1\
 Flags: N Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | INW \$nn | $E3 | 2 | <sup>?</sup> |
+ | Base Page | INW \$nn | $E3 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1117,8 +1117,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDA #\$nn | $A9 | 2 | <sup>?</sup> |
- | Zero Page | LDA \$nn | $A5 | 2 | <sup>?</sup> |
- | Zero Page, X | LDA \$nn,X | $B5 | 2 | <sup>?</sup> |
+ | Base Page | LDA \$nn | $A5 | 2 | <sup>?</sup> |
+ | Base Page, X | LDA \$nn,X | $B5 | 2 | <sup>?</sup> |
  | Absolute | LDA \$nnnn | $AD | 3 | <sup>?</sup> |
  | Absolute, X | LDA \$nnnn,X | $BD | 3 | <sup>?</sup> |
  | Absolute, Y | LDA \$nnnn,Y | $B9 | 3 | <sup>?</sup> |
@@ -1145,8 +1145,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDX #\$nn | $A2 | 2 | <sup>?</sup> |
- | Zero Page | LDX \$nn | $A6 | 2 | <sup>?</sup> |
- | Zero Page, Y | LDX \$nn,Y | $B6 | 2 | <sup>?</sup> |
+ | Base Page | LDX \$nn | $A6 | 2 | <sup>?</sup> |
+ | Base Page, Y | LDX \$nn,Y | $B6 | 2 | <sup>?</sup> |
  | Absolute | LDX \$nnnn | $AE | 3 | <sup>?</sup> |
  | Absolute, Y | LDX \$nnnn,Y | $BE | 3 | <sup>?</sup> |
 
@@ -1168,8 +1168,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | LDY #\$nn | $A0 | 2 | <sup>?</sup> |
- | Zero Page | LDY \$nn | $A4 | 2 | <sup>?</sup> |
- | Zero Page, X | LDY \$nn,X | $B4 | 2 | <sup>?</sup> |
+ | Base Page | LDY \$nn | $A4 | 2 | <sup>?</sup> |
+ | Base Page, X | LDY \$nn,X | $B4 | 2 | <sup>?</sup> |
  | Absolute | LDY \$nnnn | $AC | 3 | <sup>?</sup> |
  | Absolute, X | LDY \$nnnn,X | $BC | 3 | <sup>?</sup> |
 
@@ -1212,8 +1212,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | LSR A | $4A | 1 | 1<sup></sup> |
- | Zero Page | LSR \$nn | $46 | 2 | 4<sup>r</sup> |
- | Zero Page, X | LSR \$nn,X | $56 | 2 | 3<sup>pr</sup> |
+ | Base Page | LSR \$nn | $46 | 2 | 4<sup>r</sup> |
+ | Base Page, X | LSR \$nn,X | $56 | 2 | 3<sup>pr</sup> |
  | Absolute | LSR \$nnnn | $4E | 3 | 5<sup>r</sup> |
  | Absolute, X | LSR \$nnnn,X | $5E | 3 | 5<sup>pr</sup> |
 
@@ -1279,8 +1279,8 @@ Flags: N Z
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | ORA #\$nn | $09 | 2 | 2<sup></sup> |
- | Zero Page | ORA \$nn | $05 | 2 | 3<sup>r</sup> |
- | Zero Page, X | ORA \$nn,X | $15 | 2 | 3<sup>r</sup> |
+ | Base Page | ORA \$nn | $05 | 2 | 3<sup>r</sup> |
+ | Base Page, X | ORA \$nn,X | $15 | 2 | 3<sup>r</sup> |
  | Absolute | ORA \$nnnn | $0D | 3 | 4<sup>r</sup> |
  | Absolute, X | ORA \$nnnn,X | $1D | 3 | 4<sup>pr</sup> |
  | Absolute, Y | ORA \$nnnn,Y | $19 | 3 | 4<sup>r</sup> |
@@ -1467,7 +1467,7 @@ M(0) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB0 \$nn | $07 | 2 | 4<sup>br</sup> |
+ | Base Page | RMB0 \$nn | $07 | 2 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1482,7 +1482,7 @@ M(1) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB1 \$nn | $17 | 2 | 4<sup>br</sup> |
+ | Base Page | RMB1 \$nn | $17 | 2 | 4<sup>br</sup> |
 
  <sup>b</sup> Add one cycle if branch is taken.\
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -1497,7 +1497,7 @@ M(2) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB2 \$nn | $27 | 2 | 4<sup>r</sup> |
+ | Base Page | RMB2 \$nn | $27 | 2 | 4<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
@@ -1511,7 +1511,7 @@ M(3) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB3 \$nn | $37 | 2 | 4<sup>r</sup> |
+ | Base Page | RMB3 \$nn | $37 | 2 | 4<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
@@ -1525,7 +1525,7 @@ M(4) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB4 \$nn | $47 | 2 | 4<sup>r</sup> |
+ | Base Page | RMB4 \$nn | $47 | 2 | 4<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
@@ -1539,7 +1539,7 @@ M(5) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB5 \$nn | $57 | 2 | 4<sup>r</sup> |
+ | Base Page | RMB5 \$nn | $57 | 2 | 4<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
@@ -1553,7 +1553,7 @@ M(6) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB6 \$nn | $67 | 2 | 5<sup>r</sup> |
+ | Base Page | RMB6 \$nn | $67 | 2 | 5<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
 
@@ -1567,7 +1567,7 @@ M(7) <- 0\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | RMB7 \$nn | $77 | 2 | <sup>?</sup> |
+ | Base Page | RMB7 \$nn | $77 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1582,8 +1582,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ROL A | $2A | 1 | 1<sup></sup> |
- | Zero Page | ROL \$nn | $26 | 2 | 4<sup>r</sup> |
- | Zero Page, X | ROL \$nn,X | $36 | 2 | 5<sup>pr</sup> |
+ | Base Page | ROL \$nn | $26 | 2 | 4<sup>r</sup> |
+ | Base Page, X | ROL \$nn,X | $36 | 2 | 5<sup>pr</sup> |
  | Absolute | ROL \$nnnn | $2E | 3 | 5<sup>r</sup> |
  | Absolute, X | ROL \$nnnn,X | $3E | 3 | 5<sup>pr</sup> |
 
@@ -1608,8 +1608,8 @@ Flags: N Z C
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Accumulator | ROR A | $6A | 1 | 1<sup></sup> |
- | Zero Page | ROR \$nn | $66 | 2 | 5<sup>r</sup> |
- | Zero Page, X | ROR \$nn,X | $76 | 2 | <sup>?</sup> |
+ | Base Page | ROR \$nn | $66 | 2 | 5<sup>r</sup> |
+ | Base Page, X | ROR \$nn,X | $76 | 2 | <sup>?</sup> |
  | Absolute | ROR \$nnnn | $6E | 3 | 6<sup>r</sup> |
  | Absolute, X | ROR \$nnnn,X | $7E | 3 | <sup>?</sup> |
 
@@ -1692,8 +1692,8 @@ Flags: N Z C V
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
  | Immediate | SBC #\$nn | $E9 | 2 | <sup>?</sup> |
- | Zero Page | SBC \$nn | $E5 | 2 | <sup>?</sup> |
- | Zero Page, X | SBC \$nn,X | $F5 | 2 | <sup>?</sup> |
+ | Base Page | SBC \$nn | $E5 | 2 | <sup>?</sup> |
+ | Base Page, X | SBC \$nn,X | $F5 | 2 | <sup>?</sup> |
  | Absolute | SBC \$nnnn | $ED | 3 | <sup>?</sup> |
  | Absolute, X | SBC \$nnnn,X | $FD | 3 | <sup>?</sup> |
  | Absolute, Y | SBC \$nnnn,Y | $F9 | 3 | <sup>?</sup> |
@@ -1800,7 +1800,7 @@ M(0) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB0 \$nn | $87 | 2 | <sup>?</sup> |
+ | Base Page | SMB0 \$nn | $87 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1814,7 +1814,7 @@ M(1) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB1 \$nn | $97 | 2 | <sup>?</sup> |
+ | Base Page | SMB1 \$nn | $97 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1828,7 +1828,7 @@ M(2) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB2 \$nn | $A7 | 2 | <sup>?</sup> |
+ | Base Page | SMB2 \$nn | $A7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1842,7 +1842,7 @@ M(3) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB3 \$nn | $B7 | 2 | <sup>?</sup> |
+ | Base Page | SMB3 \$nn | $B7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1856,7 +1856,7 @@ M(4) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB4 \$nn | $C7 | 2 | <sup>?</sup> |
+ | Base Page | SMB4 \$nn | $C7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1870,7 +1870,7 @@ M(5) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB5 \$nn | $D7 | 2 | <sup>?</sup> |
+ | Base Page | SMB5 \$nn | $D7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1884,7 +1884,7 @@ M(6) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB6 \$nn | $E7 | 2 | <sup>?</sup> |
+ | Base Page | SMB6 \$nn | $E7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1898,7 +1898,7 @@ M(7) <- 1\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | SMB7 \$nn | $F7 | 2 | <sup>?</sup> |
+ | Base Page | SMB7 \$nn | $F7 | 2 | <sup>?</sup> |
 
  <sup>?</sup> Cycles not in source documentation.
 
@@ -1912,8 +1912,8 @@ M <- A\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | STA \$nn | $85 | 2 | <sup>?</sup> |
- | Zero Page, X | STA \$nn,X | $95 | 2 | <sup>?</sup> |
+ | Base Page | STA \$nn | $85 | 2 | <sup>?</sup> |
+ | Base Page, X | STA \$nn,X | $95 | 2 | <sup>?</sup> |
  | Absolute | STA \$nnnn | $8D | 3 | <sup>?</sup> |
  | Absolute, X | STA \$nnnn,X | $9D | 3 | <sup>?</sup> |
  | Absolute, Y | STA \$nnnn,Y | $99 | 3 | <sup>?</sup> |
@@ -1934,8 +1934,8 @@ M <- X\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | STX \$nn | $86 | 2 | <sup>?</sup> |
- | Zero Page, Y | STX \$nn,Y | $96 | 2 | <sup>?</sup> |
+ | Base Page | STX \$nn | $86 | 2 | <sup>?</sup> |
+ | Base Page, Y | STX \$nn,Y | $96 | 2 | <sup>?</sup> |
  | Absolute | STX \$nnnn | $8E | 3 | <sup>?</sup> |
  | Absolute, Y | STX \$nnnn,Y | $9B | 3 | <sup>?</sup> |
 
@@ -1951,8 +1951,8 @@ M <- Y\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | STY \$nn | $84 | 2 | <sup>?</sup> |
- | Zero Page, X | STY \$nn,X | $94 | 2 | <sup>?</sup> |
+ | Base Page | STY \$nn | $84 | 2 | <sup>?</sup> |
+ | Base Page, X | STY \$nn,X | $94 | 2 | <sup>?</sup> |
  | Absolute | STY \$nnnn | $8C | 3 | <sup>?</sup> |
  | Absolute, X | STY \$nnnn,X | $8B | 3 | <sup>?</sup> |
 
@@ -1968,8 +1968,8 @@ M <- Z\
 Flags: -
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | STZ \$nn | $64 | 2 | 3<sup></sup> |
- | Zero Page, X | STZ \$nn,X | $74 | 2 | 3<sup></sup> |
+ | Base Page | STZ \$nn | $64 | 2 | 3<sup></sup> |
+ | Base Page, X | STZ \$nn,X | $74 | 2 | 3<sup></sup> |
  | Absolute | STZ \$nnnn | $9C | 3 | <sup>?</sup> |
  | Absolute, X | STZ \$nnnn,X | $9E | 3 | <sup>?</sup> |
 
@@ -2069,7 +2069,7 @@ M <- M & ($NOT$ A)\
 Flags: Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | TRB \$nn | $14 | 2 | 5<sup>r</sup> |
+ | Base Page | TRB \$nn | $14 | 2 | 5<sup>r</sup> |
  | Absolute | TRB \$nnnn | $1C | 3 | 4<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.
@@ -2097,7 +2097,7 @@ M <- M | A\
 Flags: Z 
  | Mode | Syntax | Hex | Len | Cycles |
  | --- | --- | --- | --- | --- |
- | Zero Page | TSB \$nn | $04 | 2 | 3<sup>r</sup> |
+ | Base Page | TSB \$nn | $04 | 2 | 3<sup>r</sup> |
  | Absolute | TSB \$nnnn | $0C | 3 | 5<sup>r</sup> |
 
  <sup>r</sup> Add one cycle if clock speed is at 40 MHz.

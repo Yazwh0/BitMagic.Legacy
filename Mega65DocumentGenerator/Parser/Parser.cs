@@ -48,10 +48,12 @@ namespace Mega65Parser
             return toReturn;
         }
 
-        public string Parameters { get; set; } = "";
+        public string Parameters => ParameterPrefix + ParametersBase;
+        public string ParametersBase { get; set; } = "";
         public int Cycles { get; set; }
         public List<char> CycleNotes { get; set; } = new List<char>();
         public string CycleNotesDisplay => string.Concat(CycleNotes.OrderBy(i => i));
+        public string ParameterPrefix { get; set; } = "";
     }
 
     public class CodeDescription
@@ -79,26 +81,38 @@ namespace Mega65Parser
         public Dictionary<string, CodeDescription> Explanation = new Dictionary<string, CodeDescription>();
         public Dictionary<string, ParameterDescription> ParametersOrder = new Dictionary<string, ParameterDescription>();
         public Dictionary<char, string> CycleNotes;
+        public Func<string, string> _getParameterPrefix = i => "";
 
         public string? ChipName { get; set; }
 
-        public Parser(string basePath)
+        public Parser(string basePath, Func<string, string>? GetParameterPrefix = null)
         {
+            _getParameterPrefix = GetParameterPrefix ?? (i => "");
             _basePath = basePath;
             ParameterDescriptions(new ParameterDescription[] {
                     new ParameterDescription{ Parameter = @"", Name = "Implied",  ByteCount = 0, Order = -1},
+                    new ParameterDescription{ Parameter = @"Q:", Name = "Implied Quad",  ByteCount = 0, Order = -1},
                     new ParameterDescription{ Parameter = @"A", Name = "Accumulator",  ByteCount = 0, Order = 0},
                     new ParameterDescription{ Parameter = @"#\$nn", Name = "Immediate",  ByteCount = 1, Order = 10},
-                    new ParameterDescription{ Parameter = @"\$nn", Name = "Zero Page", ByteCount = 1, Order = 20},
-                    new ParameterDescription{ Parameter = @"\$nn,X", Name = "Zero Page, X", ByteCount = 1, Order = 30},
-                    new ParameterDescription{ Parameter = @"\$nn,Y", Name = "Zero Page, Y", ByteCount = 1, Order = 35},
+                    new ParameterDescription{ Parameter = @"\$nn", Name = "Base Page", ByteCount = 1, Order = 20},
+                    new ParameterDescription{ Parameter = @"Q:\$nn", Name = "Base Page Quad", ByteCount = 1, Order = 20},
+                    new ParameterDescription{ Parameter = @"\$nn,X", Name = "Base Page, X", ByteCount = 1, Order = 30},
+                    new ParameterDescription{ Parameter = @"Q:\$nn,X", Name = "Base Page Quad, X", ByteCount = 1, Order = 30},
+                    new ParameterDescription{ Parameter = @"\$nn,Y", Name = "Base Page, Y", ByteCount = 1, Order = 35},
                     new ParameterDescription{ Parameter = @"\$nnnn", Name = "Absolute", ByteCount = 2, Order = 40},
+                    new ParameterDescription{ Parameter = @"Q:\$nnnn", Name = "Absolute Quad", ByteCount = 2, Order = 40},
                     new ParameterDescription{ Parameter = @"\$nnnn,X", Name = "Absolute, X", ByteCount = 2, Order = 50},
+                    new ParameterDescription{ Parameter = @"Q:\$nnnn,X", Name = "Absolute Quad, X", ByteCount = 2, Order = 50},
                     new ParameterDescription{ Parameter = @"\$nnnn,Y", Name = "Absolute, Y", ByteCount = 2, Order = 60},
+                    new ParameterDescription{ Parameter = @"Q:\$nnnn,Y", Name = "Absolute Quad, Y", ByteCount = 2, Order = 60},
                     new ParameterDescription{ Parameter = @"(\$nn)", Name = "Indirect",  ByteCount = 1, Order = 65},
+                    new ParameterDescription{ Parameter = @"Q:(\$nn)", Name = "Indirect Quad",  ByteCount = 1, Order = 65},
                     new ParameterDescription{ Parameter = @"(\$nn,X)", Name = "Indirect, X", ByteCount = 1, Order = 70},
+                    new ParameterDescription{ Parameter = @"Q:(\$nn,X)", Name = "Indirect Quad, X", ByteCount = 1, Order = 70},
                     new ParameterDescription{ Parameter = @"(\$nn),Y", Name = "Indirect, Y", ByteCount = 1, Order = 80},
+                    new ParameterDescription{ Parameter = @"Q:(\$nn),Y", Name = "Indirect Quad, Y", ByteCount = 1, Order = 80},
                     new ParameterDescription{ Parameter = @"(\$nn),Z", Name = "Indirect, Z", ByteCount = 1, Order = 90},
+                    new ParameterDescription{ Parameter = @"Q:(\$nn),Z", Name = "Indirect Quad, Z", ByteCount = 1, Order = 90},
                     new ParameterDescription{ Parameter = @"\$nn,\$rr", Name = "Zero Page, Relative", ByteCount = 2, Order = 92},
                     new ParameterDescription{ Parameter = @"\$rr", Name = "Relative", ByteCount = 1, Order = 100},
                     new ParameterDescription{ Parameter = @"\$rrrr", Name = "Relative Word", ByteCount = 2, Order = 110},
@@ -106,9 +120,12 @@ namespace Mega65Parser
                     new ParameterDescription{ Parameter = @"(\$nnnn)", Name = "Indirect Word", ByteCount = 2, Order = 62},
                     new ParameterDescription{ Parameter = @"(\$nnnn,X)", Name = "Indirect Word, X", ByteCount = 2, Order = 63},
                     new ParameterDescription{ Parameter = @"(\$nn,SP),Y", Name = "Indirect SP, Y", ByteCount = 1, Order = 150},
+                    new ParameterDescription{ Parameter = @"Q:(\$nn,SP),Y", Name = "Indirect SP Quad, Y", ByteCount = 1, Order = 150},
                     new ParameterDescription{ Parameter = @"#\$nnnn", Name = "Immediate Word",  ByteCount = 2, Order = 15},
-                    new ParameterDescription{ Parameter = @"[\$nn],Z", Name = "Indirect Quad, Z",  ByteCount = 1, Order = 91},
-                    new ParameterDescription{ Parameter = @"[\$nn]", Name = "Indirect Quad",  ByteCount = 1, Order = 66},
+                    new ParameterDescription{ Parameter = @"[\$nn],Z", Name = "32bit Indirect, Z",  ByteCount = 1, Order = 91},
+                    new ParameterDescription{ Parameter = @"Q:[\$nn],Z", Name = "32bit Indirect Quad, Z",  ByteCount = 1, Order = 91},
+                    new ParameterDescription{ Parameter = @"[\$nn]", Name = "32bit Indirect",  ByteCount = 1, Order = 66},
+                    new ParameterDescription{ Parameter = @"Q:[\$nn]", Name = "32bit Indirect Quad",  ByteCount = 1, Order = 66},
             });
             CycleNotes = new Dictionary<char, string> {
                 { '?', "Cycles not in source documentation." },
@@ -122,7 +139,6 @@ namespace Mega65Parser
             };
         }
         
-
         private void ParameterDescriptions(IEnumerable<ParameterDescription> toProcess)
         {
             foreach(var i in toProcess)
@@ -200,7 +216,7 @@ namespace Mega65Parser
                     continue;
                 
                 var parts = line.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                var instruction = new Instruction { Code = parts[1], Parameters = parts.Length > 2 ? parts[2].Replace("$", @"\$") : "", OpCode = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber) };
+                var instruction = new Instruction { Code = parts[1], ParametersBase = parts.Length > 2 ? parts[2].Replace("$", @"\$") : "", OpCode = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber), ParameterPrefix = _getParameterPrefix(parts[1]) };
                 Instructions.Add(instruction);
             }
         }

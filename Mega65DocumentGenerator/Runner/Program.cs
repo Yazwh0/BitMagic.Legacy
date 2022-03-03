@@ -14,7 +14,7 @@ CpuDocumentationGenerator.Output(p);
 File.WriteAllText(Path.Combine(@"D:\Documents\Source\BitMagic\Documentation\InstructionSets", chipName + "_instructions.md"), Template.ToString);
 
 chipName = "45GS02";
-p = new Parser(@"D:\Documents\Source\mega65-user-guide\instruction_sets");
+p = new Parser(@"D:\Documents\Source\mega65-user-guide\instruction_sets", i => i.EndsWith("Q") ? "Q:" : "");
 Template.StartProject();
 p.Parse(chipName);
 CpuDocumentationGenerator.Output(p);
