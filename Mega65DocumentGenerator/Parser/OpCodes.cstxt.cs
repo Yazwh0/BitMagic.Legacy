@@ -12,7 +12,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"# {parser.ChipName} Instructions")
 BitMagic.AsmTemplate.Template.WriteLiteral($@"");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"## Credits and License");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"");
-BitMagic.AsmTemplate.Template.WriteLiteral($@"All text derived from the [Mega65 User Guide](https://github.com/MEGA65/mega65-user-guide). Copyright 2019-2021 by Paul Gardner-Stephen, the MEGA Museum of Electronic Games & Art e.V., and contributors.");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"All text derived from the [Mega65 User Guide](https://github.com/MEGA65/mega65-user-guide). Copyright 2019-2022 by Paul Gardner-Stephen, the MEGA Museum of Electronic Games & Art e.V., and contributors.");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"This reference guide is made available under the GNU Free Documentation License");
 BitMagic.AsmTemplate.Template.WriteLiteral($@"v1.3, or later, if desired. This means that you are free to modify, reproduce and redistribute this reference guide, subject to certain conditions. The full text of the GNU");
