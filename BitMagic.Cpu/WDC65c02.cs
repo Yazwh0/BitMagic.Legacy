@@ -1,9 +1,11 @@
 ﻿using BitMagic.Common;
+using BitMagic.Compiler.Cpu;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BitMagic.Cpu
@@ -29,6 +31,26 @@ namespace BitMagic.Cpu
         public const int ResetVector = 0xfffc;
 
         public double Frequency { get; }
+
+        private readonly IReadOnlyDictionary<AccessMode, IParametersDefinition> _parameterDefinitions = new IParametersDefinition[] {
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.Immediate, StartsWith = "#", ParameterSize = ParameterSize.Bit8, Order = 10 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.Indirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit16, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectX, StartsWith = "(", EndsWith = ",X)", ParameterSize = ParameterSize.Bit8, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectY, StartsWith = "(", EndsWith = "),Y", ParameterSize = ParameterSize.Bit8, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.IndAbsoluteX, StartsWith = "(", EndsWith = ",X)", ParameterSize = ParameterSize.Bit16, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageIndirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit8, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageX, EndsWith = ",X", ParameterSize = ParameterSize.Bit8, Order = 30 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageY, EndsWith = ",Y", ParameterSize = ParameterSize.Bit8, Order = 30 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.AbsoluteX, EndsWith = ",X", ParameterSize = ParameterSize.Bit16, Order = 30 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.AbsoluteY, EndsWith = ",Y", ParameterSize = ParameterSize.Bit16, Order = 30 },
+             new ParamatersDefinitionRelative() {AccessMode = AccessMode.Relative, ParameterSize = ParameterSize.Bit8, Order = 40 },
+             new ParametersDefinitionEmpty() {AccessMode = AccessMode.Implied, Order = 40 },
+             new ParametersDefinitionEmpty() {AccessMode = AccessMode.Accumulator, Order = 40 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPage, ParameterSize = ParameterSize.Bit8, Order = 40 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.Absolute, ParameterSize = ParameterSize.Bit16, Order = 40 },
+        }.ToDictionary(i => i.AccessMode, i => i);
+
+        public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => _parameterDefinitions;        
 
         private readonly CpuOpCode[] _opCodes = new CpuOpCode[]
         {
@@ -349,7 +371,7 @@ namespace BitMagic.Cpu
 
     public class Stp : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xdb, AccessMode.Implied, 2),
         };
@@ -365,7 +387,7 @@ namespace BitMagic.Cpu
 
     public class Adc : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x69, AccessMode.Immediate, 2),
             (0x65, AccessMode.ZeroPage, 3),
             (0x75, AccessMode.ZeroPageX, 4),
@@ -394,7 +416,7 @@ namespace BitMagic.Cpu
 
     public class And : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x29, AccessMode.Immediate, 2),
             (0x25, AccessMode.ZeroPage, 3),
             (0x35, AccessMode.ZeroPageX, 4),
@@ -419,7 +441,7 @@ namespace BitMagic.Cpu
 
     public class Asl : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x0a, AccessMode.Accumulator, 2),
             (0x06, AccessMode.ZeroPage, 5),
             (0x16, AccessMode.ZeroPageX, 6),
@@ -468,7 +490,7 @@ namespace BitMagic.Cpu
 
     public class Bit : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x24, AccessMode.ZeroPage, 3),
             (0x2c, AccessMode.Absolute, 4),
             (0x89, AccessMode.Immediate, 2),
@@ -525,7 +547,7 @@ namespace BitMagic.Cpu
 
     public class Bra : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x80, AccessMode.Relative, 2)
         };
@@ -535,7 +557,7 @@ namespace BitMagic.Cpu
 
     public class Bpl : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x10, AccessMode.Relative, 2)
         };
 
@@ -544,7 +566,7 @@ namespace BitMagic.Cpu
 
     public class Bmi : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x30, AccessMode.Relative, 2)
         };
 
@@ -553,7 +575,7 @@ namespace BitMagic.Cpu
 
     public class Bvc : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x50, AccessMode.Relative, 2)
         };
@@ -562,7 +584,7 @@ namespace BitMagic.Cpu
     }
     public class Bvs : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x70, AccessMode.Relative, 2)
         };
@@ -572,7 +594,7 @@ namespace BitMagic.Cpu
 
     public class Bcc : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x90, AccessMode.Relative, 2)
         };
@@ -582,7 +604,7 @@ namespace BitMagic.Cpu
 
     public class Bcs : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xb0, AccessMode.Relative, 2)
         };
@@ -592,7 +614,7 @@ namespace BitMagic.Cpu
 
     public class Bne : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xd0, AccessMode.Relative, 2)
         };
@@ -602,7 +624,7 @@ namespace BitMagic.Cpu
 
     public class Beq : BranchOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xf0, AccessMode.Relative, 2)
         };
@@ -612,7 +634,7 @@ namespace BitMagic.Cpu
 
     public class Brk : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x00, AccessMode.Implied, 7)
         };
@@ -648,7 +670,7 @@ namespace BitMagic.Cpu
 
     public class Cmp : Compare
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xc9, AccessMode.Immediate, 2),
             (0xc5, AccessMode.ZeroPage, 3),
@@ -666,7 +688,7 @@ namespace BitMagic.Cpu
 
     public class Cpx : Compare
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xe0, AccessMode.Immediate, 2),
             (0xe4, AccessMode.ZeroPage, 3),
@@ -678,7 +700,7 @@ namespace BitMagic.Cpu
 
     public class Cpy : Compare
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xc0, AccessMode.Immediate, 2),
             (0xc4, AccessMode.ZeroPage, 3),
@@ -690,7 +712,7 @@ namespace BitMagic.Cpu
 
     public class Dec : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x3a, AccessMode.Implied, 2),
             (0xc6, AccessMode.ZeroPage, 5),
@@ -731,7 +753,7 @@ namespace BitMagic.Cpu
 
     public class Eor : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x49, AccessMode.Immediate, 2),
             (0x45, AccessMode.ZeroPage, 3),
@@ -769,7 +791,7 @@ namespace BitMagic.Cpu
 
     public class Clc : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x18, AccessMode.Implied, 2)
         };
@@ -779,7 +801,7 @@ namespace BitMagic.Cpu
 
     public class Sec : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x38, AccessMode.Implied, 2)
         };
@@ -790,7 +812,7 @@ namespace BitMagic.Cpu
 
     public class Cli : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x58, AccessMode.Implied, 2)
         };
@@ -800,7 +822,7 @@ namespace BitMagic.Cpu
 
     public class Sei : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x78, AccessMode.Implied, 2)
         };
@@ -810,7 +832,7 @@ namespace BitMagic.Cpu
 
     public class Clv : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xb8, AccessMode.Implied, 2)
         };
@@ -820,7 +842,7 @@ namespace BitMagic.Cpu
 
     public class Cld : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xd8, AccessMode.Implied, 2)
         };
@@ -830,7 +852,7 @@ namespace BitMagic.Cpu
 
     public class Sed : FlagInstruction
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xf8, AccessMode.Implied, 2)
         };
@@ -840,7 +862,7 @@ namespace BitMagic.Cpu
 
     public class Inc : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x1a, AccessMode.Implied, 2),
             (0xe6, AccessMode.ZeroPage, 5),
@@ -882,7 +904,7 @@ namespace BitMagic.Cpu
 
     public class Jmp : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x4c, AccessMode.Absolute, 3),
             (0x6c, AccessMode.Indirect, 5),
@@ -901,7 +923,7 @@ namespace BitMagic.Cpu
 
     public class Jsr : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x20, AccessMode.Absolute, 6),
         };
@@ -926,7 +948,7 @@ namespace BitMagic.Cpu
 
     public class Lda : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa9, AccessMode.Immediate, 2),
             (0xa5, AccessMode.ZeroPage, 3),
@@ -952,7 +974,7 @@ namespace BitMagic.Cpu
 
     public class Ldx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa2, AccessMode.Immediate, 2),
             (0xa6, AccessMode.ZeroPage, 3),
@@ -974,7 +996,7 @@ namespace BitMagic.Cpu
 
     public class Ldy : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa0, AccessMode.Immediate, 2),
             (0xa4, AccessMode.ZeroPage, 3),
@@ -996,7 +1018,7 @@ namespace BitMagic.Cpu
 
     public class Lsr : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x4a, AccessMode.Accumulator, 2),
             (0x46, AccessMode.ZeroPage, 5),
@@ -1045,7 +1067,7 @@ namespace BitMagic.Cpu
 
     public class Nop : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xea, AccessMode.Implied, 2),
         };
@@ -1058,7 +1080,7 @@ namespace BitMagic.Cpu
 
     public class Ora : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x09, AccessMode.Immediate, 2),
             (0x05, AccessMode.ZeroPage, 3),
@@ -1084,7 +1106,7 @@ namespace BitMagic.Cpu
 
     public class Rol : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x2a, AccessMode.Accumulator, 2),
             (0x26, AccessMode.ZeroPage, 5),
@@ -1136,7 +1158,7 @@ namespace BitMagic.Cpu
 
     public class Ror : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x6a, AccessMode.Accumulator, 2),
             (0x66, AccessMode.ZeroPage, 5),
@@ -1188,7 +1210,7 @@ namespace BitMagic.Cpu
 
     public class Rti : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x40, AccessMode.Implied, 6),
         };
@@ -1210,7 +1232,7 @@ namespace BitMagic.Cpu
 
     public class Rts : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x60, AccessMode.Implied, 6),
         };
@@ -1230,7 +1252,7 @@ namespace BitMagic.Cpu
 
     public class Sbc : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xe9, AccessMode.Immediate, 2),
             (0xe5, AccessMode.ZeroPage, 3),
@@ -1260,7 +1282,7 @@ namespace BitMagic.Cpu
 
     public class Sta : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x85, AccessMode.ZeroPage, 3),
             (0x95, AccessMode.ZeroPageX, 4),
@@ -1286,7 +1308,7 @@ namespace BitMagic.Cpu
 
     public class Stz : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x64, AccessMode.ZeroPage, 3),
             (0x74, AccessMode.ZeroPageX, 4),
@@ -1308,7 +1330,7 @@ namespace BitMagic.Cpu
 
     public class Stx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x86, AccessMode.ZeroPage, 3),
             (0x96, AccessMode.ZeroPageY, 4),
@@ -1329,7 +1351,7 @@ namespace BitMagic.Cpu
 
     public class Sty : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x84, AccessMode.ZeroPage, 3),
             (0x94, AccessMode.ZeroPageX, 4),
@@ -1350,7 +1372,7 @@ namespace BitMagic.Cpu
 
     public class Tax : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xaa, AccessMode.Implied, 2),
         };
@@ -1365,7 +1387,7 @@ namespace BitMagic.Cpu
 
     public class Txa : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x8a, AccessMode.Implied, 2),
         };
@@ -1380,7 +1402,7 @@ namespace BitMagic.Cpu
 
     public class Dex : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xca, AccessMode.Implied, 2),
         };
@@ -1395,7 +1417,7 @@ namespace BitMagic.Cpu
 
     public class Inx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xe8, AccessMode.Implied, 2),
         };
@@ -1410,7 +1432,7 @@ namespace BitMagic.Cpu
 
     public class Tay : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xa8, AccessMode.Implied, 2),
         };
@@ -1425,7 +1447,7 @@ namespace BitMagic.Cpu
 
     public class Tya : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x98, AccessMode.Implied, 2),
         };
@@ -1440,7 +1462,7 @@ namespace BitMagic.Cpu
 
     public class Dey : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x88, AccessMode.Implied, 2),
         };
@@ -1455,7 +1477,7 @@ namespace BitMagic.Cpu
 
     public class Iny : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xc8, AccessMode.Implied, 2),
         };
@@ -1470,7 +1492,7 @@ namespace BitMagic.Cpu
 
     public class Txs : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x9a, AccessMode.Implied, 2),
         };
@@ -1485,7 +1507,7 @@ namespace BitMagic.Cpu
 
     public class Tsx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xba, AccessMode.Implied, 2),
         };
@@ -1500,7 +1522,7 @@ namespace BitMagic.Cpu
 
     public class Pha : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x48, AccessMode.Implied, 3),
         };
@@ -1515,7 +1537,7 @@ namespace BitMagic.Cpu
 
     public class Pla : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x68, AccessMode.Implied, 4),
         };
@@ -1530,7 +1552,7 @@ namespace BitMagic.Cpu
 
     public class Php : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x08, AccessMode.Implied, 3),
         };
@@ -1545,7 +1567,7 @@ namespace BitMagic.Cpu
 
     public class Plp : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x28, AccessMode.Implied, 4),
         };
@@ -1560,7 +1582,7 @@ namespace BitMagic.Cpu
 
     public class Plx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xfa, AccessMode.Implied, 4),
         };
@@ -1575,7 +1597,7 @@ namespace BitMagic.Cpu
 
     public class Ply : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x7a, AccessMode.Implied, 4),
         };
@@ -1590,7 +1612,7 @@ namespace BitMagic.Cpu
 
     public class Phx : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0xda, AccessMode.Implied, 3),
         };
@@ -1605,7 +1627,7 @@ namespace BitMagic.Cpu
 
     public class Phy : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x5a, AccessMode.Implied, 3),
         };
@@ -1620,7 +1642,7 @@ namespace BitMagic.Cpu
 
     public class Trb : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x14, AccessMode.ZeroPage, 5),
             (0x1c, AccessMode.Absolute, 6),
@@ -1647,7 +1669,7 @@ namespace BitMagic.Cpu
 
     public class Tsb : CpuOpCode
     {
-        internal override List<(byte OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
             (0x04, AccessMode.ZeroPage, 5),
             (0x0c, AccessMode.Absolute, 6),

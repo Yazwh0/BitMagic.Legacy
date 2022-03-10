@@ -1,11 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace BitMagic.Common
 {
+    // for compiler
     public interface ICpu
     { 
         public string Name { get; }
         IEnumerable<ICpuOpCode> OpCodes { get; }
+        IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions { get; }
+    }
+
+    public interface IParametersDefinition
+    {
+        AccessMode AccessMode { get; }
+        (byte[]? Data, bool RequiresRecalc) Compile(string parameters, ILine line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final);
+        (int BytesUsed, string DecompiledCode) Decompile(IEnumerable<byte> inputBytes);
+        int Order { get; }
+    }
+
+    public interface IExpressionEvaluator
+    {
+        public void Reset();
+        public (int Result, bool RequiresRecalc) Evaluate(string expression, IVariables variables);
     }
 
     public interface ICpuEmulator : ICpu
@@ -23,7 +40,10 @@ namespace BitMagic.Common
     public interface ICpuOpCode
     {
         string Code { get; } // not unique
-        byte GetOpCode(AccessMode mode);
+        // todo: change to byte[] or similar
+        uint GetOpCode(AccessMode mode);
+        // number of bytes
+        int OpCodeLength { get; }
         public IEnumerable<AccessMode> Modes { get; }
     }
 

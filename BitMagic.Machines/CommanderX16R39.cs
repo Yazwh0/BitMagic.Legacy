@@ -130,5 +130,8 @@ namespace BitMagic.Machines
         };
 
         public IReadOnlyDictionary<string, int> Values => _defaults;
+        
+        // todo: create abstract class or similar.
+        public bool TryGetValue(string name, int lineNumber, out int result) => throw new Exception();
     }
 }

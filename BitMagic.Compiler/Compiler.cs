@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Toolkit;
 
 namespace BitMagic.Compiler
 {
@@ -116,6 +117,56 @@ namespace BitMagic.Compiler
         }
 
         public override string ErrorDetail => $"Unknown machine '{MachineName}'.";
+    }
+
+    internal class Evaluator : IExpressionEvaluator
+    {
+        private readonly ExpressionEvaluator _evaluator = new();
+        private bool _requiresReval;
+        private IVariables? _variables = null;
+        private readonly CompileState _state;
+
+        public List<string> RequiresRevalNames = new();
+
+        public Evaluator(CompileState state)
+        {
+            _state = state;
+        }
+
+        // not thread safe!!!
+        public (int Result, bool RequiresRecalc) Evaluate(string expression, IVariables variables)
+        {
+            _variables = variables;
+            _requiresReval = false;
+            _evaluator.PreEvaluateVariable += _evaluator_PreEvaluateVariable;
+            var result = (int)_evaluator.Evaluate(expression);
+            _evaluator.PreEvaluateVariable -= _evaluator_PreEvaluateVariable;
+
+            return new(result, _requiresReval);
+        }
+
+        private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
+        {
+            if (_variables == null)
+                throw new NullReferenceException("_procedure is null");
+
+            if (_variables.TryGetValue(e.Name, 0, out var result))
+            {
+                e.Value = result;
+                _requiresReval = false;
+            }
+            else
+            {
+                RequiresRevalNames.Add(e.Name);
+                _requiresReval = true;
+                e.Value = 0xabcd; // random two byte number
+            }
+        }
+
+        public void Reset()
+        {
+            RequiresRevalNames.Clear();
+        }
     }
 
     public class Compiler
@@ -609,7 +660,7 @@ namespace BitMagic.Compiler
 
             var opCode = _opCodes[code];
 
-            var toAdd = new Line(opCode, source, state.Procedure, state.Segment.Address, parts[1..]);
+            var toAdd = new Line(opCode, source, state.Procedure, _project.Machine.Cpu, state.Evaluator, state.Segment.Address, parts[1..]);
 
             toAdd.ProcessParts(false);
 

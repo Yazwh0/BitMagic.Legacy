@@ -23,5 +23,6 @@ namespace BitMagic.Common
     public interface IVariables
     {
         IReadOnlyDictionary<string, int> Values { get; }
+        bool TryGetValue(string name, int lineNumber, out int result);
     }
 }

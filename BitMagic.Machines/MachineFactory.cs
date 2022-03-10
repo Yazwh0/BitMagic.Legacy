@@ -43,5 +43,7 @@ namespace BitMagic.Machines
         public string Name => "NoCpu";
 
         public IEnumerable<ICpuOpCode> OpCodes => Array.Empty<ICpuOpCode>();
+
+        public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => throw new NotImplementedException();
     }
 }

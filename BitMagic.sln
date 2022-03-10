@@ -45,6 +45,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{AF58
 		Testing\testimport.bsasm = Testing\testimport.bsasm
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitMagic.Compiler.Cpu", "BitMagic.Compiler.Cpu\BitMagic.Compiler.Cpu.csproj", "{56AA9025-C487-499F-A05F-AB4227CAA7DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{212E57E0-2C20-4888-999F-C0D909936240}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{212E57E0-2C20-4888-999F-C0D909936240}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{212E57E0-2C20-4888-999F-C0D909936240}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56AA9025-C487-499F-A05F-AB4227CAA7DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56AA9025-C487-499F-A05F-AB4227CAA7DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56AA9025-C487-499F-A05F-AB4227CAA7DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56AA9025-C487-499F-A05F-AB4227CAA7DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

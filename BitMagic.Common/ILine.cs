@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BitMagic.Compiler
+namespace BitMagic.Common
 {
     public interface ILine
     {
@@ -13,5 +13,14 @@ namespace BitMagic.Compiler
         void ProcessParts(bool finalParse);
         void WriteToConsole();
         SourceFilePosition Source { get; }
+    }
+
+    public record SourceFilePosition
+    {
+        public string Name = "";
+        public int LineNumber;
+        public string Source = "";
+
+        public override string ToString() => $"{Name}:{LineNumber}\n{Source}";
     }
 }
