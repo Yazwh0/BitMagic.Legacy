@@ -33,6 +33,10 @@ namespace BitMagic.Cpu
         public double Frequency { get; }
 
         private readonly IReadOnlyDictionary<AccessMode, IParametersDefinition> _parameterDefinitions = new IParametersDefinition[] {
+             new ParametersCommaSeparated() { AccessMode = AccessMode.ZerpPageRel, Order = 10, 
+                 Left = new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPage, ParameterSize = ParameterSize.Bit8, Order = 40 },
+                 Right = new ParamatersDefinitionRelative() {AccessMode = AccessMode.Relative, ParameterSize = ParameterSize.Bit8, Order = 40 }
+             },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.Immediate, StartsWith = "#", ParameterSize = ParameterSize.Bit8, Order = 10 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectX, StartsWith = "(", EndsWith = ",X)", ParameterSize = ParameterSize.Bit8, Order = 20 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectY, StartsWith = "(", EndsWith = "),Y", ParameterSize = ParameterSize.Bit8, Order = 20 },
@@ -118,7 +122,23 @@ namespace BitMagic.Cpu
             new Txs(),
             new Tya(),
             new Trb(),
-            new Tsb()
+            new Tsb(),
+            new Bbr0(),
+            new Bbr1(),
+            new Bbr2(),
+            new Bbr3(),
+            new Bbr4(),
+            new Bbr5(),
+            new Bbr6(),
+            new Bbr7(),
+            new Bbs0(),
+            new Bbs1(),
+            new Bbs2(),
+            new Bbs3(),
+            new Bbs4(),
+            new Bbs5(),
+            new Bbs6(),
+            new Bbs7()
         };
 
         private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
@@ -1692,6 +1712,214 @@ namespace BitMagic.Cpu
 
             return timing;
         }
+    }
+
+    public abstract class BbBase : CpuOpCode
+    {
+        protected abstract int Bit { get; }
+        protected abstract bool BranchOn { get; }
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            Debug.Assert(false); // this is untested.
+            var (zp, _, _) = GetValueAtPC();
+
+            var zpValue = memory.GetByte(zp);
+
+            if ((zpValue & (Bit switch
+            {
+                0 => 0b00000001,
+                1 => 0b00000010,
+                2 => 0b00000100,
+                3 => 0b00001000,
+                4 => 0b00010000,
+                5 => 0b00100000,
+                6 => 0b01000000,
+                7 => 0b10000000,
+                _ => throw new NotImplementedException()
+            })) == 0 == BranchOn)
+            {
+                cpu.Registers.PC++;
+                var (value, _, _) = GetValueAtPC();
+
+                int newAddress;
+                if (value > 127)
+                {
+                    newAddress = cpu.Registers.PC - (value ^ 0xff);
+                }
+                else
+                {
+                    newAddress = cpu.Registers.PC + value + 1;
+                }
+
+                cpu.Registers.PC = (ushort)newAddress;
+            }
+            else
+            {
+                cpu.Registers.PC += 2;
+            }
+
+            return 0;
+        }
+    }
+
+    public class Bbr0 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x0f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 0;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr1 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x1f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 1;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr2 : BbBase
+    { 
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x2f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 2;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr3 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x3f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 3;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr4 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x4f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 4;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr5 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x5f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 5;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr6 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x6f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 6;
+        protected override bool BranchOn => false;
+    }
+
+    public class Bbr7 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x7f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 7;
+        protected override bool BranchOn => false;
+    }
+    public class Bbs0 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x8f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 0;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs1 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x9f, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 1;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs2 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xaf, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 2;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs3 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xbf, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 3;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs4 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xcf, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 4;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs5 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xdf, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 5;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs6 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xef, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 6;
+        protected override bool BranchOn => true;
+    }
+
+    public class Bbs7 : BbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xff, AccessMode.ZerpPageRel, 5),
+        };
+        protected override int Bit => 7;
+        protected override bool BranchOn => false;
     }
 }
 

@@ -63,7 +63,8 @@ namespace BitMagic.Common
         IndirectY,       // ($44), Y
         IndAbsoluteX,    // ($4444, X)
         Relative,        // #$ff for branch instruction,
-        ZeroPageIndirect // ($44)
+        ZeroPageIndirect, // ($44)
+        ZerpPageRel,     // zp, $rr
     }
 
     public interface IFlags

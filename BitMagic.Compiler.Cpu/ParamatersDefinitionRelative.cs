@@ -12,7 +12,7 @@ namespace BitMagic.Compiler.Cpu
                 return (null, false);
 
             if (string.IsNullOrWhiteSpace(parameters))
-                return (Array.Empty<byte>(), false);
+                return (null, false);
 
             var toParse = GetParameter(parameters);
 

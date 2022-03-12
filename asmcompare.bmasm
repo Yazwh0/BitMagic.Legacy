@@ -348,3 +348,39 @@ TXS
 .byte $00, $A8, $00
 TYA	
 .byte $00, $A9, $00
+
+BBR0 $44, bbetest
+.byte $00, $A9, $00
+BBR1 $44, bbetest
+.byte $00, $AA, $00
+BBR2 $44, bbetest
+.byte $00, $AB, $00
+BBR3 $44, bbetest
+.byte $00, $AC, $00
+BBR4 $44, bbetest
+.byte $00, $AD, $00
+BBR5 $44, bbetest
+.byte $00, $AE, $00
+BBR6 $44, bbetest
+.byte $00, $AF, $00
+BBR7 $44, bbetest
+.byte $00, $B0, $00
+
+BBS0 $44, bbetest
+.byte $00, $B1, $00
+BBS1 $44, bbetest
+.byte $00, $B2, $00
+BBS2 $44, bbetest
+.byte $00, $B3, $00
+BBS3 $44, bbetest
+.byte $00, $B4, $00
+BBS4 $44, bbetest
+.byte $00, $B5, $00
+BBS5 $44, bbetest
+.byte $00, $B6, $00
+BBS6 $44, bbetest
+.byte $00, $B7, $00
+BBS7 $44, bbetest
+.byte $00, $B8, $00
+
+.bbetest:
