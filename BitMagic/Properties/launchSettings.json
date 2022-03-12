@@ -4,7 +4,8 @@
       "commandName": "Project",
       "commandLineArgsSpinner": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\Spinner\\build.prg emulate",
       "commandLineArgsHello": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\HelloWorld\\build.prg emulate",
-      "commandLineArgs": "--razor-file D:\\Documents\\Source\\BitMagic\\Testing\\test.csasm --pre-razor-file D:\\Documents\\Source\\BitMagic\\Testing\\test.csasm.pre --bmasm-file D:\\Documents\\Source\\BitMagic\\Testing\\test.bmasm --asm-object-file D:\\Documents\\Source\\BitMagic\\Testing\\test.compiled.json --output-file D:\\Documents\\Source\\BitMagic\\Testing\\test.prg --rom-file D:\\Documents\\Source\\BitMagic\\rom\\rom.bin razor compile",
+      "commandLineArgs": "--bmasm-file D:\\Documents\\Source\\BitMagic\\asmcompare.bmasm --output-file D:\\Documents\\Source\\BitMagic\\Testing\\test.prg --rom-file D:\\Documents\\Source\\BitMagic\\rom\\rom.bin compile",
+      "commandLineArgsTest": "--razor-file D:\\Documents\\Source\\BitMagic\\Testing\\test.csasm --pre-razor-file D:\\Documents\\Source\\BitMagic\\Testing\\test.csasm.pre --bmasm-file D:\\Documents\\Source\\BitMagic\\Testing\\test.bmasm --asm-object-file D:\\Documents\\Source\\BitMagic\\Testing\\test.compiled.json --output-file D:\\Documents\\Source\\BitMagic\\Testing\\test.prg --rom-file D:\\Documents\\Source\\BitMagic\\rom\\rom.bin razor compile",
       "commandLineArgs1k2": "--prg-file D:\\Documents\\Dropbox\\Source\\X16\\1k2\\build.prg emulate",
       "commandLineArgsDisplayImage": "--razor-file D:\\Documents\\Source\\BitMagic\\Examples\\DisplayImage\\DisplayImageX16\\src\\main.csasm razor compile"
     }

@@ -34,11 +34,11 @@ namespace BitMagic.Cpu
 
         private readonly IReadOnlyDictionary<AccessMode, IParametersDefinition> _parameterDefinitions = new IParametersDefinition[] {
              new ParametersDefinitionSurround() {AccessMode = AccessMode.Immediate, StartsWith = "#", ParameterSize = ParameterSize.Bit8, Order = 10 },
-             new ParametersDefinitionSurround() {AccessMode = AccessMode.Indirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit16, Order = 20 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectX, StartsWith = "(", EndsWith = ",X)", ParameterSize = ParameterSize.Bit8, Order = 20 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.IndirectY, StartsWith = "(", EndsWith = "),Y", ParameterSize = ParameterSize.Bit8, Order = 20 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.IndAbsoluteX, StartsWith = "(", EndsWith = ",X)", ParameterSize = ParameterSize.Bit16, Order = 20 },
-             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageIndirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit8, Order = 20 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageIndirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit8, Order = 25 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.Indirect, StartsWith = "(", EndsWith = ")", ParameterSize = ParameterSize.Bit16, Order = 25 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageX, EndsWith = ",X", ParameterSize = ParameterSize.Bit8, Order = 30 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPageY, EndsWith = ",Y", ParameterSize = ParameterSize.Bit8, Order = 30 },
              new ParametersDefinitionSurround() {AccessMode = AccessMode.AbsoluteX, EndsWith = ",X", ParameterSize = ParameterSize.Bit16, Order = 30 },

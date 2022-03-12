@@ -70,9 +70,13 @@ namespace BitMagic
                 }
 
                 var machine = MachineFactory.GetMachine(Machine.CommanderX16R38);
-                machine.SetRom(project.RomFile.Contents);
-                machine.Build(); // todo: turn this into a proper factory
                 project.Machine = machine;
+
+                if (project.MachineEnumalator == null)
+                    throw new Exception($"Machine isn't emulatable. {machine?.Name}");
+
+                project.MachineEnumalator.SetRom(project.RomFile.Contents);
+                project.MachineEnumalator.Build(); // todo: turn this into a proper factory
             } 
             else
             {

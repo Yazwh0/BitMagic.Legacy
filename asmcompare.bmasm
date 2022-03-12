@@ -1,0 +1,350 @@
+.cpu WDC65c02
+ADC	#$44
+.byte $00, $00, $00
+ADC	$44
+.byte $00, $01, $00
+ADC	$44, X
+.byte $00, $02, $00
+ADC	$4433
+.byte $00, $03, $00
+ADC	$4433, X
+.byte $00, $04, $00
+ADC	$4433, Y
+.byte $00, $05, $00
+ADC	($44, X)
+.byte $00, $06, $00
+ADC	($44), Y
+.byte $00, $07, $00
+ADC	($44)
+.byte $00, $08, $00
+AND	#$44
+.byte $00, $09, $00
+AND	$44
+.byte $00, $0A, $00
+AND	$44, X
+.byte $00, $0B, $00
+AND	$4433
+.byte $00, $0C, $00
+AND	$4433, X
+.byte $00, $0D, $00
+AND	$4433, Y
+.byte $00, $0E, $00
+AND	($44, X)
+.byte $00, $0F, $00
+AND	($44), Y
+.byte $00, $10, $00
+AND	($44)
+.byte $00, $11, $00
+ASL
+.byte $00, $12, $00
+ASL	$44
+.byte $00, $13, $00
+ASL	$44, X
+.byte $00, $14, $00
+ASL	$4433
+.byte $00, $15, $00
+ASL	$4433, X
+.byte $00, $16, $00
+BCC	reldest_0
+.byte $00, $17, $00
+.reldest_0:
+BCS	reldest_1
+.byte $00, $18, $00
+.reldest_1:
+BEQ	reldest_2
+.byte $00, $19, $00
+.reldest_2:
+BIT	$44
+.byte $00, $1A, $00
+BIT	$4433
+.byte $00, $1B, $00
+BMI	reldest_3
+.byte $00, $1C, $00
+.reldest_3:
+BNE	reldest_4
+.byte $00, $1D, $00
+.reldest_4:
+BPL	reldest_5
+.byte $00, $1E, $00
+.reldest_5:
+BRA	reldest_6
+.byte $00, $1F, $00
+.reldest_6:
+BRK	
+.byte $00, $20, $00
+BVC	reldest_7
+.byte $00, $21, $00
+.reldest_7:
+BVS	reldest_8
+.byte $00, $22, $00
+.reldest_8:
+CLC	
+.byte $00, $23, $00
+CLD	
+.byte $00, $24, $00
+CLI	
+.byte $00, $25, $00
+CLV	
+.byte $00, $26, $00
+CMP	#$44
+.byte $00, $27, $00
+CMP	$44
+.byte $00, $28, $00
+CMP	$44, X
+.byte $00, $29, $00
+CMP	$4433
+.byte $00, $2A, $00
+CMP	$4433, X
+.byte $00, $2B, $00
+CMP	$4433, Y
+.byte $00, $2C, $00
+CMP	($44, X)
+.byte $00, $2D, $00
+CMP	($44), Y
+.byte $00, $2E, $00
+CMP	($44)
+.byte $00, $2F, $00
+CPX	#$44
+.byte $00, $30, $00
+CPX	$44
+.byte $00, $31, $00
+CPX	$4433
+.byte $00, $32, $00
+CPY	#$44
+.byte $00, $33, $00
+CPY	$44
+.byte $00, $34, $00
+CPY	$4433
+.byte $00, $35, $00
+DEC	$44
+.byte $00, $36, $00
+DEC	$44, X
+.byte $00, $37, $00
+DEC	$4433
+.byte $00, $38, $00
+DEC	$4433, X
+.byte $00, $39, $00
+DEX	
+.byte $00, $3A, $00
+DEY	
+.byte $00, $3B, $00
+EOR	#$44
+.byte $00, $3C, $00
+EOR	$44
+.byte $00, $3D, $00
+EOR	$44, X
+.byte $00, $3E, $00
+EOR	$4433
+.byte $00, $3F, $00
+EOR	$4433, X
+.byte $00, $40, $00
+EOR	$4433, Y
+.byte $00, $41, $00
+EOR	($44, X)
+.byte $00, $42, $00
+EOR	($44), Y
+.byte $00, $43, $00
+EOR	($44)
+.byte $00, $44, $00
+INC	$44
+.byte $00, $45, $00
+INC	$44, X
+.byte $00, $46, $00
+INC	$4433
+.byte $00, $47, $00
+INC	$4433, X
+.byte $00, $48, $00
+INX	
+.byte $00, $49, $00
+INY	
+.byte $00, $4A, $00
+JMP	$4433
+.byte $00, $4B, $00
+JMP	($4433)
+.byte $00, $4C, $00
+JMP	($4433, X)
+.byte $00, $4D, $00
+JSR	$4433
+.byte $00, $4E, $00
+LDA	#$44
+.byte $00, $4F, $00
+LDA	$44
+.byte $00, $50, $00
+LDA	$44, X
+.byte $00, $51, $00
+LDA	$4433
+.byte $00, $52, $00
+LDA	$4433, X
+.byte $00, $53, $00
+LDA	$4433, Y
+.byte $00, $54, $00
+LDA	($44, X)
+.byte $00, $55, $00
+LDA	($44), Y
+.byte $00, $56, $00
+LDA	($44)
+.byte $00, $57, $00
+LDX	#$44
+.byte $00, $58, $00
+LDX	$44
+.byte $00, $59, $00
+LDX	$44, Y
+.byte $00, $5A, $00
+LDX	$4433
+.byte $00, $5B, $00
+LDX	$4433, Y
+.byte $00, $5C, $00
+LDY	#$44
+.byte $00, $5D, $00
+LDY	$44
+.byte $00, $5E, $00
+LDY	$44, X
+.byte $00, $5F, $00
+LDY	$4433
+.byte $00, $60, $00
+LDY	$4433, X
+.byte $00, $61, $00
+LSR
+.byte $00, $62, $00
+LSR	$44
+.byte $00, $63, $00
+LSR	$44, X
+.byte $00, $64, $00
+LSR	$4433
+.byte $00, $65, $00
+LSR	$4433, X
+.byte $00, $66, $00
+NOP	
+.byte $00, $67, $00
+ORA	#$44
+.byte $00, $68, $00
+ORA	$44
+.byte $00, $69, $00
+ORA	$44, X
+.byte $00, $6A, $00
+ORA	$4433
+.byte $00, $6B, $00
+ORA	$4433, X
+.byte $00, $6C, $00
+ORA	$4433, Y
+.byte $00, $6D, $00
+ORA	($44, X)
+.byte $00, $6E, $00
+ORA	($44), Y
+.byte $00, $6F, $00
+ORA	($44)
+.byte $00, $70, $00
+PHA	
+.byte $00, $71, $00
+PHP	
+.byte $00, $72, $00
+PHX	
+.byte $00, $73, $00
+PHY	
+.byte $00, $74, $00
+PLA	
+.byte $00, $75, $00
+PLY	
+.byte $00, $76, $00
+PLX	
+.byte $00, $77, $00
+PLP	
+.byte $00, $78, $00
+ROL
+.byte $00, $79, $00
+ROL	$44
+.byte $00, $7A, $00
+ROL	$44, X
+.byte $00, $7B, $00
+ROL	$4433
+.byte $00, $7C, $00
+ROL	$4433, X
+.byte $00, $7D, $00
+ROR
+.byte $00, $7E, $00
+ROR	$44
+.byte $00, $7F, $00
+ROR	$44, X
+.byte $00, $80, $00
+ROR	$4433
+.byte $00, $81, $00
+ROR	$4433, X
+.byte $00, $82, $00
+RTI	
+.byte $00, $83, $00
+RTS	
+.byte $00, $84, $00
+SBC	#$44
+.byte $00, $85, $00
+SBC	$44
+.byte $00, $86, $00
+SBC	$44, X
+.byte $00, $87, $00
+SBC	$4433
+.byte $00, $88, $00
+SBC	$4433, X
+.byte $00, $89, $00
+SBC	$4433, Y
+.byte $00, $8A, $00
+SBC	($44, X)
+.byte $00, $8B, $00
+SBC	($44), Y
+.byte $00, $8C, $00
+SBC	($44)
+.byte $00, $8D, $00
+SEC	
+.byte $00, $8E, $00
+SED	
+.byte $00, $8F, $00
+SEI	
+.byte $00, $90, $00
+STA	$44
+.byte $00, $91, $00
+STA	$44, X
+.byte $00, $92, $00
+STA	$4433
+.byte $00, $93, $00
+STA	$4433, X
+.byte $00, $94, $00
+STA	$4433, Y
+.byte $00, $95, $00
+STA	($44, X)
+.byte $00, $96, $00
+STA	($44), Y
+.byte $00, $97, $00
+STA	($44)
+.byte $00, $98, $00
+STZ	$44
+.byte $00, $99, $00
+STZ	$44, X
+.byte $00, $9A, $00
+STZ	$4433
+.byte $00, $9B, $00
+STZ	$4433, X
+.byte $00, $9C, $00
+STX	$44
+.byte $00, $9D, $00
+STX	$44, Y
+.byte $00, $9E, $00
+STX	$4433
+.byte $00, $9F, $00
+STY	$44
+.byte $00, $A0, $00
+STY	$44, X
+.byte $00, $A1, $00
+STY	$4433
+.byte $00, $A2, $00
+STP	
+.byte $00, $A3, $00
+TAX	
+.byte $00, $A4, $00
+TAY	
+.byte $00, $A5, $00
+TSX	
+.byte $00, $A6, $00
+TXA	
+.byte $00, $A7, $00
+TXS	
+.byte $00, $A8, $00
+TYA	
+.byte $00, $A9, $00

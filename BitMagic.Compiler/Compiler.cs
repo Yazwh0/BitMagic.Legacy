@@ -119,6 +119,18 @@ namespace BitMagic.Compiler
         public override string ErrorDetail => $"Unknown machine '{MachineName}'.";
     }
 
+    public class CpuNotKnownException : CompilerException
+    {
+        public string CpuName { get; }
+
+        public CpuNotKnownException(string name) : base("Cpu not known.")
+        {
+            CpuName = name;
+        }
+
+        public override string ErrorDetail => $"Unknown Cpu '{CpuName}'.";
+    }
+
     internal class Evaluator : IExpressionEvaluator
     {
         private readonly ExpressionEvaluator _evaluator = new();
@@ -202,11 +214,26 @@ namespace BitMagic.Compiler
                         project.Machine = newMachine;
                     }
 
-                    if (!project.Machine.Initialised)
+                    if (project.MachineEnumalator != null && !project.MachineEnumalator.Initialised)
                     {
-                        project.Machine.SetRom(new byte[0x4000]);
-                        project.Machine.Build();
+                        project.MachineEnumalator.SetRom(new byte[0x4000]);
+                        project.MachineEnumalator.Build();
                     }
+
+                    InitFromMachine(state);
+
+                }, new[] { "name" })
+                .WithParameters(".cpu", (dict, state) =>
+                {
+                    var machine = new NoMachine();
+                    var cpu = CpuFactory.GetCpu(dict["name"]);
+
+                    if (cpu == null)
+                        throw new CpuNotKnownException(dict["name"]);
+
+                    machine.Cpu = cpu;
+
+                    project.Machine = machine;
 
                     InitFromMachine(state);
 

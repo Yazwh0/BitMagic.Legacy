@@ -43,19 +43,22 @@ namespace BitMagic.Compiler
 
         private IEnumerable<byte> IntToByteArray(uint i)
         {
-            byte toReturn = (byte)(i & 0xff);
-            yield return toReturn;
+            byte toReturn = (byte)((i & 0xff000000) >> 24);
 
-            while (true)
-            {
-                i >>= 8;
-
-                toReturn = (byte)(i & 0xff);
-                if (toReturn == 0)
-                    yield break;
-
+            if (toReturn != 0)
                 yield return toReturn;
-            }
+
+            toReturn = (byte)((i & 0xff0000) >> 16);
+
+            if (toReturn != 0)
+                yield return toReturn;
+
+            toReturn = (byte)((i & 0xff00) >> 8);
+
+            if (toReturn != 0)
+                yield return toReturn;
+
+            yield return (byte)(i & 0xff);
         }
 
         public void ProcessParts(bool finalParse)
@@ -64,16 +67,23 @@ namespace BitMagic.Compiler
 
             foreach (var i in _opCode.Modes.Where(i => _cpu.ParameterDefinitions.ContainsKey(i)).Select(i => _cpu.ParameterDefinitions[i]).OrderBy(i => i.Order))
             {
-                var compileResult = i.Compile(Params, this, _opCode, _expressionEvaluator, _procedure.Variables, finalParse);
-                if (compileResult.Data != null)
+                try
                 {
-                    RequiresReval = compileResult.RequiresRecalc;
+                    var compileResult = i.Compile(Params, this, _opCode, _expressionEvaluator, _procedure.Variables, finalParse);
+                    if (compileResult.Data != null)
+                    {
+                        RequiresReval = compileResult.RequiresRecalc;
 
-                    if (finalParse && RequiresReval)
+                        if (finalParse && RequiresReval)
                             throw new Exception($"Unknown label within '{_toParse}'");
 
-                    Data = IntToByteArray(_opCode.GetOpCode(i.AccessMode)).Union(compileResult.Data).ToArray();
-                    return;
+                        Data = IntToByteArray(_opCode.GetOpCode(i.AccessMode)).Union(compileResult.Data).ToArray();
+                        return;
+                    }
+                } 
+                catch(ExpressionEvaluatorSyntaxErrorException ex)
+                {
+                    throw new UnknownSymbolException(this, ex.Message);
                 }
             }
 
@@ -113,4 +123,17 @@ namespace BitMagic.Compiler
 
         public override string ErrorDetail => Line.Source.ToString();
     }
+
+    public class UnknownSymbolException : CompilerException
+    {
+        public ILine Line { get; }
+
+        public UnknownSymbolException(ILine line, string message) : base(message)
+        {
+            Line = line;
+        }
+
+        public override string ErrorDetail => Line.Source.ToString();
+    }
+
 }

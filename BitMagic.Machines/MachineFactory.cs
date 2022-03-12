@@ -9,20 +9,22 @@ namespace BitMagic.Machines
 {
     public enum Machine
     {
+        NoMachine,
         CommanderX16R38,
         CommanderX16R39
     }
 
     public static class MachineFactory
     {
-        public static IMachineEmulator? GetMachine(string name)
+        public static IMachine? GetMachine(string name)
         {
             var machine = Enum.Parse<Machine>(name);
             return GetMachine(machine);
         }
 
-        public static IMachineEmulator? GetMachine(Machine machine) => machine switch
+        public static IMachine? GetMachine(Machine machine) => machine switch
         {
+            Machine.NoMachine => new NoMachine(),
             Machine.CommanderX16R38 => new CommanderX16R38(),
             Machine.CommanderX16R39 => new CommanderX16R39(),
             _ => null
@@ -35,7 +37,11 @@ namespace BitMagic.Machines
 
         public int Version => 0;
 
-        public ICpu Cpu => new NoCpu();
+        public ICpu Cpu { get; set; } = new NoCpu();
+        ICpu IMachine.Cpu => Cpu;
+
+        private IVariables _variables = new NoVariables();
+        IVariables IMachine.Variables => _variables;
     }
 
     public class NoCpu : ICpu
@@ -46,4 +52,16 @@ namespace BitMagic.Machines
 
         public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => throw new NotImplementedException();
     }
+
+    internal class NoVariables : IVariables
+    {
+        public IReadOnlyDictionary<string, int> Values => new Dictionary<string, int>();
+
+        public bool TryGetValue(string name, int lineNumber, out int result)
+        {
+            result = 0;
+            return false;
+        }
+    }
+
 }

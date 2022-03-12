@@ -6,6 +6,7 @@ namespace BitMagic.Common
     {
         string Name { get; }
         int Version { get; }
+        IVariables Variables { get; }
         ICpu Cpu { get; }
     }
 
@@ -14,7 +15,6 @@ namespace BitMagic.Common
         IMemory Memory { get; }
         new ICpuEmulator Cpu { get; }
         IDisplay Display { get; }
-        IVariables Variables { get; }
         void SetRom(byte[] rom);
         void Build();
         bool Initialised { get; }
