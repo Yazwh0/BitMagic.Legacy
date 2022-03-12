@@ -90,7 +90,7 @@
 		"pseudofunctions": {
 			"patterns": [{
 				"name": "entity.name.function.pseudofunction.bmasm",
-				"match": "\\.(?i:byte|word|const|pad|align|importfile|org)\\b"
+				"match": "\\.(?i:byte|word|const|pad|align|importfile|org|cpu|machine)\\b"
 			}]
 		},
 		"blockstarts": {
