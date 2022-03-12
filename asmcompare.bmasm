@@ -384,3 +384,37 @@ BBS7 $44, bbetest
 .byte $00, $B8, $00
 
 .bbetest:
+
+RMB0 $44
+.byte $00, $B8, $00
+RMB1 $44
+.byte $00, $B9, $00
+RMB2 $44
+.byte $00, $BA, $00
+RMB3 $44
+.byte $00, $BB, $00
+RMB4 $44
+.byte $00, $BC, $00
+RMB5 $44
+.byte $00, $BD, $00
+RMB6 $44
+.byte $00, $BE, $00
+RMB7 $44
+.byte $00, $BF, $00
+
+SMB0 $44
+.byte $00, $C0, $00
+SMB1 $44
+.byte $00, $C1, $00
+SMB2 $44
+.byte $00, $C2, $00
+SMB3 $44
+.byte $00, $C3, $00
+SMB4 $44
+.byte $00, $C4, $00
+SMB5 $44
+.byte $00, $C5, $00
+SMB6 $44
+.byte $00, $C6, $00
+SMB7 $44
+.byte $00, $C7, $00

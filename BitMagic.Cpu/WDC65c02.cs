@@ -138,7 +138,23 @@ namespace BitMagic.Cpu
             new Bbs4(),
             new Bbs5(),
             new Bbs6(),
-            new Bbs7()
+            new Bbs7(),
+            new Rmb0(),
+            new Rmb1(),
+            new Rmb2(),
+            new Rmb3(),
+            new Rmb4(),
+            new Rmb5(),
+            new Rmb6(),
+            new Rmb7(),
+            new Smb0(),
+            new Smb1(),
+            new Smb2(),
+            new Smb3(),
+            new Smb4(),
+            new Smb5(),
+            new Smb6(),
+            new Smb7()
         };
 
         private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
@@ -1920,6 +1936,217 @@ namespace BitMagic.Cpu
         };
         protected override int Bit => 7;
         protected override bool BranchOn => false;
+    }
+
+    public abstract class MbBase : CpuOpCode
+    {
+        protected abstract int Bit { get; }
+        protected abstract bool SetOn { get; }
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            Debug.Assert(false); // this is untested.
+            var (zp, _, _) = GetValueAtPC();
+
+            var zpValue = memory.GetByte(zp);
+
+            if (SetOn)
+            {
+                zpValue = (byte)(zpValue | (Bit switch
+                {
+                    0 => 0b00000001,
+                    1 => 0b00000010,
+                    2 => 0b00000100,
+                    3 => 0b00001000,
+                    4 => 0b00010000,
+                    5 => 0b00100000,
+                    6 => 0b01000000,
+                    7 => 0b10000000,
+                    _ => throw new NotImplementedException()
+                }));
+            }
+            else
+            {
+                zpValue = (byte)(zpValue | (Bit switch
+                {
+                    0 => 0b11111110,
+                    1 => 0b11111101,
+                    2 => 0b11111011,
+                    3 => 0b11110111,
+                    4 => 0b11101111,
+                    5 => 0b11011111,
+                    6 => 0b10111111,
+                    7 => 0b01111111,
+                    _ => throw new NotImplementedException()
+                }));
+            }
+
+            memory.SetByte(zp, zpValue);
+
+            cpu.Registers.PC += 1;
+
+            return 0;
+        }
+    }
+
+    public class Rmb0 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x07, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 0;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb1 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x17, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 1;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb2 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x27, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 2;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb3 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x37, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 3;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb4 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x47, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 4;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb5 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x57, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 5;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb6 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x67, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 6;
+        protected override bool SetOn => false;
+    }
+
+    public class Rmb7 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x77, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 7;
+        protected override bool SetOn => false;
+    }
+
+    public class Smb0 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x87, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 0;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb1 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0x97, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 1;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb2 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xa7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 2;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb3 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xb7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 3;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb4 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xc7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 4;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb5 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xd7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 5;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb6 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xe7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 6;
+        protected override bool SetOn => true;
+    }
+
+    public class Smb7 : MbBase
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xf7, AccessMode.ZeroPage, 5),
+        };
+        protected override int Bit => 7;
+        protected override bool SetOn => true;
     }
 }
 

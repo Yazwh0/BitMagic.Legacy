@@ -17,7 +17,7 @@ A line in the `bmasm` file must be one of the following to be considered valid:
 
 ## Compiler Verbs
 
-Lines that start with a '.' indicate a verb to the compiler. Some have parameters that can either be comma separated, specified with `name=value` pairs, or a mix of the two. Eg `.segment rom, address = 0xA000`.
+Lines that start with a '`.`' indicate a verb to the compiler. Some have parameters that can either be comma separated, specified with `name=value` pairs, or a mix of the two. Eg `.segment rom, address = 0xA000`.
 
 | Verb | Parameters |Description |
 | --- | --- | --- |
