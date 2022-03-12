@@ -154,7 +154,8 @@ namespace BitMagic.Cpu
             new Smb4(),
             new Smb5(),
             new Smb6(),
-            new Smb7()
+            new Smb7(),
+            new Wai()
         };
 
         private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
@@ -2148,5 +2149,19 @@ namespace BitMagic.Cpu
         protected override int Bit => 7;
         protected override bool SetOn => true;
     }
+
+    public class Wai : CpuOpCode
+    {
+        internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
+        {
+            (0xcb, AccessMode.Implied, 3),
+        };
+
+        public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }
 
