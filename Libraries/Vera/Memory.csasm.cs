@@ -1,6 +1,26 @@
 
 namespace Vera;
 
+public enum AddressStep
+{
+    None,
+    Step_1,
+    Step_2,
+    Step_4,
+    Step_8,
+    Step_16,
+    Step_32,
+    Step_64,
+    Step_128,
+    Step_256,
+    Step_512,
+    Step_40,
+    Step_80,
+    Step_160,
+    Step_320,
+    Step_460
+}
+
 public static class VideoMemory
 {
     private static byte _zpWorkAddress = 0;
@@ -19,7 +39,39 @@ public static class VideoMemory
         }
     }
 
-    public static void Copy(int source, int dest, int count, byte zpWordAddress)
+    public static void SetAddress(int address, AddressStep step = AddressStep.None)
+    {
+        var upper = ((address & 0xff0000) >> 16) + ((int)step << 4);
+        var high = (address & 0xff00) >> 8;
+        var low = (address & 0xff);
+
+        if (upper != 0)
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{upper}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta ADDRx_H");
+        } else {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz ADDRx_H");
+        }
+
+        if (high != 0)
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{high}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta ADDRx_M");
+        } else {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz ADDRx_M");
+        }
+        
+        if (low != 0)
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{low}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta ADDRx_L");
+        } else {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz ADDRx_L");
+        }
+    }
+
+
+    public static void Copy(object source, int dest, int count, byte zpWordAddress)
     {
         SetCopyZpWordAddress(zpWordAddress);
         
