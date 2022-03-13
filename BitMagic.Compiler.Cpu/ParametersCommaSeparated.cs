@@ -39,7 +39,7 @@ namespace BitMagic.Compiler.Cpu
                 return (null, false);
 
             var requiresRecalc = left.RequiresRecalc || right.RequiresRecalc;
-            var data = left.Data.Union(right.Data).ToArray();
+            var data = left.Data.Concat(right.Data).ToArray();
 
             return (data, requiresRecalc);
         }

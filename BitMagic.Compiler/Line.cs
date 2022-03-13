@@ -77,7 +77,7 @@ namespace BitMagic.Compiler
                         if (finalParse && RequiresReval)
                             throw new Exception($"Unknown label within '{_toParse}'");
 
-                        Data = IntToByteArray(_opCode.GetOpCode(i.AccessMode)).Union(compileResult.Data).ToArray();
+                        Data = IntToByteArray(_opCode.GetOpCode(i.AccessMode)).Concat(compileResult.Data).ToArray();
                         return;
                     }
                 } 
