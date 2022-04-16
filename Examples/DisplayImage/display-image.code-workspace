@@ -63,6 +63,7 @@
 					"--razor-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.csasm",
 					"--bmasm-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.bmasm",
 					"--output-file=${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg",
+					"--display-output",
 					"razor",
 					"compile"
 				],
@@ -126,7 +127,7 @@
 			{
 				"label": "Run Emulator",
 				"type": "shell",
-				"command": "c:\\dev\\X16emu\\x16emu.exe",
+				"command": "c:\\dev\\X16emu\\R40\\x16emu.exe",
 				"args": [
 					"-prg",
 					"DisplayImageX16\\test.prg",

@@ -1,4 +1,5 @@
 ﻿using BitMagic.Common;
+using BitMagic.Compiler.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -159,5 +160,7 @@ namespace BitMagic.Compiler
 
             _variables[name] = value;
         }
+
+        public bool HasValue(string name) =>_variables.ContainsKey(name);
     }
 }

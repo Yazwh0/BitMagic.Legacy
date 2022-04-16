@@ -50,8 +50,8 @@ namespace BitMagic.Cpu
              new ParamatersDefinitionRelative() {AccessMode = AccessMode.Relative, ParameterSize = ParameterSize.Bit8, Order = 40 },
              new ParametersDefinitionEmpty() {AccessMode = AccessMode.Implied, Order = 40 },
              new ParametersDefinitionEmpty() {AccessMode = AccessMode.Accumulator, Order = 40 },
-             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPage, ParameterSize = ParameterSize.Bit8, Order = 40 },
-             new ParametersDefinitionSurround() {AccessMode = AccessMode.Absolute, ParameterSize = ParameterSize.Bit16, Order = 40 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.ZeroPage, DoesntStartWith = new [] { "#" }, ParameterSize = ParameterSize.Bit8, Order = 40 },
+             new ParametersDefinitionSurround() {AccessMode = AccessMode.Absolute, DoesntStartWith = new [] { "#" }, ParameterSize = ParameterSize.Bit16, Order = 40 },
         }.ToDictionary(i => i.AccessMode, i => i);
 
         public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => _parameterDefinitions;        

@@ -1,4 +1,5 @@
 ﻿using BitMagic.Common;
+using BitMagic.Compiler.Exceptions;
 using CodingSeb.ExpressionEvaluator;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,9 @@ using System.Threading.Tasks;
 namespace BitMagic.Compiler
 {
 
-    public class Line : ILine
+    public class Line : IOutputData
     {
-        public readonly static ExpressionEvaluator _evaluator = new();
+        public readonly static CodingSeb.ExpressionEvaluator.ExpressionEvaluator _evaluator = new();
 
         public byte[] Data { get; internal set; } = new byte[] { };
         private ICpuOpCode _opCode;
@@ -75,7 +76,7 @@ namespace BitMagic.Compiler
                         RequiresReval = compileResult.RequiresRecalc;
 
                         if (finalParse && RequiresReval)
-                            throw new Exception($"Unknown label within '{_toParse}'");
+                            throw new CannotCompileException(this, $"Unknown label within '{_toParse}'");
 
                         Data = IntToByteArray(_opCode.GetOpCode(i.AccessMode)).Concat(compileResult.Data).ToArray();
                         return;
@@ -87,23 +88,23 @@ namespace BitMagic.Compiler
                 }
             }
 
-            throw new Exception($"Cannot compile line {_original}");
+            throw new CannotCompileException(this, $"Cannot compile line {_original}");
         }
 
-        private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
-        {
-            if (_procedure.Variables.TryGetValue(e.Name, 0, out var result))
-            {
-                e.Value = result;
-                RequiresReval = false;
-            }
-            else
-            {
-                RequiresRevalNames.Add(e.Name);
-                RequiresReval = true;
-                e.Value = 0xabcd; // random two byte number
-            }
-        }
+        //private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
+        //{
+        //    if (_procedure.Variables.TryGetValue(e.Name, 0, out var result))
+        //    {
+        //        e.Value = result;
+        //        RequiresReval = false;
+        //    }
+        //    else
+        //    {
+        //        RequiresRevalNames.Add(e.Name);
+        //        RequiresReval = true;
+        //        e.Value = 0xabcd; // random two byte number
+        //    }
+        //}
 
         public void WriteToConsole()
         {
@@ -111,29 +112,4 @@ namespace BitMagic.Compiler
             Console.WriteLine($"{_opCode.Code}\t{Params}");
         }
     }
-
-    public class CompilerBranchToFarException : CompilerException
-    {
-        public ILine Line { get; }
-
-        public CompilerBranchToFarException(ILine line, string message) : base(message)
-        {
-            Line = line;
-        }
-
-        public override string ErrorDetail => Line.Source.ToString();
-    }
-
-    public class UnknownSymbolException : CompilerException
-    {
-        public ILine Line { get; }
-
-        public UnknownSymbolException(ILine line, string message) : base(message)
-        {
-            Line = line;
-        }
-
-        public override string ErrorDetail => Line.Source.ToString();
-    }
-
 }

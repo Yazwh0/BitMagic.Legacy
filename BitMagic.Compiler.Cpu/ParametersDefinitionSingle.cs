@@ -5,14 +5,6 @@ using System.Collections.Generic;
 
 namespace BitMagic.Compiler.Cpu
 {
-    public enum ParameterSize
-    {
-        None,
-        Bit8,
-        Bit16,
-        Bit32
-    }
-
     public abstract class ParametersDefinitionSingle : IParametersDefinition
     {
         public AccessMode AccessMode { get; init; }
@@ -20,7 +12,7 @@ namespace BitMagic.Compiler.Cpu
 
         public int Order { get; init; }
         
-        public virtual (byte[]? Data, bool RequiresRecalc) Compile(string parameters, ILine line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
+        public virtual (byte[]? Data, bool RequiresRecalc) Compile(string parameters, IOutputData line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
         {
             if (!Valid(parameters))
                 return (null, false);
@@ -30,7 +22,7 @@ namespace BitMagic.Compiler.Cpu
 
             var toParse = GetParameter(parameters);            
 
-            var (Result, RequiresRecalc) = expressionEvaluator.Evaluate(toParse, variables);
+            var (Result, RequiresRecalc) = expressionEvaluator.Evaluate(toParse, variables, ParameterSize);
 
             if ((ParameterSize == ParameterSize.Bit8 && (Result < sbyte.MinValue || Result > byte.MaxValue)) ||
                 (ParameterSize == ParameterSize.Bit16 && (Result < short.MinValue || Result > ushort.MaxValue)) ||

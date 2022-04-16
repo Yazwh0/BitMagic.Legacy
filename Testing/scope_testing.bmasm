@@ -1,0 +1,20 @@
+.machine CommanderX16R39;
+
+.proc proca
+
+	.const a = $01
+	lda #a			; $01
+	;lda #procb:a	; $02 required preprocess constant collection
+
+	lda procb:b
+
+	.proc procb
+		.const a = $02
+		.const b = $0134
+		lda #a		; $02
+	.endproc
+
+	lda #a ; $01
+	lda #procb:a	; $02
+
+.endproc

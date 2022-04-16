@@ -80,6 +80,7 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"stz ADDRx_L");
 
     public static void Copy(object source, int dest, int count)
     {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"; Copy from '{source}' to ${dest.ToString("X4")}, {count} bytes.");
         if (!_copyWorkAddressSet)
         {
             throw new Exception("Copy called but zpWordAddress is not set.");
@@ -164,6 +165,40 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"bne remain_loop");
 
 BitMagic.AsmTemplate.Template.WriteLiteral($@"rts");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".endproc");
+BitMagic.AsmTemplate.Template.WriteLiteral($@".endscope");
+    }
+
+    // todo: fix this. edge cases don't work.
+    public static void ClearVram(int startingAddress, int length)
+    {
+        if (length != 0) 
+        {
+            VideoMemory.SetAddress(startingAddress, AddressStep.Step_1);
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldy #>{length}+1");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx #<{length}+1");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"jsr videomemory:clear");
+        }
+    }
+
+    public static void ClearVramProc()
+    {
+BitMagic.AsmTemplate.Template.WriteLiteral($@".scope videomemory");
+BitMagic.AsmTemplate.Template.WriteLiteral($@".proc clear");
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@".loop:");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz DATA0");
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@"dex");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"bne loop");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"dey");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"beq done");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"ldx #$ff");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"bra loop");
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@".done:");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"rts");
+BitMagic.AsmTemplate.Template.WriteLiteral($@".endproc ");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".endscope");
     }
 }

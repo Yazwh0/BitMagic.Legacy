@@ -47,6 +47,20 @@ public enum BitmapWidth
     Full_640
 }
 
+public enum TileMapSize
+{
+    Map_32,
+    Map_64,
+    Map_128,
+    Map_256
+}
+
+public enum TileSize
+{
+    Size_8,
+    Size_16
+}
+
 public static class Video {
 
     public static void Mode(Layers layers, OutputMode mode = OutputMode.VGA, bool chromaDisable = false)
@@ -120,4 +134,48 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_HSCROLL_L");
         }
     }
 
+    public static void LayerTiles(ConfigLayer layer, TileSize tileSizeWidth, TileSize tileSizeHeight, TileMapSize tileMapWidth, TileMapSize tileMapHeight, Depth depth, 
+        int tileBaseAddress, int mapBaseAddress, int initialX = 0, int initialY = 0)
+    {
+        var prefix = layer switch {
+            ConfigLayer.Layer0 => "L0",
+            ConfigLayer.Layer1 => "L1",
+            _ => throw new Exception($"Unhandled layer {layer}")
+        };
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)( ((int)tileMapHeight << 6) + ( ((int)tileMapWidth << 4) + (int)depth)) }");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_CONFIG");
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)( ((tileBaseAddress >> 11) << 2) + ( ((int)tileSizeHeight << 1) + (int)(tileSizeWidth) )) }");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_TILEBASE");
+
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)(mapBaseAddress >> 9)}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_MAPBASE");
+
+        if (initialX == 0)
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz {prefix}_HSCROLL_L");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz {prefix}_HSCROLL_H");
+        }
+        else 
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)(initialX & 0xff)}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_HSCROLL_L");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)((initialX & 0xf00) >> 4)}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_HSCROLL_H");
+        }
+        
+        if (initialY == 0)
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz {prefix}_VSCROLL_L");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"stz {prefix}_VSCROLL_H");
+        }
+        else 
+        {
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)(initialY & 0xff)}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_VSCROLL_L");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"lda #{(byte)((initialY & 0xf00) >> 4)}");
+BitMagic.AsmTemplate.Template.WriteLiteral($@"sta {prefix}_VSCROLL_H");
+        }
+    }
 }

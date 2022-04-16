@@ -1,7 +1,7 @@
-.machine CommanderX16R38;
+.machine CommanderX16R39;
 .byte	$0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
 .scope Inflate
-.const inflateZp = 0
+.const inflateZp = 2
 .endscope
 ;     |.s10.coo
 lda #0b00000001
@@ -42,15 +42,16 @@ lda #^4096+$10
 sta ADDRx_H
 jsr :Inflate:inflate_to_vram
 ; copy palette to vera
+; Copy from 'palette' to $1FA00, 384 bytes.
 lda #17
 sta ADDRx_H
 lda #250
 sta ADDRx_M
 stz ADDRx_L
 lda #<palette
-sta 0
+sta 2
 lda #>palette
-sta 0+1
+sta 2+1
 ldx #>384
 ldy #<384
 sty :CopyProcScope:CopyToVram:end_check+1
@@ -64,20 +65,20 @@ jmp loop
 ; inflate taken from https://github.com/pfusik/zlib6502/blob/master/inflate.asx
 .scope Inflate
 .proc inflate_to_vram
-.const inputPointer                    = 0
-;x.const outputPointer                   = 2
-.const getBit_buffer                   = 4
-.const getBits_base                    = 5  ; 1 byte
-.const inflateStored_pageCounter       = 5  ; 1 byte
-;x.const inflateCodes_sourcePointer      = 6  ; 2 bytes
-.const inflateDynamic_symbol           = 6  ; 1 byte
-.const inflateDynamic_lastLength       = 7  ; 1 byte
-.const inflateDynamic_tempCodes        = 7  ; 1 byte
-.const inflateCodes_lengthMinus2       = 8  ; 1 byte
-.const inflateDynamic_allCodes         = 8  ; 1 byte
-.const inflateDynamic_primaryCodes     = 9  ; 1 byte
-.const inflateCodes_lookback           = 6 ; 2 bytes
-.const inflateCodes_vramAddr           = 10 ; 3 bytes
+.const inputPointer                    = 2
+;x.const outputPointer                   = 4
+.const getBit_buffer                   = 6
+.const getBits_base                    = 7  ; 1 byte
+.const inflateStored_pageCounter       = 7  ; 1 byte
+;x.const inflateCodes_sourcePointer      = 8  ; 2 bytes
+.const inflateDynamic_symbol           = 8  ; 1 byte
+.const inflateDynamic_lastLength       = 9  ; 1 byte
+.const inflateDynamic_tempCodes        = 9  ; 1 byte
+.const inflateCodes_lengthMinus2       = 10  ; 1 byte
+.const inflateDynamic_allCodes         = 10  ; 1 byte
+.const inflateDynamic_primaryCodes     = 11  ; 1 byte
+.const inflateCodes_lookback           = 8 ; 2 bytes
+.const inflateCodes_vramAddr           = 12 ; 3 bytes
 .const GET_1_BIT                       =	$81
 .const GET_2_BITS                      =	$82
 .const GET_3_BITS                      =	$84
@@ -533,15 +534,15 @@ rts
 ;sty end_check+1
 ldy #0
 .loop:
-lda (0), y
+lda (2), y
 sta DATA0
 iny
 bne loop
-inc 0+1
+inc 2+1
 dex
 bne loop
 .remain_loop:
-lda (0), y
+lda (2), y
 sta DATA0
 iny
 .end_check:

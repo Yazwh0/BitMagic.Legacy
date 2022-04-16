@@ -6,7 +6,7 @@ namespace BitMagic.Compiler.Cpu
     {
         public int Offset { get; init; } = -1;
 
-        public override (byte[]? Data, bool RequiresRecalc) Compile(string parameters, ILine line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
+        public override (byte[]? Data, bool RequiresRecalc) Compile(string parameters, IOutputData line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
         {
             if (!Valid(parameters))
                 return (null, false);
@@ -16,7 +16,7 @@ namespace BitMagic.Compiler.Cpu
 
             var toParse = GetParameter(parameters);
 
-            var (Result, RequiresRecalc) = expressionEvaluator.Evaluate(toParse, variables);
+            var (Result, RequiresRecalc) = expressionEvaluator.Evaluate(toParse, variables, ParameterSize);
 
             var offset = Result - line.Address - opCode.OpCodeLength + Offset;
 

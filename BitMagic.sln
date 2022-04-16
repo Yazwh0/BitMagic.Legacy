@@ -34,6 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitMagic.AsmTemplate", "Bit
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{AF58444A-16E2-4ACD-A88C-DABDD1E0921F}"
 	ProjectSection(SolutionItems) = preProject
+		Testing\scope_testing.bmasm = Testing\scope_testing.bmasm
 		Testing\test.asm = Testing\test.asm
 		Testing\test.bmasm = Testing\test.bmasm
 		Testing\test.compiled.json = Testing\test.compiled.json

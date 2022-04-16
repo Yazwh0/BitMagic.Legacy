@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BitMagic.Compiler
 {
-    public class DataLine : ILine
+    public class DataLine : IOutputData
     {
         public byte[] Data { get; private set; } = new byte[] { };
 /*        public string OriginalText { get; }

@@ -14,15 +14,23 @@ namespace BitMagic.Common
     public interface IParametersDefinition
     {
         AccessMode AccessMode { get; }
-        (byte[]? Data, bool RequiresRecalc) Compile(string parameters, ILine line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final);
+        (byte[]? Data, bool RequiresRecalc) Compile(string parameters, IOutputData line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final);
         (int BytesUsed, string DecompiledCode) Decompile(IEnumerable<byte> inputBytes);
         int Order { get; }
+    }
+
+    public enum ParameterSize
+    {
+        None,
+        Bit8,
+        Bit16,
+        Bit32
     }
 
     public interface IExpressionEvaluator
     {
         public void Reset();
-        public (int Result, bool RequiresRecalc) Evaluate(string expression, IVariables variables);
+        public (int Result, bool RequiresRecalc) Evaluate(string expression, IVariables variables, ParameterSize size);
     }
 
     public interface ICpuEmulator : ICpu

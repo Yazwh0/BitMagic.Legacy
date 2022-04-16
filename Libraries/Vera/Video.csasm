@@ -47,6 +47,20 @@ public enum BitmapWidth
     Full_640
 }
 
+public enum TileMapSize
+{
+    Map_32,
+    Map_64,
+    Map_128,
+    Map_256
+}
+
+public enum TileSize
+{
+    Size_8,
+    Size_16
+}
+
 public static class Video {
 
     public static void Mode(Layers layers, OutputMode mode = OutputMode.VGA, bool chromaDisable = false)
@@ -120,4 +134,48 @@ public static class Video {
         }
     }
 
+    public static void LayerTiles(ConfigLayer layer, TileSize tileSizeWidth, TileSize tileSizeHeight, TileMapSize tileMapWidth, TileMapSize tileMapHeight, Depth depth, 
+        int tileBaseAddress, int mapBaseAddress, int initialX = 0, int initialY = 0)
+    {
+        var prefix = layer switch {
+            ConfigLayer.Layer0 => "L0",
+            ConfigLayer.Layer1 => "L1",
+            _ => throw new Exception($"Unhandled layer {layer}")
+        };
+
+        lda #@((byte)( ((int)tileMapHeight << 6) + ( ((int)tileMapWidth << 4) + (int)depth)) )
+        sta @(prefix)_CONFIG
+
+        lda #@((byte)( ((tileBaseAddress >> 11) << 2) + ( ((int)tileSizeHeight << 1) + (int)(tileSizeWidth) )) )
+        sta @(prefix)_TILEBASE
+
+        lda #@((byte)(mapBaseAddress >> 9))
+        sta @(prefix)_MAPBASE
+
+        if (initialX == 0)
+        {
+            stz @(prefix)_HSCROLL_L
+            stz @(prefix)_HSCROLL_H
+        }
+        else 
+        {
+            lda #@((byte)(initialX & 0xff))
+            sta @(prefix)_HSCROLL_L
+            lda #@((byte)((initialX & 0xf00) >> 4))
+            sta @(prefix)_HSCROLL_H
+        }
+        
+        if (initialY == 0)
+        {
+            stz @(prefix)_VSCROLL_L
+            stz @(prefix)_VSCROLL_H
+        }
+        else 
+        {
+            lda #@((byte)(initialY & 0xff))
+            sta @(prefix)_VSCROLL_L
+            lda #@((byte)((initialY & 0xf00) >> 4))
+            sta @(prefix)_VSCROLL_H
+        }
+    }
 }

@@ -23,9 +23,11 @@ namespace BitMagic.Compiler
         [JsonProperty]
         public int MaxSize { get; set; }
 
-        [JsonProperty]
-        public readonly Dictionary<string, Procedure> Procedures = new Dictionary<string, Procedure>();
+        //[JsonProperty]
+        //public readonly Dictionary<string, Procedure> Procedures = new Dictionary<string, Procedure>();
 
+        [JsonProperty]
+        public Dictionary<string, Procedure> DefaultProcedure { get; } = new Dictionary<string, Procedure>();
 
         public Segment(Variables globals, string name)
         {
@@ -46,12 +48,19 @@ namespace BitMagic.Compiler
             Filename = filename;
         }
 
-        public Procedure GetProcedure(string name, Scope scope, bool anonymous)
+        public Procedure GetDefaultProcedure(Scope scope)
         {
-            if (!Procedures.ContainsKey(name))
-                Procedures.Add(name, new Procedure(scope, name, anonymous));
+            if (!DefaultProcedure.ContainsKey(scope.Name))
+                DefaultProcedure.Add(scope.Name, new Procedure(scope, $"Segment_{Name}_{scope.Name}_Default", true, null));
 
-            return Procedures[name];
+            return DefaultProcedure[scope.Name];
         }
+        //public Procedure GetProcedure(string name, Scope scope, bool anonymous, Procedure parent)
+        //{
+        //    if (!Procedures.ContainsKey(name))
+        //        Procedures.Add(name, new Procedure(scope, name, anonymous, parent));
+
+        //    return Procedures[name];
+        //}
     }
 }

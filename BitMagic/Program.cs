@@ -8,6 +8,7 @@ using System.Diagnostics;
 using BitMagic.Emulation;
 using System.CommandLine;
 using System.Linq;
+using BitMagic.Compiler.Exceptions;
 
 namespace BitMagic
 {
@@ -23,10 +24,11 @@ namespace BitMagic
         /// <param name="asmObjectFile">option debugging json file</param>
         /// <param name="outputFile">output file</param>
         /// <param name="romFile">rom files</param>
+        /// <param name="displayOutput">Write the data generated to the console</param>
         /// <param name="args">Commands to run. eg: razor compile emulate</param>
         /// <returns></returns>
         static async Task<int> Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
-               string outputFile = "", string romFile= "rom.bin", string[]? args = null)
+               string outputFile = "", string romFile= "rom.bin", bool displayOutput = false, string[]? args = null)
         {
             string[] _args;
             if (args == null)
@@ -90,7 +92,7 @@ namespace BitMagic
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;//| ApplicationPart.Emulator;
 
-            project.CompileOptions.DisplayCode = true;
+            project.CompileOptions.DisplayCode = displayOutput;
             project.CompileOptions.DisplayVariables = true;
             project.CompileOptions.DisplaySegments= true;
 
@@ -130,9 +132,16 @@ namespace BitMagic
 
                 try
                 {
-                    await compiler.Compile();
-                } 
-                catch(CompilerException e)
+                    var warnings = await compiler.Compile();
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    foreach (var warning in warnings)
+                    {
+                        Console.WriteLine(warning);
+                    }
+                    Console.ResetColor();
+                }
+                catch (CompilerException e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Compiler Error: {e.Message}");

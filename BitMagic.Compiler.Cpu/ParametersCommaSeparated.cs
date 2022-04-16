@@ -16,7 +16,7 @@ namespace BitMagic.Compiler.Cpu
         public ParametersDefinitionSingle? Left { get; init; }
         public ParametersDefinitionSingle? Right { get; init; }
 
-        public (byte[]? Data, bool RequiresRecalc) Compile(string parameters, ILine line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
+        public (byte[]? Data, bool RequiresRecalc) Compile(string parameters, IOutputData line, ICpuOpCode opCode, IExpressionEvaluator expressionEvaluator, IVariables variables, bool final)
         {
             if (string.IsNullOrWhiteSpace(parameters))
                 return (null, false);

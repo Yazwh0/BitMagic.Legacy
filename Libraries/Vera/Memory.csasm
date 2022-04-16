@@ -80,6 +80,7 @@ public static class VideoMemory
 
     public static void Copy(object source, int dest, int count)
     {
+        ; Copy from '@(source)' to $@(dest.ToString("X4")), @(count) bytes.
         if (!_copyWorkAddressSet)
         {
             throw new Exception("Copy called but zpWordAddress is not set.");
@@ -164,6 +165,40 @@ public static class VideoMemory
 
         rts
         .endproc
+        .endscope
+    }
+
+    // todo: fix this. edge cases don't work.
+    public static void ClearVram(int startingAddress, int length)
+    {
+        if (length != 0) 
+        {
+            VideoMemory.SetAddress(startingAddress, AddressStep.Step_1);
+
+            ldy #>@(length)+1
+            ldx #<@(length)+1
+            jsr videomemory:clear
+        }
+    }
+
+    public static void ClearVramProc()
+    {
+        .scope videomemory
+        .proc clear
+
+        .loop:
+        stz DATA0
+
+        dex
+        bne loop
+        dey
+        beq done
+        ldx #$ff
+        bra loop
+
+        .done:
+        rts
+        .endproc 
         .endscope
     }
 }

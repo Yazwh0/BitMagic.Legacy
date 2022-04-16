@@ -1,4 +1,5 @@
 ﻿using BitMagic.Common;
+using BitMagic.Compiler.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace BitMagic.Compiler
             return new CommandParser();
         }
 
-        public CommandParser WithParameters(string verb, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames = null)
+        public CommandParser WithParameters(string verb, Action<IDictionary<string, string>, CompileState, SourceFilePosition> action, IList<string>? defaultNames = null)
         {
             _lineProcessor.Add(verb, (p, s, r) => ProcesParameters(r ,p, s, action, defaultNames));
             return this;
@@ -74,13 +75,13 @@ namespace BitMagic.Compiler
             map(source, state, toProcess);
         }
 
-        private static void ProcesParameters(string rawParams, SourceFilePosition source, CompileState state, Action<IDictionary<string, string>, CompileState> action, IList<string>? defaultNames)
+        private static void ProcesParameters(string rawParams, SourceFilePosition source, CompileState state, Action<IDictionary<string, string>, CompileState, SourceFilePosition> action, IList<string>? defaultNames)
         {
             var parameters = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(rawParams))
             {
-                action(parameters, state);
+                action(parameters, state, source);
                 return;
             }
 
@@ -110,7 +111,7 @@ namespace BitMagic.Compiler
                 parameters.Add(thisArgs[argsPos][..idx].Trim(), thisArgs[argsPos][(idx+1)..].Trim());
             }
 
-            action(parameters, state);
+            action(parameters, state, source);
         }
 
         private static void ProcessLine(SourceFilePosition source, CompileState state, Action<SourceFilePosition, CompileState> action) => action(source, state);

@@ -4,12 +4,12 @@ assembly "..\..\Libraries\Vera\bin\Debug\net6.0\Vera.dll";
 using Compression;
 using ImageProcessor;
 using Vera;
-machine CommanderX16R38;
+machine CommanderX16R39;
 
     BM.X16Header(); // byte code to start execution.
 
-    VideoMemory.SetCopyZpWordAddress(0x00); // define where in ZP the copy can use.
-    Inflator.SetSourceZp(0x00); // define where in ZP we can use for inflating. 
+    VideoMemory.SetCopyZpWordAddress(0x02); // define where in ZP the copy can use.
+    Inflator.SetSourceZp(0x02); // define where in ZP we can use for inflating. 
 
     Video.Mode(Layers.None); // disable all layers and sprites while the image inflates.
 

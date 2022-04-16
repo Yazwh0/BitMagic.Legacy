@@ -2,8 +2,8 @@
 
 namespace BitMagic.Common
 {
-    public interface ILine
-    {
+    public interface IOutputData
+    {        
         byte[] Data { get; }
         //string OriginalText { get; }
         //int LineNumber { get; }

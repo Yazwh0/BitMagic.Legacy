@@ -1,7 +1,6 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu;
 using BitMagic.Machines;
-using CodingSeb.ExpressionEvaluator;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,177 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Toolkit;
+using BitMagic.Compiler.Exceptions;
+using BitMagic.Compiler.Warnings;
 
 namespace BitMagic.Compiler
 {
-    public abstract class CompilerException : Exception
-    {
-        public abstract string ErrorDetail { get; }
-
-        public CompilerException(string message) : base(message)
-        {
-        }
-    }
-
-    public class CompilerLineException : CompilerException
-    {
-        public ILine Line { get; }
-
-        public CompilerLineException(ILine line, string message) : base(message)
-        {
-            Line = line;
-        }
-
-        public override string ErrorDetail => Line.Source.ToString();
-    }
-
-    public abstract class CompilerSourceException : CompilerException
-    {
-        public SourceFilePosition SourceFile { get; }
-
-        public CompilerSourceException(SourceFilePosition source, string message) : base(message)
-        {
-            SourceFile = source;
-        }
-
-        public override string ErrorDetail => SourceFile.ToString();
-    }
-
-    public class CompilerVerbException : CompilerSourceException
-    {
-        public CompilerVerbException(SourceFilePosition source, string message) : base(source, message)
-        {
-        }
-    }
-
-    public class CompilerFileNotFound : CompilerException
-    {
-        public string Filename { get; }
-
-        public CompilerFileNotFound(string filename) : base ("File not found.")
-        {
-            Filename = filename;
-        }
-
-        public override string ErrorDetail => $"'{Filename}'";
-    }
-
-    public class CompilerUnknownOpcode : CompilerSourceException
-    {
-        public CompilerUnknownOpcode(SourceFilePosition source, string message) : base(source, message)
-        {
-        }
-    }
-
-    public class CompilerSegmentTooLarge : CompilerException
-    {
-        internal Segment Segment { get; }
-
-        internal CompilerSegmentTooLarge(Segment segment) : base("Segment too large.")
-        {
-            Segment = segment;
-        }
-
-        public override string ErrorDetail => $"Maxsize is ${Segment.MaxSize:X4}, but the segment is ${Segment.Address - Segment.StartAddress:X4}";
-    }
-
-    public class MachineAlreadySetException : CompilerException
-    {
-        public string ExistingMachineName { get; }
-        public string NewMachineName { get; }
-
-        public MachineAlreadySetException(string existing, string newName) : base("Machine is already set.")
-        {
-            ExistingMachineName = existing;
-            NewMachineName = newName;
-        }
-
-        public override string ErrorDetail => $"Machine is already set to {ExistingMachineName}, but is being changed to {NewMachineName}.";
-    }
-
-    public class MachineNotSetException : CompilerException
-    {
-        public MachineNotSetException() : base("Machine not set.")
-        {
-        }
-
-        public override string ErrorDetail => "Set a machine using '.machine' or command line argument.";
-    }
-
-    public class MachineNotKnownException : CompilerException
-    {
-        public string MachineName { get; }
-
-        public MachineNotKnownException(string name) : base("Machine not known.")
-        {
-            MachineName = name;
-        }
-
-        public override string ErrorDetail => $"Unknown machine '{MachineName}'.";
-    }
-
-    public class CpuNotKnownException : CompilerException
-    {
-        public string CpuName { get; }
-
-        public CpuNotKnownException(string name) : base("Cpu not known.")
-        {
-            CpuName = name;
-        }
-
-        public override string ErrorDetail => $"Unknown Cpu '{CpuName}'.";
-    }
-
-    internal class Evaluator : IExpressionEvaluator
-    {
-        private readonly ExpressionEvaluator _evaluator = new();
-        private bool _requiresReval;
-        private IVariables? _variables = null;
-        private readonly CompileState _state;
-
-        public List<string> RequiresRevalNames = new();
-
-        public Evaluator(CompileState state)
-        {
-            _state = state;
-        }
-
-        // not thread safe!!!
-        public (int Result, bool RequiresRecalc) Evaluate(string expression, IVariables variables)
-        {
-            _variables = variables;
-            _requiresReval = false;
-            _evaluator.PreEvaluateVariable += _evaluator_PreEvaluateVariable;
-            var result = (int)_evaluator.Evaluate(expression);
-            _evaluator.PreEvaluateVariable -= _evaluator_PreEvaluateVariable;
-
-            return new(result, _requiresReval);
-        }
-
-        private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)
-        {
-            if (_variables == null)
-                throw new NullReferenceException("_procedure is null");
-
-            if (_variables.TryGetValue(e.Name, 0, out var result))
-            {
-                e.Value = result;
-                _requiresReval = false;
-            }
-            else
-            {
-                RequiresRevalNames.Add(e.Name);
-                _requiresReval = true;
-                e.Value = 0xabcd; // random two byte number
-            }
-        }
-
-        public void Reset()
-        {
-            RequiresRevalNames.Clear();
-        }
-    }
-
     public class Compiler
     {
         private readonly Project _project;        
@@ -199,7 +32,7 @@ namespace BitMagic.Compiler
 
                     state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
                 })
-                .WithParameters(".machine", (dict, state) =>
+                .WithParameters(".machine", (dict, state, source) =>
                 {
                     var newMachine = MachineFactory.GetMachine(dict["name"]);
 
@@ -223,7 +56,7 @@ namespace BitMagic.Compiler
                     InitFromMachine(state);
 
                 }, new[] { "name" })
-                .WithParameters(".cpu", (dict, state) =>
+                .WithParameters(".cpu", (dict, state, source) =>
                 {
                     var machine = new NoMachine();
                     var cpu = CpuFactory.GetCpu(dict["name"]);
@@ -238,7 +71,7 @@ namespace BitMagic.Compiler
                     InitFromMachine(state);
 
                 }, new[] { "name" })
-                .WithParameters(".segment", (dict, state) => {
+                .WithParameters(".segment", (dict, state, source) => {
                     Segment segment;
 
                     if (state.Segments.ContainsKey(dict["name"]))
@@ -253,7 +86,7 @@ namespace BitMagic.Compiler
 
                     if (dict.ContainsKey("address"))
                     {
-                        foreach (var proc in segment.Procedures)
+                        foreach (var proc in segment.DefaultProcedure)
                         {
                             if (proc.Value.Data.Any())
                             {
@@ -281,36 +114,75 @@ namespace BitMagic.Compiler
                             filename = filename[1..^1];
 
                         segment.Filename = filename;
+                    } 
+                    else
+                    {
+                        segment.Filename = ":" + segment.Name; // todo: find a better way to inform the writer that this segment isn't to be written.
                     }
 
                     state.Segment = segment;
-                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
-                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
+                    state.Scope = state.ScopeFactory.GetScope($"_DefaultScope");
+                    state.Procedure = state.Segment.GetDefaultProcedure(state.Scope);
+
                 }, new[] { "name", "address", "filename", "maxsize" })
-                .WithParameters(".endsegment", (dict, state) => {
-                    state.Segment = state.Segments[".DefaultSegment"];
-                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
-                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
+                .WithParameters(".endsegment", (dict, state, source) => {
+                    state.Segment = state.Segments["_DefaultSegment"];
+                    state.Scope = state.ScopeFactory.GetScope($"_DefaultScope");
+                    state.Procedure = state.Segment.GetDefaultProcedure(state.Scope);
                 })
-                .WithParameters(".scope", (dict, state) => {
-                    string name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedScope_{state.AnonCounter++}";
+                .WithParameters(".scope", (dict, state, source) => {
+
+                    string name = dict.ContainsKey("name") ? dict["name"] : $"Scope_{state.AnonCounter}";
                     state.Scope = state.ScopeFactory.GetScope(name);
-                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
+
+                    state.Procedure = state.Procedure.GetProcedure($"{name}_Proc", state.Segment.Address, state.Scope);
+                    state.AnonCounter++;
+
                 }, new[] { "name" })
-                .WithParameters(".endscope", (dict, state) => { 
-                    state.Scope = state.ScopeFactory.GetScope($".DefaultScope");
-                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
+                .WithParameters(".endscope", (dict, state, source) => {
+
+                    if (state.Procedure.Name.Replace("_Proc", "") != state.Scope.Name || !state.Procedure.Anonymous)
+                    {
+                        state.Warnings.Add(new UnmatchedEndProcWarning(source));
+                    }
+
+                    var proc = state.Procedure.Parent;
+                    if (proc == null)
+                    {
+                        proc = state.Segment.GetDefaultProcedure(state.Scope);
+                        state.Warnings.Add(new UnmatchedEndProcWarning(source));
+                    }
+                    
+                    state.Scope = proc.Scope;                    
+                    state.Procedure = proc;
+
                 })
-                .WithParameters(".proc", (dict, state) => {
+                .WithParameters(".proc", (dict, state, source) => {
+
                     var name = dict.ContainsKey("name") ? dict["name"] : $"UnnamedProc_{state.AnonCounter++}";
-                    state.Procedure = state.Segment.GetProcedure(name, state.Scope, false);
-                    state.Scope.Variables.SetValue(name, state.Segment.Address);
+
+                    state.Procedure = state.Procedure.GetProcedure(name, state.Segment.Address);
+
                 }, new[] { "name" })
-                .WithParameters(".endproc", (dict, state) => {
-                    state.Procedure = state.Segment.GetProcedure($".Default_{state.AnonCounter++}", state.Scope, true);
+                .WithParameters(".endproc", (dict, state, source) => {
+
+                    if (!state.Procedure.Variables.HasValue("endproc"))
+                        state.Procedure.Variables.SetValue("endproc", state.Segment.Address);
+
+                    if (state.Procedure.Anonymous)
+                        state.Warnings.Add(new EndProcOnAnonymousWarning(source));
+
+                    var proc = state.Procedure.Parent;
+                    if (proc == null)
+                    {
+                        proc = state.Segment.GetDefaultProcedure(state.Scope);
+                        state.Warnings.Add(new UnmatchedEndProcWarning(source));
+                    }
+
+                    state.Scope = proc.Scope;
+                    state.Procedure = proc;
                 })
-                .WithParameters(".const", (dict, state) => {
-                    // .const foo $ff
+                .WithParameters(".const", (dict, state, source) => {
                     if (dict.ContainsKey("name") && dict.ContainsKey("value"))
                     {
                         state.Procedure.Variables.SetValue(dict["name"], ParseStringToValue(dict["value"]));
@@ -322,19 +194,19 @@ namespace BitMagic.Compiler
                         state.Procedure.Variables.SetValue(kv.Key, ParseStringToValue(kv.Value));
                     }
                 }, new[] { "name", "value" })
-                .WithParameters(".org", (dict, state) => {
+                .WithParameters(".org", (dict, state, source) => {
                     var padto = ParseStringToValue(dict["address"]);
                     if (padto < state.Segment.Address)
                         throw new Exception($"pad with destination of ${padto:X4}, but segment address is already ${state.Segment.Address:X4}");
 
                     state.Segment.Address = padto;
                 }, new[] { "address" })
-                .WithParameters(".pad", (dict, state) => {
+                .WithParameters(".pad", (dict, state, source) => {
                     var size = ParseStringToValue(dict["size"]);
 
                     state.Segment.Address += size;
                 }, new[] { "size" })
-                .WithParameters(".align", (dict, state) => { 
+                .WithParameters(".align", (dict, state, source) => { 
                     var boundry = ParseStringToValue(dict["boundary"]);
 
                     if (boundry == 0)
@@ -345,8 +217,8 @@ namespace BitMagic.Compiler
                         state.Segment.Address++;
                     }
                 }, new[] { "boundary" })
-                .WithParameters(".importfile", (dict, state) => {
-                    var t = CompileFile(dict["filename"], state);
+                .WithParameters(".importfile", (dict, state, source) => {
+                    var t = CompileFile(dict["filename"], state, null, source);
 
                     try
                     {
@@ -363,7 +235,7 @@ namespace BitMagic.Compiler
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
-                    state.Procedure.AddLine(dataline);
+                    state.Procedure.AddData(dataline);
                     if (_project.CompileOptions.DisplayData)
                         dataline.WriteToConsole();
                 })
@@ -372,13 +244,13 @@ namespace BitMagic.Compiler
                     dataline.ProcessParts(false);
                     state.Segment.Address += dataline.Data.Length;
 
-                    state.Procedure.AddLine(dataline);
+                    state.Procedure.AddData(dataline);
                     if (_project.CompileOptions.DisplayData)
                         dataline.WriteToConsole();
                 });
         }
 
-        public async Task Compile()
+        public async Task<IEnumerable<string>> Compile()
         {
             if (_project.Code.Contents == null)
                 throw new ArgumentNullException(nameof(_project.Code.Contents));
@@ -423,11 +295,11 @@ namespace BitMagic.Compiler
 
             var globals = new Variables("App");
 
-            var state = new CompileState(globals);
+            var state = new CompileState(globals, _project.OutputFile.Filename ?? "");
 
             await CompileFile(_project.Code.Filename ?? _project.Source.Filename ?? "", state, _project.Code.Contents);
 
-            PruneUnusedObjects(state);
+            //PruneUnusedObjects(state);
 
             try
             {
@@ -467,7 +339,9 @@ namespace BitMagic.Compiler
                 await _project.AssemblerObject.Save();
             }
 
-            await GenerateDataFile(state); 
+            await GenerateDataFile(state);
+
+            return state.Warnings.Select(w => w.ToString());
         }
         private void InitFromMachine(CompileState state)
         {
@@ -498,9 +372,9 @@ namespace BitMagic.Compiler
             }
         }
 
-        private async Task CompileFile(string fileName, CompileState state, string? contents = null)
+        private async Task CompileFile(string fileName, CompileState state, string? contents = null, SourceFilePosition? compileSource = null)
         {
-            contents ??= (await LoadFile(fileName, state));
+            contents ??= (await LoadFile(fileName, state, compileSource));
 
             var lines = contents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.TrimEntries);
 
@@ -545,7 +419,7 @@ namespace BitMagic.Compiler
             }
         }
 
-        private Task<string> LoadFile(string filename, CompileState state)
+        private Task<string> LoadFile(string filename, CompileState state, SourceFilePosition? source = null)
         {
             if (!File.Exists(filename))
                 throw new CompilerFileNotFound(filename);
@@ -554,9 +428,8 @@ namespace BitMagic.Compiler
 
             if (state.Files.Contains(path))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Warning: {filename} has allready been imported. This instance will be ignored.");
-                Console.ResetColor();
+                state.Warnings.Add(new FileAlreadyImportedWarning(source ?? new SourceFilePosition() { LineNumber = 0, Name = "Default" }, filename));
+
                 return Task.FromResult("");
             }
 
@@ -567,14 +440,18 @@ namespace BitMagic.Compiler
 
         private async Task GenerateDataFile(CompileState state)
         {
-            var filenames = state.Segments.Select(i => i.Value.Filename).Distinct().ToArray();
+            var filenames = state.Segments.Select(i => i.Value.Filename ?? "").Distinct().ToArray();
 
             foreach (var filename in filenames)
-            {                
+            {
                 var toSave = new List<byte>(0x10000);
-                var segments = state.Segments.Where(i => i.Value.Filename == filename).OrderBy(kv => kv.Value.StartAddress).Select(kv => kv.Value).ToArray();
+
+                // todo: enforce one segment, one filename???
+                var segments = state.Segments.Where(i => (i.Value.Filename ?? "") == filename).OrderBy(kv => kv.Value.StartAddress).Select(kv => kv.Value).ToArray();
 
                 var address = segments.First().StartAddress;
+                var writer = new FileWriter(segments.First().Name, filename, address);
+
 
                 // segments with filenames
                 bool header;
@@ -591,48 +468,56 @@ namespace BitMagic.Compiler
 
                 if (header)
                 {
+                    var headerBytes = new byte[] { (byte)(address & 0xff), (byte)((address & 0xff00) >> 8) };
+
                     toSave.Add((byte)(address & 0xff));
                     toSave.Add((byte)((address & 0xff00) >> 8));
+
+                    writer.SetHeader(headerBytes);
                 }
 
-                foreach (var proc in segments.SelectMany(p => p.Procedures.Values).OrderBy(p => p.StartAddress))
+                foreach (var proc in segments.SelectMany(p => p.DefaultProcedure.Values).OrderBy(p => p.StartAddress))
                 {
-                    foreach (var line in proc.Data)
-                    {
-                        if (address < line.Address)
-                        {
-                            for (var i = address; i < line.Address; i++)
-                            {
-                                toSave.Add(0x00);
-                                address++;
-                            }
-                        }
-                        else if(address > line.Address)
-                        {
-                            throw new Exception($"Lines address ${line.Address:X4} to output is behind the position in the output ${address:X4} in proc {proc.Name}.");
-                        }
-                        toSave.AddRange(line.Data);
-                        address += line.Data.Length;
-                    }
+                    proc.Write(writer);
+                    //foreach (var line in proc.Data.OrderBy(p => p.Address))
+                    //{
+                    //    writer.Add(line.Data, line.Address);
+                    //    //if (address < line.Address)
+                    //    //{
+                    //    //    for (var i = address; i < line.Address; i++)
+                    //    //    {
+                    //    //        toSave.Add(0x00);
+                    //    //        address++;
+                    //    //    }
+                    //    //}
+                    //    //else if(address > line.Address)
+                    //    //{
+                    //    //    throw new Exception($"Lines address ${line.Address:X4} to output is behind the position in the output ${address:X4} in proc {proc.Name}.");
+                    //    //}
+                    //    //toSave.AddRange(line.Data);
+                    //    //address += line.Data.Length;
+                    //}
                 }
 
-                if (string.IsNullOrWhiteSpace(filename))
-                {
-                    _project.OutputFile.Contents = toSave.ToArray();
-                    if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename))
-                    {
-                        await _project.OutputFile.Save();
-                        Console.WriteLine($"Written {toSave.Count} bytes to '{_project.OutputFile.Filename}'.");
-                    } else
-                    {
-                        Console.WriteLine($"Program size {toSave.Count} bytes.");
-                    }
-                } 
-                else 
-                {
-                    await File.WriteAllBytesAsync(filename, toSave.ToArray());
-                    Console.WriteLine($"Written {toSave.Count} bytes to '{filename}'.");
-                }
+                await writer.Write();
+
+                //if (string.IsNullOrWhiteSpace(filename))
+                //{
+                //    _project.OutputFile.Contents = toSave.ToArray();
+                //    if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename))
+                //    {
+                //        await _project.OutputFile.Save();
+                //        Console.WriteLine($"Written {toSave.Count} bytes to '{_project.OutputFile.Filename}'.");
+                //    } else
+                //    {
+                //        Console.WriteLine($"Program size {toSave.Count} bytes.");
+                //    }
+                //} 
+                //else 
+                //{
+                //    await File.WriteAllBytesAsync(filename, toSave.ToArray());
+                //    Console.WriteLine($"Written {toSave.Count} bytes to '{filename}'.");
+                //}
             }
         }
 
@@ -640,13 +525,13 @@ namespace BitMagic.Compiler
         {
             foreach(var segment in state.Segments.Values)
             {
-                foreach (var procName in segment.Procedures.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
+                foreach (var procName in segment.DefaultProcedure.Where(i => !i.Value.Data.Any()).Select(i => i.Key).ToArray())
                 {
-                    segment.Procedures.Remove(procName);
+                    segment.DefaultProcedure.Remove(procName);
                 }
             }
 
-            foreach(var segmentName in state.Segments.Values.Where(i => !i.Procedures.Any()).Select(i => i.Name).ToArray())
+            foreach(var segmentName in state.Segments.Values.Where(i => !i.DefaultProcedure.Any()).Select(i => i.Name).ToArray())
             {
                 state.Segments.Remove(segmentName);
             }
@@ -657,19 +542,29 @@ namespace BitMagic.Compiler
             Console.WriteLine("Revaluations:");
             foreach (var segment in state.Segments.Values)
             {
-                foreach (var proc in segment.Procedures.Values)
+                foreach (var proc in segment.DefaultProcedure.Values)
                 {
-                    foreach (var line in proc.Data.Where(l => l.RequiresReval))
-                    {
-                        line.ProcessParts(true);
-                        line.WriteToConsole();
-
-                        if (line.RequiresReval)
-                        {
-                            throw new CompilerLineException(line, $"Unknown name {string.Join(", ", line.RequiresRevalNames.Select(i => $"'{i}'"))}");
-                        }
-                    }
+                    RevalProc(proc);
                 }
+            }
+        }
+
+        private void RevalProc(Procedure proc)
+        {
+            foreach (var line in proc.Data.Where(l => l.RequiresReval))
+            {
+                line.ProcessParts(true);
+                line.WriteToConsole();
+
+                if (line.RequiresReval)
+                {
+                    throw new CompilerLineException(line, $"Unknown name {string.Join(", ", line.RequiresRevalNames.Select(i => $"'{i}'"))}");
+                }
+            }
+
+            foreach(var p in proc.Procedures)
+            {
+                RevalProc(p);
             }
         }
 
@@ -694,7 +589,7 @@ namespace BitMagic.Compiler
             if (_project.CompileOptions.DisplayCode)
                 toAdd.WriteToConsole();
 
-            state.Procedure.AddLine(toAdd);
+            state.Procedure.AddData(toAdd);
             state.Segment.Address += toAdd.Data.Length;
         }
 
