@@ -32,6 +32,10 @@ namespace BitMagic.Compiler
 
                     state.Procedure.Variables.SetValue(label[1..^1], state.Segment.Address);
                 })
+                //.WithParameters(".scopedelimiter",  (dict, state, source) =>
+                //{
+
+                //}, new[] { "delimiter" })
                 .WithParameters(".machine", (dict, state, source) =>
                 {
                     var newMachine = MachineFactory.GetMachine(dict["name"]);
@@ -121,13 +125,13 @@ namespace BitMagic.Compiler
                     }
 
                     state.Segment = segment;
-                    state.Scope = state.ScopeFactory.GetScope($"_DefaultScope");
+                    state.Scope = state.ScopeFactory.GetScope($"Main");
                     state.Procedure = state.Segment.GetDefaultProcedure(state.Scope);
 
                 }, new[] { "name", "address", "filename", "maxsize" })
                 .WithParameters(".endsegment", (dict, state, source) => {
-                    state.Segment = state.Segments["_DefaultSegment"];
-                    state.Scope = state.ScopeFactory.GetScope($"_DefaultScope");
+                    state.Segment = state.Segments["Main"];
+                    state.Scope = state.ScopeFactory.GetScope($"Main");
                     state.Procedure = state.Segment.GetDefaultProcedure(state.Scope);
                 })
                 .WithParameters(".scope", (dict, state, source) => {

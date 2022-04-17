@@ -1,20 +1,27 @@
-.machine CommanderX16R39;
+.machine CommanderX16R40;
+.const a = $01
 
 .proc proca
 
 	.const a = $01
-	lda #a			; $01
-	;lda #procb:a	; $02 required preprocess constant collection
+	lda #a			; $02
+	;lda #procb:a	; $03   doesn't work yet
+	lda :procb:b     ; $1234
+	lda :b			; $1234
 
-	lda procb:b
-
+	.scope audio
 	.proc procb
-		.const a = $02
-		.const b = $0134
-		lda #a		; $02
+		.const a = $03
+		.const b = $1234
+		lda #a		; $03
 	.endproc
+	.endscope
 
-	lda #a ; $01
-	lda #procb:a	; $02
+	.const c = $05
+
+	lda #a ; $02
+	lda #audio:procb:a	; $03
 
 .endproc
+
+lda #a
