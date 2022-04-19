@@ -273,7 +273,7 @@ namespace BigMagic.Macro
         }
     }
 
-    internal class CompilationException : Exception {
+    public class CompilationException : Exception {
         public List<Diagnostic> Errors { get; set; } = new List<Diagnostic>();
 
         public string GeneratedCode { get; set; } = "";

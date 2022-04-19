@@ -9,6 +9,7 @@ using BitMagic.Emulation;
 using System.CommandLine;
 using System.Linq;
 using BitMagic.Compiler.Exceptions;
+using System.IO;
 
 namespace BitMagic
 {
@@ -24,11 +25,13 @@ namespace BitMagic
         /// <param name="asmObjectFile">option debugging json file</param>
         /// <param name="outputFile">output file</param>
         /// <param name="romFile">rom files</param>
+        /// <param name="workingDirectory">Working Directory</param>
+        /// <param name="showWarnings">Show C# Compiler Warnings</param>
         /// <param name="displayOutput">Write the data generated to the console</param>
         /// <param name="args">Commands to run. eg: razor compile emulate</param>
         /// <returns></returns>
         static async Task<int> Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
-               string outputFile = "", string romFile= "rom.bin", bool displayOutput = false, string[]? args = null)
+               string outputFile = "", string romFile= "rom.bin", string workingDirectory = "", bool showWarnings = false, bool displayOutput = false, string[]? args = null)
         {
             string[] _args;
             if (args == null)
@@ -44,6 +47,11 @@ namespace BitMagic
             else
             {
                 Console.WriteLine($"BitMagic!");
+            }
+
+            if (!string.IsNullOrWhiteSpace(workingDirectory))
+            {
+                Directory.SetCurrentDirectory(workingDirectory);
             }
 
             var project = new Project();
@@ -109,7 +117,87 @@ namespace BitMagic
                 stopWatch.Restart();
 
                 var macro = new MacroAssembler();
-                await macro.ProcessFile(project);
+                try
+                {
+                    await macro.ProcessFile(project);
+                }
+                catch (CompilationException e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Errors -----------------------");
+
+                    var lines = e.GeneratedCode.Split("\n");
+
+                    foreach (var error in e.Errors.Where(i => i.DefaultSeverity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        var errorText = error.ToString()[1..];
+                        var idx = errorText.IndexOf(",");
+
+                        Console.WriteLine(error.ToString());
+                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        if (int.TryParse(errorText[..idx], out var lineNumber))
+                        {
+                            lineNumber--;
+                            var startLine = Math.Max(0, lineNumber - 2);
+                            foreach (var l in lines[startLine..Math.Min(lines.Length, lineNumber + 3)])
+                            {
+                                if (startLine == lineNumber)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.WriteLine($">> {l}");
+                                }
+                                else
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Gray;
+                                    Console.WriteLine($"   {l}");
+                                }
+                                startLine++;
+                            }
+                        }
+                        Console.WriteLine("------------------------------");
+                    }
+
+                    if (showWarnings && e.Errors.Where(i => i.DefaultSeverity == Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).Any())
+                    {
+                        foreach (var error in e.Errors.Where(i => i.DefaultSeverity == Microsoft.CodeAnalysis.DiagnosticSeverity.Warning))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            var errorText = error.ToString()[1..];
+                            var idx = errorText.IndexOf(",");
+
+                            Console.WriteLine(error.ToString());
+                            Console.ForegroundColor = ConsoleColor.Gray;
+
+                            if (int.TryParse(errorText[..idx], out var lineNumber))
+                            {
+                                lineNumber--;
+                                var startLine = Math.Max(0, lineNumber - 2);
+                                foreach (var l in lines[startLine..Math.Min(lines.Length, lineNumber + 3)])
+                                {
+                                    if (startLine == lineNumber)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.White;
+                                        Console.WriteLine($">> {l}");
+                                    }
+                                    else
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Gray;
+                                        Console.WriteLine($"   {l}");
+                                    }
+                                    Console.WriteLine(l);
+                                    startLine++;
+                                }
+                            }
+                        }
+
+                        Console.WriteLine("------------------------------");
+                    }
+                    Console.WriteLine("Compilation failed.");
+                    Console.ResetColor();
+                    return -1;
+                }
 
                 project.PreProcessTime = stopWatch.Elapsed;
             }
