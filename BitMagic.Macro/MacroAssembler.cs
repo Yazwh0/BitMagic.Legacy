@@ -11,28 +11,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BigMagic.Macro
 {
-    public abstract class MacroException : Exception
-    {
-        public abstract string ErrorDetail { get; }
-
-        public MacroException(string message) : base(message)
-        {
-        }
-    }
-
-    public class MachineNotSetException : MacroException
-    {
-        public MachineNotSetException() : base("Machine not set.")
-        {
-        }
-
-        public override string ErrorDetail => "Set a machine using 'machine' or command line argument.";
-    }
-
     public class MacroAssembler
     {
         private Project? _project = null;
@@ -49,7 +32,7 @@ namespace BigMagic.Macro
             _project = project;
 
             await PreProcessFile();
-            await ProcessFile();
+            await ProcessFile(project.Options.Beautify);
         }
 
         // converts .csasm file to razor friendly one.
@@ -173,7 +156,7 @@ namespace BigMagic.Macro
                 await _project.PreProcess.Save();
         }
 
-        private async Task ProcessFile()
+        private async Task ProcessFile(bool beautify)
         {
             if (_project == null)
                 throw new ArgumentNullException(nameof(_project));
@@ -267,25 +250,70 @@ namespace BigMagic.Macro
 
             await runner.Execute();
 
-            _project.Code.Contents = Template.ToString;
-                if (!string.IsNullOrWhiteSpace(_project.Code.Filename))
-                    await _project.Code.Save();
+            _project.Code.Contents = beautify ? Beautify(Template.GenerateCode()) : Template.GenerateCode();
+
+            if (!string.IsNullOrWhiteSpace(_project.Code.Filename))
+                await _project.Code.Save();
         }
-    }
 
-    public class CompilationException : Exception {
-        public List<Diagnostic> Errors { get; set; } = new List<Diagnostic>();
-
-        public string GeneratedCode { get; set; } = "";
-
-        public override string Message
+        private string Beautify(string input)
         {
-            get
+            var sb = new StringBuilder();
+            var lines = input.Split('\n');
+            var indent = 0;
+            var label = new Regex(@"^(\.[\w\-_]+\:)", RegexOptions.Compiled);
+            var lastBlank = false;
+
+            foreach (var l in lines)
             {
-                string errors = string.Join("\n", this.Errors.Where(w => w.IsWarningAsError || w.Severity == DiagnosticSeverity.Error));
-                return "Unable to compile template: " + errors;
+                var line = l.Trim();
+                var addBlank = false;
+
+                if (line.StartsWith(".scope", StringComparison.InvariantCultureIgnoreCase) && !lastBlank)
+                    sb.AppendLine();
+
+                if (line.StartsWith(".proc", StringComparison.InvariantCultureIgnoreCase) && !lastBlank)
+                    sb.AppendLine();
+
+                if (line.EndsWith(".endproc", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    addBlank = true;
+                    indent--;
+                }
+
+                if (line.EndsWith(".endscope", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    addBlank = true;
+                    indent--;
+                }
+
+                if (label.IsMatch(line))
+                    sb.AppendLine();
+
+                if (indent > 0)
+                    sb.Append('\t', indent);
+
+                sb.AppendLine(line);
+
+                if (line.StartsWith(".proc", StringComparison.InvariantCultureIgnoreCase))
+                    indent++;
+
+                if (line.StartsWith(".scope", StringComparison.InvariantCultureIgnoreCase))
+                    indent++;
+
+                if (indent < 0)
+                    indent = 0;
+
+                lastBlank = string.IsNullOrWhiteSpace(line);
+
+                if (addBlank)
+                {
+                    sb.AppendLine();
+                    lastBlank = true;
+                }
             }
+
+            return sb.ToString();
         }
     }
-
 }

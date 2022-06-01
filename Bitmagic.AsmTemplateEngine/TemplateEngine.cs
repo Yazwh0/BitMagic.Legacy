@@ -56,7 +56,6 @@ namespace BitMagic.AsmTemplateEngine
                 {
                     sb.AppendLine(line);
                 }
-
             }
 
             return sb.ToString();

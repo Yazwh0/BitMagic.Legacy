@@ -28,10 +28,11 @@ namespace BitMagic
         /// <param name="workingDirectory">Working Directory</param>
         /// <param name="showWarnings">Show C# Compiler Warnings</param>
         /// <param name="displayOutput">Write the data generated to the console</param>
+        /// <param name="beautify">Beautify generated code</param>
         /// <param name="args">Commands to run. eg: razor compile emulate</param>
         /// <returns></returns>
         static async Task<int> Main(string razorFile = "", string preRazorFile = "", string bmasmFile = "", string asmObjectFile = "",
-               string prgFile = "", string romFile= "rom.bin", string workingDirectory = "", bool showWarnings = false, bool displayOutput = false, string[]? args = null)
+               string prgFile = "", string romFile= "rom.bin", string workingDirectory = "", bool showWarnings = false, bool displayOutput = false, bool beautify = false, string[]? args = null)
         {
             string[] _args;
             if (args == null)
@@ -99,6 +100,7 @@ namespace BitMagic
             project.LoadTime = stopWatch.Elapsed;
 
             project.Options.VerboseDebugging = ApplicationPart.Compiler;//| ApplicationPart.Emulator;
+            project.Options.Beautify = beautify;
 
             project.CompileOptions.DisplayCode = displayOutput;
             project.CompileOptions.DisplayVariables = true;

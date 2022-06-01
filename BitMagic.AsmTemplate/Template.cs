@@ -24,7 +24,6 @@ namespace BitMagic.AsmTemplate
             _output.Clear();
         }
 
-
-        public static new string ToString => _output.ToString();
+        public static string GenerateCode() => _output.ToString();
     }
 }

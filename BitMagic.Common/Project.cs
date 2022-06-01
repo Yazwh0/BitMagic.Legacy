@@ -109,6 +109,7 @@ namespace BitMagic.Common
     public class Options
     {
         public ApplicationPart VerboseDebugging { get; set; }
+        public bool Beautify { get; set; }
     }
 
     public class CompileOptions
