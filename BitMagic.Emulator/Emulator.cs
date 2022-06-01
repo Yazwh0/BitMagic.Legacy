@@ -60,7 +60,7 @@ namespace BitMagic.Emulation
             }
         }
 
-        public void Emulate(bool headless = false, Func<IMachineRunner, bool>? exitCheck = null)
+        public IMachineRunner Emulate(bool headless = false, Func<IMachineRunner, bool>? exitCheck = null)
         {
             _machine.Cpu.Reset();
 
@@ -75,6 +75,8 @@ namespace BitMagic.Emulation
                 EmulatorWindow.Run(_project.MachineEmulator.Display);
             else
                 machineRunner.WaitForCompletion();
+
+            return machineRunner;
         }
 
         internal void CpuFunc(object? r)
