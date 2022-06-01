@@ -23,12 +23,14 @@ namespace BitMagic.Cpu
         public IEnumerable<ICpuOpCode> OpCodes => _opCodes;
         public I6502Registers Registers { get; } = new _6502Registers();
         IRegisters ICpuEmulator.Registers => Registers;
-        public IMemory _memory;
+        public IMemory Memory { get; init; }
         public const int _stackStart = 0x100;
         public bool HasInterrupt { get; internal set; }
 
         public const int InterruptVector = 0xfffe;
         public const int ResetVector = 0xfffc;
+
+        public byte LastOpCode { get; private set; } = 0;
 
         public double Frequency { get; }
 
@@ -163,7 +165,7 @@ namespace BitMagic.Cpu
         public WDC65c02(IMemory memory, double frequency)
         {
             _operations = new (CpuOpCode operation, AccessMode Mode, int Timing)?[256];
-            _memory = memory;
+            Memory = memory;
             Frequency = frequency;
 
             foreach (var op in _opCodes)
@@ -206,7 +208,7 @@ namespace BitMagic.Cpu
 
         public void Reset()
         {
-            Registers.PC = (ushort)(_memory.GetByte(ResetVector) + (_memory.GetByte(ResetVector + 1) << 8));
+            Registers.PC = (ushort)(Memory.GetByte(ResetVector) + (Memory.GetByte(ResetVector + 1) << 8));
         }
 
         public void SetProgramCounter(int address)
@@ -234,6 +236,8 @@ namespace BitMagic.Cpu
             {
                 Console.Write(" ");
             }
+
+            LastOpCode = opCode;
 
             var opdef = _operations[opCode];
             if (opdef == null) throw new Exception();
@@ -275,6 +279,7 @@ namespace BitMagic.Cpu
             ushort toReturn;
             ushort address;
             int timing;
+            int address1;
 
             switch (mode)
             {
@@ -400,10 +405,10 @@ namespace BitMagic.Cpu
 
         public void Push(byte value)
         {
-            _memory.SetByte(_stackStart + Registers.S--, value);
+            Memory.SetByte(_stackStart + Registers.S--, value);
         }
 
-        public byte Pop() => _memory.GetByte(_stackStart + ++Registers.S);
+        public byte Pop() => Memory.GetByte(_stackStart + ++Registers.S);
     }
 
     public class Stp : CpuOpCode
@@ -416,7 +421,7 @@ namespace BitMagic.Cpu
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
         {
             // turn on debug mode?
-            Debug.Assert(false);
+            //Debug.Assert(false);
 
             return 0;
         }

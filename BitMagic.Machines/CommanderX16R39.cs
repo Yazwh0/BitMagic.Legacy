@@ -11,7 +11,7 @@ namespace BitMagic.Machines
         private IMemory? Memory { get; set; }
         IMemory IMachineEmulator.Memory => Memory ?? throw new NullReferenceException();
 
-        public ICpuEmulator? Cpu { get; internal set; }
+        public WDC65c02 Cpu { get; internal set; }
         ICpuEmulator IMachineEmulator.Cpu => Cpu ?? throw new NotImplementedException();
         ICpu IMachine.Cpu => Cpu ?? throw new NotImplementedException();
 

@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+	<Optimize>true</Optimize>
+  </PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Compiler.Cpu\BitMagic.Compiler.Cpu.csproj" />

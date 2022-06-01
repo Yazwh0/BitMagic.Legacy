@@ -9,7 +9,11 @@
   <ItemGroup>
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.3.0-alpha.21216.1" />
   </ItemGroup>
-
+	
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Compiler\BitMagic.Compiler.csproj" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitMagic.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace BitMagic.Compiler
         void Add(byte toAdd, int address);
         void Add(byte[] toAdd, int address);
         void SetHeader(IEnumerable<byte> toAdd);
-        Task Write();
+        NamedStream Write();
     }
 
     internal class FileWriter : IWriter
@@ -76,22 +77,6 @@ namespace BitMagic.Compiler
             _header = toAdd.ToArray();
         }
 
-        public async Task Write()
-        {
-            var toSave = _header.Concat(_data).ToArray();
-
-            if (string.IsNullOrWhiteSpace(FileName))
-                throw new Exception("Blank name");
-
-            if (FileName.StartsWith(":"))
-            {
-                Console.WriteLine($"Segment {SegmentName} is {toSave.Length} bytes.");
-                return;
-            }
-
-            await File.WriteAllBytesAsync(FileName, toSave);
-
-            Console.WriteLine($"Segment {SegmentName} is {toSave.Length} bytes. Written to '{FileName}'.");
-        }
+        public NamedStream Write() => new (SegmentName, FileName, _header.Concat(_data).ToArray());        
     }
 }

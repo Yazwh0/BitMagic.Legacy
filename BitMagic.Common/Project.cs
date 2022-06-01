@@ -18,7 +18,7 @@ namespace BitMagic.Common
         public CompileOptions CompileOptions { get; } = new CompileOptions();
 
         public IMachine? Machine { get; set; }
-        public IMachineEmulator? MachineEnumalator => Machine as IMachineEmulator;
+        public IMachineEmulator? MachineEmulator => Machine as IMachineEmulator;
 
         public TimeSpan LoadTime { get; set; }
         public TimeSpan PreProcessTime { get; set; }

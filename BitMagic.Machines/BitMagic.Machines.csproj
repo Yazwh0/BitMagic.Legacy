@@ -4,7 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
 	<Nullable>enable</Nullable>
   </PropertyGroup>
-
+	
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />

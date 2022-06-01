@@ -1,0 +1,11 @@
+assembly "..\Macro\bin\Debug\net6.0\Macro.dll";
+assembly "..\Libraries\Vera\bin\Debug\net6.0\Vera.dll";
+using Macro;
+machine CommanderX16R40;
+
+BM.X16Header();
+
+Macro.HelloWorld();
+
+.loop:
+bra loop

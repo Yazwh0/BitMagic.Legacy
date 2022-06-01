@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Toolkit;
 using BitMagic.Compiler.Exceptions;
 using BitMagic.Compiler.Warnings;
 
@@ -23,8 +22,17 @@ namespace BitMagic.Compiler
         public Compiler(Project project)
         {
             _project = project;
+            _commandParser = CreateParser();
+        }
 
-            _commandParser = CommandParser.Parser()
+        public Compiler(string code)
+        {
+            _project = new Project();
+            _project.Code.Contents = code;
+            _commandParser = CreateParser();
+        }
+
+        private CommandParser CreateParser() => CommandParser.Parser()
                 .WithLabel((label, state) =>
                 {
                     if (label == ".:")
@@ -43,18 +51,18 @@ namespace BitMagic.Compiler
                     if (newMachine == null)
                         throw new MachineNotKnownException(dict["name"]);
 
-                    if (project.Machine != null && newMachine.Name != project.Machine.Name && newMachine.Version != project.Machine.Version)
-                        throw new MachineAlreadySetException(project.Machine.Name, dict["name"]);
+                    if (_project.Machine != null && newMachine.Name != _project.Machine.Name && newMachine.Version != _project.Machine.Version)
+                        throw new MachineAlreadySetException(_project.Machine.Name, dict["name"]);
 
-                    if (project.Machine == null)
+                    if (_project.Machine == null)
                     {
-                        project.Machine = newMachine;
+                        _project.Machine = newMachine;
                     }
 
-                    if (project.MachineEnumalator != null && !project.MachineEnumalator.Initialised)
+                    if (_project.MachineEmulator != null && !_project.MachineEmulator.Initialised)
                     {
-                        project.MachineEnumalator.SetRom(new byte[0x4000]);
-                        project.MachineEnumalator.Build();
+                        _project.MachineEmulator.SetRom(new byte[0x4000]);
+                        _project.MachineEmulator.Build();
                     }
 
                     InitFromMachine(state);
@@ -70,7 +78,7 @@ namespace BitMagic.Compiler
 
                     machine.Cpu = cpu;
 
-                    project.Machine = machine;
+                    _project.Machine = machine;
 
                     InitFromMachine(state);
 
@@ -252,9 +260,9 @@ namespace BitMagic.Compiler
                     if (_project.CompileOptions.DisplayData)
                         dataline.WriteToConsole();
                 });
-        }
+        
 
-        public async Task<IEnumerable<string>> Compile()
+        public async Task<CompileResult> Compile()
         {
             if (_project.Code.Contents == null)
                 throw new ArgumentNullException(nameof(_project.Code.Contents));
@@ -343,9 +351,9 @@ namespace BitMagic.Compiler
                 await _project.AssemblerObject.Save();
             }
 
-            await GenerateDataFile(state);
+            var result = await GenerateDataFile(state);
 
-            return state.Warnings.Select(w => w.ToString());
+            return new CompileResult(state.Warnings.Select(w => w.ToString()), result, _project);
         }
         private void InitFromMachine(CompileState state)
         {
@@ -442,9 +450,11 @@ namespace BitMagic.Compiler
             return File.ReadAllTextAsync(path);
         }
 
-        private async Task GenerateDataFile(CompileState state)
+        private async Task<Dictionary<string, NamedStream>> GenerateDataFile(CompileState state)
         {
             var filenames = state.Segments.Select(i => i.Value.Filename ?? "").Distinct().ToArray();
+
+            var toReturn = new Dictionary<string, NamedStream>();
 
             foreach (var filename in filenames)
             {
@@ -503,7 +513,8 @@ namespace BitMagic.Compiler
                     //}
                 }
 
-                await writer.Write();
+                var result = writer.Write();
+                toReturn.Add(result.SegmentName, result);
 
                 //if (string.IsNullOrWhiteSpace(filename))
                 //{
@@ -523,6 +534,8 @@ namespace BitMagic.Compiler
                 //    Console.WriteLine($"Written {toSave.Count} bytes to '{filename}'.");
                 //}
             }
+
+            return toReturn;
         }
 
         private void PruneUnusedObjects(CompileState state)

@@ -1,0 +1,64 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "BitMagic X16 CS Asm",
+	"patterns": [
+		{
+			"include":"#csasm"
+		}
+	],
+    "repository": 
+	{
+		"csasm" :
+		{
+			"patterns": 
+			[
+				
+				{"include": "#csasmembed" },
+				{"include" : "source.bmasm"},
+				{
+					"name" : "meta.embedded.block.csasm",
+					"begin": "@{",
+					"end": "}",
+					"beginCaptures": { "0": { "name" : "punctuation.curlybrace.transition.csasm"}},
+					"endCaptures": { "0": { "name" : "punctuation.curlybrace.transition.csasm"}},
+					"patterns" : 
+					[
+						{ "include" : "source.bmasm" },					
+						{ "include" : "source.bmsc" }
+					]
+				},
+				{
+					"name" : "meta.embedded.line.csasm",
+					"match": "(@\\()(.*)(\\))",
+					"captures": 
+					{
+						"1": { "name" : "punctuation.curlybrace.transition.csasm"},
+						"2" : {
+							"patterns" : 
+							[
+								{ "include" : "source.cs" }
+							]
+						},						
+						"3": { "name" : "punctuation.curlybrace.transition.csasm"}
+					}					
+				}
+			]
+		},
+		"csasmembed":{
+			"name" : "meta.embedded.block.csasm.recuse",
+			"begin": "{",
+			"end": "}",
+			"beginCaptures": { "0": { "name" : "punctuation.curlybrace.open.cs.foo"}},
+			"endCaptures": { "0": { "name" : "punctuation.curlybrace.close.cs.foo"}},
+			"patterns": [
+				{ "include" : "$self" },
+				{ "include" : "source.bmasm" },					
+				{ "include" : "source.bmsc" }
+			]
+
+		}
+	},
+	"scopeName": "source.csasm"
+}
+
+

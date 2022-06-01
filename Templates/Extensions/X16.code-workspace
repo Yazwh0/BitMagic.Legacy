@@ -1,0 +1,149 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "..\\..\\Libraries\\Vera"
+		},
+	],
+	"settings": {
+		"cSpell.words": [
+			"bsasm",
+			"Colors",
+			"Concat",
+			"copydone",
+			"copyloop",
+			"coreclr",
+			"Defalte",
+			"endproc",
+			"endscope",
+			"endsegment",
+			"hhww",
+			"HSCALE",
+			"HSCROLL",
+			"Inflator",
+			"IRQLINE",
+			"Labors",
+			"Lanczos",
+			"Linq",
+			"lookback",
+			"MAPBASE",
+			"Octree",
+			"proc",
+			"Resamplers",
+			"scanline",
+			"TILEBASE",
+			"tochange",
+			"ushort",
+			"vblank",
+			"VSCALE",
+			"xpos",
+			"ypos"
+		],
+		"files.exclude": {
+			"**/.vs/**": true,
+			"**/bin/**": true,
+			"**/obj/**": true
+		},
+		"explorer.experimental.fileNesting.enabled" : true,
+		"explorer.experimental.fileNesting.expand": false,
+		"explorer.experimental.fileNesting.patterns": {
+			"*.csasm": "$(capture).csasm.cs, $(capture).bmasm",
+		},
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [		
+			{
+				"type": "coreclr",
+				"name": "Build Example",				
+				"preLaunchTask": "Build",
+				"request": "launch",
+				"program": "${workspaceFolder:X16Cubed}/../BitMagic/BitMagic/bin/Debug/net6.0/BitMagic.exe",
+				"args": [ 
+					"--razor-file=${workspaceFolder:X16Cubed}/X16Cubed/src/main.csasm",
+					"--bmasm-file=${workspaceFolder:X16Cubed}/X16Cubed/src/main.bmasm",
+					"--pre-razor-file=${workspaceFolder:X16Cubed}/X16Cubed/src/main.csasm.cs",
+					"--output-file=${workspaceFolder:X16Cubed}/X16Cubed/test.prg",
+					"razor",
+					"compile"
+				],
+				"cwd": "${workspaceFolder:X16Cubed}",
+				"stopAtEntry": false,
+				"console": "internalConsole",
+				"logging": {
+					"moduleLoad": false
+				},
+				"postDebugTask": "Run Emulator"
+			}
+		]
+	},
+	"tasks" :{
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label" : "Clean PRG",
+				"type": "shell",
+				"command": "Remove-Item ${workspaceFolder:X16Cubed}/X16Cubed/test.prg -ErrorAction SilentlyContinue ; exit 0",
+				"problemMatcher": [],
+			},
+			{
+				"label": "Build Vera",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder:Vera}"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
+				"label": "Build Compression",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder:Compression}"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},			
+			{
+				"label": "Build Generator",
+				"type": "shell",
+				"command": "dotnet",
+				"args" : [
+					"build",
+					"${workspaceFolder}/Generator/Generator"
+				],
+				"problemMatcher": [],
+				"group" : "build"
+			},
+			{
+				"label": "Build",
+				"dependsOn" : [ "Clean PRG", "Build Vera", "Build Compression", "Build Generator" ]
+			},
+			{
+				"label": "Run Emulator",
+				"type": "shell",
+				"command": "c:\\dev\\X16emu\\R40\\x16emu.exe",
+				"args": [
+					"-prg",
+					"X16Cubed\\test.prg",
+					"-debug",
+					"-run",
+					"-scale",
+					"2",
+					"-quality",
+					"nearest",
+					"-echo",
+					"iso",
+					"-gif",
+					"demo.gif,wait"
+				]
+			}
+		]
+	}
+}

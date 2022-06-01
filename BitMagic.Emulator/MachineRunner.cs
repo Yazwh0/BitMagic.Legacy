@@ -31,6 +31,14 @@ namespace BitMagic.Emulation
 
                 WorkerThread.Start();
             }
+
+            public void WaitForCompletion()
+            {
+                if (WorkerThread == null)
+                    return;
+
+                WorkerThread.Join();
+            }
         }
 
         public Worker[] DisplayWorkers { get; } 
@@ -47,12 +55,14 @@ namespace BitMagic.Emulation
         public double CpuFrequency { get; init; }
 
         public ICpuEmulator Cpu { get; }
+        public Func<IMachineRunner, bool>? ExitCheck { get; }
 
-        public MachineRunner(double deltaHtz, Action<object?> cpuThread, IDisplay display, ICpuEmulator cpu)
+        public MachineRunner(double deltaHtz, Action<object?> cpuThread, IDisplay display, ICpuEmulator cpu, Func<IMachineRunner, bool>? exitCheck)
         {
             CpuFrequency = deltaHtz;
             Display = display;
             Cpu = cpu;
+            ExitCheck = exitCheck;
             int j = 0;
 
             DisplayEvents = new AutoResetEvent[Display.DisplayThreads.Length];
@@ -78,9 +88,9 @@ namespace BitMagic.Emulation
 
         }
 
-        public void Stop()
+        public void WaitForCompletion()
         {
-            // ??
+            CpuWorker.WaitForCompletion();
         }
 
         public void PreRender()

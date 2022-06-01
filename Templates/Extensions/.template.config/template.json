@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Yazwho",
+    "classifications": [ "6502", "CSASM", "BMASM" ],
+    "identity": "BitMagic.X16",
+    "name": "BitMagic X16 CSASM application",
+    "shortName": "bitmagic.x16",
+    "tags": {
+      "language": "CSASM",
+      "type": "item"
+    }
+  }

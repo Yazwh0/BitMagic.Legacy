@@ -5,16 +5,7 @@ namespace BitMagic.Cpu
 {
     public class _6502Registers : I6502Registers
     {
-        private ushort _pc;
-        public ushort PC
-        {
-            get => _pc; set
-            {
-                _pc = value;
-                if (_pc < 256)
-                    Debug.Assert(true);
-            }
-        }
+        public ushort PC { get; set; }
         public byte S { get; set; } = 0xff;
 
         public byte P { get => _flags.Register ; set => _flags.Register = value; }

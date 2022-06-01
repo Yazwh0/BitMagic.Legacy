@@ -1,6 +1,7 @@
 ﻿using BitMagic.Common;
 using BitMagic.Cpu;
 using BitMagic.Emulator.Gl;
+using BitMagic.Machines;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -13,13 +14,27 @@ namespace BitMagic.Emulation
         private IMachineEmulator _machine { get; }
         private Project _project;
 
+        public IMachineEmulator Machine => _machine;
+
         public Emulator(Project project)
         {
-            if (project.MachineEnumalator == null)
+            if (project.MachineEmulator == null)
                 throw new ArgumentException(nameof(project.Machine));
 
-            _machine = project.MachineEnumalator;
+            _machine = project.MachineEmulator;
             _project = project;
+        }
+
+        public Emulator(CompileResult result, Machine machine, byte[] Rom)
+        {
+            _machine = MachineFactory.GetMachine(machine) as IMachineEmulator ?? throw new Exception($"{machine} is not an IMachineEmulator");
+            _machine.SetRom(Rom);
+            _machine.Build();
+
+            _project = new Project();
+            _project.OutputFile.Contents = result.Data["Main"].ToArray();
+            _project.RomFile.Contents = Rom;
+            _project.Machine = _machine;
         }
 
         public void LoadPrg()
@@ -27,33 +42,39 @@ namespace BitMagic.Emulation
             if (_project.OutputFile.Contents == null)
                 throw new ArgumentNullException(nameof(_project.OutputFile.Contents));
 
-            var address = _project.OutputFile.Contents[0] + (_project.OutputFile.Contents[1] << 8);
-
             if (!string.IsNullOrWhiteSpace(_project.OutputFile.Filename) && !_project.OutputFile.Filename.EndsWith(".prg", StringComparison.OrdinalIgnoreCase))
             {
                 throw new Exception("Output filename must be .prg if loading into the emulator.");
             }
 
-            for (var i = 2; i < _project.OutputFile.Contents.Length; i++)
+            LoadPrg(_project.OutputFile.Contents);
+        }
+
+        public void LoadPrg(byte[] data)
+        {
+            var address = data[0] + (data[1] << 8);
+
+            for (var i = 2; i < data.Length; i++)
             {
-                _machine.Memory.SetByte(address++, _project.OutputFile.Contents[i]);
+                _machine.Memory.SetByte(address++, data[i]);
             }
         }
 
-        public void Emulate()
+        public void Emulate(bool headless = false, Func<IMachineRunner, bool>? exitCheck = null)
         {
             _machine.Cpu.Reset();
 
-            var machineRunner = new MachineRunner(_machine.Cpu.Frequency, CpuFunc, _machine.Display, _machine.Cpu);
+            var machineRunner = new MachineRunner(_machine.Cpu.Frequency, CpuFunc, _machine.Display, _machine.Cpu, exitCheck);
 
-            if (_project.MachineEnumalator == null)
+            if (_project.MachineEmulator == null)
                 throw new NullReferenceException("MachineEmulator is null");
 
             machineRunner.Start();
 
-            EmulatorWindow.Run(_project.MachineEnumalator.Display);
-
-            machineRunner.Stop();
+            if (!headless)
+                EmulatorWindow.Run(_project.MachineEmulator.Display);
+            else
+                machineRunner.WaitForCompletion();
         }
 
         internal void CpuFunc(object? r)
@@ -83,7 +104,15 @@ namespace BitMagic.Emulation
 
                 while (ticks < targetTicks)
                 {
-                    ticks += _machine.Cpu.ClockTick(_machine.Memory, debugging);
+                    var thisTicks = _machine.Cpu.ClockTick(_machine.Memory, debugging);
+                    ticks += thisTicks;
+                    runner.CpuTicks += thisTicks;
+
+                    if (runner.ExitCheck != null)
+                    {
+                        if (runner.ExitCheck(runner))
+                            return;
+                    }
                 }
 
                 if (releaseVideo)
@@ -98,8 +127,6 @@ namespace BitMagic.Emulation
                     while (runner.Display.DisplayHold.Any(i => i == false)) { }
                     //WaitHandle.WaitAll(runner.DisplayEvents);
                 }
-
-                runner.CpuTicks += ticks;
 
                 if (frameDone)
                 {

@@ -17,7 +17,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+
+	<ItemGroup>
     <PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
     <PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
@@ -26,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
     <ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />
+    <ProjectReference Include="..\BitMagic.Machines\BitMagic.Machines.csproj" />
   </ItemGroup>
 
 </Project>
