@@ -20,12 +20,12 @@ namespace BigMagic.Macro
     {
         private Project? _project = null;
 
-        private List<string> _references = new List<string>();
-        private List<string> _assemblyFilenames = new List<string>();
+        private readonly List<string> _references = new();
+        private readonly List<string> _assemblyFilenames = new();
 
         public MacroAssembler()
         {
-       }
+        }
 
         public async Task ProcessFile(Project project)
         {
