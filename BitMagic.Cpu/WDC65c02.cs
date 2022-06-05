@@ -32,6 +32,8 @@ namespace BitMagic.Cpu
 
         public byte LastOpCode { get; private set; } = 0;
 
+        public int OpCodeBytes => 1;
+
         public double Frequency { get; }
 
         private readonly IReadOnlyDictionary<AccessMode, IParametersDefinition> _parameterDefinitions = new IParametersDefinition[] {

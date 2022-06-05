@@ -53,6 +53,8 @@ namespace BitMagic.Machines
         public IEnumerable<ICpuOpCode> OpCodes => Array.Empty<ICpuOpCode>();
 
         public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => throw new NotImplementedException();
+
+        public int OpCodeBytes => 1;
     }
 
     internal class NoVariables : IVariables

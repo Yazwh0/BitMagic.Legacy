@@ -8,6 +8,7 @@ namespace BitMagic.Common
     { 
         public string Name { get; }
         IEnumerable<ICpuOpCode> OpCodes { get; }
+        public int OpCodeBytes { get; }
         IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions { get; }
     }
 

@@ -44,28 +44,34 @@ namespace BitMagic.Compiler
 
         private IEnumerable<byte> IntToByteArray(uint i)
         {
-            byte toReturn = (byte)((i & 0xff000000) >> 24);
+            byte toReturn;
 
-            if (toReturn != 0)
+            if (_cpu.OpCodeBytes == 4)
+            {
+                toReturn = (byte)((i & 0xff000000) >> 24);
+
                 yield return toReturn;
+            }
 
-            toReturn = (byte)((i & 0xff0000) >> 16);
+            if (_cpu.OpCodeBytes >= 3)
+            {
+                toReturn = (byte)((i & 0xff0000) >> 16);
 
-            if (toReturn != 0)
                 yield return toReturn;
+            }
 
-            toReturn = (byte)((i & 0xff00) >> 8);
+            if (_cpu.OpCodeBytes >= 2)
+            {
+                toReturn = (byte)((i & 0xff00) >> 8);
 
-            if (toReturn != 0)
                 yield return toReturn;
+            }
 
             yield return (byte)(i & 0xff);
         }
 
         public void ProcessParts(bool finalParse)
         {
-            //(byte[]? Data, bool RequiresReacalt, AccessMode AccessMode)? testResult = null;
-
             foreach (var i in _opCode.Modes.Where(i => _cpu.ParameterDefinitions.ContainsKey(i)).Select(i => _cpu.ParameterDefinitions[i]).OrderBy(i => i.Order))
             {
                 try

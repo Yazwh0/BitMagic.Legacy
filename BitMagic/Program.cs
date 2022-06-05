@@ -236,6 +236,7 @@ namespace BitMagic
                     {
                         if (string.IsNullOrEmpty(result.FileName) || result.FileName.StartsWith(":"))
                         {
+             
                             Console.WriteLine($"Segment {result.SegmentName} is {result.Length} bytes.");
                             continue;
                         }
@@ -294,6 +295,9 @@ namespace BitMagic
 
             if (_args.Contains("debug"))
             {
+                Console.WriteLine("Not yet implemented.");
+                Console.ResetColor();
+                return -1;
             }
 
             Console.WriteLine("Done.");
