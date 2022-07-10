@@ -302,6 +302,55 @@ write_zpx macro
 	inc r11
 endm
 
+write_abs macro
+	xor rbx, rbx		; Clear b
+	mov bx, [rcx+r11]	; Get address
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC twice
+	inc r11
+endm
+
+write_absx macro
+	xor rbx, rbx		; Clear b
+	mov bx, [rcx+r11]	; Get Address
+	add bx, r9w			; Add X
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC twice
+	inc r11
+endm
+
+write_absy macro
+	xor rbx, rbx		; Clear b
+	mov bx, [rcx+r11]	; Get Address
+	add bx, r10w		; Add Y
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC twice
+	inc r11
+endm
+
+write_indx macro
+	xor rbx, rbx		; Clear b
+	mov bl, [rcx+r11]	; Get address
+	add bl, r9b			; Add X, use bl so it wraps
+	mov bx, [rcx+rbx]	; Get destination address
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC
+endm
+
+write_indy macro
+	xor rbx, rbx		; Clear b
+	mov bl, [rcx+r11]	; Get address
+	mov bx, [rcx+rbx]	; Get destination address
+	add bx, r10w		; Add Y
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC
+endm
+
 ; -----------------------------
 ; Op Codes
 ; -----------------------------
@@ -521,6 +570,46 @@ x95_sta_zpx proc
 
 x95_sta_zpx endp
 
+x8D_sta_abs proc
+
+	mov al, r8b
+	write_abs
+	jmp opcode_done
+
+x8D_sta_abs endp
+
+x9D_sta_absx proc
+
+	mov al, r8b
+	write_absx
+	jmp opcode_done
+
+x9D_sta_absx endp
+
+x99_sta_absy proc
+
+	mov al, r8b
+	write_absy
+	jmp opcode_done
+
+x99_sta_absy endp
+
+x81_sta_indx proc
+
+	mov al, r8b
+	write_indx
+	jmp opcode_done
+
+x81_sta_indx endp
+
+x91_sta_indy proc
+
+	mov al, r8b
+	write_indy
+	jmp opcode_done
+
+x91_sta_indy endp
+
 ;
 ;
 ;
@@ -683,7 +772,7 @@ opcode_7D	qword	noinstruction 	; $7D
 opcode_7E	qword	noinstruction 	; $7E
 opcode_7F	qword	noinstruction 	; $7F
 opcode_80	qword	noinstruction 	; $80
-opcode_81	qword	noinstruction 	; $81
+opcode_81	qword	x81_sta_indx 	; $81
 opcode_82	qword	noinstruction 	; $82
 opcode_83	qword	noinstruction 	; $83
 opcode_84	qword	noinstruction 	; $84
@@ -695,11 +784,11 @@ opcode_89	qword	noinstruction 	; $89
 opcode_8A	qword	noinstruction 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
 opcode_8C	qword	noinstruction 	; $8C
-opcode_8D	qword	noinstruction 	; $8D
+opcode_8D	qword	x8D_sta_abs 	; $8D
 opcode_8E	qword	noinstruction 	; $8E
 opcode_8F	qword	noinstruction 	; $8F
 opcode_90	qword	noinstruction 	; $90
-opcode_91	qword	noinstruction 	; $91
+opcode_91	qword	x91_sta_indy 	; $91
 opcode_92	qword	noinstruction 	; $92
 opcode_93	qword	noinstruction 	; $93
 opcode_94	qword	noinstruction 	; $94
@@ -707,11 +796,11 @@ opcode_95	qword	x95_sta_zpx 	; $95
 opcode_96	qword	noinstruction 	; $96
 opcode_97	qword	noinstruction 	; $97
 opcode_98	qword	noinstruction 	; $98
-opcode_99	qword	noinstruction 	; $99
+opcode_99	qword	x99_sta_absy 	; $99
 opcode_9A	qword	noinstruction 	; $9A
 opcode_9B	qword	noinstruction 	; $9B
 opcode_9C	qword	noinstruction 	; $9C
-opcode_9D	qword	noinstruction 	; $9D
+opcode_9D	qword	x9D_sta_absx 	; $9D
 opcode_9E	qword	noinstruction 	; $9E
 opcode_9F	qword	noinstruction 	; $9F
 opcode_A0	qword	xA0_ldy_imm 	; $A0
