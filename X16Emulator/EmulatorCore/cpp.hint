@@ -1,0 +1,2 @@
+#define EMULATORCODE_API __declspec(dllexport)
+#define EMULATORCODE_API __declspec(dllimport)

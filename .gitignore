@@ -21,3 +21,4 @@ output.png
 Debugger/**/*
 .fake
 .ionide
+**/Debug/*

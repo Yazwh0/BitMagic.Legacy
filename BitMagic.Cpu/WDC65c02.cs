@@ -60,7 +60,7 @@ namespace BitMagic.Cpu
 
         public IReadOnlyDictionary<AccessMode, IParametersDefinition> ParameterDefinitions => _parameterDefinitions;        
 
-        private readonly CpuOpCode[] _opCodes = new CpuOpCode[]
+        private readonly EmulatableCpuOpCode[] _opCodes = new EmulatableCpuOpCode[]
         {
             new Adc(),
             new And(),
@@ -162,11 +162,11 @@ namespace BitMagic.Cpu
             new Wai()
         };
 
-        private (CpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
+        private (EmulatableCpuOpCode operation, AccessMode Mode, int Timing)?[] _operations;
 
         public WDC65c02(IMemory memory, double frequency)
         {
-            _operations = new (CpuOpCode operation, AccessMode Mode, int Timing)?[256];
+            _operations = new (EmulatableCpuOpCode operation, AccessMode Mode, int Timing)?[256];
             Memory = memory;
             Frequency = frequency;
 
@@ -413,7 +413,7 @@ namespace BitMagic.Cpu
         public byte Pop() => Memory.GetByte(_stackStart + ++Registers.S);
     }
 
-    public class Stp : CpuOpCode
+    public class Stp : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -429,7 +429,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Adc : CpuOpCode
+    public class Adc : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x69, AccessMode.Immediate, 2),
@@ -458,7 +458,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class And : CpuOpCode
+    public class And : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x29, AccessMode.Immediate, 2),
@@ -483,7 +483,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Asl : CpuOpCode
+    public class Asl : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x0a, AccessMode.Accumulator, 2),
@@ -532,7 +532,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Bit : CpuOpCode
+    public class Bit : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new() {
             (0x24, AccessMode.ZeroPage, 3),
@@ -555,7 +555,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public abstract class BranchOpCode : CpuOpCode
+    public abstract class BranchOpCode : EmulatableCpuOpCode
     {
         public abstract bool Condition(I6502 cpu);
 
@@ -676,7 +676,7 @@ namespace BitMagic.Cpu
         public override bool Condition(I6502 cpu) => cpu.Registers.Flags.Zero;
     }
 
-    public class Brk : CpuOpCode
+    public class Brk : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -694,7 +694,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public abstract class Compare : CpuOpCode
+    public abstract class Compare : EmulatableCpuOpCode
     {
         public abstract byte SourceVal(I6502 cpu);
         public override int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, I6502 cpu)
@@ -754,7 +754,7 @@ namespace BitMagic.Cpu
         public override byte SourceVal(I6502 cpu) => cpu.Registers.Y;
     }
 
-    public class Dec : CpuOpCode
+    public class Dec : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -795,7 +795,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Eor : CpuOpCode
+    public class Eor : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -821,7 +821,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public abstract class FlagInstruction : CpuOpCode
+    public abstract class FlagInstruction : EmulatableCpuOpCode
     {
         public abstract void PerformOperation(I6502 cpu);
 
@@ -904,7 +904,7 @@ namespace BitMagic.Cpu
         public override void PerformOperation(I6502 cpu) => cpu.Registers.Flags.Decimal = true;
     }
 
-    public class Inc : CpuOpCode
+    public class Inc : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -946,7 +946,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Jmp : CpuOpCode
+    public class Jmp : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -965,7 +965,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Jsr : CpuOpCode
+    public class Jsr : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -990,7 +990,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Lda : CpuOpCode
+    public class Lda : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1016,7 +1016,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Ldx : CpuOpCode
+    public class Ldx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1038,7 +1038,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Ldy : CpuOpCode
+    public class Ldy : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1060,7 +1060,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Lsr : CpuOpCode
+    public class Lsr : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1109,7 +1109,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Nop : CpuOpCode
+    public class Nop : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1122,7 +1122,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Ora : CpuOpCode
+    public class Ora : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1148,7 +1148,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Rol : CpuOpCode
+    public class Rol : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1200,7 +1200,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Ror : CpuOpCode
+    public class Ror : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1252,7 +1252,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Rti : CpuOpCode
+    public class Rti : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1274,7 +1274,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Rts : CpuOpCode
+    public class Rts : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1294,7 +1294,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Sbc : CpuOpCode
+    public class Sbc : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1324,7 +1324,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Sta : CpuOpCode
+    public class Sta : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1350,7 +1350,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Stz : CpuOpCode
+    public class Stz : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1372,7 +1372,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Stx : CpuOpCode
+    public class Stx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1393,7 +1393,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Sty : CpuOpCode
+    public class Sty : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1414,7 +1414,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Tax : CpuOpCode
+    public class Tax : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1429,7 +1429,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Txa : CpuOpCode
+    public class Txa : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1444,7 +1444,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Dex : CpuOpCode
+    public class Dex : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1459,7 +1459,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Inx : CpuOpCode
+    public class Inx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1474,7 +1474,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Tay : CpuOpCode
+    public class Tay : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1489,7 +1489,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Tya : CpuOpCode
+    public class Tya : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1504,7 +1504,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Dey : CpuOpCode
+    public class Dey : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1519,7 +1519,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Iny : CpuOpCode
+    public class Iny : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1534,7 +1534,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Txs : CpuOpCode
+    public class Txs : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1549,7 +1549,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Tsx : CpuOpCode
+    public class Tsx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1564,7 +1564,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Pha : CpuOpCode
+    public class Pha : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1579,7 +1579,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Pla : CpuOpCode
+    public class Pla : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1594,7 +1594,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Php : CpuOpCode
+    public class Php : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1609,7 +1609,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Plp : CpuOpCode
+    public class Plp : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1624,7 +1624,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Plx : CpuOpCode
+    public class Plx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1639,7 +1639,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Ply : CpuOpCode
+    public class Ply : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1654,7 +1654,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Phx : CpuOpCode
+    public class Phx : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1669,7 +1669,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Phy : CpuOpCode
+    public class Phy : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1684,7 +1684,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Trb : CpuOpCode
+    public class Trb : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1711,7 +1711,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public class Tsb : CpuOpCode
+    public class Tsb : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {
@@ -1738,7 +1738,7 @@ namespace BitMagic.Cpu
         }
     }
 
-    public abstract class BbBase : CpuOpCode
+    public abstract class BbBase : EmulatableCpuOpCode
     {
         protected abstract int Bit { get; }
         protected abstract bool BranchOn { get; }
@@ -1946,7 +1946,7 @@ namespace BitMagic.Cpu
         protected override bool BranchOn => false;
     }
 
-    public abstract class MbBase : CpuOpCode
+    public abstract class MbBase : EmulatableCpuOpCode
     {
         protected abstract int Bit { get; }
         protected abstract bool SetOn { get; }
@@ -2157,7 +2157,7 @@ namespace BitMagic.Cpu
         protected override bool SetOn => true;
     }
 
-    public class Wai : CpuOpCode
+    public class Wai : EmulatableCpuOpCode
     {
         internal override List<(uint OpCode, AccessMode Mode, int Timing)> OpCodes => new()
         {

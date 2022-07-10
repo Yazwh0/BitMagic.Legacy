@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace BitMagic.Common
@@ -54,6 +55,11 @@ namespace BitMagic.Common
         // number of bytes
         int OpCodeLength { get; }
         public IEnumerable<AccessMode> Modes { get; }
+    }
+
+    public interface IEmulatableCpuOpCode<TCpu> : ICpuOpCode
+    {
+        public abstract int Process(byte opCode, Func<(byte value, int timing, ushort pcStep)> GetValueAtPC, Func<(ushort address, int timing, ushort pcStep)> GetAddressAtPc, IMemory memory, TCpu cpu);
     }
 
     public enum AccessMode
