@@ -48,7 +48,7 @@ int main()
     state.overflow = false;
     state.zero = false;
 
-    memory_ptr[0x810] = 0x81;
+    memory_ptr[0x810] = 0xa0;
     memory_ptr[0x811] = 0x20;
     memory_ptr[0x812] = 0xdb;
 

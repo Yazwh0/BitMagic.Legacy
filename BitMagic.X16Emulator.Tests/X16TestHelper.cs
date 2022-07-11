@@ -49,7 +49,7 @@ namespace BitMagic.X16Emulator.Tests
                 Assert.AreEqual(Pc, (Int16)emulator.Pc);
 
             if (Clock != null)
-                Assert.AreEqual(Clock, emulator.Clock);
+                Assert.AreEqual(Clock, emulator.Clock - 3); // add on stp clock cycles
         }
 
         public static void AssertFlags(this Emulator emulator, bool? Zero = null, bool? Negative = null, bool? Overflow = null, bool? Carry = null)

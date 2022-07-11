@@ -19,7 +19,7 @@ public class LDA
         Assert.AreEqual(0x44, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x00, 0x00, 0x813);
+        emulator.AssertState(0x44, 0x00, 0x00, 0x813, 2);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -37,7 +37,7 @@ public class LDA
         Assert.AreEqual(0x00, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x813);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 2);
         emulator.AssertFlags(true, false, false, false);
     }
 
@@ -55,7 +55,7 @@ public class LDA
         Assert.AreEqual(0xff, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0xff, 0x00, 0x00, 0x813);
+        emulator.AssertState(0xff, 0x00, 0x00, 0x813, 2);
         emulator.AssertFlags(false, true, false, false);
     }
 
@@ -77,7 +77,7 @@ public class LDA
         Assert.AreEqual(0x10, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x00, 0x00, 0x813);
+        emulator.AssertState(0x44, 0x00, 0x00, 0x813, 3);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -100,7 +100,7 @@ public class LDA
         Assert.AreEqual(0x10, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x02, 0x00, 0x813);
+        emulator.AssertState(0x44, 0x02, 0x00, 0x813, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -123,7 +123,7 @@ public class LDA
         Assert.AreEqual(0xa0, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x72, 0x00, 0x813);
+        emulator.AssertState(0x44, 0x72, 0x00, 0x813, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -146,7 +146,7 @@ public class LDA
         Assert.AreEqual(0x04, emulator.Memory[0x812]);
 
         // emulation
-        emulator.AssertState(0x44, 0x00, 0x00, 0x814);
+        emulator.AssertState(0x44, 0x00, 0x00, 0x814, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -170,7 +170,7 @@ public class LDA
         Assert.AreEqual(0x04, emulator.Memory[0x812]);
 
         // emulation
-        emulator.AssertState(0x44, 0x02, 0x00, 0x814);
+        emulator.AssertState(0x44, 0x02, 0x00, 0x814, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -194,7 +194,7 @@ public class LDA
         Assert.AreEqual(0x04, emulator.Memory[0x812]);
 
         // emulation
-        emulator.AssertState(0x44, 0x00, 0x02, 0x814);
+        emulator.AssertState(0x44, 0x00, 0x02, 0x814, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -219,7 +219,7 @@ public class LDA
         Assert.AreEqual(0x10, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x02, 0x00, 0x813);
+        emulator.AssertState(0x44, 0x02, 0x00, 0x813, 6);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -244,7 +244,7 @@ public class LDA
         Assert.AreEqual(0x10, emulator.Memory[0x811]);
 
         // emulation
-        emulator.AssertState(0x44, 0x00, 0x01, 0x813);
+        emulator.AssertState(0x44, 0x00, 0x01, 0x813, 5);
         emulator.AssertFlags(false, false, false, false);
     }
 }

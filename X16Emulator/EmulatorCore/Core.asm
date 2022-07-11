@@ -116,6 +116,7 @@ write_state_obj macro
 	mov	[rdx+register_x], r9d		; x
 	mov	[rdx+register_y], r10d		; y
 	mov	[rdx+register_pc], r11d		; PC
+	mov [rdx+clock], r14			; Clock
 
 	; Flags
 	pop bx			; pop flags off
@@ -156,6 +157,7 @@ read_state_obj macro
 	mov r9d, [rdx+register_x]		; x
 	mov r10d, [rdx+register_y]		; y
 	mov r11d, [rdx+register_pc]		; PC
+	mov r14, [rdx+clock]			; Clock
 
 	; Flags
 	xor rbx, rbx
@@ -243,9 +245,6 @@ asm_func proc memory:QWORD, state:QWORD
 
 	store_registers
 	read_state_obj
-
-
-	xor r14, r14				; clear clock ticks
 
 ;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
 ;	mov byte ptr [rcx + 0811h], 000h	; $400
@@ -367,6 +366,8 @@ xA9_lda_imm PROC
 	mov	r8b, al
 	update_nz_flags
 
+	add r14, 2
+
 	jmp opcode_done
 
 xA9_lda_imm ENDP
@@ -376,6 +377,8 @@ xA5_lda_zp PROC
 	read_zp
 	mov r8b, al
 	update_nz_flags
+
+	add r14, 3
 
 	jmp opcode_done
 
@@ -387,6 +390,8 @@ xB5_lda_zpx PROC
 	mov r8b, al
 	update_nz_flags
 
+	add r14, 4
+
 	jmp opcode_done
 
 xB5_lda_zpx endp
@@ -396,6 +401,8 @@ xAD_lda_abs proc
 	read_abs
 	mov r8b, al
 	update_nz_flags
+
+	add r14, 4
 
 	jmp opcode_done
 
@@ -407,6 +414,9 @@ xBD_lda_absx proc
 	mov r8b, al
 	update_nz_flags
 
+	; todo: check for page change
+	add r14, 4
+
 	jmp opcode_done
 
 xBD_lda_absx endp
@@ -416,6 +426,9 @@ xB9_lda_absy proc
 	read_absy
 	mov r8b, al
 	update_nz_flags
+
+	; todo: check for page change
+	add r14, 4
 
 	jmp opcode_done
 
@@ -427,6 +440,8 @@ xA1_lda_indx proc
 	mov r8b, al
 	update_nz_flags
 
+	add r14, 6
+
 	jmp opcode_done
 
 xA1_lda_indx endp
@@ -435,6 +450,9 @@ xB1_lda_indy proc
 	read_indy
 	mov r8b, al
 	update_nz_flags
+
+	; todo: check for page change
+	add r14, 5
 
 	jmp opcode_done
 
@@ -451,6 +469,8 @@ xA2_ldx_imm PROC
 	mov	r9b, al
 	update_nz_flags
 
+	add r14, 2
+
 	jmp opcode_done
 
 xA2_ldx_imm ENDP
@@ -460,6 +480,8 @@ xA6_ldx_zp PROC
 	read_zp
 	mov r9b, al
 	update_nz_flags
+
+	add r14, 3
 
 	jmp opcode_done
 
@@ -471,6 +493,8 @@ xB6_ldx_zpy PROC
 	mov r9b, al
 	update_nz_flags
 
+	add r14, 4
+
 	jmp opcode_done
 
 xB6_ldx_zpy endp
@@ -481,6 +505,8 @@ xAE_ldx_abs proc
 	mov r9b, al
 	update_nz_flags
 
+	add r14, 4
+
 	jmp opcode_done
 
 xAE_ldx_abs endp
@@ -490,6 +516,9 @@ xBE_ldx_absy proc
 	read_absy
 	mov r9b, al
 	update_nz_flags
+
+	; todo: detect page cross
+	add r14, 4
 
 	jmp opcode_done
 
@@ -505,6 +534,8 @@ xA0_ldy_imm PROC
 	mov	r10b, al
 	update_nz_flags
 
+	add r14, 2
+
 	jmp opcode_done
 
 xA0_ldy_imm ENDP
@@ -514,6 +545,8 @@ xA4_ldy_zp PROC
 	read_zp
 	mov r10b, al
 	update_nz_flags
+
+	add r14, 3
 
 	jmp opcode_done
 
@@ -525,6 +558,8 @@ xB4_ldy_zpx PROC
 	mov r10b, al
 	update_nz_flags
 
+	add r14, 4
+
 	jmp opcode_done
 
 xB4_ldy_zpx endp
@@ -535,6 +570,8 @@ xAC_ldy_abs proc
 	mov r10b, al
 	update_nz_flags
 
+	add r14, 4
+
 	jmp opcode_done
 
 xAC_ldy_abs endp
@@ -544,6 +581,9 @@ xBC_ldy_absx proc
 	read_absx
 	mov r10b, al
 	update_nz_flags
+
+	; todo: Check for page change
+	add r14, 4
 
 	jmp opcode_done
 
@@ -558,6 +598,9 @@ x85_sta_zp proc
 	
 	mov al, r8b
 	write_zp
+
+	add r14, 3
+
 	jmp opcode_done
 
 x85_sta_zp endp
@@ -566,6 +609,9 @@ x95_sta_zpx proc
 
 	mov al, r8b
 	write_zpx
+
+	add r14, 4
+
 	jmp opcode_done
 
 x95_sta_zpx endp
@@ -574,6 +620,9 @@ x8D_sta_abs proc
 
 	mov al, r8b
 	write_abs
+
+	add r14, 4
+
 	jmp opcode_done
 
 x8D_sta_abs endp
@@ -582,6 +631,9 @@ x9D_sta_absx proc
 
 	mov al, r8b
 	write_absx
+
+	add r14,5
+
 	jmp opcode_done
 
 x9D_sta_absx endp
@@ -590,6 +642,9 @@ x99_sta_absy proc
 
 	mov al, r8b
 	write_absy
+
+	add r14,5
+
 	jmp opcode_done
 
 x99_sta_absy endp
@@ -598,6 +653,9 @@ x81_sta_indx proc
 
 	mov al, r8b
 	write_indx
+
+	add r14,6
+
 	jmp opcode_done
 
 x81_sta_indx endp
@@ -606,6 +664,9 @@ x91_sta_indy proc
 
 	mov al, r8b
 	write_indy
+
+	add r14,6
+
 	jmp opcode_done
 
 x91_sta_indy endp
@@ -615,6 +676,8 @@ x91_sta_indy endp
 ;
 
 xDB_stp proc
+
+	add r14, 3	; Clock
 
 	; return stp was hit.
 	write_state_obj
