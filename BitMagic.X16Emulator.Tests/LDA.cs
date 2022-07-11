@@ -175,6 +175,30 @@ public class LDA
     }
 
     [TestMethod]
+    public async Task AbsoluteX_PageBoundry()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x590] = 0x44;
+        emulator.X = 0xf0;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda $4a0, X
+                stp", emulator);
+
+        // compilation
+        Assert.AreEqual(0xbd, emulator.Memory[0x810]);
+        Assert.AreEqual(0xa0, emulator.Memory[0x811]);
+        Assert.AreEqual(0x04, emulator.Memory[0x812]);
+
+        // emulation
+        emulator.AssertState(0x44, 0xf0, 0x00, 0x814, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task AbsoluteY()
     {
         var emulator = new Emulator();
@@ -195,6 +219,30 @@ public class LDA
 
         // emulation
         emulator.AssertState(0x44, 0x00, 0x02, 0x814, 4);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task AbsoluteY_PageBoundry()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x590] = 0x44;
+        emulator.Y = 0xf0;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda $4a0, Y
+                stp", emulator);
+
+        // compilation
+        Assert.AreEqual(0xb9, emulator.Memory[0x810]);
+        Assert.AreEqual(0xa0, emulator.Memory[0x811]);
+        Assert.AreEqual(0x04, emulator.Memory[0x812]);
+
+        // emulation
+        emulator.AssertState(0x44, 0x00, 0xf0, 0x814, 5);
         emulator.AssertFlags(false, false, false, false);
     }
 
@@ -245,6 +293,31 @@ public class LDA
 
         // emulation
         emulator.AssertState(0x44, 0x00, 0x01, 0x813, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task IndirectY_PageBoundary()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x4a0+0xf0] = 0x44;
+        emulator.Memory[0xa0] = 0xa0;
+        emulator.Memory[0xa1] = 0x04;
+        emulator.Y = 0xf0;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda ($a0), Y
+                stp", emulator);
+
+        // compilation
+        Assert.AreEqual(0xb1, emulator.Memory[0x810]);
+        Assert.AreEqual(0xa0, emulator.Memory[0x811]);
+
+        // emulation
+        emulator.AssertState(0x44, 0x00, 0xf0, 0x813, 6);
         emulator.AssertFlags(false, false, false, false);
     }
 }

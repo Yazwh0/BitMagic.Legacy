@@ -50,7 +50,7 @@ read_zpx macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Get address in ZP
 	add bl, r9b			; Add X. Byte operation so it wraps.
-	; Todo detect overflow and add one clock cycle
+
 	mov al, [rcx+rbx]   ; Get Value in ZP
 	inc r11				; Inc PC for param
 endm
@@ -59,36 +59,53 @@ read_zpy macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Get address in ZP
 	add bl, r10b		; Add Y. Byte operation so it wraps.
-	; Todo detect overflow and add one clock cycle
+
 	mov al, [rcx+rbx]   ; Get Value in ZP
 	inc r11				; Inc PC for param
 endm
 
-; THESE BELOW MIGHT NOT WORK
 read_abs macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
 	mov al, [rcx+rbx]	; Get value at that address
-	;and ax, 0ffh		; If the above is 16bit, strip top byte.
+
 	inc r11				; Inc PC twice for param
 	inc r11
 endm
 
 read_absx macro
-	xor rbx, rbx
-	mov bx, [rcx+r11]
-	add bx, r9w
-	mov al, [rcx+rbx]
-	inc r11
+	local no_overflow
+
+	xor rbx, rbx	
+	mov bx, [rcx+r11]	; Get 16bit address in memory.
+
+	adc bl, r9b			; Add X to lower address byte
+	jnc no_overflow
+	inc bh				; Inc higher address byte
+	inc r14				; Add clock cycle
+	clc
+
+no_overflow:
+	mov al, [rcx+rbx]	; Get value in memory
+	inc r11				; Inc PC for param
 	inc r11
 endm
 
 read_absy macro
+	local no_overflow
+
 	xor rbx, rbx
-	mov bx, [rcx+r11]
-	add bx, r10w
-	mov al, [rcx+rbx]
-	inc r11
+	mov bx, [rcx+r11]	; Get 16bit address in memory
+
+	adc bl, r10b		; Add Y to the lower address byte
+	jnc no_overflow
+	inc bh				; Inc higher address byte
+	inc r14				; Add clock cycle
+	clc
+
+no_overflow:
+	mov al, [rcx+rbx]	; Get value in memory
+	inc r11				; Inc PC for param
 	inc r11
 endm
 
@@ -102,12 +119,19 @@ read_indx macro
 endm
 
 read_indy macro
+	local no_overflow
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address pointed at in ZP
-	add bx, r10w		; Add Y
-	mov al, [rcx+rbx]	; Final value
-	
+
+	adc bl, r10b		; Add Y to the lower address byte
+	jnc no_overflow
+	inc bh				; Inc higher address byte
+	inc r14				; Add clock cycle
+	clc
+
+no_overflow:
+	mov al, [rcx+rbx]	; Final value	
 	inc r11				; Inc PC for param
 endm
 
@@ -414,7 +438,6 @@ xBD_lda_absx proc
 	mov r8b, al
 	update_nz_flags
 
-	; todo: check for page change
 	add r14, 4
 
 	jmp opcode_done
@@ -427,7 +450,6 @@ xB9_lda_absy proc
 	mov r8b, al
 	update_nz_flags
 
-	; todo: check for page change
 	add r14, 4
 
 	jmp opcode_done
@@ -451,7 +473,6 @@ xB1_lda_indy proc
 	mov r8b, al
 	update_nz_flags
 
-	; todo: check for page change
 	add r14, 5
 
 	jmp opcode_done
@@ -517,7 +538,6 @@ xBE_ldx_absy proc
 	mov r9b, al
 	update_nz_flags
 
-	; todo: detect page cross
 	add r14, 4
 
 	jmp opcode_done
@@ -582,7 +602,6 @@ xBC_ldy_absx proc
 	mov r10b, al
 	update_nz_flags
 
-	; todo: Check for page change
 	add r14, 4
 
 	jmp opcode_done
