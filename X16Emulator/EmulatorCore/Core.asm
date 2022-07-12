@@ -135,6 +135,7 @@ no_overflow:
 	inc r11				; Inc PC for param
 endm
 
+; todo: move overflow from flags to the state obj
 write_state_obj macro	
 	mov	[rdx+register_a], r8d		; a
 	mov	[rdx+register_x], r9d		; x
@@ -691,6 +692,36 @@ x91_sta_indy proc
 x91_sta_indy endp
 
 ;
+; Register Flags
+;
+
+xE8_inx proc
+
+	popf
+	inc r9b
+	test r9b, r9b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	pushf
+
+	add r14, 2	; Clock
+
+	jmp opcode_done		
+
+xE8_inx endp
+
+xCA_dex proc
+
+	popf
+	dec r9b
+	test r9b, r9b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	pushf
+
+	add r14, 2	; Clock
+
+	jmp opcode_done		
+
+xCA_dex endp
+
+;
 ;
 ;
 
@@ -927,7 +958,7 @@ opcode_C6	qword	noinstruction 	; $C6
 opcode_C7	qword	noinstruction 	; $C7
 opcode_C8	qword	noinstruction 	; $C8
 opcode_C9	qword	noinstruction 	; $C9
-opcode_CA	qword	noinstruction 	; $CA
+opcode_CA	qword	xCA_dex		 	; $CA
 opcode_CB	qword	noinstruction 	; $CB
 opcode_CC	qword	noinstruction 	; $CC
 opcode_CD	qword	noinstruction 	; $CD
@@ -957,7 +988,7 @@ opcode_E4	qword	noinstruction 	; $E4
 opcode_E5	qword	noinstruction 	; $E5
 opcode_E6	qword	noinstruction 	; $E6
 opcode_E7	qword	noinstruction 	; $E7
-opcode_E8	qword	noinstruction 	; $E8
+opcode_E8	qword	xE8_inx	 		; $E8
 opcode_E9	qword	noinstruction 	; $E9
 opcode_EA	qword	noinstruction 	; $EA
 opcode_EB	qword	noinstruction 	; $EB
