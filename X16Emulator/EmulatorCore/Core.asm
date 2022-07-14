@@ -760,7 +760,7 @@ xAA_tax proc
 
 xAA_tax endp
 
-x8A_tax proc
+x8A_txa proc
 
 	popf
 	mov	r8, r9		; X -> A
@@ -771,7 +771,34 @@ x8A_tax proc
 
 	jmp opcode_done	
 
-x8A_tax endp
+x8A_txa endp
+
+xA8_tay proc
+
+	popf
+	mov	r10, r8		; A -> Y
+	test r10b, r10b
+	pushf
+
+	add r14, 2 ; Clock
+
+	jmp opcode_done	
+
+xA8_tay endp
+
+x98_tya proc
+
+	popf
+	mov	r8, r10		; Y -> A
+	test r8b, r8b
+	pushf
+
+	add r14, 2 ; Clock
+
+	jmp opcode_done	
+
+x98_tya endp
+
 
 ;
 ;
@@ -946,7 +973,7 @@ opcode_86	qword	noinstruction 	; $86
 opcode_87	qword	noinstruction 	; $87
 opcode_88	qword	x88_dey		 	; $88
 opcode_89	qword	noinstruction 	; $89
-opcode_8A	qword	x8A_tax		 	; $8A
+opcode_8A	qword	x8A_txa		 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
 opcode_8C	qword	noinstruction 	; $8C
 opcode_8D	qword	x8D_sta_abs 	; $8D
@@ -960,7 +987,7 @@ opcode_94	qword	noinstruction 	; $94
 opcode_95	qword	x95_sta_zpx 	; $95
 opcode_96	qword	noinstruction 	; $96
 opcode_97	qword	noinstruction 	; $97
-opcode_98	qword	noinstruction 	; $98
+opcode_98	qword	x98_tya		 	; $98
 opcode_99	qword	x99_sta_absy 	; $99
 opcode_9A	qword	noinstruction 	; $9A
 opcode_9B	qword	noinstruction 	; $9B
@@ -976,7 +1003,7 @@ opcode_A4	qword	xA4_ldy_zp	 	; $A4
 opcode_A5	qword	xA5_lda_zp	 	; $A5
 opcode_A6	qword	xA6_ldx_zp	 	; $A6
 opcode_A7	qword	noinstruction 	; $A7
-opcode_A8	qword	noinstruction 	; $A8
+opcode_A8	qword	xA8_tay		 	; $A8
 opcode_A9	qword	xA9_lda_imm 	; $A9
 opcode_AA	qword	xAA_tax		 	; $AA
 opcode_AB	qword	noinstruction 	; $AB
