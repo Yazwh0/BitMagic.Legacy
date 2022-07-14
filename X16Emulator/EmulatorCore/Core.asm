@@ -799,6 +799,31 @@ x98_tya proc
 
 x98_tya endp
 
+;
+; Branches
+;
+
+xD0_bne proc
+	popf		; retreive flags -- move [esx]?
+	pushf
+
+	jnz is_zero
+
+	add r14, 2	; Clock
+	inc r11		; move PC on
+
+	jmp opcode_done	
+
+is_zero:
+	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
+	inc r11		; move PC on -- all jumps are relative
+	add r11w, bx
+	
+	add r14, 3	; Clock
+
+	jmp opcode_done	
+
+xD0_bne endp
 
 ;
 ;
@@ -1043,7 +1068,7 @@ opcode_CC	qword	noinstruction 	; $CC
 opcode_CD	qword	noinstruction 	; $CD
 opcode_CE	qword	noinstruction 	; $CE
 opcode_CF	qword	noinstruction 	; $CF
-opcode_D0	qword	noinstruction 	; $D0
+opcode_D0	qword	xD0_bne		 	; $D0
 opcode_D1	qword	noinstruction 	; $D1
 opcode_D2	qword	noinstruction 	; $D2
 opcode_D3	qword	noinstruction 	; $D3

@@ -48,9 +48,12 @@ int main()
     state.overflow = false;
     state.zero = false;
 
-    memory_ptr[0x810] = 0xa0;
-    memory_ptr[0x811] = 0x20;
-    memory_ptr[0x812] = 0xdb;
+    memory_ptr[0x810] = 0xa2;
+    memory_ptr[0x811] = 0xff;
+    memory_ptr[0x812] = 0xca;
+    memory_ptr[0x813] = 0xd0;
+    memory_ptr[0x814] = 0xfd;
+    memory_ptr[0x815] = 0xdb;
 
 
     int x = fnEmulatorCode(memory_ptr, &state);

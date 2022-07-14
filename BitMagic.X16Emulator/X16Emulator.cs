@@ -51,7 +51,7 @@ public class Emulator
 
     public Emulator()
     {
-        _memory = new byte[Int16.MaxValue];
+        _memory = new byte[0xffff];
         _state = new CpuState();
     }
 
