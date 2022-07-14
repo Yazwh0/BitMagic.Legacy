@@ -747,6 +747,31 @@ x88_dey proc
 
 x88_dey endp
 
+xAA_tax proc
+
+	popf
+	mov	r9, r8		; A -> X
+	test r9b, r9b
+	pushf
+
+	add r14, 2 ; Clock
+
+	jmp opcode_done	
+
+xAA_tax endp
+
+x8A_tax proc
+
+	popf
+	mov	r8, r9		; X -> A
+	test r8b, r8b
+	pushf
+
+	add r14, 2 ; Clock
+
+	jmp opcode_done	
+
+x8A_tax endp
 
 ;
 ;
@@ -921,7 +946,7 @@ opcode_86	qword	noinstruction 	; $86
 opcode_87	qword	noinstruction 	; $87
 opcode_88	qword	x88_dey		 	; $88
 opcode_89	qword	noinstruction 	; $89
-opcode_8A	qword	noinstruction 	; $8A
+opcode_8A	qword	x8A_tax		 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
 opcode_8C	qword	noinstruction 	; $8C
 opcode_8D	qword	x8D_sta_abs 	; $8D
@@ -953,7 +978,7 @@ opcode_A6	qword	xA6_ldx_zp	 	; $A6
 opcode_A7	qword	noinstruction 	; $A7
 opcode_A8	qword	noinstruction 	; $A8
 opcode_A9	qword	xA9_lda_imm 	; $A9
-opcode_AA	qword	noinstruction 	; $AA
+opcode_AA	qword	xAA_tax		 	; $AA
 opcode_AB	qword	noinstruction 	; $AB
 opcode_AC	qword	xAC_ldy_abs 	; $AC
 opcode_AD	qword	xAD_lda_abs 	; $AD
