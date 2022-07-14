@@ -3,46 +3,46 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class DEX
+public class INY
 {
     [TestMethod]
-    public async Task Dex()
+    public async Task Iny()
     {
         var emulator = new Emulator();
 
-        emulator.X = 2;
+        emulator.Y = 2;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                dex
+                iny
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xca, emulator.Memory[0x810]);
+        Assert.AreEqual(0xc8, emulator.Memory[0x810]);
 
         // emulation
-        emulator.AssertState(0x00, 0x01, 0x00, 0x812, 2);
+        emulator.AssertState(0x00, 0x00, 0x03, 0x812, 2);
         emulator.AssertFlags(false, false, false, false);
     }
 
     [TestMethod]
-    public async Task Dex_ToZero()
+    public async Task Iny_ToZero()
     {
         var emulator = new Emulator();
 
-        emulator.X = 1;
+        emulator.Y = 0xff;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                dex
+                iny
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xca, emulator.Memory[0x810]);
+        Assert.AreEqual(0xc8, emulator.Memory[0x810]);
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 2);
@@ -50,46 +50,47 @@ public class DEX
     }
 
     [TestMethod]
-    public async Task Dex_Negative()
+    public async Task Iny_Negative()
     {
         var emulator = new Emulator();
 
-        emulator.X = 0xa0;
+        emulator.Y = 0xa0;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                dex
+                iny
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xca, emulator.Memory[0x810]);
+        Assert.AreEqual(0xc8, emulator.Memory[0x810]);
 
         // emulation
-        emulator.AssertState(0x00, 0x9f, 0x00, 0x812, 2);
+        emulator.AssertState(0x00, 0x00, 0xa1, 0x812, 2);
         emulator.AssertFlags(false, true, false, false);
     }
 
     [TestMethod]
-    public async Task Dex_ToNegative()
+    public async Task Iny_ToNegative()
     {
         var emulator = new Emulator();
 
-        emulator.X = 0;
+        emulator.Y = 0x7f;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                dex
+                iny
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xca, emulator.Memory[0x810]);
+        Assert.AreEqual(0xc8, emulator.Memory[0x810]);
 
         // emulation
-        emulator.AssertState(0x00, 0xff, 0x00, 0x812, 2);
+        emulator.AssertState(0x00, 0x00, 0x80, 0x812, 2);
         emulator.AssertFlags(false, true, false, false);
     }
 }
+

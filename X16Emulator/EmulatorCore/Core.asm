@@ -721,6 +721,33 @@ xCA_dex proc
 
 xCA_dex endp
 
+xC8_iny proc
+
+	popf
+	inc r10b
+	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	pushf
+
+	add r14, 2	; Clock
+
+	jmp opcode_done		
+
+xC8_iny endp
+
+x88_dey proc
+
+	popf
+	dec r10b
+	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	pushf
+
+	add r14, 2	; Clock
+
+	jmp opcode_done		
+
+x88_dey endp
+
+
 ;
 ;
 ;
@@ -892,7 +919,7 @@ opcode_84	qword	noinstruction 	; $84
 opcode_85	qword	x85_sta_zp	 	; $85
 opcode_86	qword	noinstruction 	; $86
 opcode_87	qword	noinstruction 	; $87
-opcode_88	qword	noinstruction 	; $88
+opcode_88	qword	x88_dey		 	; $88
 opcode_89	qword	noinstruction 	; $89
 opcode_8A	qword	noinstruction 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
@@ -956,7 +983,7 @@ opcode_C4	qword	noinstruction 	; $C4
 opcode_C5	qword	noinstruction 	; $C5
 opcode_C6	qword	noinstruction 	; $C6
 opcode_C7	qword	noinstruction 	; $C7
-opcode_C8	qword	noinstruction 	; $C8
+opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	noinstruction 	; $C9
 opcode_CA	qword	xCA_dex		 	; $CA
 opcode_CB	qword	noinstruction 	; $CB
