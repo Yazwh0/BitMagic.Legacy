@@ -146,6 +146,12 @@ endm
 
 asm_func proc memory:QWORD, state:QWORD
 	
+	; see if lahf is supported. if not return -1.
+	mov eax, 80000001h
+    cpuid
+    test ecx,1           ;Is bit 0 (the "LAHF-SAHF" bit) set?
+    je not_supported     ; no, LAHF is not supported
+
 	store_registers
 	read_state_obj
 
@@ -181,6 +187,9 @@ exit_loop: ; how do we get here?
 	;leave masm adds this.
 	ret
 
+not_supported:
+	mov rax, -1
+	ret
 asm_func ENDP
 
 
