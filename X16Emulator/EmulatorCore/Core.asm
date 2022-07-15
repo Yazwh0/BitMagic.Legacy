@@ -22,11 +22,167 @@ flags_negative			equ 26
 
 update_nz_flags macro
 
-	popf
+	;popf
+	;test al, al
+	;pushf
+
 	test al, al
-	pushf
+	lahf
+	mov r15, rax
 
 endm
+
+; todo: move overflow from flags to the state obj
+write_state_obj macro	
+	mov	[rdx+register_a], r8d		; a
+	mov	[rdx+register_x], r9d		; x
+	mov	[rdx+register_y], r10d		; y
+	mov	[rdx+register_pc], r11d		; PC
+	mov [rdx+clock], r14			; Clock
+
+	; Flags
+	; read from r15 directly
+
+	; Carry
+	mov rax, r15
+	;        NZ A P C
+	and rax, 0000000100000000b
+	mov byte ptr [rdx+flags_carry], al
+
+	; Zero
+	mov rax, r15
+	;        NZ A P C
+	and rax, 0100000000000000b
+	ror rax, 6+8
+	mov byte ptr [rdx+flags_zero], al
+
+	; Negative
+	mov rax, r15
+	;        NZ A P C
+	and rax, 1000000000000000b
+	ror rax, 7+8
+	mov byte ptr [rdx+flags_negative], al
+
+endm
+
+read_state_obj macro
+	local no_carry, no_zero, no_overflow, no_negative
+
+	mov r8d, [rdx+register_a]		; a
+	mov r9d, [rdx+register_x]		; x
+	mov r10d, [rdx+register_y]		; y
+	mov r11d, [rdx+register_pc]		; PC
+	mov r14, [rdx+clock]			; Clock
+
+	; Flags
+	xor r15, r15 ; clear flags register
+	
+	; unnecesary now we clear
+	;        NZ A P C
+	;and r15, 0011111000000000b
+
+	mov al, byte ptr [rdx+flags_carry]
+	test al, al
+	jz no_carry
+	;       NZ A P C
+	or r15, 0000000100000000b
+no_carry:
+
+	mov al, byte ptr [rdx+flags_zero]
+	test al, al
+	jz no_zero
+	;       NZ A P C
+	or r15, 0100000000000000b
+no_zero:
+
+	mov al, byte ptr [rdx+flags_negative]
+	test al, al
+	jz no_negative
+	;       NZ A P C
+	or r15, 1000000000000000b
+no_negative:
+
+endm
+
+store_registers macro
+	push rbx
+	push rbp
+	push rdi
+	push rsi
+	push r12
+	push r13
+	push r14
+	push r15
+endm
+
+restore_registers macro
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rsi
+	pop rdi
+	pop rbp
+	pop rbx
+endm
+
+; rax : scratch
+; rbx : scratch
+; rcx : memory
+; rdx : state = {
+;         a
+;         x
+;         y
+;         PC
+;         Flags }
+; r8b  : a
+; r9b  : x
+; r10b : y
+; r11w : PC
+; r12w : Write Location
+; r13w : Read Location
+; r14  : Clock Ticks
+; r15  : Flags
+
+asm_func proc memory:QWORD, state:QWORD
+	
+	store_registers
+	read_state_obj
+
+;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
+;	mov byte ptr [rcx + 0811h], 000h	; $400
+;	mov byte ptr [rcx + 0812h], 004h	; 
+
+;	mov byte ptr [rcx + 0812h], 085h	; STA zp
+;	mov byte ptr [rcx + 0813h], 010h	; $10
+
+;	mov byte ptr [rcx + 0813h], 0dbh	; stp
+
+
+main_loop:
+	xor rax, rax
+	mov al, [rcx+r11]			; Get opcode
+	inc r11						; PC+1
+	lea rbx, opcode_00			; start of jump table
+
+	jmp qword ptr [rbx + rax*8]	; jump to opcode
+
+opcode_done::
+
+	jmp main_loop
+
+exit_loop: ; how do we get here?
+	
+	; return all ok
+	write_state_obj
+	mov rax, 00h
+
+	restore_registers
+	;leave masm adds this.
+	ret
+
+asm_func ENDP
+
 
 ; -----------------------------
 ; Read Memory
@@ -134,176 +290,6 @@ no_overflow:
 	mov al, [rcx+rbx]	; Final value	
 	inc r11				; Inc PC for param
 endm
-
-; todo: move overflow from flags to the state obj
-write_state_obj macro	
-	mov	[rdx+register_a], r8d		; a
-	mov	[rdx+register_x], r9d		; x
-	mov	[rdx+register_y], r10d		; y
-	mov	[rdx+register_pc], r11d		; PC
-	mov [rdx+clock], r14			; Clock
-
-	; Flags
-	pop bx			; pop flags off
-
-	; Carry
-	mov rax, rbx
-	;            ODITNZ A P C
-	and rax, 0000000000000001b
-	mov byte ptr [rdx+flags_carry], al
-
-	; Zero
-	mov rax, rbx
-	;            ODITNZ A P C
-	and rax, 0000000001000000b
-	ror rax, 6
-	mov byte ptr [rdx+flags_zero], al
-
-	; Overflow
-	mov rax, rbx
-	;            ODITNZ A P C
-	and rax, 0000100000000000b
-	ror rax, 11
-	mov byte ptr [rdx+flags_overflow], al
-
-	; Negative
-	mov rax, rbx
-	;            ODITNZ A P C
-	and rax, 0000000010000000b
-	ror rax, 7
-	mov byte ptr [rdx+flags_negative], al
-
-endm
-
-read_state_obj macro
-	local no_carry, no_zero, no_overflow, no_negative
-
-	mov r8d, [rdx+register_a]		; a
-	mov r9d, [rdx+register_x]		; x
-	mov r10d, [rdx+register_y]		; y
-	mov r11d, [rdx+register_pc]		; PC
-	mov r14, [rdx+clock]			; Clock
-
-	; Flags
-	xor rbx, rbx
-
-	pushf
-	pop bx
-
-	;            ODITNZ A P C
-	and rbx, 1111011100111110b
-
-	mov al, byte ptr [rdx+flags_carry]
-	test al, al
-	jz no_carry
-	;           ODITNZ A P C
-	or rbx, 0000000000000001b
-no_carry:
-
-	mov al, byte ptr [rdx+flags_zero]
-	test al, al
-	jz no_zero
-	;           ODITNZ A P C
-	or rbx, 0000000001000000b
-no_zero:
-
-	mov al, byte ptr [rdx+flags_overflow]
-	test al, al
-	jz no_overflow
-	;           ODITNZ A P C
-	or rbx, 0000100000000000b
-no_overflow:
-
-	mov al, byte ptr [rdx+flags_negative]
-	test al, al
-	jz no_negative
-	;           ODITNZ A P C
-	or rbx, 0000000010000000b
-no_negative:
-
-	or rbx, 0202h
-
-	push bx	; put flags at the top of the stack
-
-endm
-
-store_registers macro
-	push rbx
-	push rbp
-	push rdi
-	push rsi
-	push r12
-	push r13
-	push r14
-	push r15
-endm
-
-restore_registers macro
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop rsi
-	pop rdi
-	pop rbp
-	pop rbx
-endm
-
-; rax : scratch
-; rbx : scratch
-; rcx : memory
-; rdx : state = {
-;         a
-;         x
-;         y
-;         PC
-;         Flags }
-; r8b  : a
-; r9b  : x
-; r10b : y
-; r11w : PC
-; r12w : Write Location
-; r13w : Read Location
-; r14  : Clock Ticks
-
-asm_func proc memory:QWORD, state:QWORD
-
-	store_registers
-	read_state_obj
-
-;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
-;	mov byte ptr [rcx + 0811h], 000h	; $400
-;	mov byte ptr [rcx + 0812h], 004h	; 
-
-;	mov byte ptr [rcx + 0812h], 085h	; STA zp
-;	mov byte ptr [rcx + 0813h], 010h	; $10
-
-;	mov byte ptr [rcx + 0813h], 0dbh	; stp
-
-
-main_loop:
-	mov al, [rcx+r11]			; Get opcode
-	inc r11						; PC+1
-	lea rbx, opcode_00			; start of jump table
-
-	jmp qword ptr [rbx + rax*8]	; jump to opcode
-
-opcode_done::
-
-	jmp main_loop
-
-exit_loop: ; how do we get here?
-	
-	; return all ok
-	write_state_obj
-	mov al, 00h
-
-	restore_registers
-	;leave masm adds this.
-	ret
-
-asm_func ENDP
-
 
 ; -----------------------------
 ; Write Memory
@@ -697,12 +683,14 @@ x91_sta_indy endp
 
 xE8_inx proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	inc r9b
-	test r9b, r9b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
-	pushf
+	test r9b, r9b	; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
-	add r14, 2	; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done		
 
@@ -710,10 +698,12 @@ xE8_inx endp
 
 xCA_dex proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	dec r9b
-	test r9b, r9b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
-	pushf
+	test r9b, r9b	; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2	; Clock
 
@@ -723,10 +713,12 @@ xCA_dex endp
 
 xC8_iny proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	inc r10b
 	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2	; Clock
 
@@ -736,10 +728,12 @@ xC8_iny endp
 
 x88_dey proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	dec r10b
 	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2	; Clock
 
@@ -749,10 +743,12 @@ x88_dey endp
 
 xAA_tax proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	mov	r9, r8		; A -> X
 	test r9b, r9b
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2 ; Clock
 
@@ -762,10 +758,12 @@ xAA_tax endp
 
 x8A_txa proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	mov	r8, r9		; X -> A
 	test r8b, r8b
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2 ; Clock
 
@@ -775,10 +773,12 @@ x8A_txa endp
 
 xA8_tay proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	mov	r10, r8		; A -> Y
 	test r10b, r10b
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2 ; Clock
 
@@ -788,10 +788,12 @@ xA8_tay endp
 
 x98_tya proc
 
-	popf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 	mov	r8, r10		; Y -> A
 	test r8b, r8b
-	pushf
+	lahf			; move new flags to rax
+	mov r15, rax	; store
 
 	add r14, 2 ; Clock
 
@@ -804,8 +806,8 @@ x98_tya endp
 ;
 
 xD0_bne proc
-	popf		; retreive flags -- move [esx]?
-	pushf
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
 
 	jnz is_zero
 
@@ -835,7 +837,7 @@ xDB_stp proc
 
 	; return stp was hit.
 	write_state_obj
-	mov al, 02h
+	mov rax, 02h
 
 	restore_registers
 
@@ -848,7 +850,7 @@ noinstruction PROC
 
 	; return error	
 	write_state_obj
-	mov al, 01h
+	mov rax, 01h
 
 	restore_registers
 

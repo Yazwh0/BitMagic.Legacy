@@ -35,7 +35,7 @@ int main()
 
     // initiliase machine
     state.a = 0;
-    state.x = 0x10;
+    state.x = 0x01;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
     state.clock = 0;
@@ -48,8 +48,8 @@ int main()
     state.overflow = false;
     state.zero = false;
 
-    memory_ptr[0x810] = 0xa2;
-    memory_ptr[0x811] = 0xff;
+    memory_ptr[0x810] = 0xca;
+    memory_ptr[0x811] = 0xdb;
     memory_ptr[0x812] = 0xca;
     memory_ptr[0x813] = 0xd0;
     memory_ptr[0x814] = 0xfd;
