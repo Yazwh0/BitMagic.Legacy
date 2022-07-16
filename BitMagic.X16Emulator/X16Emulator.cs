@@ -28,7 +28,8 @@ public class Emulator
     {
         ExitCondition,
         UnknownOpCode,
-        DebugOpCode
+        DebugOpCode,
+        Unsupported = -1
     }
 
     private byte[] _memory;

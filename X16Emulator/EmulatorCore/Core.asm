@@ -146,13 +146,20 @@ endm
 
 asm_func proc memory:QWORD, state:QWORD
 	
+	store_registers
+
+	push rdx
+	push rcx
+
 	; see if lahf is supported. if not return -1.
 	mov eax, 80000001h
     cpuid
     test ecx,1           ;Is bit 0 (the "LAHF-SAHF" bit) set?
     je not_supported     ; no, LAHF is not supported
 
-	store_registers
+	pop rcx
+	pop rdx
+
 	read_state_obj
 
 ;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
@@ -308,15 +315,23 @@ endm
 
 write_zp macro
 	xor rbx, rbx
-	mov bl, [rcx+r11] ; ZP address
+	mov bl, [rcx+r11]	; ZP address
 	mov [rcx+rbx], al
 	inc r11
 endm
 
 write_zpx macro
 	xor rbx, rbx
-	mov bl, [rcx+r11] ; ZP address
-	add bl, r9b		  ; Add X
+	mov bl, [rcx+r11]	; ZP address
+	add bl, r9b			; Add X
+	mov [rcx+rbx], al  
+	inc r11
+endm
+
+write_zpy macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; ZP address
+	add bl, r10b		; Add Y
 	mov [rcx+rbx], al  
 	inc r11
 endm
@@ -687,6 +702,80 @@ x91_sta_indy proc
 x91_sta_indy endp
 
 ;
+; STX
+;
+
+x86_stx_zp proc
+
+	mov al, r9b
+	write_zp
+
+	add r14, 3
+
+	jmp opcode_done
+
+x86_stx_zp endp
+
+x96_stx_zpy proc
+
+	mov al, r9b
+	write_zpy
+
+	add r14, 4
+
+	jmp opcode_done
+
+x96_stx_zpy endp
+
+x8E_stx_abs proc
+
+	mov al, r9b
+	write_abs
+
+	add r14, 4
+
+	jmp opcode_done
+
+x8E_stx_abs endp
+
+;
+; STY
+;
+
+x84_sty_zp proc
+
+	mov al, r10b
+	write_zp
+
+	add r14, 3
+
+	jmp opcode_done
+
+x84_sty_zp endp
+
+x94_sty_zpx proc
+
+	mov al, r10b
+	write_zpx
+
+	add r14, 4
+
+	jmp opcode_done
+
+x94_sty_zpx endp
+
+x8C_sty_abs proc
+
+	mov al, r10b
+	write_abs
+
+	add r14, 4
+
+	jmp opcode_done
+
+x8C_sty_abs endp
+
+;
 ; Register Flags
 ;
 
@@ -1003,25 +1092,25 @@ opcode_80	qword	noinstruction 	; $80
 opcode_81	qword	x81_sta_indx 	; $81
 opcode_82	qword	noinstruction 	; $82
 opcode_83	qword	noinstruction 	; $83
-opcode_84	qword	noinstruction 	; $84
+opcode_84	qword	x84_sty_zp	 	; $84
 opcode_85	qword	x85_sta_zp	 	; $85
-opcode_86	qword	noinstruction 	; $86
+opcode_86	qword	x86_stx_zp	 	; $86
 opcode_87	qword	noinstruction 	; $87
 opcode_88	qword	x88_dey		 	; $88
 opcode_89	qword	noinstruction 	; $89
 opcode_8A	qword	x8A_txa		 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
-opcode_8C	qword	noinstruction 	; $8C
+opcode_8C	qword	x8C_sty_abs 	; $8C
 opcode_8D	qword	x8D_sta_abs 	; $8D
-opcode_8E	qword	noinstruction 	; $8E
+opcode_8E	qword	x8E_stx_abs 	; $8E
 opcode_8F	qword	noinstruction 	; $8F
 opcode_90	qword	noinstruction 	; $90
 opcode_91	qword	x91_sta_indy 	; $91
 opcode_92	qword	noinstruction 	; $92
 opcode_93	qword	noinstruction 	; $93
-opcode_94	qword	noinstruction 	; $94
+opcode_94	qword	x94_sty_zpx 	; $94
 opcode_95	qword	x95_sta_zpx 	; $95
-opcode_96	qword	noinstruction 	; $96
+opcode_96	qword	x96_stx_zpy 	; $96
 opcode_97	qword	noinstruction 	; $97
 opcode_98	qword	x98_tya		 	; $98
 opcode_99	qword	x99_sta_absy 	; $99
