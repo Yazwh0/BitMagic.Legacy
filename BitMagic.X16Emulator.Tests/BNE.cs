@@ -133,30 +133,28 @@ public class BNE
         //emulator.AssertFlags(true, false, false, false);
     }
 
+    [TestMethod]
+    public async Task Bne_Jump_Backward()
+    {
+        var emulator = new Emulator();
 
-    // Uncomment when jmp is implemented
-    //[TestMethod]
-    //public async Task Bne_Jump_Backward()
-    //{
-    //    var emulator = new Emulator();
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                jmp test
+            .exit:
+                lda #$10
+                stp
+            .test:
+                bne exit
+                stp",
+                emulator);
 
-    //    await X16TestHelper.Emulate(@"
-    //            .machine CommanderX16R40
-    //            .org $810
-    //            jmp test
-    //        .exit:
-    //            lda #$10
-    //            stp
-    //        .test:
-    //            bne exit
-    //            stp",
-    //            emulator);
+        // compilation
+        Assert.AreEqual(0xd0, emulator.Memory[0x816]);
 
-    //    // compilation
-    //    Assert.AreEqual(0xd0, emulator.Memory[0x810]);
-
-    //    // emulation
-    //    emulator.AssertState(0x10, 0x00, 0x00, 0x815, 5); // 3 for bne + 2 for lda
-    //    emulator.AssertFlags(false, false, false, false);
-    //}
+        // emulation
+        emulator.AssertState(0x10, 0x00, 0x00, 0x816, 8); // 3 for bne + 2 for lda + 3 for jmp
+        emulator.AssertFlags(false, false, false, false);
+    }
 }

@@ -821,6 +821,35 @@ x9E_stz_absx proc
 x9E_stz_absx endp
 
 ;
+; INC
+;
+
+x1A_inc_a proc
+
+	inc r8b	
+	lahf			; pull flags
+	mov r15, rax	; store flags
+
+	add r14, 2
+	
+	jmp opcode_done
+
+x1A_inc_a endp
+
+
+x3A_dec_a proc
+
+	dec r8b	
+	lahf			; pull flags
+	mov r15, rax	; store flags
+
+	add r14, 2
+	
+	jmp opcode_done
+
+x3A_dec_a endp
+
+;
 ; Register Flags
 ;
 
@@ -1077,7 +1106,7 @@ opcode_16	qword	noinstruction 	; $16
 opcode_17	qword	noinstruction 	; $17
 opcode_18	qword	noinstruction 	; $18
 opcode_19	qword	noinstruction 	; $19
-opcode_1A	qword	noinstruction 	; $1A
+opcode_1A	qword	x1A_inc_a	 	; $1A
 opcode_1B	qword	noinstruction 	; $1B
 opcode_1C	qword	noinstruction 	; $1C
 opcode_1D	qword	noinstruction 	; $1D
@@ -1109,7 +1138,7 @@ opcode_36	qword	noinstruction 	; $36
 opcode_37	qword	noinstruction 	; $37
 opcode_38	qword	noinstruction 	; $38
 opcode_39	qword	noinstruction 	; $39
-opcode_3A	qword	noinstruction 	; $3A
+opcode_3A	qword	x3A_dec_a	 	; $3A
 opcode_3B	qword	noinstruction 	; $3B
 opcode_3C	qword	noinstruction 	; $3C
 opcode_3D	qword	noinstruction 	; $3D
