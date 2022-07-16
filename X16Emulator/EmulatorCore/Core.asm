@@ -823,6 +823,7 @@ x9E_stz_absx endp
 
 x1A_inc_a proc
 
+	mov rax, r15	; move flags to rax
 	inc r8b	
 	lahf			; pull flags
 	mov r15, rax	; store flags
@@ -833,9 +834,9 @@ x1A_inc_a proc
 
 x1A_inc_a endp
 
-
 x3A_dec_a proc
 
+	mov rax, r15	; move flags to rax
 	dec r8b	
 	lahf			; pull flags
 	mov r15, rax	; store flags
@@ -970,18 +971,9 @@ x98_tya endp
 ; Branches
 ;
 
-xD0_bne proc
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+perform_jump macro
+	local page_change
 
-	jnz is_zero
-
-	add r14, 2		; Clock
-	inc r11			; move PC on
-
-	jmp opcode_done	
-
-is_zero:
 	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
 	inc r11							; move PC on -- all jumps are relative
 	mov rax, r11					; store PC
@@ -999,7 +991,39 @@ page_change:						; page change as a 1 cycle penalty
 	inc r14
 	jmp opcode_done
 
+endm
+
+xD0_bne proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnz is_zero
+
+	add r14, 2		; Clock
+	inc r11			; move PC on
+
+	jmp opcode_done	
+
+is_zero:
+	perform_jump
+
 xD0_bne endp
+
+xF0_beq proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jz isnot_zero
+
+	add r14, 2		; Clock
+	inc r11			; move PC on
+
+	jmp opcode_done	
+
+isnot_zero:
+	perform_jump
+
+xF0_beq endp
 
 ;
 ; JMP
@@ -1313,7 +1337,7 @@ opcode_EC	qword	noinstruction 	; $EC
 opcode_ED	qword	noinstruction 	; $ED
 opcode_EE	qword	noinstruction 	; $EE
 opcode_EF	qword	noinstruction 	; $EF
-opcode_F0	qword	noinstruction 	; $F0
+opcode_F0	qword	xF0_beq		 	; $F0
 opcode_F1	qword	noinstruction 	; $F1
 opcode_F2	qword	noinstruction 	; $F2
 opcode_F3	qword	noinstruction 	; $F3
