@@ -341,8 +341,7 @@ write_abs macro
 	mov bx, [rcx+r11]	; Get address
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC twice
-	inc r11
+	add r11, 2			; Increment PC twice
 endm
 
 write_absx macro
@@ -351,8 +350,7 @@ write_absx macro
 	add bx, r9w			; Add X
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC twice
-	inc r11
+	add r11, 2			; Increment PC twice
 endm
 
 write_absy macro
@@ -361,8 +359,7 @@ write_absy macro
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC twice
-	inc r11
+	add r11, 2			; Increment PC twice
 endm
 
 write_indx macro
@@ -941,7 +938,7 @@ x98_tya proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2 ; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done	
 
@@ -957,21 +954,67 @@ xD0_bne proc
 
 	jnz is_zero
 
-	add r14, 2	; Clock
-	inc r11		; move PC on
+	add r14, 2		; Clock
+	inc r11			; move PC on
 
 	jmp opcode_done	
 
 is_zero:
 	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
-	inc r11		; move PC on -- all jumps are relative
+	inc r11							; move PC on -- all jumps are relative
+	mov rax, r11					; store PC
 	add r11w, bx
 	
-	add r14, 3	; Clock
+	add r14, 3						; Clock
+
+	mov rbx, r11
+	cmp ah, bh						; test if the page has changed.
+	jne page_change
 
 	jmp opcode_done	
 
+page_change:						; page change as a 1 cycle penalty
+	inc r14
+	jmp opcode_done
+
 xD0_bne endp
+
+;
+; JMP
+;
+
+x4C_jmp_abs proc
+
+	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
+
+	add r14, 3
+
+	jmp opcode_done
+
+x4C_jmp_abs endp
+
+x6C_jmp_ind proc
+
+	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
+	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+
+	add r14, 5
+
+	jmp opcode_done
+
+x6C_jmp_ind endp
+
+x7C_jmp_absx proc
+
+	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
+	add	r11, r9				; Add on X
+	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+
+	add r14, 6
+
+	jmp opcode_done
+
+x7C_jmp_absx endp
 
 ;
 ;
@@ -1084,7 +1127,7 @@ opcode_48	qword	noinstruction 	; $48
 opcode_49	qword	noinstruction 	; $49
 opcode_4A	qword	noinstruction 	; $4A
 opcode_4B	qword	noinstruction 	; $4B
-opcode_4C	qword	noinstruction 	; $4C
+opcode_4C	qword	x4C_jmp_abs 	; $4C
 opcode_4D	qword	noinstruction 	; $4D
 opcode_4E	qword	noinstruction 	; $4E
 opcode_4F	qword	noinstruction 	; $4F
@@ -1116,7 +1159,7 @@ opcode_68	qword	noinstruction 	; $68
 opcode_69	qword	noinstruction 	; $69
 opcode_6A	qword	noinstruction 	; $6A
 opcode_6B	qword	noinstruction 	; $6B
-opcode_6C	qword	noinstruction 	; $6C
+opcode_6C	qword	x6C_jmp_ind 	; $6C
 opcode_6D	qword	noinstruction 	; $6D
 opcode_6E	qword	noinstruction 	; $6E
 opcode_6F	qword	noinstruction 	; $6F
@@ -1132,7 +1175,7 @@ opcode_78	qword	noinstruction 	; $78
 opcode_79	qword	noinstruction 	; $79
 opcode_7A	qword	noinstruction 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
-opcode_7C	qword	noinstruction 	; $7C
+opcode_7C	qword	x7C_jmp_absx 	; $7C
 opcode_7D	qword	noinstruction 	; $7D
 opcode_7E	qword	noinstruction 	; $7E
 opcode_7F	qword	noinstruction 	; $7F
