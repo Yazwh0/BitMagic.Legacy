@@ -22,10 +22,6 @@ flags_negative			equ 26
 
 update_nz_flags macro
 
-	;popf
-	;test al, al
-	;pushf
-
 	test al, al
 	lahf
 	mov r15, rax
@@ -477,6 +473,7 @@ xA1_lda_indx proc
 xA1_lda_indx endp
 
 xB1_lda_indy proc
+
 	read_indy
 	mov r8b, al
 	update_nz_flags
@@ -858,7 +855,6 @@ xE8_inx proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 	inc r9b
-	test r9b, r9b	; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
@@ -873,7 +869,6 @@ xCA_dex proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 	dec r9b
-	test r9b, r9b	; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
@@ -888,7 +883,6 @@ xC8_iny proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 	inc r10b
-	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
@@ -903,7 +897,6 @@ x88_dey proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 	dec r10b
-	test r10b, r10b ; this does blatt the overflow register. Is that correct? -- mabe move overflow out of flags?
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
