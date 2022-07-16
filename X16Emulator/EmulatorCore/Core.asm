@@ -1063,7 +1063,18 @@ x7C_jmp_absx proc
 x7C_jmp_absx endp
 
 ;
+; NOP
 ;
+
+xEA_nop proc
+
+	add r14, 2	; Clock	
+	jmp opcode_done
+
+xEA_nop endp
+
+;
+; Exit
 ;
 
 xDB_stp proc
@@ -1331,7 +1342,7 @@ opcode_E6	qword	noinstruction 	; $E6
 opcode_E7	qword	noinstruction 	; $E7
 opcode_E8	qword	xE8_inx	 		; $E8
 opcode_E9	qword	noinstruction 	; $E9
-opcode_EA	qword	noinstruction 	; $EA
+opcode_EA	qword	xEA_nop		 	; $EA
 opcode_EB	qword	noinstruction 	; $EB
 opcode_EC	qword	noinstruction 	; $EC
 opcode_ED	qword	noinstruction 	; $ED
