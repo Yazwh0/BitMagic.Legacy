@@ -776,6 +776,54 @@ x8C_sty_abs proc
 x8C_sty_abs endp
 
 ;
+; STZ
+;
+
+x64_stz_zp proc
+	
+	xor rax, rax
+	write_zp
+
+	add r14, 3
+
+	jmp opcode_done
+
+x64_stz_zp endp
+
+x74_stz_zpx proc
+
+	xor rax, rax
+	write_zpx
+
+	add r14, 4
+
+	jmp opcode_done
+
+x74_stz_zpx endp
+
+x9C_stz_abs proc
+
+	xor rax, rax
+	write_abs
+
+	add r14, 4
+
+	jmp opcode_done
+
+x9C_stz_abs endp
+
+x9E_stz_absx proc
+
+	xor rax, rax
+	write_absx
+
+	add r14,5
+
+	jmp opcode_done
+
+x9E_stz_absx endp
+
+;
 ; Register Flags
 ;
 
@@ -1060,7 +1108,7 @@ opcode_60	qword	noinstruction 	; $60
 opcode_61	qword	noinstruction 	; $61
 opcode_62	qword	noinstruction 	; $62
 opcode_63	qword	noinstruction 	; $63
-opcode_64	qword	noinstruction 	; $64
+opcode_64	qword	x64_stz_zp	 	; $64
 opcode_65	qword	noinstruction 	; $65
 opcode_66	qword	noinstruction 	; $66
 opcode_67	qword	noinstruction 	; $67
@@ -1076,7 +1124,7 @@ opcode_70	qword	noinstruction 	; $70
 opcode_71	qword	noinstruction 	; $71
 opcode_72	qword	noinstruction 	; $72
 opcode_73	qword	noinstruction 	; $73
-opcode_74	qword	noinstruction 	; $74
+opcode_74	qword	x74_stz_zpx 	; $74
 opcode_75	qword	noinstruction 	; $75
 opcode_76	qword	noinstruction 	; $76
 opcode_77	qword	noinstruction 	; $77
@@ -1116,9 +1164,9 @@ opcode_98	qword	x98_tya		 	; $98
 opcode_99	qword	x99_sta_absy 	; $99
 opcode_9A	qword	noinstruction 	; $9A
 opcode_9B	qword	noinstruction 	; $9B
-opcode_9C	qword	noinstruction 	; $9C
+opcode_9C	qword	x9C_stz_abs 	; $9C
 opcode_9D	qword	x9D_sta_absx 	; $9D
-opcode_9E	qword	noinstruction 	; $9E
+opcode_9E	qword	x9E_stz_absx 	; $9E
 opcode_9F	qword	noinstruction 	; $9F
 opcode_A0	qword	xA0_ldy_imm 	; $A0
 opcode_A1	qword	xA1_lda_indx 	; $A1
