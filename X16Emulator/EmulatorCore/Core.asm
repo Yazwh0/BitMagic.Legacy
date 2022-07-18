@@ -158,6 +158,10 @@ asm_func proc memory:QWORD, state:QWORD
 
 	read_state_obj
 
+	; !!!
+	;add byte ptr [rcx + 01h], 1
+	
+
 ;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
 ;	mov byte ptr [rcx + 0811h], 000h	; $400
 ;	mov byte ptr [rcx + 0812h], 004h	; 
@@ -1025,6 +1029,36 @@ isnot_zero:
 
 xF0_beq endp
 
+x10_bpl proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jns isnot_negative
+
+	add r14, 2		; Clock
+	inc r11			; move PC on
+
+	jmp opcode_done	
+
+isnot_negative:
+	perform_jump
+x10_bpl endp
+
+x30_bmi proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	js is_negative
+
+	add r14, 2		; Clock
+	inc r11			; move PC on
+
+	jmp opcode_done	
+
+is_negative:
+	perform_jump
+x30_bmi endp
+
 ;
 ; JMP
 ;
@@ -1124,7 +1158,7 @@ opcode_0C	qword	noinstruction 	; $0C
 opcode_0D	qword	noinstruction 	; $0D
 opcode_0E	qword	noinstruction 	; $0E
 opcode_0F	qword	noinstruction 	; $0F
-opcode_10	qword	noinstruction 	; $10
+opcode_10	qword	x10_bpl		 	; $10
 opcode_11	qword	noinstruction 	; $11
 opcode_12	qword	noinstruction 	; $12
 opcode_13	qword	noinstruction 	; $13
@@ -1156,7 +1190,7 @@ opcode_2C	qword	noinstruction 	; $2C
 opcode_2D	qword	noinstruction 	; $2D
 opcode_2E	qword	noinstruction 	; $2E
 opcode_2F	qword	noinstruction 	; $2F
-opcode_30	qword	noinstruction 	; $30
+opcode_30	qword	x30_bmi		 	; $30
 opcode_31	qword	noinstruction 	; $31
 opcode_32	qword	noinstruction 	; $32
 opcode_33	qword	noinstruction 	; $33

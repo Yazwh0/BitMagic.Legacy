@@ -61,7 +61,7 @@ public class Emulator
         return (EmulatorResult)fnEmulatorCode(_memory, ref _state);
     }
 
-    public void Reset()
+    public void HardReset()
     { 
         for(var i = 0; i < Int16.MaxValue; i++)
             _memory[i] = 0;

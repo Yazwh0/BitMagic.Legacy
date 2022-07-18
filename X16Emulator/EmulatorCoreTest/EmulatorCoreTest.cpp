@@ -44,11 +44,11 @@ int main()
     state.carry = false;
     state.breakFlag = false;
     state.interruptDisable = false;
-    state.negative = false;
+    state.negative = true;
     state.overflow = false;
     state.zero = false;
 
-    memory_ptr[0x810] = 0xd0;
+    memory_ptr[0x810] = 0x10;
     memory_ptr[0x811] = 0x01;
     memory_ptr[0x812] = 0xdb;
     memory_ptr[0x813] = 0xa9;
@@ -56,7 +56,7 @@ int main()
     memory_ptr[0x815] = 0xdb;
 
 
-    int x = fnEmulatorCode(memory_ptr, &state);
+    int x = fnEmulatorCode(memory_ptr, &state); 
 
     delete [] memory_ptr;
 
