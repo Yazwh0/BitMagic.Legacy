@@ -1026,16 +1026,16 @@ perform_jump macro
 	mov rax, r11					; store PC
 	add r11w, bx
 	
-	add r14, 3						; Clock
-
 	mov rbx, r11
 	cmp ah, bh						; test if the page has changed.
 	jne page_change
 
+	add r14, 3						; Clock
+
 	jmp opcode_done	
 
 page_change:						; page change as a 1 cycle penalty
-	inc r14
+	add r14, 4						; Clock
 	jmp opcode_done
 
 endm
