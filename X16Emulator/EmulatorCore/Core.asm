@@ -1040,6 +1040,12 @@ page_change:						; page change as a 1 cycle penalty
 
 endm
 
+x80_bra proc
+
+	perform_jump
+
+x80_bra endp
+
 xD0_bne proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
@@ -1314,7 +1320,7 @@ opcode_7C	qword	x7C_jmp_absx 	; $7C
 opcode_7D	qword	noinstruction 	; $7D
 opcode_7E	qword	noinstruction 	; $7E
 opcode_7F	qword	noinstruction 	; $7F
-opcode_80	qword	noinstruction 	; $80
+opcode_80	qword	x80_bra		 	; $80
 opcode_81	qword	x81_sta_indx 	; $81
 opcode_82	qword	noinstruction 	; $82
 opcode_83	qword	noinstruction 	; $83

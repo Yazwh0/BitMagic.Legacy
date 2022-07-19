@@ -4,17 +4,17 @@ using System.Diagnostics;
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class BNE
+public class BRA
 {
     [TestMethod]
-    public async Task Bne_Jump_Forward()
+    public async Task Bra_Jump_Forward()
     {
         var emulator = new Emulator();
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                bne exit
+                bra exit
                 stp
             .exit:
                 lda #$10
@@ -22,7 +22,7 @@ public class BNE
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xd0, emulator.Memory[0x810]);
+        Assert.AreEqual(0x80, emulator.Memory[0x810]);
 
         // emulation
         emulator.AssertState(0x10, 0x00, 0x00, 0x816, 5); // 3 for bne + 2 for lda
@@ -30,7 +30,7 @@ public class BNE
     }
 
     [TestMethod]
-    public async Task Bne_Jump_Forward_Far()
+    public async Task Bra_Jump_Forward_Far()
     {
         var emulator = new Emulator();
 
@@ -39,7 +39,7 @@ public class BNE
                 .org $810
                 jmp $8a0
                 .org $8a0
-                bne exit
+                bra exit
                 stp
                 .org $900
             .exit:
@@ -48,7 +48,7 @@ public class BNE
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xd0, emulator.Memory[0x8a0]);
+        Assert.AreEqual(0x80, emulator.Memory[0x8a0]);
 
         // emulation
         emulator.AssertState(0x10, 0x00, 0x00, 0x903, 9); // 3 for bne + 2 for lda + 1 page change, + 3 for jmp
@@ -56,32 +56,7 @@ public class BNE
     }
 
     [TestMethod]
-    public async Task Bne_NoJump()
-    {
-        var emulator = new Emulator();
-
-        emulator.Zero = true;
-
-        await X16TestHelper.Emulate(@"
-                .machine CommanderX16R40
-                .org $810
-                bne exit
-                stp
-            .exit:
-                lda #$ff
-                stp",
-                emulator);
-
-        // compilation
-        Assert.AreEqual(0xd0, emulator.Memory[0x810]);
-
-        // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 2);
-        emulator.AssertFlags(true, false, false, false);
-    }
-
-    [TestMethod]
-    public async Task Bne_Jump_Backward()
+    public async Task Bra_Jump_Backward()
     {
         var emulator = new Emulator();
 
@@ -93,12 +68,12 @@ public class BNE
                 lda #$10
                 stp
             .test:
-                bne exit
+                bra exit
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0xd0, emulator.Memory[0x816]);
+        Assert.AreEqual(0x80, emulator.Memory[0x816]);
 
         // emulation
         emulator.AssertState(0x10, 0x00, 0x00, 0x816, 8); // 3 for bne + 2 for lda + 3 for jmp
