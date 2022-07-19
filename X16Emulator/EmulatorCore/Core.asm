@@ -307,6 +307,14 @@ no_overflow:
 	inc r11				; Inc PC for param
 endm
 
+read_indzp macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Address in ZP
+	mov bx, [rcx+rbx]	; Address at location
+	mov al, [rcx+rbx]	; Final value
+	inc r11				; Inc PC for param
+endm
+
 ; -----------------------------
 ; Write Memory
 ; -----------------------------
@@ -487,6 +495,20 @@ xB1_lda_indy proc
 	jmp opcode_done
 
 xB1_lda_indy endp
+
+xB2_lda_indzp proc
+
+	read_indzp
+
+	mov r8b, al
+	update_nz_flags
+
+	add r14, 5
+
+	jmp opcode_done
+
+xB2_lda_indzp endp
+
 
 
 ; -----------------------------
@@ -1321,7 +1343,7 @@ opcode_AE	qword	xAE_ldx_abs 	; $AE
 opcode_AF	qword	noinstruction 	; $AF
 opcode_B0	qword	noinstruction 	; $B0
 opcode_B1	qword	xB1_lda_indy 	; $B1
-opcode_B2	qword	noinstruction 	; $B2
+opcode_B2	qword	xB2_lda_indzp 	; $B2
 opcode_B3	qword	noinstruction 	; $B3
 opcode_B4	qword	xB4_ldy_zpx 	; $B4
 opcode_B5	qword	xB5_lda_zpx 	; $B5

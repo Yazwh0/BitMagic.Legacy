@@ -30,7 +30,7 @@ extern "C"
         int x;
         int y;
         int pc;
-        int64_t clock;
+        uint64_t clock;
 
         bool carry;
         bool zero;

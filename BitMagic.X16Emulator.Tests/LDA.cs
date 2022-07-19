@@ -320,4 +320,28 @@ public class LDA
         emulator.AssertState(0x44, 0x00, 0xf0, 0x813, 6);
         emulator.AssertFlags(false, false, false, false);
     }
+
+    [TestMethod]
+    public async Task IndirectZp()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x402] = 0x44;
+        emulator.Memory[0x10] = 0x02;
+        emulator.Memory[0x11] = 0x04;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda ($10)
+                stp", emulator);
+
+        // compilation
+        Assert.AreEqual(0xb2, emulator.Memory[0x810]);
+        Assert.AreEqual(0x10, emulator.Memory[0x811]);
+
+        // emulation
+        emulator.AssertState(0x44, 0x00, 0x00, 0x813, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
 }
