@@ -390,6 +390,15 @@ write_indy macro
 	inc r11				; Increment PC
 endm
 
+write_indzp macro
+	xor rbx, rbx		; Clear b
+	mov bl, [rcx+r11]	; Get address
+	mov bx, [rcx+rbx]	; Get destination address
+	mov [rcx+rbx], al	; Update
+
+	inc r11				; Increment PC
+endm
+
 ; -----------------------------
 ; Op Codes
 ; -----------------------------
@@ -720,6 +729,18 @@ x91_sta_indy proc
 	jmp opcode_done
 
 x91_sta_indy endp
+
+x92_sta_indzp proc
+
+	mov al, r8b
+
+	write_indzp
+
+	add r14,5
+
+	jmp opcode_done
+
+x92_sta_indzp endp
 
 ;
 ; STX
@@ -1311,7 +1332,7 @@ opcode_8E	qword	x8E_stx_abs 	; $8E
 opcode_8F	qword	noinstruction 	; $8F
 opcode_90	qword	noinstruction 	; $90
 opcode_91	qword	x91_sta_indy 	; $91
-opcode_92	qword	noinstruction 	; $92
+opcode_92	qword	x92_sta_indzp 	; $92
 opcode_93	qword	noinstruction 	; $93
 opcode_94	qword	x94_sty_zpx 	; $94
 opcode_95	qword	x95_sta_zpx 	; $95

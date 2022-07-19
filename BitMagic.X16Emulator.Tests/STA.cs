@@ -244,4 +244,31 @@ public class STA
         emulator.AssertState(0x44, 0x00, 0x10, 0x813);
         emulator.AssertFlags(false, false, false, false);
     }
+
+    [TestMethod]
+    public async Task IndirectZP()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+
+        emulator.Memory[0x10] = 0x05;
+        emulator.Memory[0x11] = 0x01;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                sta ($10)
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x92, emulator.Memory[0x810]);
+        Assert.AreEqual(0x10, emulator.Memory[0x811]);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x105]);
+        emulator.AssertState(0x44, 0x00, 0x00, 0x813, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
 }
