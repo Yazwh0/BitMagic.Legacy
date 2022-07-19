@@ -4,19 +4,20 @@ extern "C"
 {
     struct state 
     {
-        int a;
-        int x;
-        int y;
-        int pc;
+        unsigned int a;
+        unsigned int x;
+        unsigned int y;
+        unsigned int pc;
+        unsigned int stackpointer;
+        bool decimal;
+        bool breakFlag;
+        bool overflow;
+        bool negative;
         uint64_t clock;
 
         bool carry;
         bool zero;
         bool interruptDisable;
-        bool decimal;
-        bool breakFlag;
-        bool overflow;
-        bool negative;
     };
 
     int __fastcall fnEmulatorCode(int8_t* mainMemory, state* test);
@@ -34,11 +35,12 @@ int main()
         memory_ptr[i] = 0;
 
     // initiliase machine
-    state.a = 0;
+    state.a = 0x40;
     state.x = 0x01;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
-    state.clock = 0;
+    state.stackpointer = 0xff;
+    state.clock = 0x0;
     
     state.decimal = false;
     state.carry = false;
@@ -46,7 +48,7 @@ int main()
     state.interruptDisable = false;
     state.negative = true;
     state.overflow = false;
-    state.zero = false;
+    state.zero = true;
 
     memory_ptr[0x810] = 0x10;
     memory_ptr[0x811] = 0x01;

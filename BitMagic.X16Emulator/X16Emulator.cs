@@ -10,18 +10,22 @@ public class Emulator
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
-        public int A;
-        public int X;
-        public int Y;
-        public int Pc;
-        public ulong Clock;
-        public byte Carry;
-        public byte Zero;
-        public byte InterruptDisable;
+        public uint A;
+        public uint X;
+        public uint Y;
+        public uint Pc;
+        public uint StackPointer;
+        
         public byte Decimal;
         public byte BreakFlag;
         public byte Overflow;
         public byte Negative;
+
+        public ulong Clock;
+
+        public byte Carry;
+        public byte Zero;
+        public byte InterruptDisable;
     }
 
     public enum EmulatorResult
@@ -37,10 +41,11 @@ public class Emulator
 
     public byte[] Memory => _memory;
 
-    public int A {get => _state.A; set => _state.A = value; }
-    public int X { get => _state.X; set => _state.X = value; }
-    public int Y { get => _state.Y; set => _state.Y = value; }
-    public int Pc { get => _state.Pc; set => _state.Pc = value; }
+    public uint A {get => _state.A; set => _state.A = value; }
+    public uint X { get => _state.X; set => _state.X = value; }
+    public uint Y { get => _state.Y; set => _state.Y = value; }
+    public uint Pc { get => _state.Pc; set => _state.Pc = value; }
+    public uint StackPointer { get => _state.StackPointer; set => _state.StackPointer = value; }
     public ulong Clock { get => _state.Clock; set => _state.Clock = value; }
     public bool Carry { get => _state.Carry != 0; set => _state.Carry = (byte)(value ? 0x01 : 0x00); }
     public bool Zero { get => _state.Zero != 0; set => _state.Zero = (byte)(value ? 0x01 : 0x00); }
@@ -63,7 +68,7 @@ public class Emulator
 
     public void HardReset()
     { 
-        for(var i = 0; i < Int16.MaxValue; i++)
+        for(var i = 0; i < 0xffff; i++)
             _memory[i] = 0;
 
         _state = new CpuState();

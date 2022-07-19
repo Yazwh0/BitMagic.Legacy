@@ -6,14 +6,16 @@ register_a				equ 0
 register_x				equ 4
 register_y				equ 8
 register_pc				equ 12
-clock					equ 16
-flags_carry				equ 24
-flags_zero				equ 25
-flags_interruptDisable	equ 26
-flags_decimal			equ 27
-flags_break				equ 28
-flags_overflow			equ 29
-flags_negative			equ 30
+stackpointer			equ 16
+flags_decimal			equ 20
+flags_break				equ 21
+flags_overflow			equ 22
+flags_negative			equ 23
+clock					equ 24 ; needs to be aligned
+
+flags_carry				equ 32
+flags_zero				equ 33
+flags_interruptDisable	equ 34
 
 
 ; -----------------------------

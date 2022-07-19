@@ -26,19 +26,20 @@ extern "C"
 {
     struct state 
     {
-        int a;
-        int x;
-        int y;
-        int pc;
+        unsigned int a;
+        unsigned int x;
+        unsigned int y;
+        unsigned int pc;
+        unsigned int stackpointer;
+        bool decimal;
+        bool breakFlag;
+        bool overflow;
+        bool negative;
         uint64_t clock;
 
         bool carry;
         bool zero;
         bool interruptDisable;
-        bool decimal;
-        bool breakFlag;
-        bool overflow;
-        bool negative;
     };
 
 	EMULATORCODE_API int fnEmulatorCode(int8_t* mainMemory, state* state);
