@@ -7,13 +7,13 @@ register_x				equ 4
 register_y				equ 8
 register_pc				equ 12
 clock					equ 16
-flags_carry				equ 20
-flags_zero				equ 21
-flags_interruptDisable	equ 22
-flags_decimal			equ 23
-flags_break				equ 24
-flags_overflow			equ 25
-flags_negative			equ 26
+flags_carry				equ 24
+flags_zero				equ 25
+flags_interruptDisable	equ 26
+flags_decimal			equ 27
+flags_break				equ 28
+flags_overflow			equ 29
+flags_negative			equ 30
 
 
 ; -----------------------------
@@ -1142,6 +1142,7 @@ noinstruction ENDP
 .DATA
 
 ; all opcodes, in order of value starting with 0x00
+; should have 76 free when done!
 opcode_00	qword	noinstruction 	; $00
 opcode_01	qword	noinstruction 	; $01
 opcode_02	qword	noinstruction 	; $02

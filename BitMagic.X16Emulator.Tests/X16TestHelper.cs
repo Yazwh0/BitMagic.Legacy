@@ -34,7 +34,7 @@ namespace BitMagic.X16Emulator.Tests
             return emulator;
         }
 
-        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, int? Clock = null)
+        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, long? Clock = null)
         {
             if (A != null)
                 Assert.AreEqual(A, (byte)emulator.A);

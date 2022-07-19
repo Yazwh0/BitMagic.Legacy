@@ -8,7 +8,7 @@ extern "C"
         int x;
         int y;
         int pc;
-        int clock;
+        int64_t clock;
 
         bool carry;
         bool zero;

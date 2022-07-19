@@ -14,7 +14,7 @@ public class Emulator
         public int X;
         public int Y;
         public int Pc;
-        public int Clock;
+        public long Clock;
         public byte Carry;
         public byte Zero;
         public byte InterruptDisable;
@@ -41,7 +41,7 @@ public class Emulator
     public int X { get => _state.X; set => _state.X = value; }
     public int Y { get => _state.Y; set => _state.Y = value; }
     public int Pc { get => _state.Pc; set => _state.Pc = value; }
-    public int Clock { get => _state.Clock; set => _state.Clock = value; }
+    public long Clock { get => _state.Clock; set => _state.Clock = value; }
     public bool Carry { get => _state.Carry != 0; set => _state.Carry = (byte)(value ? 0x01 : 0x00); }
     public bool Zero { get => _state.Zero != 0; set => _state.Zero = (byte)(value ? 0x01 : 0x00); }
     public bool interruptDisable { get => _state.InterruptDisable != 0; set => _state.InterruptDisable = (byte)(value ? 0x01 : 0x00); }
