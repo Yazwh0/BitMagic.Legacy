@@ -39,7 +39,7 @@ int main()
     state.x = 0x01;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
-    state.stackpointer = 0xff;
+    state.stackpointer = 0x1fe;
     state.clock = 0x0;
     
     state.decimal = false;
@@ -50,8 +50,10 @@ int main()
     state.overflow = false;
     state.zero = true;
 
-    memory_ptr[0x810] = 0x10;
-    memory_ptr[0x811] = 0x01;
+    memory_ptr[0x1ff] = 0x20;
+
+    memory_ptr[0x810] = 0x68;
+    memory_ptr[0x811] = 0xdb;
     memory_ptr[0x812] = 0xdb;
     memory_ptr[0x813] = 0xa9;
     memory_ptr[0x814] = 0x10;

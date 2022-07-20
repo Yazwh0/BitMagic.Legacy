@@ -11,7 +11,7 @@ flags_decimal			equ 20
 flags_break				equ 21
 flags_overflow			equ 22
 flags_negative			equ 23
-clock					equ 24 ; needs to be aligned
+clock					equ 24 ; needs to be aligned, so but flags above
 
 flags_carry				equ 32
 flags_zero				equ 33
@@ -98,6 +98,7 @@ no_zero:
 	jz no_negative
 	;       NZ A P C
 	or r15, 1000000000000000b
+
 no_negative:
 
 endm
@@ -243,8 +244,7 @@ read_abs macro
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
 	mov al, [rcx+rbx]	; Get value at that address
 
-	inc r11				; Inc PC twice for param
-	inc r11
+	add r11, 2			; Inc PC for param
 endm
 
 read_absx macro
@@ -261,8 +261,7 @@ read_absx macro
 
 no_overflow:
 	mov al, [rcx+rbx]	; Get value in memory
-	inc r11				; Inc PC for param
-	inc r11
+	add r11, 2			; Inc PC for param
 endm
 
 read_absy macro
@@ -279,8 +278,7 @@ read_absy macro
 
 no_overflow:
 	mov al, [rcx+rbx]	; Get value in memory
-	inc r11				; Inc PC for param
-	inc r11
+	add r11, 2			; Inc PC for param
 endm
 
 read_indx macro
@@ -351,7 +349,7 @@ write_abs macro
 	mov bx, [rcx+r11]	; Get address
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC twice
+	add r11, 2			; Increment PC
 endm
 
 write_absx macro
@@ -360,7 +358,7 @@ write_absx macro
 	add bx, r9w			; Add X
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC twice
+	add r11, 2			; Increment PC
 endm
 
 write_absy macro
@@ -369,7 +367,7 @@ write_absy macro
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC twice
+	add r11, 2			; Increment PC
 endm
 
 write_indx macro
@@ -1148,6 +1146,45 @@ x7C_jmp_absx proc
 x7C_jmp_absx endp
 
 ;
+; Stack
+;
+
+x48_pha proc
+
+	xor rbx, rbx
+	
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], r8b					; Put A on stack
+	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	
+	add r14, 3							; Add cycles
+
+	jmp opcode_done
+
+x48_pha endp
+
+x68_pla proc
+
+	xor rbx, rbx
+
+	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+
+	mov rax, r15						; move flags to rax
+	sahf								; set eflags
+
+	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
+	
+	lahf								; move new flags to rax	
+	mov r15, rax						; store
+	
+	add r14, 4							; Add cycles
+
+	jmp opcode_done
+
+x68_pla endp
+
+;
 ; NOP
 ;
 
@@ -1266,7 +1303,7 @@ opcode_44	qword	noinstruction 	; $44
 opcode_45	qword	noinstruction 	; $45
 opcode_46	qword	noinstruction 	; $46
 opcode_47	qword	noinstruction 	; $47
-opcode_48	qword	noinstruction 	; $48
+opcode_48	qword	x48_pha		 	; $48
 opcode_49	qword	noinstruction 	; $49
 opcode_4A	qword	noinstruction 	; $4A
 opcode_4B	qword	noinstruction 	; $4B
@@ -1298,7 +1335,7 @@ opcode_64	qword	x64_stz_zp	 	; $64
 opcode_65	qword	noinstruction 	; $65
 opcode_66	qword	noinstruction 	; $66
 opcode_67	qword	noinstruction 	; $67
-opcode_68	qword	noinstruction 	; $68
+opcode_68	qword	x68_pla		 	; $68
 opcode_69	qword	noinstruction 	; $69
 opcode_6A	qword	noinstruction 	; $6A
 opcode_6B	qword	noinstruction 	; $6B

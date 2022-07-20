@@ -34,10 +34,10 @@ namespace BitMagic.X16Emulator.Tests
             return emulator;
         }
 
-        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, ulong? Clock = null)
+        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, ulong? Clock = null, uint? stackPointer = null)
         {
             if (A != null)
-                Assert.AreEqual(A, (byte)emulator.A);
+                Assert.AreEqual(A, (byte)emulator.A);   
 
             if (X != null)
                 Assert.AreEqual(X, (byte)emulator.X);
@@ -50,6 +50,9 @@ namespace BitMagic.X16Emulator.Tests
 
             if (Clock != null)
                 Assert.AreEqual(Clock, emulator.Clock - 3); // add on stp clock cycles
+
+            if (stackPointer != null)
+                Assert.AreEqual(stackPointer, emulator.StackPointer);
         }
 
         public static void AssertFlags(this Emulator emulator, bool? Zero = null, bool? Negative = null, bool? Overflow = null, bool? Carry = null)

@@ -10,22 +10,26 @@ public class Emulator
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
-        public uint A;
-        public uint X;
-        public uint Y;
-        public uint Pc;
-        public uint StackPointer;
+        public uint A = 0;
+        public uint X = 0;
+        public uint Y = 0;
+        public uint Pc = 0;
+        public uint StackPointer = 0x1ff;
         
-        public byte Decimal;
-        public byte BreakFlag;
-        public byte Overflow;
-        public byte Negative;
+        public byte Decimal = 0;
+        public byte BreakFlag = 0;
+        public byte Overflow = 0;
+        public byte Negative = 0;
 
-        public ulong Clock;
+        public ulong Clock = 0;
 
-        public byte Carry;
-        public byte Zero;
-        public byte InterruptDisable;
+        public byte Carry = 0;
+        public byte Zero = 0;
+        public byte InterruptDisable = 0;
+
+        public CpuState()
+        {
+        }
     }
 
     public enum EmulatorResult
