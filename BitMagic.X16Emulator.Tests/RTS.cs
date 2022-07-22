@@ -3,10 +3,10 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class JSR
+public class RTS
 {
     [TestMethod]
-    public async Task Jsr()
+    public async Task Rts()
     {
         var emulator = new Emulator();
 
@@ -19,19 +19,19 @@ public class JSR
                 stp
                 .org $850
                 .test:
-                stp
+                rts
                 ",
                 emulator);
 
         // compilation
         Assert.AreEqual(0x20, emulator.Memory[0x810]);
 
-        // Stack
+        // Stack -- doesn't get cleared
         Assert.AreEqual(0x12, emulator.Memory[0x1ff]);
         Assert.AreEqual(0x08, emulator.Memory[0x1fe]);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x851, 6, 0x1fd);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6+6, 0x1ff);
         emulator.AssertFlags(false, false, false, false);
     }
 }

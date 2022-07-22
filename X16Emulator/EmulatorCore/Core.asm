@@ -1146,15 +1146,15 @@ x7C_jmp_absx proc
 x7C_jmp_absx endp
 
 ;
-; JSR
+; Subroutines
 ;
 
 x20_jsr proc
-	
-	xor rbx, rbx
-	
+		
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
 	inc rax
+
+	xor rbx, rbx
 
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
@@ -1171,6 +1171,27 @@ x20_jsr proc
 	jmp opcode_done
 
 x20_jsr endp
+
+x60_rts proc
+	
+	xor rbx, rbx
+
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	inc bl								; Move stack pointer on
+	mov ah, [rcx+rbx]					; Get PC High byte on stack
+	inc bl								; Move stack pointer on (done twice for wrapping)
+	mov al, [rcx+rbx]					; Get PC Low byte on stack
+
+	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+
+	inc ax								; Add on 1 for the next byte
+	mov r11w, ax						; Set PC to destination
+
+	add r14, 6							; Add cycles
+
+	jmp opcode_done
+
+x60_rts endp
 
 ;
 ; Stack
@@ -1460,7 +1481,7 @@ opcode_5C	qword	noinstruction 	; $5C
 opcode_5D	qword	noinstruction 	; $5D
 opcode_5E	qword	noinstruction 	; $5E
 opcode_5F	qword	noinstruction 	; $5F
-opcode_60	qword	noinstruction 	; $60
+opcode_60	qword	x60_rts		 	; $60
 opcode_61	qword	noinstruction 	; $61
 opcode_62	qword	noinstruction 	; $62
 opcode_63	qword	noinstruction 	; $63
