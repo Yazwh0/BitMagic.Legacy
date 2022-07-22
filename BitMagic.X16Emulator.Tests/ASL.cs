@@ -46,7 +46,7 @@ public class ASL
         Assert.AreEqual(0x0a, emulator.Memory[0x810]);
 
         // emulation
-        emulator.AssertState(0b00000101, 0x00, 0x00, 0x812, 2);
+        emulator.AssertState(0b00000100, 0x00, 0x00, 0x812, 2);
         emulator.AssertFlags(false, false, false, false);
     }
 

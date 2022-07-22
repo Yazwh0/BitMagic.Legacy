@@ -1023,18 +1023,18 @@ x0A_asl_a proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-	jnc no_carry
+;	jnc no_carry
 
-	mov rbx, 1		; set rbx to 1, we'll or this onto A after the shift
+;	mov rbx, 1		; set rbx to 1, we'll or this onto A after the shift
 
-no_carry:
+;no_carry:
 
 	sal r8b,1		; shift
 
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	or r8b, bl		; add on carry
+;	or r8b, bl		; add on carry
 
 	add r14, 2		; Clock
 
