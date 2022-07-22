@@ -1198,6 +1198,20 @@ xDA_phx proc
 
 xDA_phx endp
 
+x5A_phy proc
+	
+	xor rbx, rbx
+	
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], r10b					; Put Y on stack
+	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	
+	add r14, 3							; Add cycles
+
+	jmp opcode_done
+
+x5A_phy endp
+
 x9A_txs proc
 
 	mov byte ptr [rdx+stackpointer], r9b ; move X to stack pointer
@@ -1366,7 +1380,7 @@ opcode_56	qword	noinstruction 	; $56
 opcode_57	qword	noinstruction 	; $57
 opcode_58	qword	noinstruction 	; $58
 opcode_59	qword	noinstruction 	; $59
-opcode_5A	qword	noinstruction 	; $5A
+opcode_5A	qword	x5A_phy		 	; $5A
 opcode_5B	qword	noinstruction 	; $5B
 opcode_5C	qword	noinstruction 	; $5C
 opcode_5D	qword	noinstruction 	; $5D
