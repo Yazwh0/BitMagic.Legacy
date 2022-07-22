@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class PLA
+public class PLY
 {
     [TestMethod]
-    public async Task Pla()
+    public async Task Ply()
     {
         var emulator = new Emulator();
 
@@ -21,21 +21,21 @@ public class PLA
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
                 .org $810
-                pla
+                ply
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0x68, emulator.Memory[0x810]);
+        Assert.AreEqual(0x7a, emulator.Memory[0x810]);
         Assert.AreEqual(0x20, emulator.Memory[0x1ff]);
 
         // emulation
-        emulator.AssertState(0x20, 0x00, 0x00, 0x812, 4);
+        emulator.AssertState(0x00, 0x00, 0x20, 0x812, 4);
         emulator.AssertFlags(false, false, false, false);
     }
 
     [TestMethod]
-    public async Task Pla_Zero()
+    public async Task Ply_Zero()
     {
         var emulator = new Emulator();
 
@@ -45,12 +45,12 @@ public class PLA
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
                 .org $810
-                pla
+                ply
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0x68, emulator.Memory[0x810]);
+        Assert.AreEqual(0x7a, emulator.Memory[0x810]);
         Assert.AreEqual(0x00, emulator.Memory[0x1ff]);
 
         // emulation
@@ -59,7 +59,7 @@ public class PLA
     }
 
     [TestMethod]
-    public async Task Pla_Negative()
+    public async Task Ply_Negative()
     {
         var emulator = new Emulator();
 
@@ -69,16 +69,16 @@ public class PLA
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
                 .org $810
-                pla
+                ply
                 stp",
                 emulator);
 
         // compilation
-        Assert.AreEqual(0x68, emulator.Memory[0x810]);
+        Assert.AreEqual(0x7a, emulator.Memory[0x810]);
         Assert.AreEqual(0xff, emulator.Memory[0x1ff]);
 
         // emulation
-        emulator.AssertState(0xff, 0x00, 0x00, 0x812, 4);
+        emulator.AssertState(0x00, 0x00, 0xff, 0x812, 4);
         emulator.AssertFlags(false, true, false, false);
     }
 }

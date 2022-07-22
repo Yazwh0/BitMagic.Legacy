@@ -1170,10 +1170,12 @@ x68_pla proc
 	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
+	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
+
 	mov rax, r15						; move flags to rax
 	sahf								; set eflags
 
-	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
+	test r8b, r8b
 	
 	lahf								; move new flags to rax	
 	mov r15, rax						; store
@@ -1198,6 +1200,29 @@ xDA_phx proc
 
 xDA_phx endp
 
+xFA_plx proc
+
+	xor rbx, rbx
+
+	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+
+	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
+	
+	mov rax, r15						; move flags to rax
+	sahf								; set eflags
+
+	test r9b, r9b
+
+	lahf								; move new flags to rax	
+	mov r15, rax						; store
+	
+	add r14, 4							; Add cycles
+
+	jmp opcode_done
+
+xFA_plx endp
+
 x5A_phy proc
 	
 	xor rbx, rbx
@@ -1211,6 +1236,30 @@ x5A_phy proc
 	jmp opcode_done
 
 x5A_phy endp
+
+x7A_ply proc
+
+	xor rbx, rbx
+
+	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+
+	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
+
+	mov rax, r15						; move flags to rax
+	sahf								; set eflags
+
+	test r10b, r10b
+	
+	lahf								; move new flags to rax	
+	mov r15, rax						; store
+	
+	add r14, 4							; Add cycles
+
+	jmp opcode_done
+
+x7A_ply endp
+
 
 x9A_txs proc
 
@@ -1412,7 +1461,7 @@ opcode_76	qword	noinstruction 	; $76
 opcode_77	qword	noinstruction 	; $77
 opcode_78	qword	noinstruction 	; $78
 opcode_79	qword	noinstruction 	; $79
-opcode_7A	qword	noinstruction 	; $7A
+opcode_7A	qword	x7A_ply		 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
 opcode_7C	qword	x7C_jmp_absx 	; $7C
 opcode_7D	qword	noinstruction 	; $7D
@@ -1540,7 +1589,7 @@ opcode_F6	qword	noinstruction 	; $F6
 opcode_F7	qword	noinstruction 	; $F7
 opcode_F8	qword	noinstruction 	; $F8
 opcode_F9	qword	noinstruction 	; $F9
-opcode_FA	qword	noinstruction 	; $FA
+opcode_FA	qword	xFA_plx		 	; $FA
 opcode_FB	qword	noinstruction 	; $FB
 opcode_FC	qword	noinstruction 	; $FC
 opcode_FD	qword	noinstruction 	; $FD
