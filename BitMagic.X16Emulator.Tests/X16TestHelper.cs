@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,21 @@ namespace BitMagic.X16Emulator.Tests
 
             emulator.Pc = 0x810;
 
+            var stopWatch = new Stopwatch();
+
+            stopWatch.Start();
+
             var emulateResult = emulator.Emulate();
+
+            stopWatch.Stop();
+
+            var ts = stopWatch.Elapsed;
+
+            Console.WriteLine(String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10));
+
+            Console.WriteLine($"Clock Ticks: {emulator.Clock:X4}");
 
             if (emulateResult != Emulator.EmulatorResult.DebugOpCode)
                 Assert.Fail($"Emulate Result is not from a stp. {emulateResult}");

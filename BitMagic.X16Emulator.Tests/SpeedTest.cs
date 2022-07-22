@@ -13,10 +13,6 @@ public class SpeedTest
 
         var emulator = new Emulator();
 
-        var stopWatch = new Stopwatch();
-
-        stopWatch.Start();
-
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -46,16 +42,6 @@ public class SpeedTest
                 stp
                 ",
                 emulator);
-
-        stopWatch.Stop();
-
-        var ts = stopWatch.Elapsed;
-
-        Console.WriteLine(String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            ts.Hours, ts.Minutes, ts.Seconds,
-            ts.Milliseconds / 10));
-
-        Console.WriteLine($"Clock Ticks: {emulator.Clock:X4}");
 
         //emulator.AssertFlags(true, false, false, false);
     }
