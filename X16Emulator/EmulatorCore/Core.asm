@@ -1020,14 +1020,12 @@ x98_tya endp
 
 x0A_asl_a proc
 
-	xor rbx, rbx
-
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
 	jnc no_carry
 
-	or rbx, 1		; set rbx to 1, we'll or this onto A after the shift
+	mov rbx, 1		; set rbx to 1, we'll or this onto A after the shift
 
 no_carry:
 
@@ -1044,6 +1042,25 @@ no_carry:
 
 x0A_asl_a endp
 
+;
+; LSR
+;
+
+x4A_lsr_a proc
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	sar r8b,1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	add r14, 2		; Clock
+
+	jmp opcode_done	
+
+x4A_lsr_a endp
 
 ;
 ; Branches
@@ -1490,7 +1507,7 @@ opcode_46	qword	noinstruction 	; $46
 opcode_47	qword	noinstruction 	; $47
 opcode_48	qword	x48_pha		 	; $48
 opcode_49	qword	noinstruction 	; $49
-opcode_4A	qword	noinstruction 	; $4A
+opcode_4A	qword	x4A_lsr_a	 	; $4A
 opcode_4B	qword	noinstruction 	; $4B
 opcode_4C	qword	x4C_jmp_abs 	; $4C
 opcode_4D	qword	noinstruction 	; $4D
