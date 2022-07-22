@@ -1184,6 +1184,16 @@ x68_pla proc
 
 x68_pla endp
 
+x9A_txs proc
+
+	mov byte ptr [rdx+stackpointer], r9b ; move X to stack pointer
+
+	add r14, 2							; Add cycles
+
+	jmp opcode_done
+
+x9A_txs endp
+
 ;
 ; NOP
 ;
@@ -1385,7 +1395,7 @@ opcode_96	qword	x96_stx_zpy 	; $96
 opcode_97	qword	noinstruction 	; $97
 opcode_98	qword	x98_tya		 	; $98
 opcode_99	qword	x99_sta_absy 	; $99
-opcode_9A	qword	noinstruction 	; $9A
+opcode_9A	qword	x9A_txs		 	; $9A
 opcode_9B	qword	noinstruction 	; $9B
 opcode_9C	qword	x9C_stz_abs 	; $9C
 opcode_9D	qword	x9D_sta_absx 	; $9D
