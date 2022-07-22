@@ -1184,6 +1184,20 @@ x68_pla proc
 
 x68_pla endp
 
+xDA_phx proc
+	
+	xor rbx, rbx
+	
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], r9b					; Put X on stack
+	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	
+	add r14, 3							; Add cycles
+
+	jmp opcode_done
+
+xDA_phx endp
+
 x9A_txs proc
 
 	mov byte ptr [rdx+stackpointer], r9b ; move X to stack pointer
@@ -1210,8 +1224,9 @@ xBA_txs proc
 
 	jmp opcode_done
 	
-
 xBA_txs endp
+
+
 
 
 ;
@@ -1479,7 +1494,7 @@ opcode_D6	qword	noinstruction 	; $D6
 opcode_D7	qword	noinstruction 	; $D7
 opcode_D8	qword	noinstruction 	; $D8
 opcode_D9	qword	noinstruction 	; $D9
-opcode_DA	qword	noinstruction 	; $DA
+opcode_DA	qword	xDA_phx		 	; $DA
 opcode_DB	qword	xDB_stp		 	; $DB
 opcode_DC	qword	noinstruction 	; $DC
 opcode_DD	qword	noinstruction 	; $DD
