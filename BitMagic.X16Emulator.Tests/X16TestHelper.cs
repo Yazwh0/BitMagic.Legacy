@@ -47,6 +47,17 @@ namespace BitMagic.X16Emulator.Tests
 
             Console.WriteLine($"Ticks:\t${emulator.Clock:X4}");
 
+            Console.Write("Flags:\t[");
+            Console.Write(emulator.Negative ? "N" : " ");
+            Console.Write(emulator.Overflow ? "V" : " ");
+            Console.Write(" ");
+            Console.Write(emulator.BreakFlag ? "B" : " ");
+            Console.Write(emulator.Decimal ? "D" : " ");
+            Console.Write(emulator.interruptDisable ? "I" : " ");
+            Console.Write(emulator.Zero ? "Z" : " ");
+            Console.Write(emulator.Carry ? "C]" : " ]");
+            Console.WriteLine();
+
             if (emulateResult != Emulator.EmulatorResult.DebugOpCode)
                 Assert.Fail($"Emulate Result is not from a stp. {emulateResult}");
 

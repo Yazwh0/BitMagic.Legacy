@@ -30,7 +30,6 @@ update_nz_flags macro
 
 endm
 
-; todo: move overflow from flags to the state obj
 write_state_obj macro	
 	mov	[rdx+register_a], r8d		; a
 	mov	[rdx+register_x], r9d		; x
@@ -45,6 +44,7 @@ write_state_obj macro
 	mov rax, r15
 	;        NZ A P C
 	and rax, 0000000100000000b
+	ror rax, 8
 	mov byte ptr [rdx+flags_carry], al
 
 	; Zero
@@ -71,13 +71,9 @@ read_state_obj macro
 	mov r10d, [rdx+register_y]		; y
 	mov r11d, [rdx+register_pc]		; PC
 	mov r14, [rdx+clock]			; Clock
-
+	
 	; Flags
 	xor r15, r15 ; clear flags register
-	
-	; unnecesary now we clear
-	;        NZ A P C
-	;and r15, 0011111000000000b
 
 	mov al, byte ptr [rdx+flags_carry]
 	test al, al
@@ -1015,6 +1011,41 @@ x98_tya proc
 x98_tya endp
 
 ;
+; Shifts
+;
+
+;
+; ASL
+;
+
+x0A_asl_a proc
+
+	xor rbx, rbx
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	or rbx, 1		; set rbx to 1, we'll or this onto A after the shift
+
+no_carry:
+
+	sal r8b,1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or r8b, bl		; add on carry
+
+	add r14, 2		; Clock
+
+	jmp opcode_done	
+
+x0A_asl_a endp
+
+
+;
 ; Branches
 ;
 
@@ -1395,7 +1426,7 @@ opcode_06	qword	noinstruction 	; $06
 opcode_07	qword	noinstruction 	; $07
 opcode_08	qword	noinstruction 	; $08
 opcode_09	qword	noinstruction 	; $09
-opcode_0A	qword	noinstruction 	; $0A
+opcode_0A	qword	x0A_asl_a	 	; $0A
 opcode_0B	qword	noinstruction 	; $0B
 opcode_0C	qword	noinstruction 	; $0C
 opcode_0D	qword	noinstruction 	; $0D
