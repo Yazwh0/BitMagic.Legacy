@@ -1194,6 +1194,26 @@ x9A_txs proc
 
 x9A_txs endp
 
+xBA_txs proc
+
+	mov r9b, byte ptr [rdx+stackpointer] ; move stack pointer to X
+
+	mov rax, r15						; move flags to rax
+	sahf
+	
+	test r9b, r9b
+
+	lahf								; get new flags and store
+	mov r15, rax			
+
+	add r14, 2							; Add cycles
+
+	jmp opcode_done
+	
+
+xBA_txs endp
+
+
 ;
 ; NOP
 ;
@@ -1427,7 +1447,7 @@ opcode_B6	qword	xB6_ldx_zpy 	; $B6
 opcode_B7	qword	noinstruction 	; $B7
 opcode_B8	qword	noinstruction 	; $B8
 opcode_B9	qword	xB9_lda_absy 	; $B9
-opcode_BA	qword	noinstruction 	; $BA
+opcode_BA	qword	xBA_txs		 	; $BA
 opcode_BB	qword	noinstruction 	; $BB
 opcode_BC	qword	xBC_ldy_absx 	; $BC
 opcode_BD	qword	xBD_lda_absx 	; $BD
