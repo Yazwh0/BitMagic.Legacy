@@ -1114,7 +1114,7 @@ x30_bmi endp
 
 x4C_jmp_abs proc
 
-	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
+	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the PC
 
 	add r14, 3
 
@@ -1144,6 +1144,33 @@ x7C_jmp_absx proc
 	jmp opcode_done
 
 x7C_jmp_absx endp
+
+;
+; JSR
+;
+
+x20_jsr proc
+	
+	xor rbx, rbx
+	
+	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
+	inc rax
+
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], al					; Put PC Low byte on stack
+	dec bl								; Move stack pointer on
+	mov [rcx+rbx], ah					; Put PC High byte on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+
+	mov r11w, [rcx+r11]					; Get 16bit value in memory and set it to the PC
+
+	add r14, 6							; Add cycles
+
+	jmp opcode_done
+
+x20_jsr endp
 
 ;
 ; Stack
@@ -1290,8 +1317,6 @@ xBA_txs proc
 xBA_txs endp
 
 
-
-
 ;
 ; NOP
 ;
@@ -1371,7 +1396,7 @@ opcode_1C	qword	noinstruction 	; $1C
 opcode_1D	qword	noinstruction 	; $1D
 opcode_1E	qword	noinstruction 	; $1E
 opcode_1F	qword	noinstruction 	; $1F
-opcode_20	qword	noinstruction 	; $20
+opcode_20	qword	x20_jsr		 	; $20
 opcode_21	qword	noinstruction 	; $21
 opcode_22	qword	noinstruction 	; $22
 opcode_23	qword	noinstruction 	; $23
