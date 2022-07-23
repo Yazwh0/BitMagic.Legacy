@@ -1378,6 +1378,175 @@ no_carry:
 x36_rol_zpx endp
 
 ;
+; ROR
+;
+
+x6A_ror_a proc
+	
+	xor rbx, rbx
+	add r14, 2		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	shr r8b,1		; shift
+
+	lahf			; move new flags to rax
+	or rax, 1000000000000000b ; set negative flag
+	mov r15, rax	; store
+
+	or r8, 10000000b	; Add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	shr r8b,1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x6A_ror_a endp
+
+x6E_ror_abs proc
+	
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add r11, 2		; add on PC
+	add r14, 6		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	shr byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	or rax, 1000000000000000b ; set negative flag
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 10000000b ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	shr byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x6E_ror_abs endp
+
+x7E_ror_absx proc
+	
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bx, r9w		; Add X
+	add r11, 2		; add on PC
+	add r14, 7		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	shr byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	or rax, 1000000000000000b ; set negative flag
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 10000000b ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	shr byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x7E_ror_absx endp
+
+x66_ror_zp proc
+	
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add r11, 1		; add on PC
+	add r14, 5		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	shr byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	or rax, 1000000000000000b ; set negative flag
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 10000000b ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	shr byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x66_ror_zp endp
+
+x76_ror_zpx proc
+	
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add bl, r9b		; Add X
+	add r11, 1		; add on PC
+	add r14, 6		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	shr byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	or rax, 1000000000000000b ; set negative flag
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 10000000b ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	shr byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x76_ror_zpx endp
+
+;
 ; Branches
 ;
 
@@ -1850,15 +2019,15 @@ opcode_62	qword	noinstruction 	; $62
 opcode_63	qword	noinstruction 	; $63
 opcode_64	qword	x64_stz_zp	 	; $64
 opcode_65	qword	noinstruction 	; $65
-opcode_66	qword	noinstruction 	; $66
+opcode_66	qword	x66_ror_zp	 	; $66
 opcode_67	qword	noinstruction 	; $67
 opcode_68	qword	x68_pla		 	; $68
 opcode_69	qword	noinstruction 	; $69
-opcode_6A	qword	noinstruction 	; $6A
+opcode_6A	qword	x6A_ror_a	 	; $6A
 opcode_6B	qword	noinstruction 	; $6B
 opcode_6C	qword	x6C_jmp_ind 	; $6C
 opcode_6D	qword	noinstruction 	; $6D
-opcode_6E	qword	noinstruction 	; $6E
+opcode_6E	qword	x6E_ror_abs 	; $6E
 opcode_6F	qword	noinstruction 	; $6F
 opcode_70	qword	noinstruction 	; $70
 opcode_71	qword	noinstruction 	; $71
@@ -1866,7 +2035,7 @@ opcode_72	qword	noinstruction 	; $72
 opcode_73	qword	noinstruction 	; $73
 opcode_74	qword	x74_stz_zpx 	; $74
 opcode_75	qword	noinstruction 	; $75
-opcode_76	qword	noinstruction 	; $76
+opcode_76	qword	x76_ror_zpx 	; $76
 opcode_77	qword	noinstruction 	; $77
 opcode_78	qword	noinstruction 	; $78
 opcode_79	qword	noinstruction 	; $79
@@ -1874,7 +2043,7 @@ opcode_7A	qword	x7A_ply		 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
 opcode_7C	qword	x7C_jmp_absx 	; $7C
 opcode_7D	qword	noinstruction 	; $7D
-opcode_7E	qword	noinstruction 	; $7E
+opcode_7E	qword	x7E_ror_absx 	; $7E
 opcode_7F	qword	noinstruction 	; $7F
 opcode_80	qword	x80_bra		 	; $80
 opcode_81	qword	x81_sta_indx 	; $81
