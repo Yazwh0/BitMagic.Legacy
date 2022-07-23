@@ -1116,7 +1116,6 @@ x16_asl_zpx proc
 
 x16_asl_zpx endp
 
-
 ;
 ; LSR
 ;
@@ -1136,6 +1135,88 @@ x4A_lsr_a proc
 	jmp opcode_done	
 
 x4A_lsr_a endp
+
+x4E_lsr_abs proc
+
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sar byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 2			; move PC on
+	add r14, 6			; Clock
+
+	jmp opcode_done	
+
+x4E_lsr_abs endp
+
+x5E_lsr_absx proc
+
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add	bl, r9b			; Add X
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sar byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 2			; move PC on
+	add r14, 7			; Clock
+
+	jmp opcode_done	
+
+x5E_lsr_absx endp
+
+x46_lsr_zp proc
+
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sar byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 1			; move PC on
+	add r14, 5			; Clock
+
+	jmp opcode_done	
+
+x46_lsr_zp endp
+
+x56_lsr_zpx proc
+
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add	bl, r9b			; Add X
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sar byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 1			; move PC on
+	add r14, 6			; Clock
+
+	jmp opcode_done	
+
+x56_lsr_zpx endp
 
 ;
 ; Branches
@@ -1578,7 +1659,7 @@ opcode_42	qword	noinstruction 	; $42
 opcode_43	qword	noinstruction 	; $43
 opcode_44	qword	noinstruction 	; $44
 opcode_45	qword	noinstruction 	; $45
-opcode_46	qword	noinstruction 	; $46
+opcode_46	qword	x46_lsr_zp	 	; $46
 opcode_47	qword	noinstruction 	; $47
 opcode_48	qword	x48_pha		 	; $48
 opcode_49	qword	noinstruction 	; $49
@@ -1586,7 +1667,7 @@ opcode_4A	qword	x4A_lsr_a	 	; $4A
 opcode_4B	qword	noinstruction 	; $4B
 opcode_4C	qword	x4C_jmp_abs 	; $4C
 opcode_4D	qword	noinstruction 	; $4D
-opcode_4E	qword	noinstruction 	; $4E
+opcode_4E	qword	x4E_lsr_abs 	; $4E
 opcode_4F	qword	noinstruction 	; $4F
 opcode_50	qword	noinstruction 	; $50
 opcode_51	qword	noinstruction 	; $51
@@ -1594,7 +1675,7 @@ opcode_52	qword	noinstruction 	; $52
 opcode_53	qword	noinstruction 	; $53
 opcode_54	qword	noinstruction 	; $54
 opcode_55	qword	noinstruction 	; $55
-opcode_56	qword	noinstruction 	; $56
+opcode_56	qword	x56_lsr_zpx 	; $56
 opcode_57	qword	noinstruction 	; $57
 opcode_58	qword	noinstruction 	; $58
 opcode_59	qword	noinstruction 	; $59
@@ -1602,7 +1683,7 @@ opcode_5A	qword	x5A_phy		 	; $5A
 opcode_5B	qword	noinstruction 	; $5B
 opcode_5C	qword	noinstruction 	; $5C
 opcode_5D	qword	noinstruction 	; $5D
-opcode_5E	qword	noinstruction 	; $5E
+opcode_5E	qword	x5E_lsr_absx 	; $5E
 opcode_5F	qword	noinstruction 	; $5F
 opcode_60	qword	x60_rts		 	; $60
 opcode_61	qword	noinstruction 	; $61

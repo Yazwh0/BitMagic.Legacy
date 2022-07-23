@@ -39,11 +39,11 @@ namespace BitMagic.X16Emulator.Tests
 
             Console.WriteLine($"Time:\t{ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{(ts.Milliseconds / 10):00}");
 
-            Console.WriteLine($"A:\t${emulator.A:X2}");
-            Console.WriteLine($"X:\t${emulator.X:X2}");
-            Console.WriteLine($"Y:\t${emulator.Y:X2}");
-            Console.WriteLine($"PC:\t${emulator.Pc:X4}");
-            Console.WriteLine($"SP:\t${emulator.StackPointer:X4}");
+            Console.WriteLine($"A:   \t${emulator.A:X2}");
+            Console.WriteLine($"X:   \t${emulator.X:X2}");
+            Console.WriteLine($"Y:   \t${emulator.Y:X2}");
+            Console.WriteLine($"PC:  \t${emulator.Pc:X4}");
+            Console.WriteLine($"SP:  \t${emulator.StackPointer:X4}");
 
             Console.WriteLine($"Ticks:\t${emulator.Clock:X4}");
 
