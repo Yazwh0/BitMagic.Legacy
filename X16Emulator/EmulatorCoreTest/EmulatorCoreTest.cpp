@@ -50,7 +50,7 @@ int main()
     state.overflow = false;
     state.zero = true;
 
-    memory_ptr[0x1ff] = 0x20;
+    memory_ptr[0x12] = 0x02;
 
     memory_ptr[0x810] = 0x0a;
     memory_ptr[0x811] = 0xdb;

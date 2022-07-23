@@ -916,7 +916,7 @@ xCA_dex proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2	; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done		
 
@@ -930,7 +930,7 @@ xC8_iny proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2	; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done		
 
@@ -944,7 +944,7 @@ x88_dey proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2	; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done		
 
@@ -959,7 +959,7 @@ xAA_tax proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2 ; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done	
 
@@ -974,7 +974,7 @@ x8A_txa proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2 ; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done	
 
@@ -989,7 +989,7 @@ xA8_tay proc
 	lahf			; move new flags to rax
 	mov r15, rax	; store
 
-	add r14, 2 ; Clock
+	add r14, 2		; Clock
 
 	jmp opcode_done	
 
@@ -1023,24 +1023,99 @@ x0A_asl_a proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-;	jnc no_carry
-
-;	mov rbx, 1		; set rbx to 1, we'll or this onto A after the shift
-
-;no_carry:
-
 	sal r8b,1		; shift
 
 	lahf			; move new flags to rax
 	mov r15, rax	; store
-
-;	or r8b, bl		; add on carry
 
 	add r14, 2		; Clock
 
 	jmp opcode_done	
 
 x0A_asl_a endp
+
+x0E_asl_abs proc
+
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 2			; move PC on
+	add r14, 6			; Clock
+
+	jmp opcode_done	
+
+x0E_asl_abs endp
+
+x1E_asl_absx proc
+
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add	bl, r9b			; Add X
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 2			; move PC on
+	add r14, 7			; Clock
+
+	jmp opcode_done	
+
+x1E_asl_absx endp
+
+x06_asl_zp proc
+
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 1			; move PC on
+	add r14, 5			; Clock
+
+	jmp opcode_done	
+
+x06_asl_zp endp
+
+x16_asl_zpx proc
+
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add	bl, r9b			; Add X
+
+	mov rax, r15		; move flags to rax
+	sahf				; set eflags
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf				; move new flags to rax
+	mov r15, rax		; store
+
+	add r11, 1			; move PC on
+	add r14, 6			; Clock
+
+	jmp opcode_done	
+
+x16_asl_zpx endp
+
 
 ;
 ; LSR
@@ -1439,7 +1514,7 @@ opcode_02	qword	noinstruction 	; $02
 opcode_03	qword	noinstruction 	; $03
 opcode_04	qword	noinstruction 	; $04
 opcode_05	qword	noinstruction 	; $05
-opcode_06	qword	noinstruction 	; $06
+opcode_06	qword	x06_asl_zp	 	; $06
 opcode_07	qword	noinstruction 	; $07
 opcode_08	qword	noinstruction 	; $08
 opcode_09	qword	noinstruction 	; $09
@@ -1447,7 +1522,7 @@ opcode_0A	qword	x0A_asl_a	 	; $0A
 opcode_0B	qword	noinstruction 	; $0B
 opcode_0C	qword	noinstruction 	; $0C
 opcode_0D	qword	noinstruction 	; $0D
-opcode_0E	qword	noinstruction 	; $0E
+opcode_0E	qword	x0E_asl_abs	 	; $0E
 opcode_0F	qword	noinstruction 	; $0F
 opcode_10	qword	x10_bpl		 	; $10
 opcode_11	qword	noinstruction 	; $11
@@ -1455,7 +1530,7 @@ opcode_12	qword	noinstruction 	; $12
 opcode_13	qword	noinstruction 	; $13
 opcode_14	qword	noinstruction 	; $14
 opcode_15	qword	noinstruction 	; $15
-opcode_16	qword	noinstruction 	; $16
+opcode_16	qword	x16_asl_zpx	 	; $16
 opcode_17	qword	noinstruction 	; $17
 opcode_18	qword	noinstruction 	; $18
 opcode_19	qword	noinstruction 	; $19
@@ -1463,7 +1538,7 @@ opcode_1A	qword	x1A_inc_a	 	; $1A
 opcode_1B	qword	noinstruction 	; $1B
 opcode_1C	qword	noinstruction 	; $1C
 opcode_1D	qword	noinstruction 	; $1D
-opcode_1E	qword	noinstruction 	; $1E
+opcode_1E	qword	x1E_asl_absx 	; $1E
 opcode_1F	qword	noinstruction 	; $1F
 opcode_20	qword	x20_jsr		 	; $20
 opcode_21	qword	noinstruction 	; $21
