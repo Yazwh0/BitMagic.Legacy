@@ -1160,7 +1160,7 @@ x5E_lsr_absx proc
 
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add	bl, r9b			; Add X
+	add	bx, r9w			; Add X
 
 	mov rax, r15		; move flags to rax
 	sahf				; set eflags
@@ -1217,6 +1217,165 @@ x56_lsr_zpx proc
 	jmp opcode_done	
 
 x56_lsr_zpx endp
+
+;
+; ROL
+;
+
+x2A_rol_a proc
+	
+	xor rbx, rbx
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	mov rbx, 1
+no_carry:
+
+	sal r8b,1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or r8, rbx
+
+	add r14, 2		; Clock
+
+	jmp opcode_done	
+
+x2A_rol_a endp
+
+x2E_rol_abs proc
+	
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add r11, 2		; add on PC
+	add r14, 6		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	sal byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 1 ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x2E_rol_abs endp
+
+x3E_rol_absx proc
+	
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bx, r9w		; Add X
+	add r11, 2		; add on PC
+	add r14, 7		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	sal byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 1 ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x3E_rol_absx endp
+
+x26_rol_zp proc
+	
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add r11, 1		; add on PC
+	add r14, 5		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	sal byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 1 ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x26_rol_zp endp
+
+x36_rol_zpx proc
+	
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add bl, r9b		; Add X
+	add r11, 1		; add on PC
+	add r14, 6		; Clock
+
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc no_carry
+
+	sal byte ptr [rcx+rbx], 1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	or byte ptr [rcx+rbx], 1 ; add on carry
+
+	jmp opcode_done	
+
+no_carry:
+
+	sal byte ptr [rcx+rbx],1		; shift
+
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+
+	jmp opcode_done	
+
+x36_rol_zpx endp
 
 ;
 ; Branches
@@ -1627,15 +1786,15 @@ opcode_22	qword	noinstruction 	; $22
 opcode_23	qword	noinstruction 	; $23
 opcode_24	qword	noinstruction 	; $24
 opcode_25	qword	noinstruction 	; $25
-opcode_26	qword	noinstruction 	; $26
+opcode_26	qword	x26_rol_zp	 	; $26
 opcode_27	qword	noinstruction 	; $27
 opcode_28	qword	noinstruction 	; $28
 opcode_29	qword	noinstruction 	; $29
-opcode_2A	qword	noinstruction 	; $2A
+opcode_2A	qword	x2A_rol_a	 	; $2A
 opcode_2B	qword	noinstruction 	; $2B
 opcode_2C	qword	noinstruction 	; $2C
 opcode_2D	qword	noinstruction 	; $2D
-opcode_2E	qword	noinstruction 	; $2E
+opcode_2E	qword	x2E_rol_abs 	; $2E
 opcode_2F	qword	noinstruction 	; $2F
 opcode_30	qword	x30_bmi		 	; $30
 opcode_31	qword	noinstruction 	; $31
@@ -1643,7 +1802,7 @@ opcode_32	qword	noinstruction 	; $32
 opcode_33	qword	noinstruction 	; $33
 opcode_34	qword	noinstruction 	; $34
 opcode_35	qword	noinstruction 	; $35
-opcode_36	qword	noinstruction 	; $36
+opcode_36	qword	x36_rol_zpx 	; $36
 opcode_37	qword	noinstruction 	; $37
 opcode_38	qword	noinstruction 	; $38
 opcode_39	qword	noinstruction 	; $39
@@ -1651,7 +1810,7 @@ opcode_3A	qword	x3A_dec_a	 	; $3A
 opcode_3B	qword	noinstruction 	; $3B
 opcode_3C	qword	noinstruction 	; $3C
 opcode_3D	qword	noinstruction 	; $3D
-opcode_3E	qword	noinstruction 	; $3E
+opcode_3E	qword	x3E_rol_absx 	; $3E
 opcode_3F	qword	noinstruction 	; $3F
 opcode_40	qword	noinstruction 	; $40
 opcode_41	qword	noinstruction 	; $41
