@@ -57,6 +57,7 @@ namespace BitMagic.X16Emulator.Tests
             Console.Write(emulator.Zero ? "Z" : " ");
             Console.Write(emulator.Carry ? "C]" : " ]");
             Console.WriteLine();
+            Console.WriteLine($"Speed:\t{emulator.Clock / ts.TotalSeconds / 1000000.0 :0.00}Mhz");
 
             if (emulateResult != Emulator.EmulatorResult.DebugOpCode)
                 Assert.Fail($"Emulate Result is not from a stp. {emulateResult}");
