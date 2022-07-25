@@ -30,6 +30,12 @@ update_nz_flags macro
 
 endm
 
+update_nz_flags_a macro
+	test r8b, r8b
+	lahf
+	mov r15, rax
+endm
+
 write_state_obj macro	
 	mov	[rdx+register_a], r8d		; a
 	mov	[rdx+register_x], r9d		; x
@@ -174,7 +180,7 @@ asm_func proc memory:QWORD, state:QWORD
 main_loop:
 	xor rax, rax
 	mov al, [rcx+r11]			; Get opcode
-	inc r11						; PC+1
+	add r11w, 1						; PC+1
 	lea rbx, opcode_00			; start of jump table
 
 	jmp qword ptr [rbx + rax*8]	; jump to opcode
@@ -205,16 +211,127 @@ asm_func ENDP
 ; Put value into al
 ; and increment PC.
 
+read_zp_rbx macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+endm
+
+read_zpx_rbx macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add bl, r9b			; Add X
+endm
+
+read_abs_rbx macro
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+endm
+
+read_absx_rbx macro
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bx, r9w			; Add X
+endm
+
+read_absx_rbx_pagepenalty macro
+	local no_overflow
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bl, r9b			; Add X
+	jnc no_overflow
+	add bh, 1			; Add high bit
+	add r14, 1			; Add cycle penatly
+	;clc					; Clear carry
+
+no_overflow:
+endm
+
+read_absy_rbx macro
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bx, r10w		; Add Y
+endm
+
+read_absy_rbx_pagepenalty macro
+	local no_overflow
+	xor rbx, rbx
+	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	add bl, r10b		; Add Y
+	jnc no_overflow
+	add bh, 1			; Add high bit
+	add r14, 1			; Add cycle penatly
+	;clc					; Clear carry
+
+no_overflow:
+endm
+
+read_indx_rbx macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Address in ZP
+	add bl, r9b			; Add on X. Byte operation so it wraps.
+	mov bx, [rcx+rbx]	; Address at location
+endm
+
+read_indy_rbx_pagepenalty macro
+	local no_overflow
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Address in ZP
+	mov bx, [rcx+rbx]	; Address pointed at in ZP
+
+	adc bl, r10b		; Add Y to the lower address byte
+	jnc no_overflow
+	add bh, 1			; Inc higher address byte
+	add r14, 1			; Add clock cycle
+	clc
+
+no_overflow:
+endm
+
+read_indzp_rbx macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Address in ZP
+	mov bx, [rcx+rbx]	; Address at location
+endm
+
+; Write -----
+
+
+; Flags -----
+
+read_flags_rax macro
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+endm
+
+write_flags_r15 macro
+	lahf			; move new flags to rax
+	mov r15, rax	; store
+endm
+
+write_flags_r15_setcarry macro
+	lahf						; move new flags to rax
+	or rax, 0000000100000000b	; set carry flag
+	mov r15, rax				; store
+endm
+
+write_flags_r15_setnegative macro
+	lahf					; move new flags to rax
+	or rax, 1000000000000000b	; set negative flag
+	mov r15, rax				; store
+endm
+
+; ----------------
+
 read_imm macro
 	mov al, [rcx+r11]	; Get value at PC
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_zp macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Get address in ZP
 	mov al, [rcx+rbx]   ; Get value in ZP
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_zpx macro
@@ -223,7 +340,7 @@ read_zpx macro
 	add bl, r9b			; Add X. Byte operation so it wraps.
 
 	mov al, [rcx+rbx]   ; Get Value in ZP
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_zpy macro
@@ -232,7 +349,7 @@ read_zpy macro
 	add bl, r10b		; Add Y. Byte operation so it wraps.
 
 	mov al, [rcx+rbx]   ; Get Value in ZP
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_abs macro
@@ -240,7 +357,7 @@ read_abs macro
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
 	mov al, [rcx+rbx]	; Get value at that address
 
-	add r11, 2			; Inc PC for param
+	add r11w, 2			; Inc PC for param
 endm
 
 read_absx macro
@@ -249,15 +366,15 @@ read_absx macro
 	xor rbx, rbx	
 	mov bx, [rcx+r11]	; Get 16bit address in memory.
 
-	adc bl, r9b			; Add X to lower address byte
+	add bl, r9b			; Add X to lower address byte
 	jnc no_overflow
-	inc bh				; Inc higher address byte
-	inc r14				; Add clock cycle
+	add bh, 1			; Inc higher address byte
+	add r14, 1			; Add clock cycle
 	clc
 
 no_overflow:
 	mov al, [rcx+rbx]	; Get value in memory
-	add r11, 2			; Inc PC for param
+	add r11w, 2			; Inc PC for param
 endm
 
 read_absy macro
@@ -266,15 +383,15 @@ read_absy macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit address in memory
 
-	adc bl, r10b		; Add Y to the lower address byte
+	add bl, r10b		; Add Y to the lower address byte
 	jnc no_overflow
-	inc bh				; Inc higher address byte
-	inc r14				; Add clock cycle
+	add bh, 1			; Inc higher address byte
+	add r14, 1			; Add clock cycle
 	clc
 
 no_overflow:
 	mov al, [rcx+rbx]	; Get value in memory
-	add r11, 2			; Inc PC for param
+	add r11w, 2			; Inc PC for param
 endm
 
 read_indx macro
@@ -283,7 +400,7 @@ read_indx macro
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	mov bx, [rcx+rbx]	; Address at location
 	mov al, [rcx+rbx]	; Final value
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_indy macro
@@ -294,13 +411,13 @@ read_indy macro
 
 	adc bl, r10b		; Add Y to the lower address byte
 	jnc no_overflow
-	inc bh				; Inc higher address byte
-	inc r14				; Add clock cycle
+	add bh, 1			; Inc higher address byte
+	add r14, 1			; Add clock cycle
 	clc
 
 no_overflow:
 	mov al, [rcx+rbx]	; Final value	
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 read_indzp macro
@@ -308,7 +425,7 @@ read_indzp macro
 	mov bl, [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address at location
 	mov al, [rcx+rbx]	; Final value
-	inc r11				; Inc PC for param
+	add r11w, 1				; Inc PC for param
 endm
 
 ; -----------------------------
@@ -321,7 +438,7 @@ write_zp macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; ZP address
 	mov [rcx+rbx], al
-	inc r11
+	add r11w, 1
 endm
 
 write_zpx macro
@@ -329,7 +446,7 @@ write_zpx macro
 	mov bl, [rcx+r11]	; ZP address
 	add bl, r9b			; Add X
 	mov [rcx+rbx], al  
-	inc r11
+	add r11w, 1
 endm
 
 write_zpy macro
@@ -337,7 +454,7 @@ write_zpy macro
 	mov bl, [rcx+r11]	; ZP address
 	add bl, r10b		; Add Y
 	mov [rcx+rbx], al  
-	inc r11
+	add r11w, 1
 endm
 
 write_abs macro
@@ -345,7 +462,7 @@ write_abs macro
 	mov bx, [rcx+r11]	; Get address
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC
+	add r11w, 2			; Increment PC
 endm
 
 write_absx macro
@@ -354,7 +471,7 @@ write_absx macro
 	add bx, r9w			; Add X
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC
+	add r11w, 2			; Increment PC
 endm
 
 write_absy macro
@@ -363,7 +480,7 @@ write_absy macro
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
 
-	add r11, 2			; Increment PC
+	add r11w, 2			; Increment PC
 endm
 
 write_indx macro
@@ -373,7 +490,7 @@ write_indx macro
 	mov bx, [rcx+rbx]	; Get destination address
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC
+	add r11w, 1				; Increment PC
 endm
 
 write_indy macro
@@ -383,7 +500,7 @@ write_indy macro
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC
+	add r11w, 1				; Increment PC
 endm
 
 write_indzp macro
@@ -392,7 +509,7 @@ write_indzp macro
 	mov bx, [rcx+rbx]	; Get destination address
 	mov [rcx+rbx], al	; Update
 
-	inc r11				; Increment PC
+	add r11w, 1				; Increment PC
 endm
 
 ; -----------------------------
@@ -407,10 +524,11 @@ endm
 
 xA9_lda_imm PROC
 
-	read_imm
-	mov	r8b, al
-	update_nz_flags
+	;read_imm
+	mov	r8b, [rcx+r11]
+	update_nz_flags_a
 
+	add r11w, 1
 	add r14, 2
 
 	jmp opcode_done
@@ -419,11 +537,12 @@ xA9_lda_imm ENDP
 
 xA5_lda_zp PROC
 	
-	read_zp
-	mov r8b, al
-	update_nz_flags
+	read_zp_rbx
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 3
+	add r11w, 1			; add on PC
 
 	jmp opcode_done
 
@@ -431,11 +550,12 @@ xA5_lda_zp ENDP
 
 xB5_lda_zpx PROC
 
-	read_zpx
-	mov r8b, al
-	update_nz_flags
+	read_zpx_rbx
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 4
+	add r11w, 1			; add on PC
 
 	jmp opcode_done
 
@@ -443,11 +563,12 @@ xB5_lda_zpx endp
 
 xAD_lda_abs proc
 
-	read_abs
-	mov r8b, al
-	update_nz_flags
+	read_abs_rbx
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 4
+	add r11w, 2			; add on PC
 
 	jmp opcode_done
 
@@ -455,11 +576,12 @@ xAD_lda_abs endp
 
 xBD_lda_absx proc
 
-	read_absx
-	mov r8b, al
-	update_nz_flags
+	read_absx_rbx_pagepenalty
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 4
+	add r11w, 2			; add on PC
 
 	jmp opcode_done
 
@@ -467,11 +589,12 @@ xBD_lda_absx endp
 
 xB9_lda_absy proc
 
-	read_absy
-	mov r8b, al
-	update_nz_flags
+	read_absy_rbx_pagepenalty
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 4
+	add r11w, 2			; add on PC
 
 	jmp opcode_done
 
@@ -479,37 +602,38 @@ xB9_lda_absy endp
 
 xA1_lda_indx proc
 
-	read_indx
-	mov r8b, al
-	update_nz_flags
+	read_indx_rbx
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 6
 
+	add r11w, 1				; Inc PC for param
 	jmp opcode_done
 
 xA1_lda_indx endp
 
 xB1_lda_indy proc
 
-	read_indy
-	mov r8b, al
-	update_nz_flags
+	read_indy_rbx_pagepenalty
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 5
-
+	add r11w, 1				; Inc PC for param
 	jmp opcode_done
 
 xB1_lda_indy endp
 
 xB2_lda_indzp proc
 
-	read_indzp
+	read_indzp_rbx
 
-	mov r8b, al
-	update_nz_flags
+	mov r8b, [rcx+rbx]
+	update_nz_flags_a
 
 	add r14, 5
-
+	add r11w, 1				; Inc PC for param
 	jmp opcode_done
 
 xB2_lda_indzp endp
@@ -651,10 +775,11 @@ xBC_ldy_absx endp
 
 x85_sta_zp proc
 	
-	mov al, r8b
-	write_zp
+	read_zp_rbx
+	mov byte ptr [rcx+rbx], r8b
 
 	add r14, 3
+	add r11w, 1			; add on PC
 
 	jmp opcode_done
 
@@ -1047,7 +1172,7 @@ x0E_asl_abs proc
 	lahf				; move new flags to rax
 	mov r15, rax		; store
 
-	add r11, 2			; move PC on
+	add r11w, 2			; move PC on
 	add r14, 6			; Clock
 
 	jmp opcode_done	
@@ -1068,7 +1193,7 @@ x1E_asl_absx proc
 	lahf				; move new flags to rax
 	mov r15, rax		; store
 
-	add r11, 2			; move PC on
+	add r11w, 2			; move PC on
 	add r14, 7			; Clock
 
 	jmp opcode_done	
@@ -1088,7 +1213,7 @@ x06_asl_zp proc
 	lahf				; move new flags to rax
 	mov r15, rax		; store
 
-	add r11, 1			; move PC on
+	add r11w, 1			; move PC on
 	add r14, 5			; Clock
 
 	jmp opcode_done	
@@ -1109,7 +1234,7 @@ x16_asl_zpx proc
 	lahf				; move new flags to rax
 	mov r15, rax		; store
 
-	add r11, 1			; move PC on
+	add r11w, 1			; move PC on
 	add r14, 6			; Clock
 
 	jmp opcode_done	
@@ -1122,13 +1247,11 @@ x16_asl_zpx endp
 
 x4A_lsr_a proc
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	sar r8b,1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	add r14, 2		; Clock
 
@@ -1138,19 +1261,16 @@ x4A_lsr_a endp
 
 x4E_lsr_abs proc
 
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	read_abs_rbx
 
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
+	read_flags_rax
 
-	sar byte ptr [rcx+rbx],1		; shift
+	sar byte ptr [rcx+rbx],1	; shift
 
-	lahf				; move new flags to rax
-	mov r15, rax		; store
+	write_flags_r15
 
-	add r11, 2			; move PC on
-	add r14, 6			; Clock
+	add r14, 6					; Clock
+	add r11w, 2			; add on PC
 
 	jmp opcode_done	
 
@@ -1158,20 +1278,16 @@ x4E_lsr_abs endp
 
 x5E_lsr_absx proc
 
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add	bx, r9w			; Add X
+	read_absx_rbx
 
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
+	read_flags_rax
 
-	sar byte ptr [rcx+rbx],1		; shift
+	sar byte ptr [rcx+rbx],1	; shift
 
-	lahf				; move new flags to rax
-	mov r15, rax		; store
+	write_flags_r15
 
-	add r11, 2			; move PC on
-	add r14, 7			; Clock
+	add r14, 7					; Clock
+	add r11w, 2			; add on PC
 
 	jmp opcode_done	
 
@@ -1179,19 +1295,16 @@ x5E_lsr_absx endp
 
 x46_lsr_zp proc
 
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	read_zp_rbx
 
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
+	read_flags_rax
 
-	sar byte ptr [rcx+rbx],1		; shift
+	sar byte ptr [rcx+rbx],1	; shift
 
-	lahf				; move new flags to rax
-	mov r15, rax		; store
+	write_flags_r15
 
-	add r11, 1			; move PC on
-	add r14, 5			; Clock
+	add r11w, 1			; add on PC
+	add r14, 5					; Clock
 
 	jmp opcode_done	
 
@@ -1199,20 +1312,16 @@ x46_lsr_zp endp
 
 x56_lsr_zpx proc
 
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add	bl, r9b			; Add X
+	read_zpx_rbx
 
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
+	read_flags_rax
 
-	sar byte ptr [rcx+rbx],1		; shift
+	sar byte ptr [rcx+rbx],1	; shift
 
-	lahf				; move new flags to rax
-	mov r15, rax		; store
+	write_flags_r15
 
-	add r11, 1			; move PC on
-	add r14, 6			; Clock
+	add r14, 6					; Clock
+	add r11w, 1			; add on PC
 
 	jmp opcode_done	
 
@@ -1224,10 +1333,7 @@ x56_lsr_zpx endp
 
 x2A_rol_a proc
 	
-	xor rbx, rbx
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
@@ -1236,8 +1342,7 @@ no_carry:
 
 	sal r8b,1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	or r8, rbx
 
@@ -1249,55 +1354,48 @@ x2A_rol_a endp
 
 x2E_rol_abs proc
 	
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add r11, 2		; add on PC
-	add r14, 6		; Clock
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_abs_rbx
+	read_flags_rax
 
 	jnc no_carry
 
 	sal byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	or byte ptr [rcx+rbx], 1 ; add on carry
 
+	add r14, 6		; Clock
+	add r11w, 2			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	sal byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r14, 6		; Clock
+	add r11w, 2			; add on PC
 	jmp opcode_done	
 
 x2E_rol_abs endp
 
 x3E_rol_absx proc
 	
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add bx, r9w		; Add X
-	add r11, 2		; add on PC
-	add r14, 7		; Clock
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_absx_rbx
+	read_flags_rax
 
 	jnc no_carry
 
-	sal byte ptr [rcx+rbx], 1		; shift
+	sal byte ptr [rcx+rbx], 1	; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
-	or byte ptr [rcx+rbx], 1 ; add on carry
+	or byte ptr [rcx+rbx], 1	; add on carry
+
+	add r14, 7					; Clock
+	add r11w, 2					; add on PC
 
 	jmp opcode_done	
 
@@ -1305,8 +1403,10 @@ no_carry:
 
 	sal byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
+
+	add r14, 7					; Clock
+	add r11w, 2					; add on PC
 
 	jmp opcode_done	
 
@@ -1314,65 +1414,58 @@ x3E_rol_absx endp
 
 x26_rol_zp proc
 	
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add r11, 1		; add on PC
 	add r14, 5		; Clock
+	read_zp_rbx
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	sal byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	or byte ptr [rcx+rbx], 1 ; add on carry
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	sal byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 x26_rol_zp endp
 
 x36_rol_zpx proc
 	
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add bl, r9b		; Add X
-	add r11, 1		; add on PC
+	read_zpx_rbx
 	add r14, 6		; Clock
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	sal byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	or byte ptr [rcx+rbx], 1 ; add on carry
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	sal byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 x36_rol_zpx endp
@@ -1383,19 +1476,15 @@ x36_rol_zpx endp
 
 x6A_ror_a proc
 	
-	xor rbx, rbx
 	add r14, 2		; Clock
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	shr r8b,1		; shift
 
-	lahf			; move new flags to rax
-	or rax, 1000000000000000b ; set negative flag
-	mov r15, rax	; store
+	write_flags_r15_setnegative
 
 	or r8, 10000000b	; Add on carry
 
@@ -1405,8 +1494,7 @@ no_carry:
 
 	shr r8b,1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	jmp opcode_done	
 
@@ -1414,57 +1502,47 @@ x6A_ror_a endp
 
 x6E_ror_abs proc
 	
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add r11, 2		; add on PC
+	read_abs_rbx
 	add r14, 6		; Clock
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	shr byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	or rax, 1000000000000000b ; set negative flag
-	mov r15, rax	; store
+	write_flags_r15_setnegative
 
 	or byte ptr [rcx+rbx], 10000000b ; add on carry
 
+	add r11w, 2			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	shr byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r11w, 2			; add on PC
 	jmp opcode_done	
 
 x6E_ror_abs endp
 
 x7E_ror_absx proc
 	
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add bx, r9w		; Add X
-	add r11, 2		; add on PC
-	add r14, 7		; Clock
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_absx_rbx
+	read_flags_rax
 
 	jnc no_carry
 
 	shr byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	or rax, 1000000000000000b ; set negative flag
-	mov r15, rax	; store
+	write_flags_r15_setnegative
 
 	or byte ptr [rcx+rbx], 10000000b ; add on carry
+	add r14, 7		; Clock
+	add r11w, 2			; add on PC
 
 	jmp opcode_done	
 
@@ -1472,8 +1550,10 @@ no_carry:
 
 	shr byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
+
+	add r14, 7		; Clock
+	add r11w, 2			; add on PC
 
 	jmp opcode_done	
 
@@ -1481,70 +1561,294 @@ x7E_ror_absx endp
 
 x66_ror_zp proc
 	
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add r11, 1		; add on PC
 	add r14, 5		; Clock
+	read_zp_rbx
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	shr byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	or rax, 1000000000000000b ; set negative flag
-	mov r15, rax	; store
+	write_flags_r15_setnegative
 
 	or byte ptr [rcx+rbx], 10000000b ; add on carry
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	shr byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 x66_ror_zp endp
 
 x76_ror_zpx proc
 	
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add bl, r9b		; Add X
-	add r11, 1		; add on PC
+	read_zpx_rbx
 	add r14, 6		; Clock
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	read_flags_rax
 
 	jnc no_carry
 
 	shr byte ptr [rcx+rbx], 1		; shift
 
-	lahf			; move new flags to rax
-	or rax, 1000000000000000b ; set negative flag
-	mov r15, rax	; store
+	write_flags_r15_setnegative
 
 	or byte ptr [rcx+rbx], 10000000b ; add on carry
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 no_carry:
 
 	shr byte ptr [rcx+rbx],1		; shift
 
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
+	add r11w, 1			; add on PC
 	jmp opcode_done	
 
 x76_ror_zpx endp
+
+;
+; AND
+;
+
+x29_and_imm proc
+	add r14, 2		; Clock
+
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+r11]
+
+	write_flags_r15_setcarry
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+
+no_carry:
+	and r8b, [rcx+r11]
+	write_flags_r15
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+	
+x29_and_imm endp
+
+x2D_and_abs proc
+	add r14, 4		; Clock
+
+	read_abs_rbx
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+x2D_and_abs endp
+
+x3D_and_absx proc
+
+	add r14, 4		; Clock
+
+	read_absx_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x3D_and_absx endp
+
+x39_and_absy proc
+
+	add r14, 4		; Clock
+
+	read_absy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x39_and_absy endp
+
+x25_and_zp proc
+
+	add r14, 3		; Clock
+
+	read_zp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x25_and_zp endp
+
+x35_and_zpx proc
+
+	add r14, 4		; Clock
+
+	read_zpx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x35_and_zpx endp
+
+x32_and_indzp proc
+
+	add r14, 5		; Clock
+
+	read_indzp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x32_and_indzp endp
+
+x21_and_indx proc
+
+	add r14, 6		; Clock
+
+	read_indx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x21_and_indx endp
+
+x31_and_indy proc
+
+	add r14, 5		; Clock
+
+	read_indy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	and r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x31_and_indy endp
 
 ;
 ; Branches
@@ -1554,7 +1858,7 @@ perform_jump macro
 	local page_change
 
 	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
-	inc r11							; move PC on -- all jumps are relative
+	add r11w, 1							; move PC on -- all jumps are relative
 	mov rax, r11					; store PC
 	add r11w, bx
 	
@@ -1585,7 +1889,7 @@ xD0_bne proc
 	jnz is_zero
 
 	add r14, 2		; Clock
-	inc r11			; move PC on
+	add r11w, 1			; move PC on
 
 	jmp opcode_done	
 
@@ -1601,7 +1905,7 @@ xF0_beq proc
 	jz isnot_zero
 
 	add r14, 2		; Clock
-	inc r11			; move PC on
+	add r11w, 1			; move PC on
 
 	jmp opcode_done	
 
@@ -1617,7 +1921,7 @@ x10_bpl proc
 	jns isnot_negative
 
 	add r14, 2		; Clock
-	inc r11			; move PC on
+	add r11w, 1			; move PC on
 
 	jmp opcode_done	
 
@@ -1632,7 +1936,7 @@ x30_bmi proc
 	js is_negative
 
 	add r14, 2		; Clock
-	inc r11			; move PC on
+	add r11w, 1			; move PC on
 
 	jmp opcode_done	
 
@@ -1684,7 +1988,7 @@ x7C_jmp_absx endp
 x20_jsr proc
 		
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
-	inc rax
+	add rax, 1
 
 	xor rbx, rbx
 
@@ -1709,14 +2013,14 @@ x60_rts proc
 	xor rbx, rbx
 
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
-	inc bl								; Move stack pointer on
+	add bl, 1							; Move stack pointer on
 	mov ah, [rcx+rbx]					; Get PC High byte on stack
-	inc bl								; Move stack pointer on (done twice for wrapping)
+	add bl, 1							; Move stack pointer on (done twice for wrapping)
 	mov al, [rcx+rbx]					; Get PC Low byte on stack
 
 	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
 
-	inc ax								; Add on 1 for the next byte
+	add ax, 1							; Add on 1 for the next byte
 	mov r11w, ax						; Set PC to destination
 
 	add r14, 6							; Add cycles
@@ -1747,7 +2051,7 @@ x68_pla proc
 
 	xor rbx, rbx
 
-	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
@@ -1784,7 +2088,7 @@ xFA_plx proc
 
 	xor rbx, rbx
 
-	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
@@ -1821,7 +2125,7 @@ x7A_ply proc
 
 	xor rbx, rbx
 
-	inc byte ptr [rdx+stackpointer]		; Increment stack pointer
+	add byte ptr [rdx+stackpointer] ,1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
@@ -1950,35 +2254,35 @@ opcode_1D	qword	noinstruction 	; $1D
 opcode_1E	qword	x1E_asl_absx 	; $1E
 opcode_1F	qword	noinstruction 	; $1F
 opcode_20	qword	x20_jsr		 	; $20
-opcode_21	qword	noinstruction 	; $21
+opcode_21	qword	x21_and_indx 	; $21
 opcode_22	qword	noinstruction 	; $22
 opcode_23	qword	noinstruction 	; $23
 opcode_24	qword	noinstruction 	; $24
-opcode_25	qword	noinstruction 	; $25
+opcode_25	qword	x25_and_zp	 	; $25
 opcode_26	qword	x26_rol_zp	 	; $26
 opcode_27	qword	noinstruction 	; $27
 opcode_28	qword	noinstruction 	; $28
-opcode_29	qword	noinstruction 	; $29
+opcode_29	qword	x29_and_imm 	; $29
 opcode_2A	qword	x2A_rol_a	 	; $2A
 opcode_2B	qword	noinstruction 	; $2B
 opcode_2C	qword	noinstruction 	; $2C
-opcode_2D	qword	noinstruction 	; $2D
+opcode_2D	qword	x2D_and_abs 	; $2D
 opcode_2E	qword	x2E_rol_abs 	; $2E
 opcode_2F	qword	noinstruction 	; $2F
 opcode_30	qword	x30_bmi		 	; $30
-opcode_31	qword	noinstruction 	; $31
-opcode_32	qword	noinstruction 	; $32
+opcode_31	qword	x31_and_indy 	; $31
+opcode_32	qword	x32_and_indzp 	; $32
 opcode_33	qword	noinstruction 	; $33
 opcode_34	qword	noinstruction 	; $34
-opcode_35	qword	noinstruction 	; $35
+opcode_35	qword	x35_and_zpx 	; $35
 opcode_36	qword	x36_rol_zpx 	; $36
 opcode_37	qword	noinstruction 	; $37
 opcode_38	qword	noinstruction 	; $38
-opcode_39	qword	noinstruction 	; $39
+opcode_39	qword	x39_and_absy 	; $39
 opcode_3A	qword	x3A_dec_a	 	; $3A
 opcode_3B	qword	noinstruction 	; $3B
 opcode_3C	qword	noinstruction 	; $3C
-opcode_3D	qword	noinstruction 	; $3D
+opcode_3D	qword	x3D_and_absx 	; $3D
 opcode_3E	qword	x3E_rol_absx 	; $3E
 opcode_3F	qword	noinstruction 	; $3F
 opcode_40	qword	noinstruction 	; $40

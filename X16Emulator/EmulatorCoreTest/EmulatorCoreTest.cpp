@@ -36,7 +36,7 @@ int main()
 
     // initiliase machine
     state.a = 0b00000010;
-    state.x = 0x01;
+    state.x = 0x72;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
     state.stackpointer = 0x1fe;
