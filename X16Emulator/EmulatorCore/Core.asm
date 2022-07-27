@@ -1864,7 +1864,6 @@ no_carry:
 
 x31_and_indy endp
 
-
 ;
 ; EOR
 ;
@@ -2097,6 +2096,239 @@ no_carry:
 	jmp opcode_done		
 
 x51_eor_indy endp
+
+;
+; OR
+;
+
+x09_ora_imm proc
+	add r14, 2		; Clock
+
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+r11]
+
+	write_flags_r15_setcarry
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+
+no_carry:
+	or r8b, [rcx+r11]
+	write_flags_r15
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+	
+x09_ora_imm endp
+
+x0D_ora_abs proc
+	add r14, 4		; Clock
+
+	read_abs_rbx
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+x0D_ora_abs endp
+
+x1D_ora_absx proc
+
+	add r14, 4		; Clock
+
+	read_absx_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x1D_ora_absx endp
+
+x19_ora_absy proc
+
+	add r14, 4		; Clock
+
+	read_absy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x19_ora_absy endp
+
+x05_ora_zp proc
+
+	add r14, 3		; Clock
+
+	read_zp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x05_ora_zp endp
+
+x15_ora_zpx proc
+
+	add r14, 4		; Clock
+
+	read_zpx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x15_ora_zpx endp
+
+x12_ora_indzp proc
+
+	add r14, 5		; Clock
+
+	read_indzp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x12_ora_indzp endp
+
+x01_ora_indx proc
+
+	add r14, 6		; Clock
+
+	read_indx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x01_ora_indx endp
+
+x11_ora_indy proc
+
+	add r14, 5		; Clock
+
+	read_indy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x11_ora_indy endp
 
 ;
 ; Branches
@@ -2470,35 +2702,35 @@ noinstruction ENDP
 ; all opcodes, in order of value starting with 0x00
 ; should have 76 free when done!
 opcode_00	qword	noinstruction 	; $00
-opcode_01	qword	noinstruction 	; $01
+opcode_01	qword	x01_ora_indx 	; $01
 opcode_02	qword	noinstruction 	; $02
 opcode_03	qword	noinstruction 	; $03
 opcode_04	qword	noinstruction 	; $04
-opcode_05	qword	noinstruction 	; $05
+opcode_05	qword	x05_ora_zp	 	; $05
 opcode_06	qword	x06_asl_zp	 	; $06
 opcode_07	qword	noinstruction 	; $07
 opcode_08	qword	noinstruction 	; $08
-opcode_09	qword	noinstruction 	; $09
+opcode_09	qword	x09_ora_imm	 	; $09
 opcode_0A	qword	x0A_asl_a	 	; $0A
 opcode_0B	qword	noinstruction 	; $0B
 opcode_0C	qword	noinstruction 	; $0C
-opcode_0D	qword	noinstruction 	; $0D
+opcode_0D	qword	x0D_ora_abs	 	; $0D
 opcode_0E	qword	x0E_asl_abs	 	; $0E
 opcode_0F	qword	noinstruction 	; $0F
 opcode_10	qword	x10_bpl		 	; $10
-opcode_11	qword	noinstruction 	; $11
-opcode_12	qword	noinstruction 	; $12
+opcode_11	qword	x11_ora_indy 	; $11
+opcode_12	qword	x12_ora_indzp 	; $12
 opcode_13	qword	noinstruction 	; $13
 opcode_14	qword	noinstruction 	; $14
-opcode_15	qword	noinstruction 	; $15
+opcode_15	qword	x15_ora_zpx	 	; $15
 opcode_16	qword	x16_asl_zpx	 	; $16
 opcode_17	qword	noinstruction 	; $17
 opcode_18	qword	noinstruction 	; $18
-opcode_19	qword	noinstruction 	; $19
+opcode_19	qword	x19_ora_absy 	; $19
 opcode_1A	qword	x1A_inc_a	 	; $1A
 opcode_1B	qword	noinstruction 	; $1B
 opcode_1C	qword	noinstruction 	; $1C
-opcode_1D	qword	noinstruction 	; $1D
+opcode_1D	qword	x1D_ora_absx 	; $1D
 opcode_1E	qword	x1E_asl_absx 	; $1E
 opcode_1F	qword	noinstruction 	; $1F
 opcode_20	qword	x20_jsr		 	; $20
