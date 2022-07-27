@@ -1864,6 +1864,240 @@ no_carry:
 
 x31_and_indy endp
 
+
+;
+; EOR
+;
+
+x49_eor_imm proc
+	add r14, 2		; Clock
+
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+r11]
+
+	write_flags_r15_setcarry
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+
+no_carry:
+	xor r8b, [rcx+r11]
+	write_flags_r15
+	add r11w, 1		; PC
+
+	jmp opcode_done	
+	
+x49_eor_imm endp
+
+x4D_eor_abs proc
+	add r14, 4		; Clock
+
+	read_abs_rbx
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+x4D_eor_abs endp
+
+x5D_eor_absx proc
+
+	add r14, 4		; Clock
+
+	read_absx_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x5D_eor_absx endp
+
+x59_eor_absy proc
+
+	add r14, 4		; Clock
+
+	read_absy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 2			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 2			; add on PC
+	jmp opcode_done		
+
+x59_eor_absy endp
+
+x45_eor_zp proc
+
+	add r14, 3		; Clock
+
+	read_zp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x45_eor_zp endp
+
+x55_eor_zpx proc
+
+	add r14, 4		; Clock
+
+	read_zpx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x55_eor_zpx endp
+
+x52_eor_indzp proc
+
+	add r14, 5		; Clock
+
+	read_indzp_rbx
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x52_eor_indzp endp
+
+x41_eor_indx proc
+
+	add r14, 6		; Clock
+
+	read_indx_rbx
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x41_eor_indx endp
+
+x51_eor_indy proc
+
+	add r14, 5		; Clock
+
+	read_indy_rbx_pagepenalty
+	read_flags_rax
+	jnc no_carry
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, 1			; add on PC
+	jmp opcode_done	
+
+no_carry:
+
+	xor r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, 1			; add on PC
+	jmp opcode_done		
+
+x51_eor_indy endp
+
 ;
 ; Branches
 ;
@@ -2300,35 +2534,35 @@ opcode_3D	qword	x3D_and_absx 	; $3D
 opcode_3E	qword	x3E_rol_absx 	; $3E
 opcode_3F	qword	noinstruction 	; $3F
 opcode_40	qword	noinstruction 	; $40
-opcode_41	qword	noinstruction 	; $41
+opcode_41	qword	x41_eor_indx 	; $41
 opcode_42	qword	noinstruction 	; $42
 opcode_43	qword	noinstruction 	; $43
 opcode_44	qword	noinstruction 	; $44
-opcode_45	qword	noinstruction 	; $45
+opcode_45	qword	x45_eor_zp	 	; $45
 opcode_46	qword	x46_lsr_zp	 	; $46
 opcode_47	qword	noinstruction 	; $47
 opcode_48	qword	x48_pha		 	; $48
-opcode_49	qword	noinstruction 	; $49
+opcode_49	qword	x49_eor_imm 	; $49
 opcode_4A	qword	x4A_lsr_a	 	; $4A
 opcode_4B	qword	noinstruction 	; $4B
 opcode_4C	qword	x4C_jmp_abs 	; $4C
-opcode_4D	qword	noinstruction 	; $4D
+opcode_4D	qword	x4D_eor_abs 	; $4D
 opcode_4E	qword	x4E_lsr_abs 	; $4E
 opcode_4F	qword	noinstruction 	; $4F
 opcode_50	qword	noinstruction 	; $50
-opcode_51	qword	noinstruction 	; $51
-opcode_52	qword	noinstruction 	; $52
+opcode_51	qword	x51_eor_indy 	; $51
+opcode_52	qword	x52_eor_indzp 	; $52
 opcode_53	qword	noinstruction 	; $53
 opcode_54	qword	noinstruction 	; $54
-opcode_55	qword	noinstruction 	; $55
+opcode_55	qword	x55_eor_zpx 	; $55
 opcode_56	qword	x56_lsr_zpx 	; $56
 opcode_57	qword	noinstruction 	; $57
 opcode_58	qword	noinstruction 	; $58
-opcode_59	qword	noinstruction 	; $59
+opcode_59	qword	x59_eor_absy 	; $59
 opcode_5A	qword	x5A_phy		 	; $5A
 opcode_5B	qword	noinstruction 	; $5B
 opcode_5C	qword	noinstruction 	; $5C
-opcode_5D	qword	noinstruction 	; $5D
+opcode_5D	qword	x5D_eor_absx 	; $5D
 opcode_5E	qword	x5E_lsr_absx 	; $5E
 opcode_5F	qword	noinstruction 	; $5F
 opcode_60	qword	x60_rts		 	; $60
