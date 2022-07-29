@@ -2674,7 +2674,28 @@ no_zero:
 	bt r15w, 7 +8
 	jnc no_negative
 	or al, 10000000b
-	no_negative:
+no_negative:
+
+	; interrupt disable
+	mov bl, [rdx+flags_interruptDisable]
+	test bl, 1
+	jz no_interrupt
+	or al, 00000100b
+no_interrupt:
+
+	; overflow
+	mov bl, [rdx+flags_overflow]
+	test bl, 1
+	jz no_overflow
+	or al, 01000000b
+no_overflow:
+
+	; decimal
+	mov bl, [rdx+flags_decimal]
+	test bl, 1
+	jz no_decimal
+	or al, 00001000b
+no_decimal:
 
 ; rest are stored in memory
 ; todo: pull them
@@ -2688,8 +2709,6 @@ no_zero:
 	add r14, 3							; Add cycles
 
 	jmp opcode_done
-
-	
 
 x08_php endp
 

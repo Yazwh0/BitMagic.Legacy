@@ -48,7 +48,6 @@ public class PHP
                 stp",
                 emulator);
 
-
         // emulation
         Assert.AreEqual(0x32, emulator.Memory[0x100]);
 
@@ -59,7 +58,7 @@ public class PHP
             Assert.AreEqual(0xb0, emulator.Memory[i]);
 
         emulator.AssertState(0x00, 0x00, 0x00, stackPointer: 0x1ff);
-        emulator.AssertFlags(true, false, false, false);
+        emulator.AssertFlags(true, false, false, false, false, false);
     }
 
     [TestMethod]
@@ -79,7 +78,7 @@ public class PHP
         // emulation
         Assert.AreEqual(0x31, emulator.Memory[0x1ff]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
-        emulator.AssertFlags(false, false, false, true);
+        emulator.AssertFlags(false, false, false, true, false, false);
     }
 
     [TestMethod]
@@ -99,9 +98,8 @@ public class PHP
         // emulation
         Assert.AreEqual(0xb0, emulator.Memory[0x1ff]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
-        emulator.AssertFlags(false, true, false, false);
+        emulator.AssertFlags(false, true, false, false, false, false);
     }
-
 
     [TestMethod]
     public async Task Php_Zero()
@@ -120,7 +118,67 @@ public class PHP
         // emulation
         Assert.AreEqual(0x32, emulator.Memory[0x1ff]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
-        emulator.AssertFlags(true, false, false, false);
+        emulator.AssertFlags(true, false, false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Php_InterruptDisable()
+    {
+        var emulator = new Emulator();
+
+        emulator.InterruptDisable = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                php
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x34, emulator.Memory[0x1ff]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
+        emulator.AssertFlags(false, false, false, false, true, false);
+    }
+
+    [TestMethod]
+    public async Task Php_Decimal()
+    {
+        var emulator = new Emulator();
+
+        emulator.Decimal = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                php
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x38, emulator.Memory[0x1ff]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
+        emulator.AssertFlags(false, false, false, false, false, true);
+    }
+
+    [TestMethod]
+    public async Task Php_Overflow()
+    {
+        var emulator = new Emulator();
+
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                php
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x70, emulator.Memory[0x1ff]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
+        emulator.AssertFlags(false, false, true, false, false, false);
     }
 
     [TestMethod]
@@ -131,6 +189,9 @@ public class PHP
         emulator.Zero = true;
         emulator.Negative = true;
         emulator.Carry= true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
 
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
@@ -140,9 +201,9 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0xb3, emulator.Memory[0x1ff]);
+        Assert.AreEqual(0xff, emulator.Memory[0x1ff]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
-        emulator.AssertFlags(true, true, false, true);
+        emulator.AssertFlags(true, true, true, true, true, true);
     }
 }
 

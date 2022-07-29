@@ -53,7 +53,7 @@ namespace BitMagic.X16Emulator.Tests
             Console.Write(" ");
             Console.Write(emulator.BreakFlag ? "B" : " ");
             Console.Write(emulator.Decimal ? "D" : " ");
-            Console.Write(emulator.interruptDisable ? "I" : " ");
+            Console.Write(emulator.InterruptDisable ? "I" : " ");
             Console.Write(emulator.Zero ? "Z" : " ");
             Console.Write(emulator.Carry ? "C]" : " ]");
             Console.WriteLine();
@@ -86,7 +86,7 @@ namespace BitMagic.X16Emulator.Tests
                 Assert.AreEqual(stackPointer, emulator.StackPointer);
         }
 
-        public static void AssertFlags(this Emulator emulator, bool? Zero = null, bool? Negative = null, bool? Overflow = null, bool? Carry = null)
+        public static void AssertFlags(this Emulator emulator, bool? Zero = null, bool? Negative = null, bool? Overflow = null, bool? Carry = null, bool? InterruptDisable = null, bool? Decimal = null)
         {
             if (Zero != null)
                 Assert.AreEqual(Zero, emulator.Zero);
@@ -99,6 +99,12 @@ namespace BitMagic.X16Emulator.Tests
 
             if (Carry != null)
                 Assert.AreEqual(Carry, emulator.Carry);
+
+            if (InterruptDisable != null)
+                Assert.AreEqual(InterruptDisable, emulator.InterruptDisable);
+
+            if (Decimal != null)
+                Assert.AreEqual(Decimal, emulator.Decimal);
         }
     }
 }
