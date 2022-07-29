@@ -322,6 +322,7 @@ write_flags_r15 macro
 	mov r15, rax	; store
 endm
 
+; we dont use stc, as its actually slower!
 write_flags_r15_setcarry macro
 	lahf						; move new flags to rax
 	or rax, 0000000100000000b	; set carry flag
@@ -329,7 +330,7 @@ write_flags_r15_setcarry macro
 endm
 
 write_flags_r15_setnegative macro
-	lahf					; move new flags to rax
+	lahf						; move new flags to rax
 	or rax, 1000000000000000b	; set negative flag
 	mov r15, rax				; store
 endm
@@ -2653,6 +2654,45 @@ xBA_txs proc
 	
 xBA_txs endp
 
+x08_php proc
+
+	mov	al, 00110000b ; bits that are always set
+
+	; carry
+	bt r15w, 0 +8
+	jnc no_carry
+	or al, 00000001b
+no_carry:
+	
+	; zero
+	bt r15w, 6 +8
+	jnc no_zero
+	or al, 00000010b
+no_zero:
+
+	; negative
+	bt r15w, 7 +8
+	jnc no_negative
+	or al, 10000000b
+	no_negative:
+
+; rest are stored in memory
+; todo: pull them
+
+	xor rbx, rbx
+	
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], al					; Put status on stack
+	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	
+	add r14, 3							; Add cycles
+
+	jmp opcode_done
+
+	
+
+x08_php endp
+
 
 ;
 ; NOP
@@ -2709,7 +2749,7 @@ opcode_04	qword	noinstruction 	; $04
 opcode_05	qword	x05_ora_zp	 	; $05
 opcode_06	qword	x06_asl_zp	 	; $06
 opcode_07	qword	noinstruction 	; $07
-opcode_08	qword	noinstruction 	; $08
+opcode_08	qword	x08_php		 	; $08
 opcode_09	qword	x09_ora_imm	 	; $09
 opcode_0A	qword	x0A_asl_a	 	; $0A
 opcode_0B	qword	noinstruction 	; $0B
