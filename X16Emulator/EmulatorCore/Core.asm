@@ -2257,6 +2257,81 @@ x71_adc_indy proc
 x71_adc_indy endp
 
 ;
+; SBC
+;
+
+sbc_body_end macro clock, pc
+	write_flags_r15
+
+	seto bl
+	mov byte ptr [rdx+flags_overflow], bl
+
+	add r14, clock			; Clock
+	add r11w, pc			; add on PC
+	jmp opcode_done	
+endm
+
+sbc_body macro clock, pc
+	read_flags_rax
+
+	cmc
+	sbb r8b, [rcx+rbx]
+	cmc
+
+	sbc_body_end clock, pc
+endm
+
+xE9_sbc_imm proc
+	read_flags_rax
+
+	cmc
+	sbb r8b, [rcx+r11]
+	cmc
+
+	sbc_body_end 2, 1
+xE9_sbc_imm endp
+
+xED_sbc_abs proc
+	read_abs_rbx
+	sbc_body 4, 2
+xED_sbc_abs endp
+
+xFD_sbc_absx proc
+	read_absx_rbx_pagepenalty
+	sbc_body 4, 2
+xFD_sbc_absx endp
+
+xF9_sbc_absy proc
+	read_absy_rbx_pagepenalty
+	sbc_body 4, 2
+xF9_sbc_absy endp
+
+xE5_sbc_zp proc
+	read_zp_rbx
+	sbc_body 3, 1
+xE5_sbc_zp endp
+
+xF5_sbc_zpx proc
+	read_zpx_rbx
+	sbc_body 4, 1
+xF5_sbc_zpx endp
+
+xF2_sbc_indzp proc
+	read_indzp_rbx
+	sbc_body 5, 1
+xF2_sbc_indzp endp
+
+xE1_sbc_indx proc
+	read_indx_rbx
+	sbc_body 6, 1
+xE1_sbc_indx endp
+
+xF1_sbc_indy proc
+	read_indy_rbx_pagepenalty
+	sbc_body 5, 1
+xF1_sbc_indy endp
+
+;
 ; Branches
 ;
 
@@ -2264,7 +2339,7 @@ perform_jump macro
 	local page_change
 
 	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
-	add r11w, 1							; move PC on -- all jumps are relative
+	add r11w, 1						; move PC on -- all jumps are relative
 	mov rax, r11					; store PC
 	add r11w, bx
 	
@@ -2958,35 +3033,35 @@ opcode_DD	qword	noinstruction 	; $DD
 opcode_DE	qword	noinstruction 	; $DE
 opcode_DF	qword	noinstruction 	; $DF
 opcode_E0	qword	noinstruction 	; $E0
-opcode_E1	qword	noinstruction 	; $E1
+opcode_E1	qword	xE1_sbc_indx 	; $E1
 opcode_E2	qword	noinstruction 	; $E2
 opcode_E3	qword	noinstruction 	; $E3
 opcode_E4	qword	noinstruction 	; $E4
-opcode_E5	qword	noinstruction 	; $E5
+opcode_E5	qword	xE5_sbc_zp	 	; $E5
 opcode_E6	qword	noinstruction 	; $E6
 opcode_E7	qword	noinstruction 	; $E7
 opcode_E8	qword	xE8_inx	 		; $E8
-opcode_E9	qword	noinstruction 	; $E9
+opcode_E9	qword	xE9_sbc_imm 	; $E9
 opcode_EA	qword	xEA_nop		 	; $EA
 opcode_EB	qword	noinstruction 	; $EB
 opcode_EC	qword	noinstruction 	; $EC
-opcode_ED	qword	noinstruction 	; $ED
+opcode_ED	qword	xED_sbc_abs 	; $ED
 opcode_EE	qword	noinstruction 	; $EE
 opcode_EF	qword	noinstruction 	; $EF
 opcode_F0	qword	xF0_beq		 	; $F0
-opcode_F1	qword	noinstruction 	; $F1
-opcode_F2	qword	noinstruction 	; $F2
+opcode_F1	qword	xF1_sbc_indy 	; $F1
+opcode_F2	qword	xF2_sbc_indzp 	; $F2
 opcode_F3	qword	noinstruction 	; $F3
 opcode_F4	qword	noinstruction 	; $F4
-opcode_F5	qword	noinstruction 	; $F5
+opcode_F5	qword	xF5_sbc_zpx 	; $F5
 opcode_F6	qword	noinstruction 	; $F6
 opcode_F7	qword	noinstruction 	; $F7
 opcode_F8	qword	noinstruction 	; $F8
-opcode_F9	qword	noinstruction 	; $F9
+opcode_F9	qword	xF9_sbc_absy 	; $F9
 opcode_FA	qword	xFA_plx		 	; $FA
 opcode_FB	qword	noinstruction 	; $FB
 opcode_FC	qword	noinstruction 	; $FC
-opcode_FD	qword	noinstruction 	; $FD
+opcode_FD	qword	xFD_sbc_absx 	; $FD
 opcode_FE	qword	noinstruction 	; $FE
 opcode_FF	qword	noinstruction 	; $FF
 
