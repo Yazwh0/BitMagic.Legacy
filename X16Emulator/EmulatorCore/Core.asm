@@ -2332,6 +2332,69 @@ xF1_sbc_indy proc
 xF1_sbc_indy endp
 
 ;
+; CMP
+;
+
+cmp_body_end macro clock, pc
+	cmc
+	write_flags_r15
+
+	add r14, clock			; Clock
+	add r11w, pc			; add on PC
+	jmp opcode_done	
+endm
+
+cmp_body macro clock, pc
+	cmp r8b, [rcx+rbx]
+	cmp_body_end clock, pc
+endm
+
+xC9_cmp_imm proc
+	cmp r8b, [rcx+r11]		
+	cmp_body_end 2, 1
+xC9_cmp_imm endp
+
+xCD_cmp_abs proc
+	read_abs_rbx
+	cmp_body 4, 2
+xCD_cmp_abs endp
+
+xDD_cmp_absx proc
+	read_absx_rbx_pagepenalty
+	cmp_body 4, 2
+xDD_cmp_absx endp
+
+xD9_cmp_absy proc
+	read_absy_rbx_pagepenalty
+	cmp_body 4, 2
+xD9_cmp_absy endp
+
+xC5_cmp_zp proc
+	read_zp_rbx
+	cmp_body 3, 1
+xC5_cmp_zp endp
+
+xD5_cmp_zpx proc
+	read_zpx_rbx
+	cmp_body 4, 1
+xD5_cmp_zpx endp
+
+xD2_cmp_indzp proc
+	read_indzp_rbx
+	cmp_body 5, 1
+xD2_cmp_indzp endp
+
+xC1_sbc_indx proc
+	read_indx_rbx
+	cmp_body 6, 1
+xC1_sbc_indx endp
+
+xD1_cmp_indy proc
+	read_indy_rbx_pagepenalty
+	cmp_body 5, 1
+xD1_cmp_indy endp
+
+;
 ; Branches
 ;
 
@@ -3001,35 +3064,35 @@ opcode_BD	qword	xBD_lda_absx 	; $BD
 opcode_BE	qword	xBE_ldx_absy 	; $BE
 opcode_BF	qword	noinstruction 	; $BF
 opcode_C0	qword	noinstruction 	; $C0
-opcode_C1	qword	noinstruction 	; $C1
+opcode_C1	qword	xC1_sbc_indx 	; $C1
 opcode_C2	qword	noinstruction 	; $C2
 opcode_C3	qword	noinstruction 	; $C3
 opcode_C4	qword	noinstruction 	; $C4
-opcode_C5	qword	noinstruction 	; $C5
+opcode_C5	qword	xC5_cmp_zp	 	; $C5
 opcode_C6	qword	noinstruction 	; $C6
 opcode_C7	qword	noinstruction 	; $C7
 opcode_C8	qword	xC8_iny			; $C8
-opcode_C9	qword	noinstruction 	; $C9
+opcode_C9	qword	xC9_cmp_imm 	; $C9
 opcode_CA	qword	xCA_dex		 	; $CA
 opcode_CB	qword	noinstruction 	; $CB
 opcode_CC	qword	noinstruction 	; $CC
-opcode_CD	qword	noinstruction 	; $CD
+opcode_CD	qword	xCD_cmp_abs 	; $CD
 opcode_CE	qword	noinstruction 	; $CE
 opcode_CF	qword	noinstruction 	; $CF
 opcode_D0	qword	xD0_bne		 	; $D0
-opcode_D1	qword	noinstruction 	; $D1
-opcode_D2	qword	noinstruction 	; $D2
+opcode_D1	qword	xD1_cmp_indy 	; $D1
+opcode_D2	qword	xD2_cmp_indzp 	; $D2
 opcode_D3	qword	noinstruction 	; $D3
 opcode_D4	qword	noinstruction 	; $D4
-opcode_D5	qword	noinstruction 	; $D5
+opcode_D5	qword	xD5_cmp_zpx 	; $D5
 opcode_D6	qword	noinstruction 	; $D6
 opcode_D7	qword	noinstruction 	; $D7
 opcode_D8	qword	noinstruction 	; $D8
-opcode_D9	qword	noinstruction 	; $D9
+opcode_D9	qword	xD9_cmp_absy 	; $D9
 opcode_DA	qword	xDA_phx		 	; $DA
 opcode_DB	qword	xDB_stp		 	; $DB
 opcode_DC	qword	noinstruction 	; $DC
-opcode_DD	qword	noinstruction 	; $DD
+opcode_DD	qword	xDD_cmp_absx 	; $DD
 opcode_DE	qword	noinstruction 	; $DE
 opcode_DF	qword	noinstruction 	; $DF
 opcode_E0	qword	noinstruction 	; $E0
