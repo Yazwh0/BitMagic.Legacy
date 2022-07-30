@@ -27,6 +27,7 @@ int main()
 {
     std::cout << "BitMagic Emulator Test\n";
 
+
     // main memory
     int8_t* memory_ptr = new int8_t[64 * 1024];
     struct state state;
@@ -50,9 +51,9 @@ int main()
     state.overflow = false;
     state.zero = true;
 
-    memory_ptr[0x12] = 0x02;
+    memory_ptr[0x1ff] = 0xff;
 
-    memory_ptr[0x810] = 0x0a;
+    memory_ptr[0x810] = 0x28;
     memory_ptr[0x811] = 0xdb;
     memory_ptr[0x812] = 0xdb;
     memory_ptr[0x813] = 0xa9;

@@ -2102,6 +2102,29 @@ x51_eor_indy endp
 ; OR
 ;
 
+ora_body macro clock, pc
+	read_flags_rax
+	jnc no_carry
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15_setcarry
+	
+	add r11w, pc			; add on PC
+	add r14, clock		; Clock
+	jmp opcode_done	
+
+no_carry:
+
+	or r8b, [rcx+rbx]
+
+	write_flags_r15
+		
+	add r11w, pc			; add on PC
+	add r14, clock		; Clock
+	jmp opcode_done	
+endm
+
 x09_ora_imm proc
 	add r14, 2		; Clock
 
@@ -2120,216 +2143,118 @@ no_carry:
 	write_flags_r15
 	add r11w, 1		; PC
 
-	jmp opcode_done	
-	
+	jmp opcode_done		
 x09_ora_imm endp
 
 x0D_ora_abs proc
-	add r14, 4		; Clock
-
 	read_abs_rbx
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
+	ora_body 4, 2
 x0D_ora_abs endp
 
 x1D_ora_absx proc
-
-	add r14, 4		; Clock
-
 	read_absx_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	ora_body 4, 2
 x1D_ora_absx endp
 
 x19_ora_absy proc
-
-	add r14, 4		; Clock
-
 	read_absy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	ora_body 4, 2
 x19_ora_absy endp
 
 x05_ora_zp proc
-
-	add r14, 3		; Clock
-
 	read_zp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	ora_body 3, 1
 x05_ora_zp endp
 
 x15_ora_zpx proc
-
-	add r14, 4		; Clock
-
 	read_zpx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	ora_body 4, 1
 x15_ora_zpx endp
 
 x12_ora_indzp proc
-
-	add r14, 5		; Clock
-
 	read_indzp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	ora_body 5, 1
 x12_ora_indzp endp
 
 x01_ora_indx proc
-
-	add r14, 6		; Clock
-
 	read_indx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	ora_body 6, 1
 x01_ora_indx endp
 
 x11_ora_indy proc
-
-	add r14, 5		; Clock
-
 	read_indy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	ora_body 5, 1
 x11_ora_indy endp
+
+;
+; ADC
+;
+adc_body_end macro clock, pc
+	write_flags_r15
+
+	seto bl
+	mov byte ptr [rdx+flags_overflow], bl
+
+	add r14, clock			; Clock
+	add r11w, pc			; add on PC
+	jmp opcode_done	
+endm
+
+adc_body macro clock, pc
+	read_flags_rax
+
+	adc r8b, [rcx+rbx]
+
+	adc_body_end clock, pc
+endm
+
+x69_adc_imm proc
+	read_flags_rax
+
+	adc r8b, [rcx+r11]
+
+	adc_body_end 2, 1
+x69_adc_imm endp
+
+x6D_adc_abs proc
+	read_abs_rbx
+	adc_body 4, 2
+x6D_adc_abs endp
+
+x7D_adc_absx proc
+	read_absx_rbx_pagepenalty
+	adc_body 4, 2
+x7D_adc_absx endp
+
+x79_adc_absy proc
+	read_absy_rbx_pagepenalty
+	adc_body 4, 2
+x79_adc_absy endp
+
+x65_adc_zp proc
+	read_zp_rbx
+	adc_body 3, 1
+x65_adc_zp endp
+
+x75_adc_zpx proc
+	read_zpx_rbx
+	adc_body 4, 1
+x75_adc_zpx endp
+
+x72_adc_indzp proc
+	read_indzp_rbx
+	adc_body 5, 1
+x72_adc_indzp endp
+
+x61_adc_indx proc
+	read_indx_rbx
+	adc_body 6, 1
+x61_adc_indx endp
+
+x71_adc_indy proc
+	read_indy_rbx_pagepenalty
+	adc_body 5, 1
+x71_adc_indy endp
 
 ;
 ; Branches
@@ -2519,8 +2444,8 @@ x48_pha proc
 	xor rbx, rbx
 	
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	sub byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
 	mov [rcx+rbx], r8b					; Put A on stack
-	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
 
@@ -2543,7 +2468,7 @@ x68_pla proc
 	test r8b, r8b
 	
 	lahf								; move new flags to rax	
-	mov r15, rax						; store
+	mov r15d, eax						; store
 	
 	add r14, 4							; Add cycles
 
@@ -2655,7 +2580,6 @@ xBA_txs proc
 xBA_txs endp
 
 x08_php proc
-
 	mov	al, 00110000b ; bits that are always set
 
 	; carry
@@ -2697,20 +2621,69 @@ no_overflow:
 	or al, 00001000b
 no_decimal:
 
-; rest are stored in memory
-; todo: pull them
-
 	xor rbx, rbx
-	
+
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	sub byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov [rcx+rbx], al					; Put status on stack
-	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
 
 	jmp opcode_done
 
 x08_php endp
+
+x28_plp proc
+
+	xor rbx, rbx
+	
+	add byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
+	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov al, [rcx+rbx]					; Get status from stack
+	
+	xor r15w, r15w
+
+	; carry
+	bt ax, 0
+	jnc no_carry
+	;                |
+	or r15w, 0000000100000000b
+no_carry:
+
+	; zero
+	bt ax, 1
+	jnc no_zero
+	;                |
+	or r15w, 0100000000000000b
+no_zero:
+
+	; negative
+	bt ax, 7
+	jnc no_negative
+	;                |
+	or r15w, 1000000000000000b
+no_negative:
+
+	; interrupt disable
+	bt ax, 2
+	setc bl
+	mov byte ptr [rdx+flags_interruptDisable], bl
+
+	; overflow
+	bt ax, 6
+	setc bl
+	mov byte ptr [rdx+flags_overflow], bl
+
+	; decimal
+	bt ax, 3
+	setc bl
+	mov byte ptr [rdx+flags_decimal], bl
+
+	add r14, 4							; Add cycles
+
+	jmp opcode_done
+
+x28_plp endp
 
 
 ;
@@ -2800,7 +2773,7 @@ opcode_24	qword	noinstruction 	; $24
 opcode_25	qword	x25_and_zp	 	; $25
 opcode_26	qword	x26_rol_zp	 	; $26
 opcode_27	qword	noinstruction 	; $27
-opcode_28	qword	noinstruction 	; $28
+opcode_28	qword	x28_plp		 	; $28
 opcode_29	qword	x29_and_imm 	; $29
 opcode_2A	qword	x2A_rol_a	 	; $2A
 opcode_2B	qword	noinstruction 	; $2B
@@ -2857,35 +2830,35 @@ opcode_5D	qword	x5D_eor_absx 	; $5D
 opcode_5E	qword	x5E_lsr_absx 	; $5E
 opcode_5F	qword	noinstruction 	; $5F
 opcode_60	qword	x60_rts		 	; $60
-opcode_61	qword	noinstruction 	; $61
+opcode_61	qword	x61_adc_indx 	; $61
 opcode_62	qword	noinstruction 	; $62
 opcode_63	qword	noinstruction 	; $63
 opcode_64	qword	x64_stz_zp	 	; $64
-opcode_65	qword	noinstruction 	; $65
+opcode_65	qword	x65_adc_zp	 	; $65
 opcode_66	qword	x66_ror_zp	 	; $66
 opcode_67	qword	noinstruction 	; $67
 opcode_68	qword	x68_pla		 	; $68
-opcode_69	qword	noinstruction 	; $69
+opcode_69	qword	x69_adc_imm 	; $69
 opcode_6A	qword	x6A_ror_a	 	; $6A
 opcode_6B	qword	noinstruction 	; $6B
 opcode_6C	qword	x6C_jmp_ind 	; $6C
-opcode_6D	qword	noinstruction 	; $6D
+opcode_6D	qword	x6D_adc_abs 	; $6D
 opcode_6E	qword	x6E_ror_abs 	; $6E
 opcode_6F	qword	noinstruction 	; $6F
 opcode_70	qword	noinstruction 	; $70
-opcode_71	qword	noinstruction 	; $71
-opcode_72	qword	noinstruction 	; $72
+opcode_71	qword	x71_adc_indy 	; $71
+opcode_72	qword	x72_adc_indzp 	; $72
 opcode_73	qword	noinstruction 	; $73
 opcode_74	qword	x74_stz_zpx 	; $74
-opcode_75	qword	noinstruction 	; $75
+opcode_75	qword	x75_adc_zpx 	; $75
 opcode_76	qword	x76_ror_zpx 	; $76
 opcode_77	qword	noinstruction 	; $77
 opcode_78	qword	noinstruction 	; $78
-opcode_79	qword	noinstruction 	; $79
+opcode_79	qword	x79_adc_absy 	; $79
 opcode_7A	qword	x7A_ply		 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
 opcode_7C	qword	x7C_jmp_absx 	; $7C
-opcode_7D	qword	noinstruction 	; $7D
+opcode_7D	qword	x7D_adc_absx 	; $7D
 opcode_7E	qword	x7E_ror_absx 	; $7E
 opcode_7F	qword	noinstruction 	; $7F
 opcode_80	qword	x80_bra		 	; $80

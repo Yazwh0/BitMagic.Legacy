@@ -68,43 +68,32 @@ namespace BitMagic.X16Emulator.Tests
         public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, ulong? Clock = null, uint? stackPointer = null)
         {
             if (A != null)
-                Assert.AreEqual(A, (byte)emulator.A);   
+                Assert.AreEqual(A, (byte)emulator.A, $"A doesn't match: ${(byte)emulator.A:X2}");   
 
             if (X != null)
-                Assert.AreEqual(X, (byte)emulator.X);
+                Assert.AreEqual(X, (byte)emulator.X, $"X doesn't match: ${(byte)emulator.X:X2}");
 
             if (Y != null)
-                Assert.AreEqual(Y, (byte)emulator.Y);
+                Assert.AreEqual(Y, (byte)emulator.Y, $"Y doesn't match: ${(byte)emulator.Y:X2}");
 
             if (Pc != null)
-                Assert.AreEqual(Pc, (Int16)emulator.Pc);
+                Assert.AreEqual(Pc, (Int16)emulator.Pc, $"PC doesn't match: ${(byte)emulator.Pc:X4}");
 
             if (Clock != null)
-                Assert.AreEqual(Clock, emulator.Clock - 3); // add on stp clock cycles
+                Assert.AreEqual(Clock, emulator.Clock - 3, $"Clock doesn't match: ${(byte)emulator.Clock - 3:X4}"); // add on stp clock cycles
 
             if (stackPointer != null)
-                Assert.AreEqual(stackPointer, emulator.StackPointer);
+                Assert.AreEqual(stackPointer, emulator.StackPointer, $"SP doesn't match: ${(byte)emulator.StackPointer:X4}");
         }
 
-        public static void AssertFlags(this Emulator emulator, bool? Zero = null, bool? Negative = null, bool? Overflow = null, bool? Carry = null, bool? InterruptDisable = null, bool? Decimal = null)
+        public static void AssertFlags(this Emulator emulator, bool Zero = false, bool Negative = false, bool Overflow = false, bool Carry = false, bool InterruptDisable = false, bool Decimal = false)
         {
-            if (Zero != null)
-                Assert.AreEqual(Zero, emulator.Zero);
-
-            if (Negative != null)
-                Assert.AreEqual(Negative, emulator.Negative);
-
-            if (Overflow != null)
-                Assert.AreEqual(Overflow, emulator.Overflow);
-
-            if (Carry != null)
-                Assert.AreEqual(Carry, emulator.Carry);
-
-            if (InterruptDisable != null)
-                Assert.AreEqual(InterruptDisable, emulator.InterruptDisable);
-
-            if (Decimal != null)
-                Assert.AreEqual(Decimal, emulator.Decimal);
+            Assert.AreEqual(Zero, emulator.Zero, "Zero flag doesn't match");
+            Assert.AreEqual(Negative, emulator.Negative, "Negative flag doesn't match");
+            Assert.AreEqual(Overflow, emulator.Overflow, "Overflow flag doesn't match");
+            Assert.AreEqual(Carry, emulator.Carry, "Carry flag doesn't match");
+            Assert.AreEqual(InterruptDisable, emulator.InterruptDisable, "Interrupt Disable flag doesn't match");
+            Assert.AreEqual(Decimal, emulator.Decimal, "Decimal flag doesn't match");
         }
     }
 }
