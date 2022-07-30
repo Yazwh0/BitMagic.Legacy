@@ -2395,6 +2395,54 @@ xD1_cmp_indy proc
 xD1_cmp_indy endp
 
 ;
+; CMPX
+;
+
+cmpx_body macro clock, pc
+	cmp r9b, [rcx+rbx]
+	cmp_body_end clock, pc
+endm
+
+xE0_cmpx_imm proc
+	cmp r9b, [rcx+r11]		
+	cmp_body_end 2, 1
+xE0_cmpx_imm endp
+
+xEC_cmpx_abs proc
+	read_abs_rbx
+	cmpx_body 4, 2
+xEC_cmpx_abs endp
+
+xE4_cmpx_zp proc
+	read_zp_rbx
+	cmpx_body 3, 1
+xE4_cmpx_zp endp
+
+;
+; CMPY
+;
+
+cmpy_body macro clock, pc
+	cmp r10b, [rcx+rbx]
+	cmp_body_end clock, pc
+endm
+
+xC0_cmpy_imm proc
+	cmp r10b, [rcx+r11]		
+	cmp_body_end 2, 1
+xC0_cmpy_imm endp
+
+xCC_cmpy_abs proc
+	read_abs_rbx
+	cmpy_body 4, 2
+xCC_cmpy_abs endp
+
+xC4_cmpy_zp proc
+	read_zp_rbx
+	cmpy_body 3, 1
+xC4_cmpy_zp endp
+
+;
 ; Branches
 ;
 
@@ -3063,11 +3111,11 @@ opcode_BC	qword	xBC_ldy_absx 	; $BC
 opcode_BD	qword	xBD_lda_absx 	; $BD
 opcode_BE	qword	xBE_ldx_absy 	; $BE
 opcode_BF	qword	noinstruction 	; $BF
-opcode_C0	qword	noinstruction 	; $C0
+opcode_C0	qword	xC0_cmpy_imm 	; $C0
 opcode_C1	qword	xC1_sbc_indx 	; $C1
 opcode_C2	qword	noinstruction 	; $C2
 opcode_C3	qword	noinstruction 	; $C3
-opcode_C4	qword	noinstruction 	; $C4
+opcode_C4	qword	xC4_cmpy_zp 	; $C4
 opcode_C5	qword	xC5_cmp_zp	 	; $C5
 opcode_C6	qword	noinstruction 	; $C6
 opcode_C7	qword	noinstruction 	; $C7
@@ -3075,7 +3123,7 @@ opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	xC9_cmp_imm 	; $C9
 opcode_CA	qword	xCA_dex		 	; $CA
 opcode_CB	qword	noinstruction 	; $CB
-opcode_CC	qword	noinstruction 	; $CC
+opcode_CC	qword	xCC_cmpy_abs 	; $CC
 opcode_CD	qword	xCD_cmp_abs 	; $CD
 opcode_CE	qword	noinstruction 	; $CE
 opcode_CF	qword	noinstruction 	; $CF
@@ -3095,11 +3143,11 @@ opcode_DC	qword	noinstruction 	; $DC
 opcode_DD	qword	xDD_cmp_absx 	; $DD
 opcode_DE	qword	noinstruction 	; $DE
 opcode_DF	qword	noinstruction 	; $DF
-opcode_E0	qword	noinstruction 	; $E0
+opcode_E0	qword	xE0_cmpx_imm 	; $E0
 opcode_E1	qword	xE1_sbc_indx 	; $E1
 opcode_E2	qword	noinstruction 	; $E2
 opcode_E3	qword	noinstruction 	; $E3
-opcode_E4	qword	noinstruction 	; $E4
+opcode_E4	qword	xE4_cmpx_zp 	; $E4
 opcode_E5	qword	xE5_sbc_zp	 	; $E5
 opcode_E6	qword	noinstruction 	; $E6
 opcode_E7	qword	noinstruction 	; $E7
@@ -3107,7 +3155,7 @@ opcode_E8	qword	xE8_inx	 		; $E8
 opcode_E9	qword	xE9_sbc_imm 	; $E9
 opcode_EA	qword	xEA_nop		 	; $EA
 opcode_EB	qword	noinstruction 	; $EB
-opcode_EC	qword	noinstruction 	; $EC
+opcode_EC	qword	xEC_cmpx_abs 	; $EC
 opcode_ED	qword	xED_sbc_abs 	; $ED
 opcode_EE	qword	noinstruction 	; $EE
 opcode_EF	qword	noinstruction 	; $EF
