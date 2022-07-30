@@ -2443,6 +2443,56 @@ xC4_cmpy_zp proc
 xC4_cmpy_zp endp
 
 ;
+; Flag Modifiers
+;
+
+x18_clc proc
+	;                |
+	and r15w, 1111111011111111b
+
+	add r14, 2			; Clock
+	jmp opcode_done	
+x18_clc endp
+
+x38_sec proc
+	;                |
+	or r15w, 0000000100000000b
+
+	add r14, 2			; Clock
+	jmp opcode_done	
+x38_sec endp
+
+xD8_cld proc
+	mov byte ptr [rdx+flags_decimal], 0
+	add r14, 2			; Clock
+	jmp opcode_done	
+xD8_cld endp
+
+xF8_sed proc
+	mov byte ptr [rdx+flags_decimal], 1
+	add r14, 2			; Clock
+	jmp opcode_done	
+xF8_sed endp
+
+x58_cli proc
+	mov byte ptr [rdx+flags_interruptDisable], 0
+	add r14, 2			; Clock
+	jmp opcode_done	
+x58_cli endp
+
+x78_sei proc
+	mov byte ptr [rdx+flags_interruptDisable], 1
+	add r14, 2			; Clock
+	jmp opcode_done	
+x78_sei endp
+
+xB8_clv proc
+	mov byte ptr [rdx+flags_overflow], 0
+	add r14, 2			; Clock
+	jmp opcode_done	
+xB8_clv endp
+
+;
 ; Branches
 ;
 
@@ -2943,7 +2993,7 @@ opcode_14	qword	noinstruction 	; $14
 opcode_15	qword	x15_ora_zpx	 	; $15
 opcode_16	qword	x16_asl_zpx	 	; $16
 opcode_17	qword	noinstruction 	; $17
-opcode_18	qword	noinstruction 	; $18
+opcode_18	qword	x18_clc		 	; $18
 opcode_19	qword	x19_ora_absy 	; $19
 opcode_1A	qword	x1A_inc_a	 	; $1A
 opcode_1B	qword	noinstruction 	; $1B
@@ -2975,7 +3025,7 @@ opcode_34	qword	noinstruction 	; $34
 opcode_35	qword	x35_and_zpx 	; $35
 opcode_36	qword	x36_rol_zpx 	; $36
 opcode_37	qword	noinstruction 	; $37
-opcode_38	qword	noinstruction 	; $38
+opcode_38	qword	x38_sec		 	; $38
 opcode_39	qword	x39_and_absy 	; $39
 opcode_3A	qword	x3A_dec_a	 	; $3A
 opcode_3B	qword	noinstruction 	; $3B
@@ -3007,7 +3057,7 @@ opcode_54	qword	noinstruction 	; $54
 opcode_55	qword	x55_eor_zpx 	; $55
 opcode_56	qword	x56_lsr_zpx 	; $56
 opcode_57	qword	noinstruction 	; $57
-opcode_58	qword	noinstruction 	; $58
+opcode_58	qword	x58_cli		 	; $58
 opcode_59	qword	x59_eor_absy 	; $59
 opcode_5A	qword	x5A_phy		 	; $5A
 opcode_5B	qword	noinstruction 	; $5B
@@ -3039,7 +3089,7 @@ opcode_74	qword	x74_stz_zpx 	; $74
 opcode_75	qword	x75_adc_zpx 	; $75
 opcode_76	qword	x76_ror_zpx 	; $76
 opcode_77	qword	noinstruction 	; $77
-opcode_78	qword	noinstruction 	; $78
+opcode_78	qword	x78_sei		 	; $78
 opcode_79	qword	x79_adc_absy 	; $79
 opcode_7A	qword	x7A_ply		 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
@@ -3103,7 +3153,7 @@ opcode_B4	qword	xB4_ldy_zpx 	; $B4
 opcode_B5	qword	xB5_lda_zpx 	; $B5
 opcode_B6	qword	xB6_ldx_zpy 	; $B6
 opcode_B7	qword	noinstruction 	; $B7
-opcode_B8	qword	noinstruction 	; $B8
+opcode_B8	qword	xB8_clv		 	; $B8
 opcode_B9	qword	xB9_lda_absy 	; $B9
 opcode_BA	qword	xBA_txs		 	; $BA
 opcode_BB	qword	noinstruction 	; $BB
@@ -3135,7 +3185,7 @@ opcode_D4	qword	noinstruction 	; $D4
 opcode_D5	qword	xD5_cmp_zpx 	; $D5
 opcode_D6	qword	noinstruction 	; $D6
 opcode_D7	qword	noinstruction 	; $D7
-opcode_D8	qword	noinstruction 	; $D8
+opcode_D8	qword	xD8_cld		 	; $D8
 opcode_D9	qword	xD9_cmp_absy 	; $D9
 opcode_DA	qword	xDA_phx		 	; $DA
 opcode_DB	qword	xDB_stp		 	; $DB
@@ -3167,7 +3217,7 @@ opcode_F4	qword	noinstruction 	; $F4
 opcode_F5	qword	xF5_sbc_zpx 	; $F5
 opcode_F6	qword	noinstruction 	; $F6
 opcode_F7	qword	noinstruction 	; $F7
-opcode_F8	qword	noinstruction 	; $F8
+opcode_F8	qword	xF8_sed		 	; $F8
 opcode_F9	qword	xF9_sbc_absy 	; $F9
 opcode_FA	qword	xFA_plx		 	; $FA
 opcode_FB	qword	noinstruction 	; $FB
