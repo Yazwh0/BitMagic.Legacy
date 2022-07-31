@@ -24,6 +24,25 @@ public class LDA
     }
 
     [TestMethod]
+    public async Task Immediate_Flags()
+    {
+        var emulator = new Emulator();
+
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda #$44
+                stp", emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Immediate_ZeroFlag()
     {
         var emulator = await X16TestHelper.Emulate(@"                
@@ -79,6 +98,26 @@ public class LDA
         // emulation
         emulator.AssertState(0x44, 0x00, 0x00, 0x813, 3);
         emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task ZeroPage_FlagPreserve()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x10] = 0x44;
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda $10
+                stp", emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
     }
 
     [TestMethod]

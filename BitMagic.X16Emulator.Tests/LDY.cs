@@ -29,6 +29,25 @@ public class LDY
     }
 
     [TestMethod]
+    public async Task Immediate_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                ldy #$44
+                stp", emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Immediate_ZeroFlag()
     {
         var emulator = await X16TestHelper.Emulate(@"                
@@ -86,6 +105,29 @@ public class LDY
         emulator.AssertFlags(false, false, false, false);
     }
 
+
+    [TestMethod]
+    public async Task ZeroPage_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x10] = 0x44;
+
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                ldy $10
+                stp", emulator);
+
+        // emulation
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
     [TestMethod]
     public async Task ZeroPageX()
     {
@@ -139,7 +181,7 @@ public class LDY
 
         emulator.Memory[0x400] = 0x44;
 
-        await X16TestHelper.Emulate(@"                
+        await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
                 ldy $400

@@ -44,19 +44,19 @@ int main()
     state.clock = 0x0;
     
     state.decimal = false;
-    state.carry = true;
+    state.carry = false;
     state.breakFlag = false;
     state.interruptDisable = false;
     state.negative = true;
     state.overflow = false;
     state.zero = true;
 
-    memory_ptr[0x1ff] = 0xff;
+    memory_ptr[0x400] = 0x44;
 
-    memory_ptr[0x810] = 0x28;
-    memory_ptr[0x811] = 0xdb;
-    memory_ptr[0x812] = 0xdb;
-    memory_ptr[0x813] = 0xa9;
+    memory_ptr[0x810] = 0xac;
+    memory_ptr[0x811] = 0x00;
+    memory_ptr[0x812] = 0x04;
+    memory_ptr[0x813] = 0xdb;
     memory_ptr[0x814] = 0x10;
     memory_ptr[0x815] = 0xdb;
 

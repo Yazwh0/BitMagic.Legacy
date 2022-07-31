@@ -236,6 +236,12 @@ read_zpx_rbx macro
 	add bl, r9b			; Add X
 endm
 
+read_zpy_rbx macro
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	add bl, r10b		; Add Y
+endm
+
 read_abs_rbx macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
@@ -325,8 +331,8 @@ endm
 ; we dont use stc, as its actually slower!
 write_flags_r15_setcarry macro
 	lahf						; move new flags to rax
-	or rax, 0000000100000000b	; set carry flag
 	mov r15, rax				; store
+	or r15, 0000000100000000b	; set carry flag
 endm
 
 write_flags_r15_setnegative macro
@@ -537,250 +543,183 @@ endm
 ; LDA
 ; -----------------------------
 
-xA9_lda_imm PROC
+lda_body_end macro clock, pc
+	bt r15, 8	; carry bit
+	jnc no_carry	
+	test r8b, r8b
+	write_flags_r15_setcarry
 
-	;read_imm
-	mov	r8b, [rcx+r11]
-	update_nz_flags_a
-
-	add r11w, 1
-	add r14, 2
+	add r14, clock
+	add r11w, pc
 
 	jmp opcode_done
+no_carry:
+	test r8b, r8b
+	write_flags_r15
 
+	add r14, clock
+	add r11w, pc
+
+	jmp opcode_done
+endm
+
+lda_body macro clock, pc
+	mov r8b, [rcx+rbx]
+	lda_body_end clock, pc
+endm
+
+xA9_lda_imm PROC
+	mov	r8b, [rcx+r11]
+	lda_body_end 2, 1
 xA9_lda_imm ENDP
 
 xA5_lda_zp PROC
-	
 	read_zp_rbx
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 3
-	add r11w, 1			; add on PC
-
-	jmp opcode_done
-
+	lda_body 3, 1
 xA5_lda_zp ENDP
 
 xB5_lda_zpx PROC
-
 	read_zpx_rbx
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 4
-	add r11w, 1			; add on PC
-
-	jmp opcode_done
-
+	lda_body 4, 1
 xB5_lda_zpx endp
 
 xAD_lda_abs proc
-
 	read_abs_rbx
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 4
-	add r11w, 2			; add on PC
-
-	jmp opcode_done
-
+	lda_body 4, 2
 xAD_lda_abs endp
 
 xBD_lda_absx proc
-
 	read_absx_rbx_pagepenalty
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 4
-	add r11w, 2			; add on PC
-
-	jmp opcode_done
-
+	lda_body 4, 2
 xBD_lda_absx endp
 
 xB9_lda_absy proc
-
 	read_absy_rbx_pagepenalty
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 4
-	add r11w, 2			; add on PC
-
-	jmp opcode_done
-
+	lda_body 4, 2
 xB9_lda_absy endp
 
 xA1_lda_indx proc
-
 	read_indx_rbx
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 6
-
-	add r11w, 1				; Inc PC for param
-	jmp opcode_done
-
+	lda_body 6, 1
 xA1_lda_indx endp
 
 xB1_lda_indy proc
-
 	read_indy_rbx_pagepenalty
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 5
-	add r11w, 1				; Inc PC for param
-	jmp opcode_done
-
+	lda_body 5, 1
 xB1_lda_indy endp
 
 xB2_lda_indzp proc
-
 	read_indzp_rbx
-
-	mov r8b, [rcx+rbx]
-	update_nz_flags_a
-
-	add r14, 5
-	add r11w, 1				; Inc PC for param
-	jmp opcode_done
-
+	lda_body 5, 1
 xB2_lda_indzp endp
-
 
 
 ; -----------------------------
 ; LDX
 ; -----------------------------
 
-xA2_ldx_imm PROC
+ldx_body_end macro clock, pc
+	bt r15, 8	; carry bit
+	jnc no_carry	
+	test r9b, r9b
+	write_flags_r15_setcarry
 
-	read_imm
-	mov	r9b, al
-	update_nz_flags
-
-	add r14, 2
+	add r14, clock
+	add r11w, pc
 
 	jmp opcode_done
+no_carry:
+	test r9b, r9b
+	write_flags_r15
 
+	add r14, clock
+	add r11w, pc
+
+	jmp opcode_done
+endm
+
+ldx_body macro clock, pc
+	mov r9b, [rcx+rbx]
+	ldx_body_end clock, pc
+endm
+
+xA2_ldx_imm PROC
+	mov	r9b, [rcx+r11]
+	ldx_body_end 2, 1
 xA2_ldx_imm ENDP
 
 xA6_ldx_zp PROC
-	
-	read_zp
-	mov r9b, al
-	update_nz_flags
-
-	add r14, 3
-
-	jmp opcode_done
-
+	read_zp_rbx
+	ldx_body 3, 1
 xA6_ldx_zp  ENDP
 
 xB6_ldx_zpy PROC
-
-	read_zpy
-	mov r9b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpy_rbx
+	ldx_body 4, 1
 xB6_ldx_zpy endp
 
 xAE_ldx_abs proc
-
-	read_abs
-	mov r9b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	ldx_body 4, 2
 xAE_ldx_abs endp
 
 xBE_ldx_absy proc
-
-	read_absy
-	mov r9b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_absy_rbx_pagepenalty
+	ldx_body 4, 2
 xBE_ldx_absy endp
 
 ; -----------------------------
 ; LDY
 ; -----------------------------
 
-xA0_ldy_imm PROC
+ldy_body_end macro clock, pc
+	bt r15, 8	; carry bit
+	jnc no_carry	
+	test r10b, r10b
+	write_flags_r15_setcarry
 
-	read_imm
-	mov	r10b, al
-	update_nz_flags
-
-	add r14, 2
+	add r14, clock
+	add r11w, pc
 
 	jmp opcode_done
+no_carry:
+	test r10b, r10b
+	write_flags_r15
 
+	add r14, clock
+	add r11w, pc
+
+	jmp opcode_done
+endm
+
+ldy_body macro clock, pc
+	mov r10b, [rcx+rbx]
+	ldy_body_end clock, pc
+endm
+
+xA0_ldy_imm PROC
+	mov	r10b, [rcx+r11]
+	ldy_body_end 2, 1
 xA0_ldy_imm ENDP
 
 xA4_ldy_zp PROC
-	
-	read_zp
-	mov r10b, al
-	update_nz_flags
-
-	add r14, 3
-
-	jmp opcode_done
-
+	read_zp_rbx
+	ldy_body 3, 1
 xA4_ldy_zp  ENDP
 
 xB4_ldy_zpx PROC
-
-	read_zpx
-	mov r10b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpx_rbx
+	ldy_body 4, 1
 xB4_ldy_zpx endp
 
 xAC_ldy_abs proc
-
-	read_abs
-	mov r10b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	ldy_body 4, 2
 xAC_ldy_abs endp
 
 xBC_ldy_absx proc
-
-	read_absx
-	mov r10b, al
-	update_nz_flags
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_absx_rbx_pagepenalty
+	ldy_body 4, 2
 xBC_ldy_absx endp
 
 
@@ -2496,7 +2435,7 @@ xB8_clv endp
 ; Branches
 ;
 
-perform_jump macro
+bra_perform_jump macro
 	local page_change
 
 	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
@@ -2518,25 +2457,26 @@ page_change:						; page change as a 1 cycle penalty
 
 endm
 
+bra_nojump macro
+	add r14, 2			; Clock
+	add r11w, 1			; move PC on
+
+	jmp opcode_done	
+endm
+
 x80_bra proc
-
-	perform_jump
-
+	bra_perform_jump
 x80_bra endp
 
 xD0_bne proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-	jnz is_zero
+	jnz branch
+	bra_nojump
 
-	add r14, 2		; Clock
-	add r11w, 1			; move PC on
-
-	jmp opcode_done	
-
-is_zero:
-	perform_jump
+branch:
+	bra_perform_jump
 
 xD0_bne endp
 
@@ -2544,47 +2484,62 @@ xF0_beq proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-	jz isnot_zero
+	jz branch
+	bra_nojump
 
-	add r14, 2		; Clock
-	add r11w, 1			; move PC on
-
-	jmp opcode_done	
-
-isnot_zero:
-	perform_jump
-
+branch:
+	bra_perform_jump
 xF0_beq endp
 
 x10_bpl proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-	jns isnot_negative
+	jns branch
+	bra_nojump
 
-	add r14, 2		; Clock
-	add r11w, 1			; move PC on
-
-	jmp opcode_done	
-
-isnot_negative:
-	perform_jump
+branch:
+	bra_perform_jump
 x10_bpl endp
 
 x30_bmi proc
 	mov rax, r15	; move flags to rax
 	sahf			; set eflags
 
-	js is_negative
+	js branch
+	bra_nojump
 
-	add r14, 2		; Clock
-	add r11w, 1			; move PC on
-
-	jmp opcode_done	
-
-is_negative:
-	perform_jump
+branch:
+	bra_perform_jump
 x30_bmi endp
+
+x90_bcc proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jnc branch
+	bra_nojump
+
+branch:
+	bra_perform_jump
+x90_bcc endp
+
+xB0_bcs proc
+	mov rax, r15	; move flags to rax
+	sahf			; set eflags
+
+	jc branch
+	bra_nojump
+
+branch:
+	bra_perform_jump
+xB0_bcs endp
+
+x50_bvc proc
+x50_bvc endp
+
+x70_bvs proc
+x70_bvs endp
 
 ;
 ; JMP
@@ -3113,7 +3068,7 @@ opcode_8C	qword	x8C_sty_abs 	; $8C
 opcode_8D	qword	x8D_sta_abs 	; $8D
 opcode_8E	qword	x8E_stx_abs 	; $8E
 opcode_8F	qword	noinstruction 	; $8F
-opcode_90	qword	noinstruction 	; $90
+opcode_90	qword	x90_bcc		 	; $90
 opcode_91	qword	x91_sta_indy 	; $91
 opcode_92	qword	x92_sta_indzp 	; $92
 opcode_93	qword	noinstruction 	; $93
@@ -3145,7 +3100,7 @@ opcode_AC	qword	xAC_ldy_abs 	; $AC
 opcode_AD	qword	xAD_lda_abs 	; $AD
 opcode_AE	qword	xAE_ldx_abs 	; $AE
 opcode_AF	qword	noinstruction 	; $AF
-opcode_B0	qword	noinstruction 	; $B0
+opcode_B0	qword	xB0_bcs		 	; $B0
 opcode_B1	qword	xB1_lda_indy 	; $B1
 opcode_B2	qword	xB2_lda_indzp 	; $B2
 opcode_B3	qword	noinstruction 	; $B3
