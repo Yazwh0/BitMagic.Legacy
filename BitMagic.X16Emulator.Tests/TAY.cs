@@ -28,6 +28,27 @@ public class TAY
     }
 
     [TestMethod]
+    public async Task Tya_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 2;
+        emulator.InterruptDisable = true;
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                tay
+                stp",
+                emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Tay_ToZero()
     {
         var emulator = new Emulator();

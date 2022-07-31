@@ -28,6 +28,27 @@ public class TAX
     }
 
     [TestMethod]
+    public async Task Tax_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 2;
+        emulator.InterruptDisable = true;
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                tax
+                stp",
+                emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Tax_ToZero()
     {
         var emulator = new Emulator();

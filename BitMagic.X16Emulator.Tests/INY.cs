@@ -28,6 +28,27 @@ public class INY
     }
 
     [TestMethod]
+    public async Task Iny_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.Y = 2;
+        emulator.InterruptDisable = true;
+        emulator.Carry = true;
+        emulator.Overflow = true;
+        emulator.Decimal = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                iny
+                stp",
+                emulator);
+
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Iny_ToZero()
     {
         var emulator = new Emulator();

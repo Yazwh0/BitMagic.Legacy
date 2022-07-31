@@ -307,6 +307,14 @@ read_indy_rbx_pagepenalty macro
 no_overflow:
 endm
 
+read_indy_rbx macro
+	local no_overflow
+	xor rbx, rbx
+	mov bl, [rcx+r11]	; Address in ZP
+	mov bx, [rcx+rbx]	; Address pointed at in ZP
+	add bl, r10b		; Add Y to the lower address byte
+endm
+
 read_indzp_rbx macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Address in ZP
@@ -727,366 +735,400 @@ xBC_ldy_absx endp
 ; STA
 ; -----------------------------
 
-x85_sta_zp proc
-	
-	read_zp_rbx
+sta_body macro clock, pc
 	mov byte ptr [rcx+rbx], r8b
 
-	add r14, 3
-	add r11w, 1			; add on PC
+	add r14, clock
+	add r11w, pc			; add on PC
 
 	jmp opcode_done
+endm
 
+x85_sta_zp proc	
+	read_zp_rbx
+	sta_body 3, 1
 x85_sta_zp endp
 
 x95_sta_zpx proc
-
-	mov al, r8b
-	write_zpx
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpx_rbx
+	sta_body 4, 1
 x95_sta_zpx endp
 
 x8D_sta_abs proc
-
-	mov al, r8b
-	write_abs
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	sta_body 4, 2
 x8D_sta_abs endp
 
 x9D_sta_absx proc
-
-	mov al, r8b
-	write_absx
-
-	add r14,5
-
-	jmp opcode_done
-
+	read_absx_rbx
+	sta_body 5, 2
 x9D_sta_absx endp
 
 x99_sta_absy proc
-
-	mov al, r8b
-	write_absy
-
-	add r14,5
-
-	jmp opcode_done
-
+	read_absy_rbx
+	sta_body 5, 2
 x99_sta_absy endp
 
 x81_sta_indx proc
-
-	mov al, r8b
-	write_indx
-
-	add r14,6
-
-	jmp opcode_done
-
+	read_indx_rbx
+	sta_body 6, 1
 x81_sta_indx endp
 
 x91_sta_indy proc
-
-	mov al, r8b
-	write_indy
-
-	add r14,6
-
-	jmp opcode_done
-
+	read_indy_rbx
+	sta_body 6, 1
 x91_sta_indy endp
 
 x92_sta_indzp proc
-
-	mov al, r8b
-
-	write_indzp
-
-	add r14,5
-
-	jmp opcode_done
-
+	read_indzp_rbx
+	sta_body 5, 1
 x92_sta_indzp endp
 
 ;
 ; STX
 ;
 
-x86_stx_zp proc
+stx_body macro clock, pc
+	mov byte ptr [rcx+rbx], r9b
 
-	mov al, r9b
-	write_zp
-
-	add r14, 3
+	add r14, clock
+	add r11w, pc			; add on PC
 
 	jmp opcode_done
+endm
 
+x86_stx_zp proc
+	read_zp_rbx
+	stx_body 3, 1
 x86_stx_zp endp
 
 x96_stx_zpy proc
-
-	mov al, r9b
-	write_zpy
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpy_rbx
+	stx_body 4, 1
 x96_stx_zpy endp
 
 x8E_stx_abs proc
-
-	mov al, r9b
-	write_abs
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	stx_body 4, 2
 x8E_stx_abs endp
 
 ;
 ; STY
 ;
 
-x84_sty_zp proc
+sty_body macro clock, pc
+	mov byte ptr [rcx+rbx], r10b
 
-	mov al, r10b
-	write_zp
-
-	add r14, 3
+	add r14, clock
+	add r11w, pc			; add on PC
 
 	jmp opcode_done
+endm
 
+x84_sty_zp proc
+	read_zp_rbx
+	sty_body 3, 1
 x84_sty_zp endp
 
 x94_sty_zpx proc
-
-	mov al, r10b
-	write_zpx
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpx_rbx
+	sty_body 4, 1
 x94_sty_zpx endp
 
 x8C_sty_abs proc
-
-	mov al, r10b
-	write_abs
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	sty_body 4, 2
 x8C_sty_abs endp
 
 ;
 ; STZ
 ;
 
-x64_stz_zp proc
-	
-	xor rax, rax
-	write_zp
+stz_body macro clock, pc
+	mov byte ptr [rcx+rbx], 0
 
-	add r14, 3
+	add r14, clock
+	add r11w, pc			; add on PC
 
 	jmp opcode_done
+endm
 
+x64_stz_zp proc
+	read_zp_rbx
+	stz_body 3, 1
 x64_stz_zp endp
 
 x74_stz_zpx proc
-
-	xor rax, rax
-	write_zpx
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_zpx_rbx
+	stz_body 4, 1
 x74_stz_zpx endp
 
 x9C_stz_abs proc
-
-	xor rax, rax
-	write_abs
-
-	add r14, 4
-
-	jmp opcode_done
-
+	read_abs_rbx
+	stz_body 4, 2
 x9C_stz_abs endp
 
 x9E_stz_absx proc
-
-	xor rax, rax
-	write_absx
-
-	add r14,5
-
-	jmp opcode_done
-
+	read_absx_rbx
+	stz_body 5, 2
 x9E_stz_absx endp
 
 ;
-; INC
+; INC\DEC
 ;
 
-x1A_inc_a proc
+inc_body macro clock, pc
+	add r14, clock
+	add r11w, pc			; add on PC
 
-	mov rax, r15	; move flags to rax
-	inc r8b	
-	lahf			; pull flags
-	mov r15, rax	; store flags
+	bt r15, 8				; carry bit
+	jnc no_carry
+	inc byte ptr [rcx+rbx]
+	write_flags_r15_setcarry
 
-	add r14, 2
-	
 	jmp opcode_done
+no_carry:
+	inc byte ptr [rcx+rbx]
+	write_flags_r15
 
+	jmp opcode_done
+endm
+
+dec_body macro clock, pc
+	add r14, clock
+	add r11w, pc			; add on PC
+
+	bt r15, 8				; carry bit
+	jnc no_carry
+	dec byte ptr [rcx+rbx]
+	write_flags_r15_setcarry
+
+	jmp opcode_done
+no_carry:
+	dec byte ptr [rcx+rbx]
+	write_flags_r15
+
+	jmp opcode_done
+endm
+
+x1A_inc_a proc
+	add r14, 2
+
+	bt r15, 8	; carry bit
+	jnc no_carry
+	inc r8b
+	write_flags_r15_setcarry
+
+	jmp opcode_done
+no_carry:
+	inc r8b
+	write_flags_r15
+
+	jmp opcode_done
 x1A_inc_a endp
 
 x3A_dec_a proc
-
-	mov rax, r15	; move flags to rax
-	dec r8b	
-	lahf			; pull flags
-	mov r15, rax	; store flags
-
 	add r14, 2
-	
-	jmp opcode_done
 
+	bt r15, 8	; carry bit
+	jnc no_carry
+	dec r8b
+	write_flags_r15_setcarry
+
+	jmp opcode_done
+no_carry:
+	dec r8b
+	write_flags_r15
+
+	jmp opcode_done
 x3A_dec_a endp
 
+
+xEE_inc_abs proc
+	read_abs_rbx
+	inc_body 6, 2
+xEE_inc_abs endp
+
+xCE_dec_abs proc
+	read_abs_rbx
+	dec_body 6, 2
+xCE_dec_abs endp
+
+
+xFE_inc_absx proc
+	read_absx_rbx
+	inc_body 7, 2
+xFE_inc_absx endp
+
+xDE_dec_absx proc
+	read_absx_rbx
+	dec_body 7, 2
+xDE_dec_absx endp
+
+
+xE6_inc_zp proc
+	read_zp_rbx
+	inc_body 5, 1
+xE6_inc_zp endp
+
+xC6_dec_absx proc
+	read_zp_rbx
+	dec_body 5, 1
+xC6_dec_absx endp
+
+
+xF6_inc_zpx proc
+	read_zpx_rbx
+	inc_body 6, 1
+xF6_inc_zpx endp
+
+xD6_dec_zpx proc
+	read_zpx_rbx
+	dec_body 6, 1
+xD6_dec_zpx endp
+
 ;
-; Register Flags
+; INX\DEX
 ;
 
 xE8_inx proc
+	add r14, 2
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	bt r15, 8	; carry bit
+	jnc no_carry
 	inc r9b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	inc r9b
+	write_flags_r15
 
-	jmp opcode_done		
-
+	jmp opcode_done
 xE8_inx endp
 
 xCA_dex proc
+	add r14, 2
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	bt r15, 8	; carry bit
+	jnc no_carry
 	dec r9b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	dec r9b
+	write_flags_r15
 
-	jmp opcode_done		
-
+	jmp opcode_done
 xCA_dex endp
 
+;
+; INY\DEY
+;
+
 xC8_iny proc
+	add r14, 2
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	bt r15, 8	; carry bit
+	jnc no_carry
 	inc r10b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	inc r10b
+	write_flags_r15
 
-	jmp opcode_done		
-
+	jmp opcode_done
 xC8_iny endp
 
 x88_dey proc
+	add r14, 2
 
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	bt r15, 8	; carry bit
+	jnc no_carry
 	dec r10b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	dec r10b
+	write_flags_r15
 
-	jmp opcode_done		
-
+	jmp opcode_done
 x88_dey endp
 
+;
+; Register Transfer
+;
+
 xAA_tax proc
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	add r14, 2
 	mov	r9, r8		; A -> X
+
+	bt r15, 8		; carry bit
+	jnc no_carry
 	test r9b, r9b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	test r9b, r9b
+	write_flags_r15
 
-	jmp opcode_done	
-
+	jmp opcode_done
 xAA_tax endp
 
 x8A_txa proc
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	add r14, 2
 	mov	r8, r9		; X -> A
+
+	bt r15, 8		; carry bit
+	jnc no_carry
 	test r8b, r8b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	test r8b, r8b
+	write_flags_r15
 
-	jmp opcode_done	
-
+	jmp opcode_done
 x8A_txa endp
 
 xA8_tay proc
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	add r14, 2
 	mov	r10, r8		; A -> Y
+
+	bt r15, 8		; carry bit
+	jnc no_carry
 	test r10b, r10b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	test r10b, r10b
+	write_flags_r15
 
-	jmp opcode_done	
-
+	jmp opcode_done
 xA8_tay endp
 
 x98_tya proc
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
+	add r14, 2
 	mov	r8, r10		; Y -> A
+
+	bt r15, 8		; carry bit
+	jnc no_carry
 	test r8b, r8b
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15_setcarry
 
-	add r14, 2		; Clock
+	jmp opcode_done
+no_carry:
+	test r8b, r8b
+	write_flags_r15
 
-	jmp opcode_done	
-
+	jmp opcode_done
 x98_tya endp
 
 ;
@@ -3122,7 +3164,7 @@ opcode_C2	qword	noinstruction 	; $C2
 opcode_C3	qword	noinstruction 	; $C3
 opcode_C4	qword	xC4_cmpy_zp 	; $C4
 opcode_C5	qword	xC5_cmp_zp	 	; $C5
-opcode_C6	qword	noinstruction 	; $C6
+opcode_C6	qword	xC6_dec_absx 	; $C6
 opcode_C7	qword	noinstruction 	; $C7
 opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	xC9_cmp_imm 	; $C9
@@ -3130,7 +3172,7 @@ opcode_CA	qword	xCA_dex		 	; $CA
 opcode_CB	qword	noinstruction 	; $CB
 opcode_CC	qword	xCC_cmpy_abs 	; $CC
 opcode_CD	qword	xCD_cmp_abs 	; $CD
-opcode_CE	qword	noinstruction 	; $CE
+opcode_CE	qword	xCE_dec_abs 	; $CE
 opcode_CF	qword	noinstruction 	; $CF
 opcode_D0	qword	xD0_bne		 	; $D0
 opcode_D1	qword	xD1_cmp_indy 	; $D1
@@ -3138,7 +3180,7 @@ opcode_D2	qword	xD2_cmp_indzp 	; $D2
 opcode_D3	qword	noinstruction 	; $D3
 opcode_D4	qword	noinstruction 	; $D4
 opcode_D5	qword	xD5_cmp_zpx 	; $D5
-opcode_D6	qword	noinstruction 	; $D6
+opcode_D6	qword	xD6_dec_zpx 	; $D6
 opcode_D7	qword	noinstruction 	; $D7
 opcode_D8	qword	xD8_cld		 	; $D8
 opcode_D9	qword	xD9_cmp_absy 	; $D9
@@ -3146,7 +3188,7 @@ opcode_DA	qword	xDA_phx		 	; $DA
 opcode_DB	qword	xDB_stp		 	; $DB
 opcode_DC	qword	noinstruction 	; $DC
 opcode_DD	qword	xDD_cmp_absx 	; $DD
-opcode_DE	qword	noinstruction 	; $DE
+opcode_DE	qword	xDE_dec_absx 	; $DE
 opcode_DF	qword	noinstruction 	; $DF
 opcode_E0	qword	xE0_cmpx_imm 	; $E0
 opcode_E1	qword	xE1_sbc_indx 	; $E1
@@ -3154,7 +3196,7 @@ opcode_E2	qword	noinstruction 	; $E2
 opcode_E3	qword	noinstruction 	; $E3
 opcode_E4	qword	xE4_cmpx_zp 	; $E4
 opcode_E5	qword	xE5_sbc_zp	 	; $E5
-opcode_E6	qword	noinstruction 	; $E6
+opcode_E6	qword	xE6_inc_zp	 	; $E6
 opcode_E7	qword	noinstruction 	; $E7
 opcode_E8	qword	xE8_inx	 		; $E8
 opcode_E9	qword	xE9_sbc_imm 	; $E9
@@ -3162,7 +3204,7 @@ opcode_EA	qword	xEA_nop		 	; $EA
 opcode_EB	qword	noinstruction 	; $EB
 opcode_EC	qword	xEC_cmpx_abs 	; $EC
 opcode_ED	qword	xED_sbc_abs 	; $ED
-opcode_EE	qword	noinstruction 	; $EE
+opcode_EE	qword	xEE_inc_abs 	; $EE
 opcode_EF	qword	noinstruction 	; $EF
 opcode_F0	qword	xF0_beq		 	; $F0
 opcode_F1	qword	xF1_sbc_indy 	; $F1
@@ -3170,7 +3212,7 @@ opcode_F2	qword	xF2_sbc_indzp 	; $F2
 opcode_F3	qword	noinstruction 	; $F3
 opcode_F4	qword	noinstruction 	; $F4
 opcode_F5	qword	xF5_sbc_zpx 	; $F5
-opcode_F6	qword	noinstruction 	; $F6
+opcode_F6	qword	xF6_inc_zpx 	; $F6
 opcode_F7	qword	noinstruction 	; $F7
 opcode_F8	qword	xF8_sed		 	; $F8
 opcode_F9	qword	xF9_sbc_absy 	; $F9
@@ -3178,7 +3220,7 @@ opcode_FA	qword	xFA_plx		 	; $FA
 opcode_FB	qword	noinstruction 	; $FB
 opcode_FC	qword	noinstruction 	; $FC
 opcode_FD	qword	xFD_sbc_absx 	; $FD
-opcode_FE	qword	noinstruction 	; $FE
+opcode_FE	qword	xFE_inc_absx 	; $FE
 opcode_FF	qword	noinstruction 	; $FF
 
 
