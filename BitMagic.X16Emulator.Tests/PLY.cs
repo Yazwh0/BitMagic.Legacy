@@ -35,6 +35,29 @@ public class PLY
     }
 
     [TestMethod]
+    public async Task Ply_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1ff] = 0x20;
+        emulator.StackPointer = 0x1fe; // one item on the stack
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                ply
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Ply_Zero()
     {
         var emulator = new Emulator();

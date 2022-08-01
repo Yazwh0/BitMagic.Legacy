@@ -321,10 +321,9 @@ read_indzp_rbx macro
 	mov bx, [rcx+rbx]	; Address at location
 endm
 
-; Write -----
-
-
-; Flags -----
+; -----------------------------
+; Flags
+; -----------------------------
 
 read_flags_rax macro
 	mov rax, r15	; move flags to rax
@@ -337,124 +336,16 @@ write_flags_r15 macro
 endm
 
 ; we dont use stc, as its actually slower!
-write_flags_r15_setcarry macro
+write_flags_r15_preservecarry macro
 	lahf						; move new flags to rax
-	mov r15, rax				; store
-	or r15, 0000000100000000b	; set carry flag
+	and r15w, 0100h				; preserve carry		
+	or r15w, ax					; store flags over (carry is always clear)
 endm
 
 write_flags_r15_setnegative macro
 	lahf						; move new flags to rax
 	or rax, 1000000000000000b	; set negative flag
 	mov r15, rax				; store
-endm
-
-; ----------------
-
-read_imm macro
-	mov al, [rcx+r11]	; Get value at PC
-	add r11w, 1				; Inc PC for param
-endm
-
-read_zp macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get address in ZP
-	mov al, [rcx+rbx]   ; Get value in ZP
-	add r11w, 1				; Inc PC for param
-endm
-
-read_zpx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get address in ZP
-	add bl, r9b			; Add X. Byte operation so it wraps.
-
-	mov al, [rcx+rbx]   ; Get Value in ZP
-	add r11w, 1				; Inc PC for param
-endm
-
-read_zpy macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get address in ZP
-	add bl, r10b		; Add Y. Byte operation so it wraps.
-
-	mov al, [rcx+rbx]   ; Get Value in ZP
-	add r11w, 1				; Inc PC for param
-endm
-
-read_abs macro
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	mov al, [rcx+rbx]	; Get value at that address
-
-	add r11w, 2			; Inc PC for param
-endm
-
-read_absx macro
-	local no_overflow
-
-	xor rbx, rbx	
-	mov bx, [rcx+r11]	; Get 16bit address in memory.
-
-	add bl, r9b			; Add X to lower address byte
-	jnc no_overflow
-	add bh, 1			; Inc higher address byte
-	add r14, 1			; Add clock cycle
-	clc
-
-no_overflow:
-	mov al, [rcx+rbx]	; Get value in memory
-	add r11w, 2			; Inc PC for param
-endm
-
-read_absy macro
-	local no_overflow
-
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit address in memory
-
-	add bl, r10b		; Add Y to the lower address byte
-	jnc no_overflow
-	add bh, 1			; Inc higher address byte
-	add r14, 1			; Add clock cycle
-	clc
-
-no_overflow:
-	mov al, [rcx+rbx]	; Get value in memory
-	add r11w, 2			; Inc PC for param
-endm
-
-read_indx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
-	add bl, r9b			; Add on X. Byte operation so it wraps.
-	mov bx, [rcx+rbx]	; Address at location
-	mov al, [rcx+rbx]	; Final value
-	add r11w, 1				; Inc PC for param
-endm
-
-read_indy macro
-	local no_overflow
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
-	mov bx, [rcx+rbx]	; Address pointed at in ZP
-
-	adc bl, r10b		; Add Y to the lower address byte
-	jnc no_overflow
-	add bh, 1			; Inc higher address byte
-	add r14, 1			; Add clock cycle
-	clc
-
-no_overflow:
-	mov al, [rcx+rbx]	; Final value	
-	add r11w, 1				; Inc PC for param
-endm
-
-read_indzp macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
-	mov bx, [rcx+rbx]	; Address at location
-	mov al, [rcx+rbx]	; Final value
-	add r11w, 1				; Inc PC for param
 endm
 
 ; -----------------------------
@@ -552,18 +443,10 @@ endm
 ; -----------------------------
 
 lda_body_end macro clock, pc
-	bt r15, 8	; carry bit
-	jnc no_carry	
 	test r8b, r8b
-	write_flags_r15_setcarry
-
-	add r14, clock
-	add r11w, pc
-
-	jmp opcode_done
-no_carry:
-	test r8b, r8b
-	write_flags_r15
+	lahf
+	and r15w, 0100h			; preserve carry		
+	or r15w, ax				; store flags over (carry is always clear)
 
 	add r14, clock
 	add r11w, pc
@@ -627,18 +510,8 @@ xB2_lda_indzp endp
 ; -----------------------------
 
 ldx_body_end macro clock, pc
-	bt r15, 8	; carry bit
-	jnc no_carry	
 	test r9b, r9b
-	write_flags_r15_setcarry
-
-	add r14, clock
-	add r11w, pc
-
-	jmp opcode_done
-no_carry:
-	test r9b, r9b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	add r14, clock
 	add r11w, pc
@@ -681,18 +554,8 @@ xBE_ldx_absy endp
 ; -----------------------------
 
 ldy_body_end macro clock, pc
-	bt r15, 8	; carry bit
-	jnc no_carry	
 	test r10b, r10b
-	write_flags_r15_setcarry
-
-	add r14, clock
-	add r11w, pc
-
-	jmp opcode_done
-no_carry:
-	test r10b, r10b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	add r14, clock
 	add r11w, pc
@@ -878,68 +741,38 @@ x9E_stz_absx endp
 ;
 
 inc_body macro clock, pc
+	inc byte ptr [rcx+rbx]
+	write_flags_r15_preservecarry
+
 	add r14, clock
 	add r11w, pc			; add on PC
-
-	bt r15, 8				; carry bit
-	jnc no_carry
-	inc byte ptr [rcx+rbx]
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	inc byte ptr [rcx+rbx]
-	write_flags_r15
 
 	jmp opcode_done
 endm
 
 dec_body macro clock, pc
+	dec byte ptr [rcx+rbx]
+	write_flags_r15_preservecarry
+
 	add r14, clock
 	add r11w, pc			; add on PC
-
-	bt r15, 8				; carry bit
-	jnc no_carry
-	dec byte ptr [rcx+rbx]
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	dec byte ptr [rcx+rbx]
-	write_flags_r15
 
 	jmp opcode_done
 endm
 
 x1A_inc_a proc
+	inc r8b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	inc r8b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	inc r8b
-	write_flags_r15
-
 	jmp opcode_done
 x1A_inc_a endp
 
 x3A_dec_a proc
+	dec r8b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	dec r8b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	dec r8b
-	write_flags_r15
-
 	jmp opcode_done
 x3A_dec_a endp
 
@@ -992,34 +825,19 @@ xD6_dec_zpx endp
 ;
 
 xE8_inx proc
+	inc r9b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	inc r9b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	inc r9b
-	write_flags_r15
-
 	jmp opcode_done
 xE8_inx endp
 
 xCA_dex proc
+
+	dec r9b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	dec r9b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	dec r9b
-	write_flags_r15
-
 	jmp opcode_done
 xCA_dex endp
 
@@ -1028,34 +846,18 @@ xCA_dex endp
 ;
 
 xC8_iny proc
+	inc r10b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	inc r10b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	inc r10b
-	write_flags_r15
-
 	jmp opcode_done
 xC8_iny endp
 
 x88_dey proc
+	dec r10b
+	write_flags_r15_preservecarry
+
 	add r14, 2
-
-	bt r15, 8	; carry bit
-	jnc no_carry
-	dec r10b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	dec r10b
-	write_flags_r15
-
 	jmp opcode_done
 x88_dey endp
 
@@ -1067,15 +869,8 @@ xAA_tax proc
 	add r14, 2
 	mov	r9, r8		; A -> X
 
-	bt r15, 8		; carry bit
-	jnc no_carry
 	test r9b, r9b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	test r9b, r9b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	jmp opcode_done
 xAA_tax endp
@@ -1084,15 +879,8 @@ x8A_txa proc
 	add r14, 2
 	mov	r8, r9		; X -> A
 
-	bt r15, 8		; carry bit
-	jnc no_carry
 	test r8b, r8b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	test r8b, r8b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	jmp opcode_done
 x8A_txa endp
@@ -1101,15 +889,8 @@ xA8_tay proc
 	add r14, 2
 	mov	r10, r8		; A -> Y
 
-	bt r15, 8		; carry bit
-	jnc no_carry
 	test r10b, r10b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	test r10b, r10b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	jmp opcode_done
 xA8_tay endp
@@ -1118,15 +899,8 @@ x98_tya proc
 	add r14, 2
 	mov	r8, r10		; Y -> A
 
-	bt r15, 8		; carry bit
-	jnc no_carry
 	test r8b, r8b
-	write_flags_r15_setcarry
-
-	jmp opcode_done
-no_carry:
-	test r8b, r8b
-	write_flags_r15
+	write_flags_r15_preservecarry
 
 	jmp opcode_done
 x98_tya endp
@@ -1617,466 +1391,126 @@ x76_ror_zpx endp
 ; AND
 ;
 
-x29_and_imm proc
-	add r14, 2		; Clock
-
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+r11]
-
-	write_flags_r15_setcarry
-	add r11w, 1		; PC
-
-	jmp opcode_done	
-
-no_carry:
-	and r8b, [rcx+r11]
-	write_flags_r15
-	add r11w, 1		; PC
-
-	jmp opcode_done	
+and_body_end macro clock, pc
+	and r8b, [rcx+rbx]
+	write_flags_r15_preservecarry
 	
+	add r14, clock		; Clock
+	add r11w, pc			; add on PC
+	jmp opcode_done	
+endm
+
+x29_and_imm proc
+	and r8b, [rcx+r11]
+	write_flags_r15_preservecarry
+
+	add r14, 2		; Clock
+	add r11w, 1		; PC
+	jmp opcode_done	
 x29_and_imm endp
 
 x2D_and_abs proc
-	add r14, 4		; Clock
-
 	read_abs_rbx
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
+	and_body_end 4, 2
 x2D_and_abs endp
 
 x3D_and_absx proc
-
-	add r14, 4		; Clock
-
 	read_absx_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	and_body_end 4, 2
 x3D_and_absx endp
 
 x39_and_absy proc
-
-	add r14, 4		; Clock
-
 	read_absy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	and_body_end 4, 2
 x39_and_absy endp
 
 x25_and_zp proc
-
-	add r14, 3		; Clock
-
 	read_zp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	and_body_end 3, 1
 x25_and_zp endp
 
 x35_and_zpx proc
-
-	add r14, 4		; Clock
-
 	read_zpx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	and_body_end 4, 1
 x35_and_zpx endp
 
 x32_and_indzp proc
-
-	add r14, 5		; Clock
-
 	read_indzp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	and_body_end 5, 1
 x32_and_indzp endp
 
 x21_and_indx proc
-
-	add r14, 6		; Clock
-
 	read_indx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	and_body_end 6, 1
 x21_and_indx endp
 
 x31_and_indy proc
-
-	add r14, 5		; Clock
-
 	read_indy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	and r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	and_body_end 5, 1
 x31_and_indy endp
 
 ;
 ; EOR
 ;
 
+eor_body_end macro clock, pc
+	xor r8b, [rcx+rbx]
+	write_flags_r15_preservecarry
+
+	add r14, clock	
+	add r11w, pc
+
+	jmp opcode_done	
+endm
+
 x49_eor_imm proc
+	xor r8b, [rcx+r11]
+	write_flags_r15_preservecarry
+
 	add r14, 2		; Clock
-
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+r11]
-
-	write_flags_r15_setcarry
 	add r11w, 1		; PC
 
 	jmp opcode_done	
-
-no_carry:
-	xor r8b, [rcx+r11]
-	write_flags_r15
-	add r11w, 1		; PC
-
-	jmp opcode_done	
-	
 x49_eor_imm endp
 
 x4D_eor_abs proc
-	add r14, 4		; Clock
-
 	read_abs_rbx
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
+	eor_body_end 4, 2
 x4D_eor_abs endp
 
 x5D_eor_absx proc
-
-	add r14, 4		; Clock
-
 	read_absx_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 4, 2
 x5D_eor_absx endp
 
 x59_eor_absy proc
-
-	add r14, 4		; Clock
-
 	read_absy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 2			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 4, 2
 x59_eor_absy endp
 
 x45_eor_zp proc
-
-	add r14, 3		; Clock
-
 	read_zp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 3, 1
 x45_eor_zp endp
 
 x55_eor_zpx proc
-
-	add r14, 4		; Clock
-
 	read_zpx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 4, 1
 x55_eor_zpx endp
 
 x52_eor_indzp proc
-
-	add r14, 5		; Clock
-
 	read_indzp_rbx
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 5, 1
 x52_eor_indzp endp
 
 x41_eor_indx proc
-
-	add r14, 6		; Clock
-
 	read_indx_rbx
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 6, 1
 x41_eor_indx endp
 
 x51_eor_indy proc
-
-	add r14, 5		; Clock
-
 	read_indy_rbx_pagepenalty
-	read_flags_rax
-	jnc no_carry
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
-	
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	xor r8b, [rcx+rbx]
-
-	write_flags_r15
-		
-	add r11w, 1			; add on PC
-	jmp opcode_done		
-
+	eor_body_end 5, 1
 x51_eor_indy endp
 
 ;
@@ -2084,47 +1518,21 @@ x51_eor_indy endp
 ;
 
 ora_body macro clock, pc
-	read_flags_rax
-	jnc no_carry
-
 	or r8b, [rcx+rbx]
-
-	write_flags_r15_setcarry
+	write_flags_r15_preservecarry
 	
-	add r11w, pc			; add on PC
-	add r14, clock		; Clock
-	jmp opcode_done	
-
-no_carry:
-
-	or r8b, [rcx+rbx]
-
-	write_flags_r15
-		
 	add r11w, pc			; add on PC
 	add r14, clock		; Clock
 	jmp opcode_done	
 endm
 
 x09_ora_imm proc
+	or r8b, [rcx+r11]
+	write_flags_r15_preservecarry
+
+	add r11w, 1		; PC
 	add r14, 2		; Clock
-
-	read_flags_rax
-	jnc no_carry
-
-	or r8b, [rcx+r11]
-
-	write_flags_r15_setcarry
-	add r11w, 1		; PC
-
 	jmp opcode_done	
-
-no_carry:
-	or r8b, [rcx+r11]
-	write_flags_r15
-	add r11w, 1		; PC
-
-	jmp opcode_done		
 x09_ora_imm endp
 
 x0D_ora_abs proc
@@ -2673,7 +2081,6 @@ x60_rts endp
 ;
 
 x48_pha proc
-
 	xor rbx, rbx
 	
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
@@ -2687,26 +2094,18 @@ x48_pha proc
 x48_pha endp
 
 x68_pla proc
-
 	xor rbx, rbx
 
 	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
-
-	mov rax, r15						; move flags to rax
-	sahf								; set eflags
-
 	test r8b, r8b
-	
-	lahf								; move new flags to rax	
-	mov r15d, eax						; store
+	write_flags_r15_preservecarry
 	
 	add r14, 4							; Add cycles
 
 	jmp opcode_done
-
 x68_pla endp
 
 xDA_phx proc
@@ -2724,26 +2123,18 @@ xDA_phx proc
 xDA_phx endp
 
 xFA_plx proc
-
 	xor rbx, rbx
 
 	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
-	
-	mov rax, r15						; move flags to rax
-	sahf								; set eflags
-
 	test r9b, r9b
-
-	lahf								; move new flags to rax	
-	mov r15, rax						; store
+	write_flags_r15_preservecarry
 	
 	add r14, 4							; Add cycles
 
 	jmp opcode_done
-
 xFA_plx endp
 
 x5A_phy proc
@@ -2761,56 +2152,34 @@ x5A_phy proc
 x5A_phy endp
 
 x7A_ply proc
-
 	xor rbx, rbx
 
 	add byte ptr [rdx+stackpointer] ,1	; Increment stack pointer
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
-
-	mov rax, r15						; move flags to rax
-	sahf								; set eflags
-
 	test r10b, r10b
-	
-	lahf								; move new flags to rax	
-	mov r15, rax						; store
+	write_flags_r15_preservecarry
 	
 	add r14, 4							; Add cycles
-
 	jmp opcode_done
-
 x7A_ply endp
 
-
 x9A_txs proc
-
 	mov byte ptr [rdx+stackpointer], r9b ; move X to stack pointer
-
 	add r14, 2							; Add cycles
-
 	jmp opcode_done
-
 x9A_txs endp
 
-xBA_txs proc
-
+xBA_tsx proc
 	mov r9b, byte ptr [rdx+stackpointer] ; move stack pointer to X
 
-	mov rax, r15						; move flags to rax
-	sahf
-	
 	test r9b, r9b
-
-	lahf								; get new flags and store
-	mov r15, rax			
+	write_flags_r15_preservecarry
 
 	add r14, 2							; Add cycles
-
-	jmp opcode_done
-	
-xBA_txs endp
+	jmp opcode_done	
+xBA_tsx endp
 
 x08_php proc
 	mov	al, 00110000b ; bits that are always set
@@ -3203,7 +2572,7 @@ opcode_B6	qword	xB6_ldx_zpy 	; $B6
 opcode_B7	qword	noinstruction 	; $B7
 opcode_B8	qword	xB8_clv		 	; $B8
 opcode_B9	qword	xB9_lda_absy 	; $B9
-opcode_BA	qword	xBA_txs		 	; $BA
+opcode_BA	qword	xBA_tsx		 	; $BA
 opcode_BB	qword	noinstruction 	; $BB
 opcode_BC	qword	xBC_ldy_absx 	; $BC
 opcode_BD	qword	xBD_lda_absx 	; $BD

@@ -29,6 +29,29 @@ public class TSX
     }
 
     [TestMethod]
+    public async Task Tsx_PreserveFlags()
+    {
+        var emulator = new Emulator();
+
+        emulator.StackPointer = 0x12;
+        emulator.X = 0x10;
+        emulator.Carry = true;
+        emulator.Decimal = true;
+        emulator.InterruptDisable = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                tsx
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertFlags(false, false, true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Txs_Zero()
     {
         var emulator = new Emulator();
