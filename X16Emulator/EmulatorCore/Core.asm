@@ -1986,9 +1986,23 @@ branch:
 xB0_bcs endp
 
 x50_bvc proc
+	mov al, [rdx+flags_overflow]
+	test al, al
+	jz branch
+	bra_nojump
+
+branch:
+	bra_perform_jump
 x50_bvc endp
 
 x70_bvs proc
+	mov al, [rdx+flags_overflow]
+	test al, al
+	jnz branch
+	bra_nojump
+
+branch:
+	bra_perform_jump
 x70_bvs endp
 
 ;
@@ -2137,8 +2151,7 @@ xFA_plx proc
 	jmp opcode_done
 xFA_plx endp
 
-x5A_phy proc
-	
+x5A_phy proc	
 	xor rbx, rbx
 	
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
@@ -2148,7 +2161,6 @@ x5A_phy proc
 	add r14, 3							; Add cycles
 
 	jmp opcode_done
-
 x5A_phy endp
 
 x7A_ply proc
@@ -2294,10 +2306,7 @@ x28_plp endp
 bit_body_end macro clock, pc
 	and bl, r8b				; cant just test, as we need to check bit 6 for overflow.
 	test bl, bl				; sets zero and sign flags
-	lahf					; move new flags to rax
-
-	and r15w, 0100h			; preserve carry		
-	or r15w, ax				; store flags over (carry is always clear)
+	write_flags_r15_preservecarry
 
 	bt bx, 6				; test overflow
 	setc bl
@@ -2338,6 +2347,19 @@ x34_bit_zpx proc
 	read_zpx_rbx
 	bit_body 3, 1
 x34_bit_zpx endp
+
+;
+; TRB
+;
+
+x1C_trb_zp proc
+	
+
+	add r14, 5
+	add r11w, 1			
+
+	jmp opcode_done
+x1C_trb_zp endp
 
 ;
 ; NOP
@@ -2466,7 +2488,7 @@ opcode_4C	qword	x4C_jmp_abs 	; $4C
 opcode_4D	qword	x4D_eor_abs 	; $4D
 opcode_4E	qword	x4E_lsr_abs 	; $4E
 opcode_4F	qword	noinstruction 	; $4F
-opcode_50	qword	noinstruction 	; $50
+opcode_50	qword	x50_bvc		 	; $50
 opcode_51	qword	x51_eor_indy 	; $51
 opcode_52	qword	x52_eor_indzp 	; $52
 opcode_53	qword	noinstruction 	; $53
@@ -2498,7 +2520,7 @@ opcode_6C	qword	x6C_jmp_ind 	; $6C
 opcode_6D	qword	x6D_adc_abs 	; $6D
 opcode_6E	qword	x6E_ror_abs 	; $6E
 opcode_6F	qword	noinstruction 	; $6F
-opcode_70	qword	noinstruction 	; $70
+opcode_70	qword	x70_bvs		 	; $70
 opcode_71	qword	x71_adc_indy 	; $71
 opcode_72	qword	x72_adc_indzp 	; $72
 opcode_73	qword	noinstruction 	; $73
