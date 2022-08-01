@@ -2918,6 +2918,57 @@ no_negative:
 
 x28_plp endp
 
+;
+; BIT
+;
+
+bit_body_end macro clock, pc
+	and bl, r8b				; cant just test, as we need to check bit 6 for overflow.
+	test bl, bl				; sets zero and sign flags
+	lahf					; move new flags to rax
+
+	and r15w, 0100h			; preserve carry		
+	or r15w, ax				; store flags over (carry is always clear)
+
+	bt bx, 6				; test overflow
+	setc bl
+	mov byte ptr [rdx+flags_overflow], bl
+	
+	add r14, clock			
+	add r11w, pc			
+
+	jmp opcode_done
+endm
+
+bit_body macro clock, pc
+	mov bl, [rcx+rbx]
+	bit_body_end clock, pc
+endm
+
+x89_bit_imm proc
+	mov bl, [rcx+r11]
+	bit_body_end 3, 1
+x89_bit_imm endp
+
+x2C_bit_abs proc
+	read_abs_rbx
+	bit_body 4, 2
+x2C_bit_abs endp
+
+x3C_bit_absx proc
+	read_absx_rbx
+	bit_body 4, 2
+x3C_bit_absx endp
+
+x24_bit_zp proc
+	read_zp_rbx
+	bit_body 3, 1
+x24_bit_zp endp
+
+x34_bit_zpx proc
+	read_zpx_rbx
+	bit_body 3, 1
+x34_bit_zpx endp
 
 ;
 ; NOP
@@ -3002,7 +3053,7 @@ opcode_20	qword	x20_jsr		 	; $20
 opcode_21	qword	x21_and_indx 	; $21
 opcode_22	qword	noinstruction 	; $22
 opcode_23	qword	noinstruction 	; $23
-opcode_24	qword	noinstruction 	; $24
+opcode_24	qword	x24_bit_zp	 	; $24
 opcode_25	qword	x25_and_zp	 	; $25
 opcode_26	qword	x26_rol_zp	 	; $26
 opcode_27	qword	noinstruction 	; $27
@@ -3010,7 +3061,7 @@ opcode_28	qword	x28_plp		 	; $28
 opcode_29	qword	x29_and_imm 	; $29
 opcode_2A	qword	x2A_rol_a	 	; $2A
 opcode_2B	qword	noinstruction 	; $2B
-opcode_2C	qword	noinstruction 	; $2C
+opcode_2C	qword	x2C_bit_abs 	; $2C
 opcode_2D	qword	x2D_and_abs 	; $2D
 opcode_2E	qword	x2E_rol_abs 	; $2E
 opcode_2F	qword	noinstruction 	; $2F
@@ -3018,7 +3069,7 @@ opcode_30	qword	x30_bmi		 	; $30
 opcode_31	qword	x31_and_indy 	; $31
 opcode_32	qword	x32_and_indzp 	; $32
 opcode_33	qword	noinstruction 	; $33
-opcode_34	qword	noinstruction 	; $34
+opcode_34	qword	x34_bit_zpx 	; $34
 opcode_35	qword	x35_and_zpx 	; $35
 opcode_36	qword	x36_rol_zpx 	; $36
 opcode_37	qword	noinstruction 	; $37
@@ -3026,7 +3077,7 @@ opcode_38	qword	x38_sec		 	; $38
 opcode_39	qword	x39_and_absy 	; $39
 opcode_3A	qword	x3A_dec_a	 	; $3A
 opcode_3B	qword	noinstruction 	; $3B
-opcode_3C	qword	noinstruction 	; $3C
+opcode_3C	qword	x3C_bit_absx 	; $3C
 opcode_3D	qword	x3D_and_absx 	; $3D
 opcode_3E	qword	x3E_rol_absx 	; $3E
 opcode_3F	qword	noinstruction 	; $3F
@@ -3103,7 +3154,7 @@ opcode_85	qword	x85_sta_zp	 	; $85
 opcode_86	qword	x86_stx_zp	 	; $86
 opcode_87	qword	noinstruction 	; $87
 opcode_88	qword	x88_dey		 	; $88
-opcode_89	qword	noinstruction 	; $89
+opcode_89	qword	x89_bit_imm 	; $89
 opcode_8A	qword	x8A_txa		 	; $8A
 opcode_8B	qword	noinstruction 	; $8B
 opcode_8C	qword	x8C_sty_abs 	; $8C
