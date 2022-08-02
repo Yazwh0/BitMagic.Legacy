@@ -2006,6 +2006,77 @@ branch:
 x70_bvs endp
 
 ;
+; BBR
+;
+
+bbr_perform_jump macro
+	local page_change
+
+	movsx bx, byte ptr [rcx+r11+1]	; Get value at PC+1 and turn it into a 2byte signed value
+	add r11w, 1						; move PC on -- all jumps are relative
+	mov rax, r11					; store PC
+	add r11w, bx
+	
+	mov rbx, r11
+	cmp ah, bh						; test if the page has changed.
+	jne page_change
+
+	add r14, 6						; Clock
+
+	jmp opcode_done	
+
+page_change:						; page change as a 1 cycle penalty
+	add r14, 7						; Clock
+	jmp opcode_done
+
+endm
+
+bbr_body macro bitnumber
+	read_zp_rbx
+	mov al, byte ptr[rcx+rbx]
+	bt ax, bitnumber
+	jnc branch
+	add r11w, 2						; move PC on
+	add r14, 5						; Clock
+
+	jmp opcode_done	
+branch:
+	bbr_perform_jump
+endm
+
+x0f_bbr0 proc
+	bbr_body 0
+x0f_bbr0 endp
+
+x1f_bbr1 proc
+	bbr_body 1
+x1f_bbr1 endp
+
+x2f_bbr2 proc
+	bbr_body 2
+x2f_bbr2 endp
+
+x3f_bbr3 proc
+	bbr_body 3
+x3f_bbr3 endp
+
+x4f_bbr4 proc
+	bbr_body 4
+x4f_bbr4 endp
+
+x5f_bbr5 proc
+	bbr_body 5
+x5f_bbr5 endp
+
+x6f_bbr6 proc
+	bbr_body 6
+x6f_bbr6 endp
+
+x7f_bbr7 proc
+	bbr_body 7
+x7f_bbr7 endp
+
+;
 ; JMP
 ;
 
@@ -2039,7 +2110,6 @@ x7C_jmp_absx endp
 ;
 
 x20_jsr proc
-		
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
 	add rax, 1
 
@@ -2058,11 +2128,9 @@ x20_jsr proc
 	add r14, 6							; Add cycles
 
 	jmp opcode_done
-
 x20_jsr endp
 
 x60_rts proc
-	
 	xor rbx, rbx
 
 	mov ebx, [rdx+stackpointer]			; Get stack pointer
@@ -2079,7 +2147,6 @@ x60_rts proc
 	add r14, 6							; Add cycles
 
 	jmp opcode_done
-
 x60_rts endp
 
 ;
@@ -2616,7 +2683,7 @@ opcode_0B	qword	noinstruction 	; $0B
 opcode_0C	qword	x0C_tsb_abs 	; $0C
 opcode_0D	qword	x0D_ora_abs	 	; $0D
 opcode_0E	qword	x0E_asl_abs	 	; $0E
-opcode_0F	qword	noinstruction 	; $0F
+opcode_0F	qword	x0f_bbr0	 	; $0F
 opcode_10	qword	x10_bpl		 	; $10
 opcode_11	qword	x11_ora_indy 	; $11
 opcode_12	qword	x12_ora_indzp 	; $12
@@ -2632,7 +2699,7 @@ opcode_1B	qword	noinstruction 	; $1B
 opcode_1C	qword	x1C_trb_abs	 	; $1C
 opcode_1D	qword	x1D_ora_absx 	; $1D
 opcode_1E	qword	x1E_asl_absx 	; $1E
-opcode_1F	qword	noinstruction 	; $1F
+opcode_1F	qword	x1f_bbr1	 	; $1F
 opcode_20	qword	x20_jsr		 	; $20
 opcode_21	qword	x21_and_indx 	; $21
 opcode_22	qword	noinstruction 	; $22
@@ -2648,7 +2715,7 @@ opcode_2B	qword	noinstruction 	; $2B
 opcode_2C	qword	x2C_bit_abs 	; $2C
 opcode_2D	qword	x2D_and_abs 	; $2D
 opcode_2E	qword	x2E_rol_abs 	; $2E
-opcode_2F	qword	noinstruction 	; $2F
+opcode_2F	qword	x2f_bbr2	 	; $2F
 opcode_30	qword	x30_bmi		 	; $30
 opcode_31	qword	x31_and_indy 	; $31
 opcode_32	qword	x32_and_indzp 	; $32
@@ -2664,7 +2731,7 @@ opcode_3B	qword	noinstruction 	; $3B
 opcode_3C	qword	x3C_bit_absx 	; $3C
 opcode_3D	qword	x3D_and_absx 	; $3D
 opcode_3E	qword	x3E_rol_absx 	; $3E
-opcode_3F	qword	noinstruction 	; $3F
+opcode_3F	qword	x3f_bbr3	 	; $3F
 opcode_40	qword	noinstruction 	; $40
 opcode_41	qword	x41_eor_indx 	; $41
 opcode_42	qword	noinstruction 	; $42
@@ -2680,7 +2747,7 @@ opcode_4B	qword	noinstruction 	; $4B
 opcode_4C	qword	x4C_jmp_abs 	; $4C
 opcode_4D	qword	x4D_eor_abs 	; $4D
 opcode_4E	qword	x4E_lsr_abs 	; $4E
-opcode_4F	qword	noinstruction 	; $4F
+opcode_4F	qword	x4f_bbr4	 	; $4F
 opcode_50	qword	x50_bvc		 	; $50
 opcode_51	qword	x51_eor_indy 	; $51
 opcode_52	qword	x52_eor_indzp 	; $52
@@ -2696,7 +2763,7 @@ opcode_5B	qword	noinstruction 	; $5B
 opcode_5C	qword	noinstruction 	; $5C
 opcode_5D	qword	x5D_eor_absx 	; $5D
 opcode_5E	qword	x5E_lsr_absx 	; $5E
-opcode_5F	qword	noinstruction 	; $5F
+opcode_5F	qword	x5f_bbr5	 	; $5F
 opcode_60	qword	x60_rts		 	; $60
 opcode_61	qword	x61_adc_indx 	; $61
 opcode_62	qword	noinstruction 	; $62
@@ -2712,7 +2779,7 @@ opcode_6B	qword	noinstruction 	; $6B
 opcode_6C	qword	x6C_jmp_ind 	; $6C
 opcode_6D	qword	x6D_adc_abs 	; $6D
 opcode_6E	qword	x6E_ror_abs 	; $6E
-opcode_6F	qword	noinstruction 	; $6F
+opcode_6F	qword	x6f_bbr6	 	; $6F
 opcode_70	qword	x70_bvs		 	; $70
 opcode_71	qword	x71_adc_indy 	; $71
 opcode_72	qword	x72_adc_indzp 	; $72
@@ -2728,7 +2795,7 @@ opcode_7B	qword	noinstruction 	; $7B
 opcode_7C	qword	x7C_jmp_absx 	; $7C
 opcode_7D	qword	x7D_adc_absx 	; $7D
 opcode_7E	qword	x7E_ror_absx 	; $7E
-opcode_7F	qword	noinstruction 	; $7F
+opcode_7F	qword	x7f_bbr7	 	; $7F
 opcode_80	qword	x80_bra		 	; $80
 opcode_81	qword	x81_sta_indx 	; $81
 opcode_82	qword	noinstruction 	; $82
