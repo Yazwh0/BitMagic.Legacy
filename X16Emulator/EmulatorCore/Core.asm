@@ -2489,6 +2489,74 @@ x77_rmb7 proc
 x77_rmb7 endp
 
 ;
+; SMB
+;
+
+x87_smb0 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00000001b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+x87_smb0 endp
+
+x97_smb1 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00000010b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+x97_smb1 endp
+
+xa7_smb2 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00000100b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xa7_smb2 endp
+
+xb7_smb3 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00001000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xb7_smb3 endp
+
+xc7_smb4 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00010000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xc7_smb4 endp
+
+xd7_smb5 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 00100000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xd7_smb5 endp
+
+xe7_smb6 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 01000000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xe7_smb6 endp
+
+xf7_smb7 proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], 10000000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+xf7_smb7 endp
+
+;
 ; NOP
 ;
 
@@ -2668,7 +2736,7 @@ opcode_83	qword	noinstruction 	; $83
 opcode_84	qword	x84_sty_zp	 	; $84
 opcode_85	qword	x85_sta_zp	 	; $85
 opcode_86	qword	x86_stx_zp	 	; $86
-opcode_87	qword	noinstruction 	; $87
+opcode_87	qword	x87_smb0	 	; $87
 opcode_88	qword	x88_dey		 	; $88
 opcode_89	qword	x89_bit_imm 	; $89
 opcode_8A	qword	x8A_txa		 	; $8A
@@ -2684,7 +2752,7 @@ opcode_93	qword	noinstruction 	; $93
 opcode_94	qword	x94_sty_zpx 	; $94
 opcode_95	qword	x95_sta_zpx 	; $95
 opcode_96	qword	x96_stx_zpy 	; $96
-opcode_97	qword	noinstruction 	; $97
+opcode_97	qword	x97_smb1	 	; $97
 opcode_98	qword	x98_tya		 	; $98
 opcode_99	qword	x99_sta_absy 	; $99
 opcode_9A	qword	x9A_txs		 	; $9A
@@ -2700,7 +2768,7 @@ opcode_A3	qword	noinstruction 	; $A3
 opcode_A4	qword	xA4_ldy_zp	 	; $A4
 opcode_A5	qword	xA5_lda_zp	 	; $A5
 opcode_A6	qword	xA6_ldx_zp	 	; $A6
-opcode_A7	qword	noinstruction 	; $A7
+opcode_A7	qword	xa7_smb2	 	; $A7
 opcode_A8	qword	xA8_tay		 	; $A8
 opcode_A9	qword	xA9_lda_imm 	; $A9
 opcode_AA	qword	xAA_tax		 	; $AA
@@ -2716,7 +2784,7 @@ opcode_B3	qword	noinstruction 	; $B3
 opcode_B4	qword	xB4_ldy_zpx 	; $B4
 opcode_B5	qword	xB5_lda_zpx 	; $B5
 opcode_B6	qword	xB6_ldx_zpy 	; $B6
-opcode_B7	qword	noinstruction 	; $B7
+opcode_B7	qword	xb7_smb3	 	; $B7
 opcode_B8	qword	xB8_clv		 	; $B8
 opcode_B9	qword	xB9_lda_absy 	; $B9
 opcode_BA	qword	xBA_tsx		 	; $BA
@@ -2732,7 +2800,7 @@ opcode_C3	qword	noinstruction 	; $C3
 opcode_C4	qword	xC4_cmpy_zp 	; $C4
 opcode_C5	qword	xC5_cmp_zp	 	; $C5
 opcode_C6	qword	xC6_dec_absx 	; $C6
-opcode_C7	qword	noinstruction 	; $C7
+opcode_C7	qword	xc7_smb4	 	; $C7
 opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	xC9_cmp_imm 	; $C9
 opcode_CA	qword	xCA_dex		 	; $CA
@@ -2748,7 +2816,7 @@ opcode_D3	qword	noinstruction 	; $D3
 opcode_D4	qword	noinstruction 	; $D4
 opcode_D5	qword	xD5_cmp_zpx 	; $D5
 opcode_D6	qword	xD6_dec_zpx 	; $D6
-opcode_D7	qword	noinstruction 	; $D7
+opcode_D7	qword	xd7_smb5 		; $D7
 opcode_D8	qword	xD8_cld		 	; $D8
 opcode_D9	qword	xD9_cmp_absy 	; $D9
 opcode_DA	qword	xDA_phx		 	; $DA
@@ -2764,7 +2832,7 @@ opcode_E3	qword	noinstruction 	; $E3
 opcode_E4	qword	xE4_cmpx_zp 	; $E4
 opcode_E5	qword	xE5_sbc_zp	 	; $E5
 opcode_E6	qword	xE6_inc_zp	 	; $E6
-opcode_E7	qword	noinstruction 	; $E7
+opcode_E7	qword	xe7_smb6	 	; $E7
 opcode_E8	qword	xE8_inx	 		; $E8
 opcode_E9	qword	xE9_sbc_imm 	; $E9
 opcode_EA	qword	xEA_nop		 	; $EA
@@ -2780,7 +2848,7 @@ opcode_F3	qword	noinstruction 	; $F3
 opcode_F4	qword	noinstruction 	; $F4
 opcode_F5	qword	xF5_sbc_zpx 	; $F5
 opcode_F6	qword	xF6_inc_zpx 	; $F6
-opcode_F7	qword	noinstruction 	; $F7
+opcode_F7	qword	xf7_smb7	 	; $F7
 opcode_F8	qword	xF8_sed		 	; $F8
 opcode_F9	qword	xF9_sbc_absy 	; $F9
 opcode_FA	qword	xFA_plx		 	; $FA
