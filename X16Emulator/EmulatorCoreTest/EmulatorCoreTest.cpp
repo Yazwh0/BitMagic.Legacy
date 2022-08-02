@@ -36,7 +36,7 @@ int main()
         memory_ptr[i] = 0;
 
     // initiliase machine
-    state.a = 0b00000010;
+    state.a = 0xff;
     state.x = 0x72;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
@@ -47,15 +47,15 @@ int main()
     state.carry = false;
     state.breakFlag = false;
     state.interruptDisable = false;
-    state.negative = true;
+    state.negative = false;
     state.overflow = false;
-    state.zero = true;
+    state.zero = false;
 
-    memory_ptr[0x400] = 0x44;
+    memory_ptr[0x10] = 0x03;
 
-    memory_ptr[0x810] = 0xac;
-    memory_ptr[0x811] = 0x00;
-    memory_ptr[0x812] = 0x04;
+    memory_ptr[0x810] = 0x14;
+    memory_ptr[0x811] = 0x10;
+    memory_ptr[0x812] = 0xdb;
     memory_ptr[0x813] = 0xdb;
     memory_ptr[0x814] = 0x10;
     memory_ptr[0x815] = 0xdb;

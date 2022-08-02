@@ -2010,36 +2010,28 @@ x70_bvs endp
 ;
 
 x4C_jmp_abs proc
-
 	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the PC
 
 	add r14, 3
-
 	jmp opcode_done
 
 x4C_jmp_abs endp
 
 x6C_jmp_ind proc
-
 	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
 	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
 
 	add r14, 5
-
 	jmp opcode_done
-
 x6C_jmp_ind endp
 
 x7C_jmp_absx proc
-
 	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
 	add	r11, r9				; Add on X
 	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
 
 	add r14, 6
-
 	jmp opcode_done
-
 x7C_jmp_absx endp
 
 ;
@@ -2352,24 +2344,51 @@ x34_bit_zpx endp
 ; TRB
 ;
 
-x1C_trb_zp proc
-	
+x1C_trb_abs proc
+	read_abs_rbx
+	mov al, r8b
+	not al
+	and byte ptr [rcx+rbx], al
 
+	jz set_zero
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+
+set_zero:
+	;        NZ A P C
+	or r15w, 0100000000000000b
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+x1C_trb_abs endp
+
+x14_trb_zp proc
+	read_zp_rbx
+	mov al, r8b
+	not al
+	and byte ptr [rcx+rbx], al
+
+	jz set_zero
 	add r14, 5
 	add r11w, 1			
-
 	jmp opcode_done
-x1C_trb_zp endp
+
+set_zero:
+	;        NZ A P C
+	or r15w, 0100000000000000b
+	add r14, 5
+	add r11w, 1			
+	jmp opcode_done
+x14_trb_zp endp
 
 ;
 ; NOP
 ;
 
 xEA_nop proc
-
 	add r14, 2	; Clock	
 	jmp opcode_done
-
 xEA_nop endp
 
 ;
@@ -2428,7 +2447,7 @@ opcode_10	qword	x10_bpl		 	; $10
 opcode_11	qword	x11_ora_indy 	; $11
 opcode_12	qword	x12_ora_indzp 	; $12
 opcode_13	qword	noinstruction 	; $13
-opcode_14	qword	noinstruction 	; $14
+opcode_14	qword	x14_trb_zp	 	; $14
 opcode_15	qword	x15_ora_zpx	 	; $15
 opcode_16	qword	x16_asl_zpx	 	; $16
 opcode_17	qword	noinstruction 	; $17
@@ -2436,7 +2455,7 @@ opcode_18	qword	x18_clc		 	; $18
 opcode_19	qword	x19_ora_absy 	; $19
 opcode_1A	qword	x1A_inc_a	 	; $1A
 opcode_1B	qword	noinstruction 	; $1B
-opcode_1C	qword	noinstruction 	; $1C
+opcode_1C	qword	x1C_trb_abs	 	; $1C
 opcode_1D	qword	x1D_ora_absx 	; $1D
 opcode_1E	qword	x1E_asl_absx 	; $1E
 opcode_1F	qword	noinstruction 	; $1F
