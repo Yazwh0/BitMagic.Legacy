@@ -2383,6 +2383,44 @@ set_zero:
 x14_trb_zp endp
 
 ;
+; TSB
+;
+
+x04_tsb_zp proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], r8b
+
+	jz set_zero
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+
+set_zero:
+	;        NZ A P C
+	or r15w, 0100000000000000b
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+x04_tsb_zp endp
+
+x0C_tsb_abs proc
+	read_zp_rbx
+	or byte ptr [rcx+rbx], r8b
+
+	jz set_zero
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+
+set_zero:
+	;        NZ A P C
+	or r15w, 0100000000000000b
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+x0C_tsb_abs endp
+
+;
 ; NOP
 ;
 
@@ -2431,7 +2469,7 @@ opcode_00	qword	noinstruction 	; $00
 opcode_01	qword	x01_ora_indx 	; $01
 opcode_02	qword	noinstruction 	; $02
 opcode_03	qword	noinstruction 	; $03
-opcode_04	qword	noinstruction 	; $04
+opcode_04	qword	x04_tsb_zp	 	; $04
 opcode_05	qword	x05_ora_zp	 	; $05
 opcode_06	qword	x06_asl_zp	 	; $06
 opcode_07	qword	noinstruction 	; $07
@@ -2439,7 +2477,7 @@ opcode_08	qword	x08_php		 	; $08
 opcode_09	qword	x09_ora_imm	 	; $09
 opcode_0A	qword	x0A_asl_a	 	; $0A
 opcode_0B	qword	noinstruction 	; $0B
-opcode_0C	qword	noinstruction 	; $0C
+opcode_0C	qword	x0C_tsb_abs 	; $0C
 opcode_0D	qword	x0D_ora_abs	 	; $0D
 opcode_0E	qword	x0E_asl_abs	 	; $0E
 opcode_0F	qword	noinstruction 	; $0F
