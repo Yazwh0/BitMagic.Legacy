@@ -2009,7 +2009,7 @@ x70_bvs endp
 ; BBR
 ;
 
-bbr_perform_jump macro
+bb_perform_jump macro
 	local page_change
 
 	movsx bx, byte ptr [rcx+r11+1]	; Get value at PC+1 and turn it into a 2byte signed value
@@ -2041,40 +2041,90 @@ bbr_body macro bitnumber
 
 	jmp opcode_done	
 branch:
-	bbr_perform_jump
+	bb_perform_jump
 endm
 
-x0f_bbr0 proc
+x0F_bbr0 proc
 	bbr_body 0
-x0f_bbr0 endp
+x0F_bbr0 endp
 
-x1f_bbr1 proc
+x1F_bbr1 proc
 	bbr_body 1
-x1f_bbr1 endp
+x1F_bbr1 endp
 
-x2f_bbr2 proc
+x2F_bbr2 proc
 	bbr_body 2
-x2f_bbr2 endp
+x2F_bbr2 endp
 
-x3f_bbr3 proc
+x3F_bbr3 proc
 	bbr_body 3
-x3f_bbr3 endp
+x3F_bbr3 endp
 
-x4f_bbr4 proc
+x4F_bbr4 proc
 	bbr_body 4
-x4f_bbr4 endp
+x4F_bbr4 endp
 
-x5f_bbr5 proc
+x5F_bbr5 proc
 	bbr_body 5
-x5f_bbr5 endp
+x5F_bbr5 endp
 
-x6f_bbr6 proc
+x6F_bbr6 proc
 	bbr_body 6
-x6f_bbr6 endp
+x6F_bbr6 endp
 
-x7f_bbr7 proc
+x7F_bbr7 proc
 	bbr_body 7
-x7f_bbr7 endp
+x7F_bbr7 endp
+
+;
+; BBS
+;
+
+
+bbs_body macro bitnumber
+	read_zp_rbx
+	mov al, byte ptr[rcx+rbx]
+	bt ax, bitnumber
+	jc branch
+	add r11w, 2						; move PC on
+	add r14, 5						; Clock
+
+	jmp opcode_done	
+branch:
+	bb_perform_jump
+endm
+
+x8F_bbs0 proc
+	bbs_body 0
+x8F_bbs0 endp
+
+x9F_bbs1 proc
+	bbs_body 1
+x9F_bbs1 endp
+
+xAF_bbs2 proc
+	bbs_body 2
+xAF_bbs2 endp
+
+xBF_bbs3 proc
+	bbs_body 3
+xBF_bbs3 endp
+
+xCF_bbs4 proc
+	bbs_body 4
+xCF_bbs4 endp
+
+xDF_bbs5 proc
+	bbs_body 5
+xDF_bbs5 endp
+
+xEF_bbs6 proc
+	bbs_body 6
+xEF_bbs6 endp
+
+xFF_bbs7 proc
+	bbs_body 7
+xFF_bbs7 endp
 
 ;
 ; JMP
@@ -2811,7 +2861,7 @@ opcode_8B	qword	noinstruction 	; $8B
 opcode_8C	qword	x8C_sty_abs 	; $8C
 opcode_8D	qword	x8D_sta_abs 	; $8D
 opcode_8E	qword	x8E_stx_abs 	; $8E
-opcode_8F	qword	noinstruction 	; $8F
+opcode_8F	qword	x8F_bbs0	 	; $8F
 opcode_90	qword	x90_bcc		 	; $90
 opcode_91	qword	x91_sta_indy 	; $91
 opcode_92	qword	x92_sta_indzp 	; $92
@@ -2827,7 +2877,7 @@ opcode_9B	qword	noinstruction 	; $9B
 opcode_9C	qword	x9C_stz_abs 	; $9C
 opcode_9D	qword	x9D_sta_absx 	; $9D
 opcode_9E	qword	x9E_stz_absx 	; $9E
-opcode_9F	qword	noinstruction 	; $9F
+opcode_9F	qword	x9F_bbs1	 	; $9F
 opcode_A0	qword	xA0_ldy_imm 	; $A0
 opcode_A1	qword	xA1_lda_indx 	; $A1
 opcode_A2	qword	xA2_ldx_imm 	; $A2
@@ -2843,7 +2893,7 @@ opcode_AB	qword	noinstruction 	; $AB
 opcode_AC	qword	xAC_ldy_abs 	; $AC
 opcode_AD	qword	xAD_lda_abs 	; $AD
 opcode_AE	qword	xAE_ldx_abs 	; $AE
-opcode_AF	qword	noinstruction 	; $AF
+opcode_AF	qword	xAF_bbs2	 	; $AF
 opcode_B0	qword	xB0_bcs		 	; $B0
 opcode_B1	qword	xB1_lda_indy 	; $B1
 opcode_B2	qword	xB2_lda_indzp 	; $B2
@@ -2859,7 +2909,7 @@ opcode_BB	qword	noinstruction 	; $BB
 opcode_BC	qword	xBC_ldy_absx 	; $BC
 opcode_BD	qword	xBD_lda_absx 	; $BD
 opcode_BE	qword	xBE_ldx_absy 	; $BE
-opcode_BF	qword	noinstruction 	; $BF
+opcode_BF	qword	xBF_bbs3 		; $BF
 opcode_C0	qword	xC0_cmpy_imm 	; $C0
 opcode_C1	qword	xC1_sbc_indx 	; $C1
 opcode_C2	qword	noinstruction 	; $C2
@@ -2875,7 +2925,7 @@ opcode_CB	qword	noinstruction 	; $CB
 opcode_CC	qword	xCC_cmpy_abs 	; $CC
 opcode_CD	qword	xCD_cmp_abs 	; $CD
 opcode_CE	qword	xCE_dec_abs 	; $CE
-opcode_CF	qword	noinstruction 	; $CF
+opcode_CF	qword	xCF_bbs4 	 	; $CF
 opcode_D0	qword	xD0_bne		 	; $D0
 opcode_D1	qword	xD1_cmp_indy 	; $D1
 opcode_D2	qword	xD2_cmp_indzp 	; $D2
@@ -2891,7 +2941,7 @@ opcode_DB	qword	xDB_stp		 	; $DB
 opcode_DC	qword	noinstruction 	; $DC
 opcode_DD	qword	xDD_cmp_absx 	; $DD
 opcode_DE	qword	xDE_dec_absx 	; $DE
-opcode_DF	qword	noinstruction 	; $DF
+opcode_DF	qword	xDF_bbs5	 	; $DF
 opcode_E0	qword	xE0_cmpx_imm 	; $E0
 opcode_E1	qword	xE1_sbc_indx 	; $E1
 opcode_E2	qword	noinstruction 	; $E2
@@ -2907,7 +2957,7 @@ opcode_EB	qword	noinstruction 	; $EB
 opcode_EC	qword	xEC_cmpx_abs 	; $EC
 opcode_ED	qword	xED_sbc_abs 	; $ED
 opcode_EE	qword	xEE_inc_abs 	; $EE
-opcode_EF	qword	noinstruction 	; $EF
+opcode_EF	qword	xEF_bbs6 	; $EF
 opcode_F0	qword	xF0_beq		 	; $F0
 opcode_F1	qword	xF1_sbc_indy 	; $F1
 opcode_F2	qword	xF2_sbc_indzp 	; $F2
@@ -2923,7 +2973,7 @@ opcode_FB	qword	noinstruction 	; $FB
 opcode_FC	qword	noinstruction 	; $FC
 opcode_FD	qword	xFD_sbc_absx 	; $FD
 opcode_FE	qword	xFE_inc_absx 	; $FE
-opcode_FF	qword	noinstruction 	; $FF
+opcode_FF	qword	xFF_bbs7	 	; $FF
 
 
 
