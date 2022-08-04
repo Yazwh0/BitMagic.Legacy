@@ -26,17 +26,17 @@ extern "C"
 {
     struct state 
     {
-        unsigned int a;
-        unsigned int x;
-        unsigned int y;
-        unsigned int pc;
-        unsigned int stackpointer;
+        uint64_t clock;
+        uint16_t pc;
+        uint16_t stackpointer;
+        uint8_t a;
+        uint8_t x;
+        uint8_t y;
+
         bool decimal;
         bool breakFlag;
         bool overflow;
         bool negative;
-        uint64_t clock;
-
         bool carry;
         bool zero;
         bool interruptDisable;

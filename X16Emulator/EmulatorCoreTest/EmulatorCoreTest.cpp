@@ -1,20 +1,23 @@
 #include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <malloc.h>
 
 extern "C" 
 {
     struct state 
     {
-        unsigned int a;
-        unsigned int x;
-        unsigned int y;
-        unsigned int pc;
-        unsigned int stackpointer;
+        uint64_t clock;
+        uint16_t pc;
+        uint16_t stackpointer;
+        uint8_t a;
+        uint8_t x;
+        uint8_t y;
+
         bool decimal;
         bool breakFlag;
         bool overflow;
         bool negative;
-        uint64_t clock;
-
         bool carry;
         bool zero;
         bool interruptDisable;
@@ -29,8 +32,18 @@ int main()
 
 
     // main memory
-    int8_t* memory_ptr = new int8_t[64 * 1024];
-    struct state state;
+    // align to 512 bytes for AVX copy
+    void* ptr = _aligned_malloc(64 * 1024, 512);
+
+    if (!ptr)
+    {
+        std::cout << printf("Could not allocate memory.");
+        return -1;
+    }
+
+    int8_t* memory_ptr = (int8_t*)ptr;
+
+    struct state state {};
 
     for (int i = 0; i < 64 * 1024; i++)
         memory_ptr[i] = 0;
@@ -64,7 +77,8 @@ int main()
 
     int x = fnEmulatorCode(memory_ptr, &state); 
 
-    delete [] memory_ptr;
+    //delete [] memory_ptr;
+    _aligned_free(ptr);
 
     std::cout << printf("Emulator returned %d\n", x);
 }

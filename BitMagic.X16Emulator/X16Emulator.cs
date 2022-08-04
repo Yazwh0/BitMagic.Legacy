@@ -10,19 +10,17 @@ public class Emulator
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
-        public uint A = 0;
-        public uint X = 0;
-        public uint Y = 0;
-        public uint Pc = 0;
-        public uint StackPointer = 0x1ff;
+        public ulong Clock = 0;
+        public ushort Pc = 0;
+        public ushort StackPointer = 0x1ff;
+        public byte A = 0;
+        public byte X = 0;
+        public byte Y = 0;
         
         public byte Decimal = 0;
         public byte BreakFlag = 0;
         public byte Overflow = 0;
         public byte Negative = 0;
-
-        public ulong Clock = 0;
-
         public byte Carry = 0;
         public byte Zero = 0;
         public byte InterruptDisable = 0;
@@ -45,11 +43,11 @@ public class Emulator
 
     public byte[] Memory => _memory;
 
-    public uint A {get => _state.A; set => _state.A = value; }
-    public uint X { get => _state.X; set => _state.X = value; }
-    public uint Y { get => _state.Y; set => _state.Y = value; }
-    public uint Pc { get => _state.Pc; set => _state.Pc = value; }
-    public uint StackPointer { get => _state.StackPointer; set => _state.StackPointer = value; }
+    public byte A {get => _state.A; set => _state.A = value; }
+    public byte X { get => _state.X; set => _state.X = value; }
+    public byte Y { get => _state.Y; set => _state.Y = value; }
+    public ushort Pc { get => _state.Pc; set => _state.Pc = value; }
+    public ushort StackPointer { get => _state.StackPointer; set => _state.StackPointer = value; }
     public ulong Clock { get => _state.Clock; set => _state.Clock = value; }
     public bool Carry { get => _state.Carry != 0; set => _state.Carry = (byte)(value ? 0x01 : 0x00); }
     public bool Zero { get => _state.Zero != 0; set => _state.Zero = (byte)(value ? 0x01 : 0x00); }

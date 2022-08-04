@@ -16,20 +16,21 @@
 .CODE
 ALIGN 16
 
-register_a				equ 0
-register_x				equ 4
-register_y				equ 8
-register_pc				equ 12
-stackpointer			equ 16
-flags_decimal			equ 20
-flags_break				equ 21
-flags_overflow			equ 22
-flags_negative			equ 23
-clock					equ 24 ; needs to be aligned, so put flags above
+clock					equ 0 ; ulong needs to be aligned, so put flags above
+register_pc				equ 8 ; ushort
+stackpointer			equ 10 ; ushort
 
-flags_carry				equ 32
-flags_zero				equ 33
-flags_interruptDisable	equ 34
+register_a				equ 12 ; byte
+register_x				equ 13 ; byte
+register_y				equ 14 ; byte
+flags_decimal			equ 15 ; byte
+flags_break				equ 16 ; byte
+flags_overflow			equ 17 ; byte
+flags_negative			equ 18 ; byte
+
+flags_carry				equ 19 ; byte
+flags_zero				equ 20 ; byte
+flags_interruptDisable	equ 21 ; byte
 
 
 ; -----------------------------
@@ -51,11 +52,11 @@ update_nz_flags_a macro
 endm
 
 write_state_obj macro	
-	mov	[rdx+register_a], r8d		; a
-	mov	[rdx+register_x], r9d		; x
-	mov	[rdx+register_y], r10d		; y
-	mov	[rdx+register_pc], r11d		; PC
-	mov [rdx+clock], r14			; Clock
+	mov	byte ptr [rdx+register_a], r8b			; a
+	mov	byte ptr [rdx+register_x], r9b			; x
+	mov	byte ptr [rdx+register_y], r10b			; y
+	mov	word ptr [rdx+register_pc], r11w		; PC
+	mov [rdx+clock], r14						; Clock
 
 	; Flags
 	; read from r15 directly
@@ -86,10 +87,15 @@ endm
 read_state_obj macro
 	local no_carry, no_zero, no_overflow, no_negative
 
-	mov r8d, [rdx+register_a]		; a
-	mov r9d, [rdx+register_x]		; x
-	mov r10d, [rdx+register_y]		; y
-	mov r11d, [rdx+register_pc]		; PC
+	xor r8, r8
+	xor r9, r9
+	xor r10, r10
+	xor r11, r11
+
+	mov r8b, [rdx+register_a]		; a
+	mov r9b, [rdx+register_x]		; x
+	mov r10b, [rdx+register_y]		; y
+	mov r11w, [rdx+register_pc]		; PC
 	mov r14, [rdx+clock]			; Clock
 	
 	; Flags
@@ -218,12 +224,26 @@ not_supported:
 	ret
 asm_func ENDP
 
+;
+; Side effects macros
+;
+; r12 Write
+; r13 Read
+
+read_sideeffects_rbx macro
+	mov r13, rbx
+endm
+
+write_sideeffects_rbx macro
+	mov r12, rbx
+endm
 
 ; -----------------------------
 ; Read Memory
 ; -----------------------------
 ; Put value into al
 ; and increment PC.
+
 
 read_zp_rbx macro
 	xor rbx, rbx
@@ -261,8 +281,6 @@ read_absx_rbx_pagepenalty macro
 	jnc no_overflow
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
-	;clc					; Clear carry
-
 no_overflow:
 endm
 
@@ -280,8 +298,6 @@ read_absy_rbx_pagepenalty macro
 	jnc no_overflow
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
-	;clc					; Clear carry
-
 no_overflow:
 endm
 
@@ -2165,7 +2181,7 @@ x20_jsr proc
 
 	xor rbx, rbx
 
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
 	mov [rcx+rbx], ah					; Put PC High byte on stack
@@ -2183,7 +2199,7 @@ x20_jsr endp
 x60_rts proc
 	xor rbx, rbx
 
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	add bl, 1							; Move stack pointer on
 	mov ah, [rcx+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
@@ -2206,7 +2222,7 @@ x60_rts endp
 x48_pha proc
 	xor rbx, rbx
 	
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	sub byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
 	mov [rcx+rbx], r8b					; Put A on stack
 	
@@ -2235,7 +2251,7 @@ xDA_phx proc
 	
 	xor rbx, rbx
 	
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	mov [rcx+rbx], r9b					; Put X on stack
 	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
 	
@@ -2249,7 +2265,7 @@ xFA_plx proc
 	xor rbx, rbx
 
 	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
 	test r9b, r9b
@@ -2263,7 +2279,7 @@ xFA_plx endp
 x5A_phy proc	
 	xor rbx, rbx
 	
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	mov [rcx+rbx], r10b					; Put Y on stack
 	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
 	
@@ -2276,7 +2292,7 @@ x7A_ply proc
 	xor rbx, rbx
 
 	add byte ptr [rdx+stackpointer] ,1	; Increment stack pointer
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 
 	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
 	test r10b, r10b
@@ -2346,7 +2362,7 @@ no_decimal:
 
 	xor rbx, rbx
 
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	sub byte ptr [rdx+stackpointer], 1	; Increment stack pointer
 	mov [rcx+rbx], al					; Put status on stack
 	
@@ -2361,7 +2377,7 @@ x28_plp proc
 	xor rbx, rbx
 	
 	add byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx+stackpointer]			; Get stack pointer
 	mov al, [rcx+rbx]					; Get status from stack
 	
 	xor r15w, r15w
