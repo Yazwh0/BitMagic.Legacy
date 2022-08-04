@@ -25,6 +25,8 @@ public class Emulator
         public byte Zero = 0;
         public byte InterruptDisable = 0;
 
+        public byte Interrupt = 0;
+
         public CpuState()
         {
         }
@@ -56,10 +58,11 @@ public class Emulator
     public bool BreakFlag { get => _state.BreakFlag != 0; set => _state.BreakFlag = (byte)(value ? 0x01 : 0x00); }
     public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
+    public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
 
     public Emulator()
     {
-        _memory = new byte[0xffff];
+        _memory = new byte[0xffff+1];
         _state = new CpuState();
     }
 

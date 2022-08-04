@@ -40,6 +40,7 @@ extern "C"
         bool carry;
         bool zero;
         bool interruptDisable;
+        bool interrupt;
     };
 
 	EMULATORCODE_API int fnEmulatorCode(int8_t* mainMemory, state* state);

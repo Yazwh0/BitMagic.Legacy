@@ -31,7 +31,7 @@ flags_negative			equ 18 ; byte
 flags_carry				equ 19 ; byte
 flags_zero				equ 20 ; byte
 flags_interruptDisable	equ 21 ; byte
-
+interrupt				equ 22 ; byte
 
 ; -----------------------------
 ; Set flags
@@ -198,6 +198,13 @@ asm_func proc memory:QWORD, state:QWORD
 
 
 main_loop:
+	; check for interrupt
+	mov al, [rdx+interrupt]
+	btr ax, 0	; todo change to test and reset in handler
+	jc handle_interrupt
+
+next_opcode::
+
 	xor rax, rax
 	mov al, [rcx+r11]			; Get opcode
 	add r11w, 1						; PC+1
@@ -223,6 +230,7 @@ not_supported:
 	mov rax, -1
 	ret
 asm_func ENDP
+
 
 ;
 ; Side effects macros
@@ -2318,7 +2326,12 @@ xBA_tsx proc
 	jmp opcode_done	
 xBA_tsx endp
 
-x08_php proc
+;
+; Interrupt
+;
+
+; also used by PHP
+set_status_register_al macro
 	mov	al, 00110000b ; bits that are always set
 
 	; carry
@@ -2359,28 +2372,22 @@ no_overflow:
 	jz no_decimal
 	or al, 00001000b
 no_decimal:
+endm
 
-	xor rbx, rbx
-
-	mov bx, [rdx+stackpointer]			; Get stack pointer
-	sub byte ptr [rdx+stackpointer], 1	; Increment stack pointer
-	mov [rcx+rbx], al					; Put status on stack
-	
-	add r14, 3							; Add cycles
-
-	jmp opcode_done
-
-x08_php endp
-
-x28_plp proc
-
+get_status_register macro preservebx
 	xor rbx, rbx
 	
-	add byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
 	mov bx, [rdx+stackpointer]			; Get stack pointer
+	add bl, 1							; Decrement stack pointer
 	mov al, [rcx+rbx]					; Get status from stack
 	
 	xor r15w, r15w
+
+if preservebx eq 1
+	push rbx
+else
+	mov byte ptr [rdx+stackpointer], bl
+endif
 
 	; carry
 	bt ax, 0
@@ -2418,10 +2425,77 @@ no_negative:
 	setc bl
 	mov byte ptr [rdx+flags_decimal], bl
 
-	add r14, 4							; Add cycles
+if preservebx eq 1
+	pop rbx
+endif
+
+endm
+
+handle_interrupt proc
+	mov byte ptr [rdx+interrupt], 0
+
+	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
+	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov [rcx+rbx], al					; Put PC Low byte on stack
+	dec bl								; Move stack pointer on
+	mov [rcx+rbx], ah					; Put PC High byte on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	push bx
+	set_status_register_al
+	pop bx
+
+	mov [rcx+rbx], al					; Put P on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+
+	mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
+
+	add r14, 7							; Clock 
+
+	jmp next_opcode
+handle_interrupt endp
+
+x40_rti proc
+	get_status_register	1				; set bx to stack pointer
+	inc bl							
+	mov ah, [rcx+rbx]					; high PC byte
+	inc bl
+	mov al, [rcx+rbx]					; low PC byte
+	mov r11w, ax						; set PC
+	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+
+	add r14, 6							; Clock 
+	
+	jmp opcode_done
+x40_rti endp
+
+;
+; PHP\PLP
+;
+
+x08_php proc
+	set_status_register_al
+
+	xor rbx, rbx
+
+	mov bx, [rdx+stackpointer]			; Get stack pointer
+	sub byte ptr [rdx+stackpointer], 1	; Increment stack pointer
+	mov [rcx+rbx], al					; Put status on stack
+	
+	add r14, 3							; Add cycles
 
 	jmp opcode_done
 
+x08_php endp
+
+x28_plp proc
+	get_status_register 0
+
+	add r14, 4							; Add cycles
+
+	jmp opcode_done
 x28_plp endp
 
 ;
@@ -2798,7 +2872,7 @@ opcode_3C	qword	x3C_bit_absx 	; $3C
 opcode_3D	qword	x3D_and_absx 	; $3D
 opcode_3E	qword	x3E_rol_absx 	; $3E
 opcode_3F	qword	x3F_bbr3	 	; $3F
-opcode_40	qword	noinstruction 	; $40
+opcode_40	qword	x40_rti		 	; $40
 opcode_41	qword	x41_eor_indx 	; $41
 opcode_42	qword	noinstruction 	; $42
 opcode_43	qword	noinstruction 	; $43

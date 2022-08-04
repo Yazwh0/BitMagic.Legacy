@@ -21,6 +21,7 @@ extern "C"
         bool carry;
         bool zero;
         bool interruptDisable;
+        bool interrupt;
     };
 
     int __fastcall fnEmulatorCode(int8_t* mainMemory, state* test);
@@ -53,7 +54,7 @@ int main()
     state.x = 0x72;
     state.y = 0;
     state.pc = 0x810; // arbitary for now
-    state.stackpointer = 0x1fe;
+    state.stackpointer = 0x1ff;
     state.clock = 0x0;
     
     state.decimal = false;
@@ -63,8 +64,11 @@ int main()
     state.negative = false;
     state.overflow = false;
     state.zero = false;
+    state.interrupt = true;
 
-    memory_ptr[0x10] = 0x00;
+
+    memory_ptr[0xfffe] = 0x00;
+    memory_ptr[0xffff] = 0x09;
 
     memory_ptr[0x810] = 0x0f;
     memory_ptr[0x811] = 0x10;
@@ -73,6 +77,8 @@ int main()
     memory_ptr[0x814] = 0xa9;
     memory_ptr[0x815] = 0x10;
     memory_ptr[0x816] = 0xdb;
+
+    memory_ptr[0x900] = 0x40;
 
 
     int x = fnEmulatorCode(memory_ptr, &state); 

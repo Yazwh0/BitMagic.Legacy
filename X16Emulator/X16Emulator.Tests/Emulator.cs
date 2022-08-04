@@ -34,6 +34,7 @@ namespace BigMagic_Emulator
             bool BreakFlag;
             bool Overflow;
             bool Negative;
+            bool Interrupt;
         }
 
         public EmulatorReturn Tests()
