@@ -33,24 +33,6 @@ flags_zero				equ 20 ; byte
 flags_interruptDisable	equ 21 ; byte
 interrupt				equ 22 ; byte
 
-; -----------------------------
-; Set flags
-; -----------------------------
-
-update_nz_flags macro
-
-	test al, al
-	lahf
-	mov r15, rax
-
-endm
-
-update_nz_flags_a macro
-	test r8b, r8b
-	lahf
-	mov r15, rax
-endm
-
 write_state_obj macro	
 	mov	byte ptr [rdx+register_a], r8b			; a
 	mov	byte ptr [rdx+register_x], r9b			; x
@@ -177,7 +159,7 @@ asm_func proc memory:QWORD, state:QWORD
 	; see if lahf is supported. if not return -1.
 	mov eax, 80000001h
     cpuid
-    test ecx,1           ;Is bit 0 (the "LAHF-SAHF" bit) set?
+    test ecx,1           ; Is bit 0 (the "LAHF-SAHF" bit) set?
     je not_supported     ; no, LAHF is not supported
 
 	pop rcx
@@ -191,13 +173,15 @@ main_loop:
 	jne handle_interrupt
 
 next_opcode::
+	mov r12, 010000h				; Reset side effects, cant use 0 as a write to 0x0000 is important
+	mov r13, r12
 
 	xor rax, rax
-	mov al, [rcx+r11]			; Get opcode
+	mov al, [rcx+r11]				; Get opcode
 	add r11w, 1						; PC+1
-	lea rbx, opcode_00			; start of jump table
+	lea rbx, opcode_00				; start of jump table
 
-	jmp qword ptr [rbx + rax*8]	; jump to opcode
+	jmp qword ptr [rbx + rax*8]		; jump to opcode
 
 opcode_done::
 
