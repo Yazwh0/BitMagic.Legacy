@@ -185,20 +185,6 @@ asm_func proc memory:QWORD, state:QWORD
 
 	read_state_obj
 
-	; !!!
-	;add byte ptr [rcx + 01h], 1
-	
-
-;	mov byte ptr [rcx + 0810h], 0adh	; LDA zp
-;	mov byte ptr [rcx + 0811h], 000h	; $400
-;	mov byte ptr [rcx + 0812h], 004h	; 
-
-;	mov byte ptr [rcx + 0812h], 085h	; STA zp
-;	mov byte ptr [rcx + 0813h], 010h	; $10
-
-;	mov byte ptr [rcx + 0813h], 0dbh	; stp
-
-
 main_loop:
 	; check for interrupt
 	xor ax, ax
