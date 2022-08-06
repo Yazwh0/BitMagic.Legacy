@@ -199,9 +199,9 @@ asm_func proc memory:QWORD, state:QWORD
 
 main_loop:
 	; check for interrupt
-	mov al, [rdx+interrupt]
-	btr ax, 0	; todo change to test and reset in handler
-	jc handle_interrupt
+	xor ax, ax
+	cmp al, [rdx+interrupt]
+	jne handle_interrupt
 
 next_opcode::
 
@@ -223,7 +223,7 @@ exit_loop: ; how do we get here?
 	mov rax, 00h
 
 	restore_registers
-	;leave masm adds this.
+	;leave - masm adds this.
 	ret
 
 not_supported:
@@ -937,188 +937,97 @@ x98_tya endp
 ; ASL
 ;
 
+asl_body macro clock, pc
+	read_sideeffects_rbx
+	read_flags_rax
+	sal byte ptr [rcx+rbx],1		; shift
+
+	write_flags_r15
+	write_sideeffects_rbx
+
+	add r11w, pc					; move PC on
+	add r14, clock					; Clock
+
+	jmp opcode_done	
+endm
+
 x0A_asl_a proc
-
-	mov rax, r15	; move flags to rax
-	sahf			; set eflags
-
+	read_flags_rax
 	sal r8b,1		; shift
-
-	lahf			; move new flags to rax
-	mov r15, rax	; store
+	write_flags_r15
 
 	add r14, 2		; Clock
 
 	jmp opcode_done	
-
 x0A_asl_a endp
 
 x0E_asl_abs proc
-
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	lahf				; move new flags to rax
-	mov r15, rax		; store
-
-	add r11w, 2			; move PC on
-	add r14, 6			; Clock
-
-	jmp opcode_done	
-
+	read_abs_rbx
+	asl_body 6, 2
 x0E_asl_abs endp
 
 x1E_asl_absx proc
-
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
-	add	bl, r9b			; Add X
-
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	lahf				; move new flags to rax
-	mov r15, rax		; store
-
-	add r11w, 2			; move PC on
-	add r14, 7			; Clock
-
-	jmp opcode_done	
-
+	read_absx_rbx
+	asl_body 7, 2
 x1E_asl_absx endp
 
 x06_asl_zp proc
-
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	lahf				; move new flags to rax
-	mov r15, rax		; store
-
-	add r11w, 1			; move PC on
-	add r14, 5			; Clock
-
-	jmp opcode_done	
-
+	read_zp_rbx
+	asl_body 5, 1
 x06_asl_zp endp
 
 x16_asl_zpx proc
-
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
-	add	bl, r9b			; Add X
-
-	mov rax, r15		; move flags to rax
-	sahf				; set eflags
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	lahf				; move new flags to rax
-	mov r15, rax		; store
-
-	add r11w, 1			; move PC on
-	add r14, 6			; Clock
-
-	jmp opcode_done	
-
+	read_zpx_rbx
+	asl_body 6, 1
 x16_asl_zpx endp
 
 ;
 ; LSR
 ;
 
-x4A_lsr_a proc
-
+lsr_body macro clock, pc
 	read_flags_rax
+	read_sideeffects_rbx
 
+	sar byte ptr [rcx+rbx],1	; shift
+
+	write_flags_r15
+	write_sideeffects_rbx
+
+	add r14, clock				; Clock
+	add r11w, pc				; add on PC
+
+	jmp opcode_done	
+endm
+
+x4A_lsr_a proc
+	read_flags_rax
 	sar r8b,1		; shift
-
 	write_flags_r15
 
 	add r14, 2		; Clock
 
 	jmp opcode_done	
-
 x4A_lsr_a endp
 
 x4E_lsr_abs proc
-
 	read_abs_rbx
-
-	read_flags_rax
-
-	sar byte ptr [rcx+rbx],1	; shift
-
-	write_flags_r15
-
-	add r14, 6					; Clock
-	add r11w, 2			; add on PC
-
-	jmp opcode_done	
-
+	lsr_body 6, 2
 x4E_lsr_abs endp
 
 x5E_lsr_absx proc
-
 	read_absx_rbx
-
-	read_flags_rax
-
-	sar byte ptr [rcx+rbx],1	; shift
-
-	write_flags_r15
-
-	add r14, 7					; Clock
-	add r11w, 2			; add on PC
-
-	jmp opcode_done	
-
+	lsr_body 7, 2
 x5E_lsr_absx endp
 
 x46_lsr_zp proc
-
 	read_zp_rbx
-
-	read_flags_rax
-
-	sar byte ptr [rcx+rbx],1	; shift
-
-	write_flags_r15
-
-	add r11w, 1			; add on PC
-	add r14, 5					; Clock
-
-	jmp opcode_done	
-
+	lsr_body 5, 1
 x46_lsr_zp endp
 
 x56_lsr_zpx proc
-
 	read_zpx_rbx
-
-	read_flags_rax
-
-	sar byte ptr [rcx+rbx],1	; shift
-
-	write_flags_r15
-
-	add r14, 6					; Clock
-	add r11w, 1			; add on PC
-
-	jmp opcode_done	
-
+	lsr_body 6, 1
 x56_lsr_zpx endp
 
 ;
