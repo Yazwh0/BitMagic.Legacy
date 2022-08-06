@@ -187,8 +187,7 @@ asm_func proc memory:QWORD, state:QWORD
 
 main_loop:
 	; check for interrupt
-	xor ax, ax
-	cmp al, [rdx+interrupt]
+	cmp byte ptr [rdx+interrupt], 0
 	jne handle_interrupt
 
 next_opcode::
