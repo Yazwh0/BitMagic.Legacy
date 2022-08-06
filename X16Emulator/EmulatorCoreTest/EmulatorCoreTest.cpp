@@ -58,7 +58,7 @@ int main()
     state.clock = 0x0;
     
     state.decimal = false;
-    state.carry = false;
+    state.carry = true;
     state.breakFlag = false;
     state.interruptDisable = false;
     state.negative = false;
@@ -69,10 +69,11 @@ int main()
 
     memory_ptr[0xfffe] = 0x00;
     memory_ptr[0xffff] = 0x09;
+    memory_ptr[0x1234] = 0x02;
 
-    memory_ptr[0x810] = 0x0f;
-    memory_ptr[0x811] = 0x10;
-    memory_ptr[0x812] = 0x02;
+    memory_ptr[0x810] = 0x2e;
+    memory_ptr[0x811] = 0x34;
+    memory_ptr[0x812] = 0x12;
     memory_ptr[0x813] = 0xdb;
     memory_ptr[0x814] = 0xa9;
     memory_ptr[0x815] = 0x10;

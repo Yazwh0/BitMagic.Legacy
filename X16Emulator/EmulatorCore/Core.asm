@@ -156,6 +156,8 @@ endm
 ;         y
 ;         PC
 ;         Flags }
+; rsi  : scratch
+; rdi  : scratch
 ; r8b  : a
 ; r9b  : x
 ; r10b : y
@@ -1034,290 +1036,111 @@ x56_lsr_zpx endp
 ; ROL
 ;
 
-x2A_rol_a proc
-	
-	read_flags_rax
-
-	jnc no_carry
-
-	mov rbx, 1
-no_carry:
-
-	sal r8b,1		; shift
-
-	write_flags_r15
-
-	or r8, rbx
-
-	add r14, 2		; Clock
-
-	jmp opcode_done	
-
-x2A_rol_a endp
-
-x2E_rol_abs proc
-	
-	read_abs_rbx
-	read_flags_rax
-
-	jnc no_carry
+rol_body macro clock, pc
+	read_sideeffects_rbx
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 8						; move to lower byte
 
 	sal byte ptr [rcx+rbx], 1		; shift
-
 	write_flags_r15
-
-	or byte ptr [rcx+rbx], 1 ; add on carry
-
-	add r14, 6		; Clock
-	add r11w, 2			; add on PC
+	or byte ptr [rcx+rbx], sil		; add carry on
+	write_sideeffects_rbx
+	
+	add r14, clock					; Clock
+	add r11w, pc					; add on PC
 	jmp opcode_done	
+endm
 
-no_carry:
+x2A_rol_a proc
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 8						; move to lower byte
 
-	sal byte ptr [rcx+rbx],1		; shift
-
+	sal r8b,1						; shift
 	write_flags_r15
+	or r8b, sil						; add carry on
 
-	add r14, 6		; Clock
-	add r11w, 2			; add on PC
+	add r14, 2						; Clock
 	jmp opcode_done	
+x2A_rol_a endp
 
+x2E_rol_abs proc	
+	read_abs_rbx
+	rol_body 6, 2
 x2E_rol_abs endp
 
-x3E_rol_absx proc
-	
+x3E_rol_absx proc	
 	read_absx_rbx
-	read_flags_rax
-
-	jnc no_carry
-
-	sal byte ptr [rcx+rbx], 1	; shift
-
-	write_flags_r15
-
-	or byte ptr [rcx+rbx], 1	; add on carry
-
-	add r14, 7					; Clock
-	add r11w, 2					; add on PC
-
-	jmp opcode_done	
-
-no_carry:
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r14, 7					; Clock
-	add r11w, 2					; add on PC
-
-	jmp opcode_done	
-
+	rol_body 7, 2
 x3E_rol_absx endp
 
 x26_rol_zp proc
-	
-	add r14, 5		; Clock
 	read_zp_rbx
-
-	read_flags_rax
-
-	jnc no_carry
-
-	sal byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15
-
-	or byte ptr [rcx+rbx], 1 ; add on carry
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
+	rol_body 5, 1
 x26_rol_zp endp
 
 x36_rol_zpx proc
-	
 	read_zpx_rbx
-	add r14, 6		; Clock
-
-	read_flags_rax
-
-	jnc no_carry
-
-	sal byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15
-
-	or byte ptr [rcx+rbx], 1 ; add on carry
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	sal byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
+	rol_body 6, 1
 x36_rol_zpx endp
 
 ;
 ; ROR
 ;
 
-x6A_ror_a proc
-	
-	add r14, 2		; Clock
+ror_body macro clock, pc
+	read_sideeffects_rbx
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 1						; move to high bit on lower byte
 
-	read_flags_rax
-
-	jnc no_carry
-
-	shr r8b,1		; shift
-
-	write_flags_r15_setnegative
-
-	or r8, 10000000b	; Add on carry
-
-	jmp opcode_done	
-
-no_carry:
-
-	shr r8b,1		; shift
-
+	shr byte ptr [rcx+rbx], 1		; shift
 	write_flags_r15
+	or byte ptr [rcx+rbx], sil		; add carry on
+	rol rsi, 8						; change carry to negative
+	or r15, rsi						; add on to flags
 
+	write_sideeffects_rbx
+	
+	add r14, clock					; Clock
+	add r11w, pc					; add on PC
 	jmp opcode_done	
+endm
 
+x6A_ror_a proc
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 1						; move to high bit on lower byte
+
+	shr r8b,1						; shift
+	write_flags_r15
+	or r8b, sil						; add carry on
+	rol rsi, 8						; change carry to negative
+	or r15, rsi						; add on to flags
+
+	add r14, 2						; Clock
+	jmp opcode_done	
 x6A_ror_a endp
 
-x6E_ror_abs proc
-	
+x6E_ror_abs proc	
 	read_abs_rbx
-	add r14, 6		; Clock
-
-	read_flags_rax
-
-	jnc no_carry
-
-	shr byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15_setnegative
-
-	or byte ptr [rcx+rbx], 10000000b ; add on carry
-
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	shr byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r11w, 2			; add on PC
-	jmp opcode_done	
-
+	ror_body 6, 2
 x6E_ror_abs endp
 
-x7E_ror_absx proc
-	
+x7E_ror_absx proc	
 	read_absx_rbx
-	read_flags_rax
-
-	jnc no_carry
-
-	shr byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15_setnegative
-
-	or byte ptr [rcx+rbx], 10000000b ; add on carry
-	add r14, 7		; Clock
-	add r11w, 2			; add on PC
-
-	jmp opcode_done	
-
-no_carry:
-
-	shr byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r14, 7		; Clock
-	add r11w, 2			; add on PC
-
-	jmp opcode_done	
-
+	ror_body 7, 2
 x7E_ror_absx endp
 
 x66_ror_zp proc
-	
-	add r14, 5		; Clock
 	read_zp_rbx
-
-	read_flags_rax
-
-	jnc no_carry
-
-	shr byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15_setnegative
-
-	or byte ptr [rcx+rbx], 10000000b ; add on carry
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	shr byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
+	ror_body 5, 1
 x66_ror_zp endp
 
 x76_ror_zpx proc
-	
 	read_zpx_rbx
-	add r14, 6		; Clock
-
-	read_flags_rax
-
-	jnc no_carry
-
-	shr byte ptr [rcx+rbx], 1		; shift
-
-	write_flags_r15_setnegative
-
-	or byte ptr [rcx+rbx], 10000000b ; add on carry
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
-no_carry:
-
-	shr byte ptr [rcx+rbx],1		; shift
-
-	write_flags_r15
-
-	add r11w, 1			; add on PC
-	jmp opcode_done	
-
+	ror_body 6, 1
 x76_ror_zpx endp
 
 ;
