@@ -5,8 +5,6 @@ VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmulatorCoreTest", "EmulatorCoreTest\EmulatorCoreTest.vcxproj", "{F9951102-7133-4FF7-9575-4206D0110617}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X16Emulator.Tests", "X16Emulator.Tests\X16Emulator.Tests.csproj", "{77311115-1181-4162-8E4F-F6B9A80BFBE2}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmulatorCore", "EmulatorCore\EmulatorCore.vcxproj", "{C67527D8-12DD-4779-88AC-933CA3E46168}"
 EndProject
 Global
@@ -31,18 +29,6 @@ Global
 		{F9951102-7133-4FF7-9575-4206D0110617}.Release|x64.Build.0 = Release|x64
 		{F9951102-7133-4FF7-9575-4206D0110617}.Release|x86.ActiveCfg = Release|Win32
 		{F9951102-7133-4FF7-9575-4206D0110617}.Release|x86.Build.0 = Release|Win32
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|x64.Build.0 = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Debug|x86.Build.0 = Debug|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|x64.ActiveCfg = Release|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|x64.Build.0 = Release|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|x86.ActiveCfg = Release|Any CPU
-		{77311115-1181-4162-8E4F-F6B9A80BFBE2}.Release|x86.Build.0 = Release|Any CPU
 		{C67527D8-12DD-4779-88AC-933CA3E46168}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{C67527D8-12DD-4779-88AC-933CA3E46168}.Debug|Any CPU.Build.0 = Debug|x64
 		{C67527D8-12DD-4779-88AC-933CA3E46168}.Debug|x64.ActiveCfg = Debug|x64

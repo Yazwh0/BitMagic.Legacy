@@ -16,22 +16,48 @@
 .CODE
 ALIGN 16
 
-clock					equ 0 ; ulong needs to be aligned, so put flags above
-register_pc				equ 8 ; ushort
-stackpointer			equ 10 ; ushort
+state struct 
+	memory_ptr				qword ?
+	rom_ptr					qword ?
+	rambank_ptr				qword ?
 
-register_a				equ 12 ; byte
-register_x				equ 13 ; byte
-register_y				equ 14 ; byte
-flags_decimal			equ 15 ; byte
-flags_break				equ 16 ; byte
-flags_overflow			equ 17 ; byte
-flags_negative			equ 18 ; byte
+	clock					qword ?
+	pc						word ?
+	stackpointer			word ?
+	register_a				byte ?
+	register_x				byte ?
+	register_y				byte ?
+	flags_decimal			byte ?
+	flags_break				byte ?
+	flags_overflow			byte ?
+	flags_negatiev			byte ?
+	flags_carry				byte ?
+	flags_zero				byte ?
+	flags_interruptDisable	byte ?
+	interrupt				byte ?
+state ends
 
-flags_carry				equ 19 ; byte
-flags_zero				equ 20 ; byte
-flags_interruptDisable	equ 21 ; byte
-interrupt				equ 22 ; byte
+memory_ptr				equ 0  ; qword
+rom_ptr					equ 8  ; qword
+rambank_ptr				equ 16 ; qword
+
+clock					equ 24 ; qword
+
+register_pc				equ 32 ; ushort
+stackpointer			equ 34 ; ushort
+
+register_a				equ 36 ; byte
+register_x				equ 37 ; byte
+register_y				equ 38 ; byte
+flags_decimal			equ 39 ; byte
+flags_break				equ 40 ; byte
+flags_overflow			equ 41 ; byte
+flags_negative			equ 42 ; byte
+
+flags_carry				equ 43 ; byte
+flags_zero				equ 44 ; byte
+flags_interruptDisable	equ 45 ; byte
+interrupt				equ 46 ; byte
 
 write_state_obj macro	
 	mov	byte ptr [rdx+register_a], r8b			; a
@@ -149,7 +175,7 @@ endm
 ; r14  : Clock Ticks
 ; r15  : Flags
 
-asm_func proc memory:QWORD, state:QWORD
+asm_func proc memory:QWORD, state_ptr:QWORD
 	
 	store_registers
 
@@ -167,14 +193,15 @@ asm_func proc memory:QWORD, state:QWORD
 
 	read_state_obj
 
+	mov r12, 010000h				; Reset side effects, cant use 0 as a write to 0x0000 is important
+	mov r13, r12
+
 main_loop:
 	; check for interrupt
 	cmp byte ptr [rdx+interrupt], 0
 	jne handle_interrupt
 
 next_opcode::
-	mov r12, 010000h				; Reset side effects, cant use 0 as a write to 0x0000 is important
-	mov r13, r12
 
 	xor rax, rax
 	mov al, [rcx+r11]				; Get opcode
@@ -184,6 +211,17 @@ next_opcode::
 	jmp qword ptr [rbx + rax*8]		; jump to opcode
 
 opcode_done::
+
+	cmp r12, 010000h
+	je read_done
+
+	mov r12, 010000h
+read_done:
+	cmp r13, 010000h
+	je write_done
+
+	mov r13, 010000h
+write_done:
 
 	jmp main_loop
 

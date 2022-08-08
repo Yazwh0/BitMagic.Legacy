@@ -1,22 +1,29 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace BitMagic.X16Emulator;
 
-public class Emulator
+public class Emulator : IDisposable
 {
     [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
-    private static extern int fnEmulatorCode(byte[] memory, ref CpuState state);
+    private static extern int fnEmulatorCode(ulong memory_ptr, ref CpuState state);
+
+    private static int Instance = 0;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
+        public ulong Memory = 0;
+        public ulong Rom = 0;
+        public ulong RamBank = 0;
+
         public ulong Clock = 0;
         public ushort Pc = 0;
         public ushort StackPointer = 0x1ff;
         public byte A = 0;
         public byte X = 0;
         public byte Y = 0;
-        
+
         public byte Decimal = 0;
         public byte BreakFlag = 0;
         public byte Overflow = 0;
@@ -27,8 +34,11 @@ public class Emulator
 
         public byte Interrupt = 0;
 
-        public CpuState()
+        public CpuState(ulong memory, ulong rom, ulong ramBank)
         {
+            Memory = memory;
+            Rom = rom;
+            RamBank = ramBank;
         }
     }
 
@@ -40,10 +50,7 @@ public class Emulator
         Unsupported = -1
     }
 
-    private byte[] _memory;
     private CpuState _state;
-
-    public byte[] Memory => _memory;
 
     public byte A {get => _state.A; set => _state.A = value; }
     public byte X { get => _state.X; set => _state.X = value; }
@@ -59,24 +66,44 @@ public class Emulator
     public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
+    
+    private ulong memory_ptr;
+    private ulong rom_ptr;
+    private ulong ram_ptr;
 
-    public Emulator()
+    private const int RamSize = 0x10000;
+    private const int RomSize = 0x4000 * 32;
+    private const int BankedRamSize = 0x2000 * 256;
+
+    public unsafe Emulator() 
     {
-        _memory = new byte[0xffff+1];
-        _state = new CpuState();
+        memory_ptr = (ulong)NativeMemory.AlignedAlloc(RamSize, 64);
+        rom_ptr = (ulong)NativeMemory.AlignedAlloc(RomSize, 64);
+        ram_ptr = (ulong)NativeMemory.AlignedAlloc(BankedRamSize, 64);
+
+        _state = new CpuState(memory_ptr, rom_ptr, ram_ptr);
+
+        var memory_span = new Span<byte>((void*)memory_ptr, RamSize);
+        for (var i = 0; i < RamSize; i++)
+            memory_span[i] = 0;
+
+        var ram_span = new Span<byte>((void*)memory_ptr, BankedRamSize);
+        for (var i = 0; i < BankedRamSize; i++)
+            ram_span[i] = 0;
     }
+
+    public unsafe Span<byte> Memory => new Span<byte>((void*)memory_ptr, 0x10000);
 
     public EmulatorResult Emulate()
     {
-        return (EmulatorResult)fnEmulatorCode(_memory, ref _state);
+        return (EmulatorResult)fnEmulatorCode(memory_ptr, ref _state);
     }
 
-    public void HardReset()
-    { 
-        for(var i = 0; i < 0xffff; i++)
-            _memory[i] = 0;
-
-        _state = new CpuState();
+    public unsafe void Dispose()
+    {
+        NativeMemory.Free((void*)memory_ptr);
+        NativeMemory.Free((void*)rom_ptr);
+        NativeMemory.Free((void*)ram_ptr);
     }
 }
 

@@ -7,6 +7,9 @@ extern "C"
 {
     struct state 
     {
+        int8_t* memory_ptr;
+        int8_t* rom_ptr;
+        int8_t* rambank_ptr;
         uint64_t clock;
         uint16_t pc;
         uint16_t stackpointer;
@@ -34,7 +37,7 @@ int main()
 
     // main memory
     // align to 512 bytes for AVX copy
-    void* ptr = _aligned_malloc(64 * 1024, 512);
+    void* ptr = _aligned_malloc(64 * 1024, 64);
 
     if (!ptr)
     {
