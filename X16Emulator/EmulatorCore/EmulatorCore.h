@@ -47,5 +47,5 @@ extern "C"
         bool interrupt;
     };
 
-	EMULATORCODE_API int fnEmulatorCode(int8_t* mainMemory, state* state);
+	EMULATORCODE_API int fnEmulatorCode(state* state);
 }

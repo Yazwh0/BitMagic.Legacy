@@ -12,12 +12,13 @@
 
 extern "C" 
 {
-    int __fastcall asm_func(int8_t* mainMemory, state* state);
+    int __fastcall asm_func(state* state);
 
     // This is an example of an exported function.
-    EMULATORCODE_API int fnEmulatorCode(int8_t* mainMemory, state* state)
+    // int8_t* mainMemory,
+    EMULATORCODE_API int fnEmulatorCode(state* state)
     {
-        return asm_func(mainMemory, state);
+        return asm_func(state);
      }
 }
 

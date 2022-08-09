@@ -27,7 +27,7 @@ extern "C"
         bool interrupt;
     };
 
-    int __fastcall fnEmulatorCode(int8_t* mainMemory, state* test);
+    int __fastcall fnEmulatorCode(state* test);
 }
 
 int main()
@@ -48,6 +48,8 @@ int main()
     int8_t* memory_ptr = (int8_t*)ptr;
 
     struct state state {};
+
+    state.memory_ptr = memory_ptr;
 
     for (int i = 0; i < 64 * 1024; i++)
         memory_ptr[i] = 0;
@@ -85,7 +87,7 @@ int main()
     memory_ptr[0x900] = 0x40;
 
 
-    int x = fnEmulatorCode(memory_ptr, &state); 
+    int x = fnEmulatorCode(& state);
 
     //delete [] memory_ptr;
     _aligned_free(ptr);

@@ -175,8 +175,12 @@ endm
 ; r14  : Clock Ticks
 ; r15  : Flags
 
-asm_func proc memory:QWORD, state_ptr:QWORD
+;memory:QWORD,
+asm_func proc  state_ptr:QWORD
 	
+	mov rdx, rcx		; move state to rcx
+	mov rcx, [rdx+memory_ptr]
+
 	store_registers
 
 	push rdx

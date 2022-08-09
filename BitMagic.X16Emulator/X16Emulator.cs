@@ -6,9 +6,7 @@ namespace BitMagic.X16Emulator;
 public class Emulator : IDisposable
 {
     [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
-    private static extern int fnEmulatorCode(ulong memory_ptr, ref CpuState state);
-
-    private static int Instance = 0;
+    private static extern int fnEmulatorCode(ref CpuState state);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
@@ -67,9 +65,9 @@ public class Emulator : IDisposable
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
     
-    private ulong memory_ptr;
-    private ulong rom_ptr;
-    private ulong ram_ptr;
+    private ulong _memory_ptr;
+    private ulong _rom_ptr;
+    private ulong _ram_ptr;
 
     private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
@@ -77,33 +75,33 @@ public class Emulator : IDisposable
 
     public unsafe Emulator() 
     {
-        memory_ptr = (ulong)NativeMemory.AlignedAlloc(RamSize, 64);
-        rom_ptr = (ulong)NativeMemory.AlignedAlloc(RomSize, 64);
-        ram_ptr = (ulong)NativeMemory.AlignedAlloc(BankedRamSize, 64);
+        _memory_ptr = (ulong)NativeMemory.AlignedAlloc(RamSize, 64);
+        _rom_ptr = (ulong)NativeMemory.AlignedAlloc(RomSize, 64);
+        _ram_ptr = (ulong)NativeMemory.AlignedAlloc(BankedRamSize, 64);
 
-        _state = new CpuState(memory_ptr, rom_ptr, ram_ptr);
+        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr);
 
-        var memory_span = new Span<byte>((void*)memory_ptr, RamSize);
+        var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
             memory_span[i] = 0;
 
-        var ram_span = new Span<byte>((void*)memory_ptr, BankedRamSize);
+        var ram_span = new Span<byte>((void*)_ram_ptr, BankedRamSize);
         for (var i = 0; i < BankedRamSize; i++)
             ram_span[i] = 0;
     }
 
-    public unsafe Span<byte> Memory => new Span<byte>((void*)memory_ptr, 0x10000);
+    public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, 0x10000);
 
     public EmulatorResult Emulate()
     {
-        return (EmulatorResult)fnEmulatorCode(memory_ptr, ref _state);
+        return (EmulatorResult)fnEmulatorCode(ref _state);
     }
 
     public unsafe void Dispose()
     {
-        NativeMemory.Free((void*)memory_ptr);
-        NativeMemory.Free((void*)rom_ptr);
-        NativeMemory.Free((void*)ram_ptr);
+        NativeMemory.Free((void*)_memory_ptr);
+        NativeMemory.Free((void*)_rom_ptr);
+        NativeMemory.Free((void*)_ram_ptr);
     }
 }
 
