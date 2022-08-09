@@ -65,9 +65,9 @@ public class Emulator : IDisposable
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
     
-    private ulong _memory_ptr;
-    private ulong _rom_ptr;
-    private ulong _ram_ptr;
+    private readonly ulong _memory_ptr;
+    private readonly ulong _rom_ptr;
+    private readonly ulong _ram_ptr;
 
     private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
@@ -99,9 +99,14 @@ public class Emulator : IDisposable
 
     public unsafe void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual unsafe void Dispose(bool disposing)
+    {
         NativeMemory.Free((void*)_memory_ptr);
         NativeMemory.Free((void*)_rom_ptr);
         NativeMemory.Free((void*)_ram_ptr);
     }
 }
-
