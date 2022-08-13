@@ -75,11 +75,6 @@ endm
 read_state_obj macro
 	local no_carry, no_zero, no_overflow, no_negative
 
-	;xor r8, r8
-	;xor r9, r9
-	;xor r10, r10
-	;xor r11, r11
-
 	movzx r8, byte ptr [rdx].state.register_a		; a
 	movzx r9, byte ptr [rdx].state.register_x		; x
 	movzx r10, byte ptr [rdx].state.register_y	; y
@@ -242,7 +237,7 @@ read_banked_rbx macro
 	cmp rbx, 0c000h
 	jl banked_ram
 
-	mov al, byte ptr [rcx]			; 0x0000 -- get bank
+	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
 	and al, 00011111b				; remove top bits
 	sal rax, 14						; * 0x4000
 	mov rsi, [rdx].state.rom_ptr
@@ -252,7 +247,7 @@ read_banked_rbx macro
 banked_ram:
 
 	; banked ram
-	mov al, byte ptr [rcx]			; 0x0000 -- get bank
+	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
 	sal rax, 13						; * 0x2000
 	mov rsi, [rdx].state.rambank_ptr
 	lea rcx, [rsi - 0a000h + rax]	; can now add rbx to get value
@@ -342,13 +337,13 @@ endm
 read_indx_rbx macro
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
-	mov bx, [rcx+rbx]	; Address at location
+	movzx rbx, word ptr [rcx+rbx]	; Address at location
 endm
 
 read_indy_rbx_pagepenalty macro
 	local no_overflow
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	mov bx, [rcx+rbx]	; Address pointed at in ZP
+	movzx rbx, word ptr [rcx+rbx]	; Address pointed at in ZP
 
 	adc bl, r10b		; Add Y to the lower address byte
 	jnc no_overflow
@@ -363,14 +358,14 @@ endm
 read_indy_rbx macro
 	local no_overflow
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	mov bx, [rcx+rbx]	; Address pointed at in ZP
+	movzx rbx, word ptr [rcx+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
 	read_banked_rbx
 endm
 
 read_indzp_rbx macro
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	mov bx, [rcx+rbx]	; Address at location
+	movzx rbx, word ptr [rcx+rbx]	; Address at location
 	read_banked_rbx
 endm
 
@@ -1783,7 +1778,7 @@ branch:
 xB0_bcs endp
 
 x50_bvc proc
-	mov al, [rdx].state.flags_overflow
+	movzx rax, byte ptr [rdx].state.flags_overflow
 	test al, al
 	jz branch
 	bra_nojump
@@ -1793,7 +1788,7 @@ branch:
 x50_bvc endp
 
 x70_bvs proc
-	mov al, [rdx].state.flags_overflow
+	movzx rax, byte ptr [rdx].state.flags_overflow
 	test al, al
 	jnz branch
 	bra_nojump
@@ -1830,7 +1825,7 @@ endm
 
 bbr_body macro bitnumber
 	read_zp_rbx
-	mov al, byte ptr[rcx+rbx]
+	movzx rax, byte ptr[rcx+rbx]
 	bt ax, bitnumber
 	jnc branch
 	add r11w, 2						; move PC on
@@ -1880,7 +1875,7 @@ x7F_bbr7 endp
 
 bbs_body macro bitnumber
 	read_zp_rbx
-	mov al, byte ptr[rcx+rbx]
+	movzx rax, byte ptr[rcx+rbx]
 	bt ax, bitnumber
 	jc branch
 	add r11w, 2						; move PC on
@@ -2109,21 +2104,21 @@ no_zero:
 no_negative:
 
 	; interrupt disable
-	mov bl, [rdx].state.flags_interruptDisable
+	movzx rbx, byte ptr [rdx].state.flags_interruptDisable
 	test bl, 1
 	jz no_interrupt
 	or al, 00000100b
 no_interrupt:
 
 	; overflow
-	mov bl, [rdx].state.flags_overflow
+	movzx rbx, byte ptr [rdx].state.flags_overflow
 	test bl, 1
 	jz no_overflow
 	or al, 01000000b
 no_overflow:
 
 	; decimal
-	mov bl, [rdx].state.flags_decimal
+	movzx rbx, byte ptr [rdx].state.flags_decimal
 	test bl, 1
 	jz no_decimal
 	or al, 00001000b
@@ -2133,7 +2128,7 @@ endm
 get_status_register macro preservebx
 	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
 	add bl, 1							; Decrement stack pointer
-	mov al, [rcx+rbx]					; Get status from stack
+	movzx rax, byte ptr [rcx+rbx]			; Get status from stack
 	
 	xor r15w, r15w
 
@@ -2278,12 +2273,12 @@ endm
 
 bit_body macro clock, pc
 	read_sideeffects_rbx
-	mov bl, [rcx+rbx]
+	movzx rbx, byte ptr [rcx+rbx]
 	bit_body_end clock, pc
 endm
 
 x89_bit_imm proc
-	mov bl, [rcx+r11]
+	movzx rbx, byte ptr [rcx+r11]
 	bit_body_end 3, 1
 x89_bit_imm endp
 
@@ -2314,7 +2309,7 @@ x34_bit_zpx endp
 x1C_trb_abs proc
 	read_abs_rbx
 	read_sideeffects_rbx
-	mov al, r8b
+	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
 
@@ -2336,7 +2331,7 @@ x1C_trb_abs endp
 x14_trb_zp proc
 	read_zp_rbx
 	read_sideeffects_rbx
-	mov al, r8b
+	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
 

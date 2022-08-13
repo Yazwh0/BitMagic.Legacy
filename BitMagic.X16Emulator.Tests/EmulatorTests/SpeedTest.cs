@@ -10,7 +10,6 @@ public class SpeedTest
 
     public async Task ZeroPage()
     {
-
         var emulator = new Emulator();
 
         await X16TestHelper.Emulate(@"
@@ -45,9 +44,8 @@ public class SpeedTest
     }
     [TestMethod]
 
-    public async Task BankedRamp()
+    public async Task BankedRam()
     {
-
         var emulator = new Emulator();
 
         await X16TestHelper.Emulate(@"
