@@ -47,9 +47,6 @@ public class Emulator : IDisposable
 
         public byte Interrupt = 0;
 
-        public byte RamBank = 0;
-        public byte RomBank = 0;
-
         public CpuState(ulong memory, ulong rom, ulong ramBank)
         {
             MemoryPtr = memory;
@@ -85,20 +82,20 @@ public class Emulator : IDisposable
     public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
-    
+
     private readonly ulong _memory_ptr;
     private readonly ulong _rom_ptr;
     private readonly ulong _ram_ptr;
 
-    private const int RamSize = 0x10000;
+    private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
 
     public unsafe Emulator() 
     {
-        _memory_ptr = (ulong)NativeMemory.AlignedAlloc(RamSize, 64);
-        _rom_ptr = (ulong)NativeMemory.AlignedAlloc(RomSize, 64);
-        _ram_ptr = (ulong)NativeMemory.AlignedAlloc(BankedRamSize, 64);
+        _memory_ptr = (ulong)NativeMemory.Alloc(RamSize);
+        _rom_ptr = (ulong)NativeMemory.Alloc(RomSize);
+        _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
 
         _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr);
 
@@ -111,14 +108,15 @@ public class Emulator : IDisposable
             ram_span[i] = 0;
     }
 
-    public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, 0x10000);
-
-    public unsafe Span<byte> RamBank => new Span<byte>((void*) _ram_ptr, BankedRamSize);
+    public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
+    public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
 
     public EmulatorResult Emulate()
     {
-        return (EmulatorResult)fnEmulatorCode(ref _state);
+        var r = fnEmulatorCode(ref _state);
+        var result = (EmulatorResult)r;
+        return result;
     }
 
     public unsafe void Dispose()

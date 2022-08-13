@@ -6,6 +6,16 @@ namespace BitMagic.X16Emulator.Tests;
 public class EmulatorTests
 {
     [TestMethod]
+    public void SetMemory()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x810] = 0xdb;
+
+        Assert.AreEqual(0xdb, emulator.Memory[0x810]);
+    }
+
+    [TestMethod]
     public async Task CarryFlag()
     {
         var emulator = new Emulator();

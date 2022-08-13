@@ -37,9 +37,6 @@ state struct
 	flags_zero				byte ?
 	flags_interruptDisable	byte ?
 	interrupt				byte ?
-
-	rambank					byte ?
-	rombank					byte ?
 state ends
 
 write_state_obj macro	
