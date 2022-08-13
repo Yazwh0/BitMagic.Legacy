@@ -22,7 +22,7 @@ state struct
 	rambank_ptr				qword ?
 
 	clock					qword ?
-	pc						word ?
+	register_pc				word ?
 	stackpointer			word ?
 	register_a				byte ?
 	register_x				byte ?
@@ -30,41 +30,19 @@ state struct
 	flags_decimal			byte ?
 	flags_break				byte ?
 	flags_overflow			byte ?
-	flags_negatiev			byte ?
+	flags_negative			byte ?
 	flags_carry				byte ?
 	flags_zero				byte ?
 	flags_interruptDisable	byte ?
 	interrupt				byte ?
 state ends
 
-memory_ptr				equ 0  ; qword
-rom_ptr					equ 8  ; qword
-rambank_ptr				equ 16 ; qword
-
-clock					equ 24 ; qword
-
-register_pc				equ 32 ; ushort
-stackpointer			equ 34 ; ushort
-
-register_a				equ 36 ; byte
-register_x				equ 37 ; byte
-register_y				equ 38 ; byte
-flags_decimal			equ 39 ; byte
-flags_break				equ 40 ; byte
-flags_overflow			equ 41 ; byte
-flags_negative			equ 42 ; byte
-
-flags_carry				equ 43 ; byte
-flags_zero				equ 44 ; byte
-flags_interruptDisable	equ 45 ; byte
-interrupt				equ 46 ; byte
-
 write_state_obj macro	
-	mov	byte ptr [rdx+register_a], r8b			; a
-	mov	byte ptr [rdx+register_x], r9b			; x
-	mov	byte ptr [rdx+register_y], r10b			; y
-	mov	word ptr [rdx+register_pc], r11w		; PC
-	mov [rdx+clock], r14						; Clock
+	mov	byte ptr [rdx].state.register_a, r8b			; a
+	mov	byte ptr [rdx].state.register_x, r9b			; x
+	mov	byte ptr [rdx].state.register_y, r10b			; y
+	mov	word ptr [rdx].state.register_pc, r11w			; PC
+	mov [rdx].state.clock, r14							; Clock
 
 	; Flags
 	; read from r15 directly
@@ -74,21 +52,21 @@ write_state_obj macro
 	;        NZ A P C
 	and rax, 0000000100000000b
 	ror rax, 8
-	mov byte ptr [rdx+flags_carry], al
+	mov byte ptr [rdx].state.flags_carry, al
 
 	; Zero
 	mov rax, r15
 	;        NZ A P C
 	and rax, 0100000000000000b
 	ror rax, 6+8
-	mov byte ptr [rdx+flags_zero], al
+	mov byte ptr [rdx].state.flags_zero, al
 
 	; Negative
 	mov rax, r15
 	;        NZ A P C
 	and rax, 1000000000000000b
 	ror rax, 7+8
-	mov byte ptr [rdx+flags_negative], al
+	mov byte ptr [rdx].state.flags_negative, al
 
 endm
 
@@ -100,30 +78,30 @@ read_state_obj macro
 	xor r10, r10
 	xor r11, r11
 
-	mov r8b, [rdx+register_a]		; a
-	mov r9b, [rdx+register_x]		; x
-	mov r10b, [rdx+register_y]		; y
-	mov r11w, [rdx+register_pc]		; PC
-	mov r14, [rdx+clock]			; Clock
+	mov r8b, [rdx].state.register_a		; a
+	mov r9b, [rdx].state.register_x		; x
+	mov r10b, [rdx].state.register_y	; y
+	mov r11w, [rdx].state.register_pc	; PC
+	mov r14, [rdx].state.clock			; Clock
 	
 	; Flags
 	xor r15, r15 ; clear flags register
 
-	mov al, byte ptr [rdx+flags_carry]
+	mov al, byte ptr [rdx].state.flags_carry
 	test al, al
 	jz no_carry
 	;       NZ A P C
 	or r15, 0000000100000000b
 no_carry:
 
-	mov al, byte ptr [rdx+flags_zero]
+	mov al, byte ptr [rdx].state.flags_zero
 	test al, al
 	jz no_zero
 	;       NZ A P C
 	or r15, 0100000000000000b
 no_zero:
 
-	mov al, byte ptr [rdx+flags_negative]
+	mov al, byte ptr [rdx].state.flags_negative
 	test al, al
 	jz no_negative
 	;       NZ A P C
@@ -175,11 +153,9 @@ endm
 ; r14  : Clock Ticks
 ; r15  : Flags
 
-;memory:QWORD,
 asm_func proc  state_ptr:QWORD
-	
-	mov rdx, rcx		; move state to rcx
-	mov rcx, [rdx+memory_ptr]
+	mov rdx, rcx						; move state to rcx
+	mov rcx, [rdx].state.memory_ptr		; rcx points to memory
 
 	store_registers
 
@@ -188,13 +164,20 @@ asm_func proc  state_ptr:QWORD
 
 	; see if lahf is supported. if not return -1.
 	mov eax, 80000001h
-    cpuid
-    test ecx,1           ; Is bit 0 (the "LAHF-SAHF" bit) set?
-    je not_supported     ; no, LAHF is not supported
+	cpuid
+	test ecx,1           ; Is bit 0 (the "LAHF-SAHF" bit) set?
+	je not_supported     ; no, LAHF is not supported
+
+	; see if AVX2 is supported.
+	mov eax, 00000007h
+	xor rcx, rcx
+	cpuid
+	test ebx, 100000b
+	je not_supported
 
 	pop rcx
 	pop rdx
-
+	
 	read_state_obj
 
 	mov r12, 010000h				; Reset side effects, cant use 0 as a write to 0x0000 is important
@@ -202,7 +185,7 @@ asm_func proc  state_ptr:QWORD
 
 main_loop:
 	; check for interrupt
-	cmp byte ptr [rdx+interrupt], 0
+	cmp byte ptr [rdx].state.interrupt, 0
 	jne handle_interrupt
 
 next_opcode::
@@ -216,16 +199,16 @@ next_opcode::
 
 opcode_done::
 
-	cmp r12, 010000h
-	je read_done
+;	cmp r12, 010000h
+;	je read_done
 
-	mov r12, 010000h
-read_done:
-	cmp r13, 010000h
-	je write_done
+;	mov r12, 010000h
+;read_done:
+;	cmp r13, 010000h
+;	je write_done
 
-	mov r13, 010000h
-write_done:
+;	mov r13, 010000h
+;write_done:
 
 	jmp main_loop
 
@@ -252,11 +235,16 @@ asm_func ENDP
 ; r13 Read
 
 read_sideeffects_rbx macro
-	mov r13, rbx
+	local skip
+	jnz skip
+	call handle_write_sideeffect
+	skip:
+
+	;mov r13, rbx
 endm
 
 write_sideeffects_rbx macro
-	mov r12, rbx
+	;mov r12, rbx
 endm
 
 ; -----------------------------
@@ -1365,7 +1353,7 @@ adc_body_end macro clock, pc
 	write_flags_r15
 
 	seto bl
-	mov byte ptr [rdx+flags_overflow], bl
+	mov byte ptr [rdx].state.flags_overflow, bl
 
 	add r14, clock			; Clock
 	add r11w, pc			; add on PC
@@ -1438,7 +1426,7 @@ sbc_body_end macro clock, pc
 	write_flags_r15
 
 	seto bl
-	mov byte ptr [rdx+flags_overflow], bl
+	mov byte ptr [rdx].state.flags_overflow, bl
 
 	add r14, clock			; Clock
 	add r11w, pc			; add on PC
@@ -1640,31 +1628,31 @@ x38_sec proc
 x38_sec endp
 
 xD8_cld proc
-	mov byte ptr [rdx+flags_decimal], 0
+	mov byte ptr [rdx].state.flags_decimal, 0
 	add r14, 2			; Clock
 	jmp opcode_done	
 xD8_cld endp
 
 xF8_sed proc
-	mov byte ptr [rdx+flags_decimal], 1
+	mov byte ptr [rdx].state.flags_decimal, 1
 	add r14, 2			; Clock
 	jmp opcode_done	
 xF8_sed endp
 
 x58_cli proc
-	mov byte ptr [rdx+flags_interruptDisable], 0
+	mov byte ptr [rdx].state.flags_interruptDisable, 0
 	add r14, 2			; Clock
 	jmp opcode_done	
 x58_cli endp
 
 x78_sei proc
-	mov byte ptr [rdx+flags_interruptDisable], 1
+	mov byte ptr [rdx].state.flags_interruptDisable, 1
 	add r14, 2			; Clock
 	jmp opcode_done	
 x78_sei endp
 
 xB8_clv proc
-	mov byte ptr [rdx+flags_overflow], 0
+	mov byte ptr [rdx].state.flags_overflow, 0
 	add r14, 2			; Clock
 	jmp opcode_done	
 xB8_clv endp
@@ -1774,7 +1762,7 @@ branch:
 xB0_bcs endp
 
 x50_bvc proc
-	mov al, [rdx+flags_overflow]
+	mov al, [rdx].state.flags_overflow
 	test al, al
 	jz branch
 	bra_nojump
@@ -1784,7 +1772,7 @@ branch:
 x50_bvc endp
 
 x70_bvs proc
-	mov al, [rdx+flags_overflow]
+	mov al, [rdx].state.flags_overflow
 	test al, al
 	jnz branch
 	bra_nojump
@@ -1953,13 +1941,13 @@ x20_jsr proc
 
 	xor rbx, rbx
 
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
 	mov [rcx+rbx], ah					; Put PC High byte on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
-	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
 	mov r11w, [rcx+r11]					; Get 16bit value in memory and set it to the PC
 
@@ -1971,13 +1959,13 @@ x20_jsr endp
 x60_rts proc
 	xor rbx, rbx
 
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 	add bl, 1							; Move stack pointer on
 	mov ah, [rcx+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
 	mov al, [rcx+rbx]					; Get PC Low byte on stack
 
-	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
 	add ax, 1							; Add on 1 for the next byte
 	mov r11w, ax						; Set PC to destination
@@ -1994,8 +1982,8 @@ x60_rts endp
 x48_pha proc
 	xor rbx, rbx
 	
-	mov bx, [rdx+stackpointer]			; Get stack pointer
-	sub byte ptr [rdx+stackpointer], 1	; Decrement stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	sub byte ptr [rdx].state.stackpointer, 1	; Decrement stack pointer
 	mov [rcx+rbx], r8b					; Put A on stack
 	
 	add r14, 3							; Add cycles
@@ -2007,8 +1995,8 @@ x48_pha endp
 x68_pla proc
 	xor rbx, rbx
 
-	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
-	mov ebx, [rdx+stackpointer]			; Get stack pointer
+	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
+	mov bx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
 	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
 	test r8b, r8b
@@ -2023,9 +2011,9 @@ xDA_phx proc
 	
 	xor rbx, rbx
 	
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], r9b					; Put X on stack
-	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
 
@@ -2036,8 +2024,8 @@ xDA_phx endp
 xFA_plx proc
 	xor rbx, rbx
 
-	add byte ptr [rdx+stackpointer], 1	; Increment stack pointer
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 
 	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
 	test r9b, r9b
@@ -2051,9 +2039,9 @@ xFA_plx endp
 x5A_phy proc	
 	xor rbx, rbx
 	
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], r10b					; Put Y on stack
-	dec byte ptr [rdx+stackpointer]		; Decrement stack pointer
+	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
 
@@ -2063,8 +2051,8 @@ x5A_phy endp
 x7A_ply proc
 	xor rbx, rbx
 
-	add byte ptr [rdx+stackpointer] ,1	; Increment stack pointer
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	add byte ptr [rdx].state.stackpointer ,1	; Increment stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
 
 	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
 	test r10b, r10b
@@ -2075,13 +2063,13 @@ x7A_ply proc
 x7A_ply endp
 
 x9A_txs proc
-	mov byte ptr [rdx+stackpointer], r9b ; move X to stack pointer
+	mov byte ptr [rdx].state.stackpointer, r9b ; move X to stack pointer
 	add r14, 2							; Add cycles
 	jmp opcode_done
 x9A_txs endp
 
 xBA_tsx proc
-	mov r9b, byte ptr [rdx+stackpointer] ; move stack pointer to X
+	mov r9b, byte ptr [rdx].state.stackpointer ; move stack pointer to X
 
 	test r9b, r9b
 	write_flags_r15_preservecarry
@@ -2117,21 +2105,21 @@ no_zero:
 no_negative:
 
 	; interrupt disable
-	mov bl, [rdx+flags_interruptDisable]
+	mov bl, [rdx].state.flags_interruptDisable
 	test bl, 1
 	jz no_interrupt
 	or al, 00000100b
 no_interrupt:
 
 	; overflow
-	mov bl, [rdx+flags_overflow]
+	mov bl, [rdx].state.flags_overflow
 	test bl, 1
 	jz no_overflow
 	or al, 01000000b
 no_overflow:
 
 	; decimal
-	mov bl, [rdx+flags_decimal]
+	mov bl, [rdx].state.flags_decimal
 	test bl, 1
 	jz no_decimal
 	or al, 00001000b
@@ -2141,7 +2129,7 @@ endm
 get_status_register macro preservebx
 	xor rbx, rbx
 	
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	mov bx, [rdx].state.stackpointer	; Get stack pointer
 	add bl, 1							; Decrement stack pointer
 	mov al, [rcx+rbx]					; Get status from stack
 	
@@ -2150,7 +2138,7 @@ get_status_register macro preservebx
 if preservebx eq 1
 	push rbx
 else
-	mov byte ptr [rdx+stackpointer], bl
+	mov byte ptr [rdx].state.stackpointer, bl
 endif
 
 	; carry
@@ -2177,17 +2165,17 @@ no_negative:
 	; interrupt disable
 	bt ax, 2
 	setc bl
-	mov byte ptr [rdx+flags_interruptDisable], bl
+	mov byte ptr [rdx].state.flags_interruptDisable, bl
 
 	; overflow
 	bt ax, 6
 	setc bl
-	mov byte ptr [rdx+flags_overflow], bl
+	mov byte ptr [rdx].state.flags_overflow, bl
 
 	; decimal
 	bt ax, 3
 	setc bl
-	mov byte ptr [rdx+flags_decimal], bl
+	mov byte ptr [rdx].state.flags_decimal, bl
 
 if preservebx eq 1
 	pop rbx
@@ -2196,10 +2184,12 @@ endif
 endm
 
 handle_interrupt proc
-	mov byte ptr [rdx+interrupt], 0
+	mov byte ptr [rdx].state.interrupt, 0
 
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
-	mov bx, [rdx+stackpointer]			; Get stack pointer
+	xor rbx, rbx					
+
+	mov bx, [rdx].state.stackpointer	; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
 	mov [rcx+rbx], ah					; Put PC High byte on stack
@@ -2212,7 +2202,7 @@ handle_interrupt proc
 	mov [rcx+rbx], al					; Put P on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
-	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
 	mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
 
@@ -2228,7 +2218,7 @@ x40_rti proc
 	inc bl
 	mov al, [rcx+rbx]					; low PC byte
 	mov r11w, ax						; set PC
-	mov byte ptr [rdx+stackpointer], bl	; Store stack pointer
+	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
 	add r14, 6							; Clock 
 	
@@ -2244,8 +2234,8 @@ x08_php proc
 
 	xor rbx, rbx
 
-	mov bx, [rdx+stackpointer]			; Get stack pointer
-	sub byte ptr [rdx+stackpointer], 1	; Increment stack pointer
+	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	sub byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	mov [rcx+rbx], al					; Put status on stack
 	
 	add r14, 3							; Add cycles
@@ -2273,7 +2263,7 @@ bit_body_end macro clock, pc
 
 	bt bx, 6				; test overflow
 	setc bl
-	mov byte ptr [rdx+flags_overflow], bl
+	mov byte ptr [rdx].state.flags_overflow, bl
 	
 	add r14, clock			
 	add r11w, pc			
@@ -2614,6 +2604,19 @@ noinstruction PROC
 	ret
 	
 noinstruction ENDP
+
+;
+; Side Effects
+;
+
+handle_write_sideeffect proc
+
+	;vmovdqu8 zmm0, zmmword ptr [rcx+rambank_ptr]
+	nop
+
+	ret
+handle_write_sideeffect endp
+
 
 .DATA
 
