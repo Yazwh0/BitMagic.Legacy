@@ -37,6 +37,9 @@ state struct
 	flags_zero				byte ?
 	flags_interruptDisable	byte ?
 	interrupt				byte ?
+
+	rambank					byte ?
+	rombank					byte ?
 state ends
 
 write_state_obj macro	
@@ -162,6 +165,8 @@ asm_func proc  state_ptr:QWORD
 	mov rdx, rcx						; move state to rcx
 	mov rcx, [rdx].state.memory_ptr		; rcx points to memory
 
+
+
 	store_registers
 
 	push rdx
@@ -186,6 +191,8 @@ asm_func proc  state_ptr:QWORD
 	read_state_obj
 
 main_loop:
+	mov rcx, [rdx].state.memory_ptr		; reset rcx so it points to memory
+
 	; check for interrupt
 	cmp byte ptr [rdx].state.interrupt, 0
 	jne handle_interrupt
@@ -225,6 +232,41 @@ asm_func ENDP
 ; r12 Write
 ; r13 Read
 
+; 
+; rcx must start pointing to ram
+; Modify rcx to the correct start address when we add rbx
+;
+; Banked ram starts at 0xa000 (+0x2000)
+; Banked rom starts at 0xc000 (+0x4000)
+;
+read_banked_rbx macro
+	local done, banked_ram
+
+	cmp rbx, 0a000h
+	jl done
+
+	cmp rbx, 0c000h
+	jl banked_ram
+
+	mov al, byte ptr [rcx]			; 0x0000 -- get bank
+	and al, 00011111b				; remove top bits
+	sal rax, 14						; * 0x4000
+	mov rsi, [rdx].state.rom_ptr
+	lea rcx, [rsi - 0c000h + rax]	; can now add rbx to get value
+	jmp done
+
+banked_ram:
+
+	; banked ram
+	mov al, byte ptr [rcx]			; 0x0000 -- get bank
+	sal rax, 13						; * 0x2000
+	mov rsi, [rdx].state.rambank_ptr
+	lea rcx, [rsi - 0a000h + rax]	; can now add rbx to get value
+
+done:
+
+endm
+
 read_sideeffects_rbx macro
 	;local skip
 	;jnz skip
@@ -235,12 +277,12 @@ endm
 
 write_sideeffects_rbx macro
 	local skip
-	mov al, byte ptr [r13+rbx]	; get write effect
-	test al, al
-	jz skip
-	call handle_write_sideeffect
+;	mov al, byte ptr [r13+rbx]	; get write effect
+;	test al, al
+;	jz skip
+;	call handle_write_sideeffect
 
-	skip:
+;	skip:
 endm
 
 ; -----------------------------
@@ -270,12 +312,14 @@ endm
 read_abs_rbx macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	read_banked_rbx
 endm
 
 read_absx_rbx macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
 	add bx, r9w			; Add X
+	read_banked_rbx
 endm
 
 read_absx_rbx_pagepenalty macro
@@ -287,12 +331,14 @@ read_absx_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
+	read_banked_rbx
 endm
 
 read_absy_rbx macro
 	xor rbx, rbx
 	mov bx, [rcx+r11]	; Get 16bit value in memory.
 	add bx, r10w		; Add Y
+	read_banked_rbx
 endm
 
 read_absy_rbx_pagepenalty macro
@@ -304,6 +350,7 @@ read_absy_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
+	read_banked_rbx
 endm
 
 read_indx_rbx macro
@@ -326,6 +373,7 @@ read_indy_rbx_pagepenalty macro
 	clc
 
 no_overflow:
+	read_banked_rbx
 endm
 
 read_indy_rbx macro
@@ -334,12 +382,14 @@ read_indy_rbx macro
 	mov bl, [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
+	read_banked_rbx
 endm
 
 read_indzp_rbx macro
 	xor rbx, rbx
 	mov bl, [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address at location
+	read_banked_rbx
 endm
 
 ; -----------------------------
@@ -769,6 +819,7 @@ x9E_stz_absx endp
 
 inc_body macro clock, pc
 	read_sideeffects_rbx
+	clc
 	inc byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
@@ -781,6 +832,7 @@ endm
 
 dec_body macro clock, pc
 	read_sideeffects_rbx
+	clc
 	dec byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
@@ -2200,7 +2252,14 @@ handle_interrupt proc
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
-	mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
+	xor rax, rax
+	mov al, [rcx+1]						; get rom bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; multiply by 0x4000
+	mov rsi, [rdx].state.rom_ptr
+	mov r11w, word ptr [rsi + rax + 03ffeh] ; get address at $fffe of current rom
+
+	;mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
 
 	add r14, 7							; Clock 
 
@@ -2606,11 +2665,12 @@ noinstruction ENDP
 ;
 
 ; rbx holds the address
-; al the effect number
+; rax the effect number
 handle_write_sideeffect proc
+	push r13
+	lea r13, write_sideeffect_00	; start of jump table 
 
-
-
+	jmp qword ptr [r13 + rax*8]		; jump to opcode
 
 	;vmovdqu8 zmm0, zmmword ptr [rcx+rambank_ptr]
 	nop
@@ -2618,9 +2678,40 @@ handle_write_sideeffect proc
 	ret
 handle_write_sideeffect endp
 
+write_sideeffect_rambank proc
+	pop r13
+	ret
+write_sideeffect_rambank endp
+
+write_sideeffect_rombank proc
+	pop r13
+	ret
+write_sideeffect_rombank endp
+
+
 
 .DATA
 
+;
+; side effect jump tables
+;
+
+;
+; Write
+;
+write_sideeffect_00 qword 0000000000000000h
+write_sideeffect_01 qword write_sideeffect_rambank
+write_sideeffect_02 qword write_sideeffect_rombank
+
+;
+; Read
+;
+
+
+
+;
+; Opcode jump table
+;
 ; all opcodes, in order of value starting with 0x00
 ; should have 76 free when done!
 opcode_00	qword	noinstruction 	; $00

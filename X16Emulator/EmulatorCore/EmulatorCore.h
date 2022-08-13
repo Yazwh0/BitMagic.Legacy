@@ -48,6 +48,9 @@ extern "C"
         bool zero;
         bool interruptDisable;
         bool interrupt;
+
+        uint8_t RamBank;
+        uint8_t RomBank;
     };
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);

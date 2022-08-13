@@ -97,8 +97,11 @@ public class EmulatorTests
         emulator.Interrupt = true;
 
         // set interrupt vector to $900
-        emulator.Memory[0xfffe] = 0x00;
-        emulator.Memory[0xffff] = 0x09;
+        //emulator.Memory[0xfffe] = 0x00;
+        //emulator.Memory[0xffff] = 0x09;
+
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -121,8 +124,8 @@ public class EmulatorTests
         emulator.Interrupt = true;
 
         // set interrupt vector to $900
-        emulator.Memory[0xfffe] = 0x00;
-        emulator.Memory[0xffff] = 0x09;
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -155,6 +158,59 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x811, 0);
+        emulator.AssertFlags(Interrupt: false);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_Set_RomChange()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = true;
+
+        // set interrupt vector to $900
+        //emulator.Memory[0xfffe] = 0x00;
+        //emulator.Memory[0xffff] = 0x09;
+
+        emulator.RomBank[0x4000 * 5 + 0x3ffe] = 0x00;
+        emulator.RomBank[0x4000 * 5+ 0x3fff] = 0x09;
+        emulator.Memory[0x01] = 0x05;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp
+                .org $900
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x901, stackPointer: 0x1ff - 3);
+        emulator.AssertFlags(Interrupt: false);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_SetAndReturn_RomChange()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = true;
+
+        // set interrupt vector to $900
+        emulator.RomBank[0x4000 * 5 + 0x3ffe] = 0x00;
+        emulator.RomBank[0x4000 * 5 + 0x3fff] = 0x09;
+        emulator.Memory[0x01] = 0x05;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp
+                .org $900
+                rti",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x811, stackPointer: 0x1ff);
         emulator.AssertFlags(Interrupt: false);
     }
 }

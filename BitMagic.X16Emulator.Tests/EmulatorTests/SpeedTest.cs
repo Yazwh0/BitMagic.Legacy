@@ -8,7 +8,7 @@ public class SpeedTest
 {
     [TestMethod]
 
-    public async Task Test()
+    public async Task ZeroPage()
     {
 
         var emulator = new Emulator();
@@ -42,7 +42,42 @@ public class SpeedTest
                 stp
                 ",
                 emulator);
+    }
+    [TestMethod]
 
-        //emulator.AssertFlags(true, false, false, false);
+    public async Task BankedRamp()
+    {
+
+        var emulator = new Emulator();
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$50
+                sta $a002
+                sta $a003
+                ldy #$ff
+                .mainloop:
+                ldx #$ff
+                .loop:
+                dex
+                bne loop
+                dey
+                bne mainloop
+                lda $a002
+                tax
+                dex
+                txa
+                sta $a002
+                bne mainloop
+                lda $a003
+                tax
+                dex
+                txa
+                sta $a003
+                bne mainloop
+                stp
+                ",
+                emulator);
     }
 }

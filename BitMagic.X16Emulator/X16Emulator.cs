@@ -17,16 +17,15 @@ public class Emulator : IDisposable
     public enum WriteEffectType : byte
     { 
         Nothing = 0,
-        RamBank,
-        RomBank
+        Vera,
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
-        public ulong Memory = 0;
-        public ulong Rom = 0;
-        public ulong RamBank = 0;
+        public ulong MemoryPtr = 0;
+        public ulong RomPtr = 0;
+        public ulong RamBankPtr = 0;
 
         public ReadEffectType[] ReadEffect;
         public WriteEffectType[] WriteEffect;
@@ -48,18 +47,17 @@ public class Emulator : IDisposable
 
         public byte Interrupt = 0;
 
+        public byte RamBank = 0;
+        public byte RomBank = 0;
+
         public CpuState(ulong memory, ulong rom, ulong ramBank)
         {
-            Memory = memory;
-            Rom = rom;
-            RamBank = ramBank;
+            MemoryPtr = memory;
+            RomPtr = rom;
+            RamBankPtr = ramBank;
 
             ReadEffect = new ReadEffectType[0x10000];
             WriteEffect = new WriteEffectType[0x10000];
-
-            // todo, move to some machine specific initialisation?
-            WriteEffect[0x0000] = WriteEffectType.RamBank;
-            WriteEffect[0x0001] = WriteEffectType.RomBank;
         }
     }
 
@@ -114,6 +112,9 @@ public class Emulator : IDisposable
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, 0x10000);
+
+    public unsafe Span<byte> RamBank => new Span<byte>((void*) _ram_ptr, BankedRamSize);
+    public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
 
     public EmulatorResult Emulate()
     {
