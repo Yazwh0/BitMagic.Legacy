@@ -133,7 +133,7 @@ public class EmulatorTests
                 emulator);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7+6, 0x1ff);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1ff);
         emulator.AssertFlags(Interrupt: false);
     }
 

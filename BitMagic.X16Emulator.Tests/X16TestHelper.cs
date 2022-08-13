@@ -65,25 +65,25 @@ namespace BitMagic.X16Emulator.Tests
             return emulator;
         }
 
-        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, Int32? Pc = null, ulong? Clock = null, uint? stackPointer = null)
+        public static void AssertState(this Emulator emulator, byte? A = null, byte? X = null, byte? Y = null, ushort? Pc = null, ulong? Clock = null, uint? stackPointer = null)
         {
             if (A != null)
-                Assert.AreEqual(A, (byte)emulator.A, $"A doesn't match: ${(byte)emulator.A:X2}");   
+                Assert.AreEqual(A, emulator.A, $"A doesn't match: ${emulator.A:X2}");   
 
             if (X != null)
-                Assert.AreEqual(X, (byte)emulator.X, $"X doesn't match: ${(byte)emulator.X:X2}");
+                Assert.AreEqual(X, emulator.X, $"X doesn't match: ${emulator.X:X2}");
 
             if (Y != null)
-                Assert.AreEqual(Y, (byte)emulator.Y, $"Y doesn't match: ${(byte)emulator.Y:X2}");
+                Assert.AreEqual(Y, emulator.Y, $"Y doesn't match: ${emulator.Y:X2}");
 
             if (Pc != null)
-                Assert.AreEqual(Pc, (Int16)emulator.Pc, $"PC doesn't match: ${(byte)emulator.Pc:X4}");
+                Assert.AreEqual(Pc, emulator.Pc, $"PC doesn't match: ${emulator.Pc:X4}");
 
             if (Clock != null)
-                Assert.AreEqual(Clock, emulator.Clock - 3, $"Clock doesn't match: ${(byte)emulator.Clock - 3:X4}"); // add on stp clock cycles
+                Assert.AreEqual(Clock, emulator.Clock - 3, $"Clock doesn't match: ${emulator.Clock - 3:X4}"); // add on stp clock cycles
 
             if (stackPointer != null)
-                Assert.AreEqual(stackPointer, emulator.StackPointer, $"SP doesn't match: ${(byte)emulator.StackPointer:X4}");
+                Assert.AreEqual(stackPointer, emulator.StackPointer, $"SP doesn't match: ${emulator.StackPointer:X4}");
         }
 
         public static void AssertFlags(this Emulator emulator, bool Zero = false, bool Negative = false, bool Overflow = false, bool Carry = false, bool InterruptDisable = false, bool Decimal = false, bool Interrupt = false)
