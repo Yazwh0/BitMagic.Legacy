@@ -75,15 +75,15 @@ endm
 read_state_obj macro
 	local no_carry, no_zero, no_overflow, no_negative
 
-	xor r8, r8
-	xor r9, r9
-	xor r10, r10
-	xor r11, r11
+	;xor r8, r8
+	;xor r9, r9
+	;xor r10, r10
+	;xor r11, r11
 
-	mov r8b, [rdx].state.register_a		; a
-	mov r9b, [rdx].state.register_x		; x
-	mov r10b, [rdx].state.register_y	; y
-	mov r11w, [rdx].state.register_pc	; PC
+	movzx r8, byte ptr [rdx].state.register_a		; a
+	movzx r9, byte ptr [rdx].state.register_x		; x
+	movzx r10, byte ptr [rdx].state.register_y	; y
+	movzx r11, word ptr [rdx].state.register_pc	; PC
 	mov r14, [rdx].state.clock			; Clock
 	
 	mov r12, [rdx].state.readeffect_ptr
@@ -162,8 +162,6 @@ asm_func proc  state_ptr:QWORD
 	mov rdx, rcx						; move state to rcx
 	mov rcx, [rdx].state.memory_ptr		; rcx points to memory
 
-
-
 	store_registers
 
 	push rdx
@@ -196,8 +194,7 @@ main_loop:
 
 next_opcode::
 
-	xor rax, rax
-	mov al, [rcx+r11]				; Get opcode
+	movzx rax, byte ptr [rcx+r11]				; Get opcode
 	add r11w, 1						; PC+1
 	lea rbx, opcode_00				; start of jump table
 
@@ -290,39 +287,33 @@ endm
 
 
 read_zp_rbx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
 endm
 
 read_zpx_rbx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
 	add bl, r9b			; Add X
 endm
 
 read_zpy_rbx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
 	add bl, r10b		; Add Y
 endm
 
 read_abs_rbx macro
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	read_banked_rbx
 endm
 
 read_absx_rbx macro
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bx, r9w			; Add X
 	read_banked_rbx
 endm
 
 read_absx_rbx_pagepenalty macro
 	local no_overflow
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bl, r9b			; Add X
 	jnc no_overflow
 	add bh, 1			; Add high bit
@@ -332,16 +323,14 @@ no_overflow:
 endm
 
 read_absy_rbx macro
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bx, r10w		; Add Y
 	read_banked_rbx
 endm
 
 read_absy_rbx_pagepenalty macro
 	local no_overflow
-	xor rbx, rbx
-	mov bx, [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bl, r10b		; Add Y
 	jnc no_overflow
 	add bh, 1			; Add high bit
@@ -351,16 +340,14 @@ no_overflow:
 endm
 
 read_indx_rbx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
+	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	mov bx, [rcx+rbx]	; Address at location
 endm
 
 read_indy_rbx_pagepenalty macro
 	local no_overflow
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
+	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address pointed at in ZP
 
 	adc bl, r10b		; Add Y to the lower address byte
@@ -375,16 +362,14 @@ endm
 
 read_indy_rbx macro
 	local no_overflow
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
+	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
 	read_banked_rbx
 endm
 
 read_indzp_rbx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; Address in ZP
+	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	mov bx, [rcx+rbx]	; Address at location
 	read_banked_rbx
 endm
@@ -423,39 +408,34 @@ endm
 ; and increment PC.
 
 write_zp macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; ZP address
+	movzx rbx, byte ptr [rcx+r11]	; ZP address
 	mov [rcx+rbx], al
 	add r11w, 1
 endm
 
 write_zpx macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; ZP address
+	movzx rbx, byte ptr [rcx+r11]	; ZP address
 	add bl, r9b			; Add X
 	mov [rcx+rbx], al  
 	add r11w, 1
 endm
 
 write_zpy macro
-	xor rbx, rbx
-	mov bl, [rcx+r11]	; ZP address
+	movzx rbx, byte ptr [rcx+r11]	; ZP address
 	add bl, r10b		; Add Y
 	mov [rcx+rbx], al  
 	add r11w, 1
 endm
 
 write_abs macro
-	xor rbx, rbx		; Clear b
-	mov bx, [rcx+r11]	; Get address
+	movzx rbx, word ptr [rcx+r11]	; Get address
 	mov [rcx+rbx], al	; Update
 
 	add r11w, 2			; Increment PC
 endm
 
 write_absx macro
-	xor rbx, rbx		; Clear b
-	mov bx, [rcx+r11]	; Get Address
+	movzx rbx, word ptr [rcx+r11]	; Get Address
 	add bx, r9w			; Add X
 	mov [rcx+rbx], al	; Update
 
@@ -463,8 +443,7 @@ write_absx macro
 endm
 
 write_absy macro
-	xor rbx, rbx		; Clear b
-	mov bx, [rcx+r11]	; Get Address
+	movzx rbx, word ptr [rcx+r11]	; Get Address
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
 
@@ -472,8 +451,7 @@ write_absy macro
 endm
 
 write_indx macro
-	xor rbx, rbx		; Clear b
-	mov bl, [rcx+r11]	; Get address
+	movzx rbx, byte ptr [rcx+r11]	; Get address
 	add bl, r9b			; Add X, use bl so it wraps
 	mov bx, [rcx+rbx]	; Get destination address
 	mov [rcx+rbx], al	; Update
@@ -482,8 +460,7 @@ write_indx macro
 endm
 
 write_indy macro
-	xor rbx, rbx		; Clear b
-	mov bl, [rcx+r11]	; Get address
+	movzq rbx, byte ptr [rcx+r11]	; Get address
 	mov bx, [rcx+rbx]	; Get destination address
 	add bx, r10w		; Add Y
 	mov [rcx+rbx], al	; Update
@@ -492,8 +469,7 @@ write_indy macro
 endm
 
 write_indzp macro
-	xor rbx, rbx		; Clear b
-	mov bl, [rcx+r11]	; Get address
+	mov rbx, byte ptr [rcx+r11]	; Get address
 	mov bx, [rcx+rbx]	; Get destination address
 	mov [rcx+rbx], al	; Update
 
@@ -1984,9 +1960,7 @@ x20_jsr proc
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
 	add rax, 1
 
-	xor rbx, rbx
-
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
 	mov [rcx+rbx], ah					; Put PC High byte on stack
@@ -2002,9 +1976,7 @@ x20_jsr proc
 x20_jsr endp
 
 x60_rts proc
-	xor rbx, rbx
-
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	add bl, 1							; Move stack pointer on
 	mov ah, [rcx+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
@@ -2025,9 +1997,7 @@ x60_rts endp
 ;
 
 x48_pha proc
-	xor rbx, rbx
-	
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1	; Decrement stack pointer
 	mov [rcx+rbx], r8b					; Put A on stack
 	
@@ -2038,10 +2008,8 @@ x48_pha proc
 x48_pha endp
 
 x68_pla proc
-	xor rbx, rbx
-
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
-	mov bx, word ptr [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
 	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
 	test r8b, r8b
@@ -2053,10 +2021,7 @@ x68_pla proc
 x68_pla endp
 
 xDA_phx proc
-	
-	xor rbx, rbx
-	
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], r9b					; Put X on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2067,10 +2032,8 @@ xDA_phx proc
 xDA_phx endp
 
 xFA_plx proc
-	xor rbx, rbx
-
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
 	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
 	test r9b, r9b
@@ -2082,9 +2045,7 @@ xFA_plx proc
 xFA_plx endp
 
 x5A_phy proc	
-	xor rbx, rbx
-	
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	mov [rcx+rbx], r10b					; Put Y on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2094,10 +2055,8 @@ x5A_phy proc
 x5A_phy endp
 
 x7A_ply proc
-	xor rbx, rbx
-
 	add byte ptr [rdx].state.stackpointer ,1	; Increment stack pointer
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
 	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
 	test r10b, r10b
@@ -2172,9 +2131,7 @@ no_decimal:
 endm
 
 get_status_register macro preservebx
-	xor rbx, rbx
-	
-	mov bx, [rdx].state.stackpointer	; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
 	add bl, 1							; Decrement stack pointer
 	mov al, [rcx+rbx]					; Get status from stack
 	
@@ -2232,9 +2189,8 @@ handle_interrupt proc
 	mov byte ptr [rdx].state.interrupt, 0
 
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
-	xor rbx, rbx					
 
-	mov bx, [rdx].state.stackpointer	; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
 	mov [rcx+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
 	mov [rcx+rbx], ah					; Put PC High byte on stack
@@ -2249,8 +2205,7 @@ handle_interrupt proc
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
-	xor rax, rax
-	mov al, [rcx+1]						; get rom bank
+	movzx rax, byte ptr [rcx+1]						; get rom bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; multiply by 0x4000
 	mov rsi, [rdx].state.rom_ptr
@@ -2284,9 +2239,7 @@ x40_rti endp
 x08_php proc
 	set_status_register_al
 
-	xor rbx, rbx
-
-	mov bx, [rdx].state.stackpointer			; Get stack pointer
+	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	mov [rcx+rbx], al					; Put status on stack
 	
