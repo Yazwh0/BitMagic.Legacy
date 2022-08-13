@@ -20,6 +20,8 @@ state struct
 	memory_ptr				qword ?
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
+	readeffect_ptr			qword ?
+	writeeffect_ptr			qword ?
 
 	clock					qword ?
 	register_pc				word ?
@@ -84,6 +86,9 @@ read_state_obj macro
 	mov r11w, [rdx].state.register_pc	; PC
 	mov r14, [rdx].state.clock			; Clock
 	
+	mov r12, [rdx].state.readeffect_ptr
+	mov r13, [rdx].state.writeeffect_ptr
+
 	; Flags
 	xor r15, r15 ; clear flags register
 
@@ -148,8 +153,8 @@ endm
 ; r9b  : x
 ; r10b : y
 ; r11w : PC
-; r12w : Write Location
-; r13w : Read Location
+; r12  : ReadEffect
+; r13  : WriteEffect
 ; r14  : Clock Ticks
 ; r15  : Flags
 
@@ -180,9 +185,6 @@ asm_func proc  state_ptr:QWORD
 	
 	read_state_obj
 
-	mov r12, 010000h				; Reset side effects, cant use 0 as a write to 0x0000 is important
-	mov r13, r12
-
 main_loop:
 	; check for interrupt
 	cmp byte ptr [rdx].state.interrupt, 0
@@ -198,17 +200,6 @@ next_opcode::
 	jmp qword ptr [rbx + rax*8]		; jump to opcode
 
 opcode_done::
-
-;	cmp r12, 010000h
-;	je read_done
-
-;	mov r12, 010000h
-;read_done:
-;	cmp r13, 010000h
-;	je write_done
-
-;	mov r13, 010000h
-;write_done:
 
 	jmp main_loop
 
@@ -235,16 +226,21 @@ asm_func ENDP
 ; r13 Read
 
 read_sideeffects_rbx macro
-	local skip
-	jnz skip
-	call handle_write_sideeffect
-	skip:
+	;local skip
+	;jnz skip
+	;skip:
 
 	;mov r13, rbx
 endm
 
 write_sideeffects_rbx macro
-	;mov r12, rbx
+	local skip
+	mov al, byte ptr [r13+rbx]	; get write effect
+	test al, al
+	jz skip
+	call handle_write_sideeffect
+
+	skip:
 endm
 
 ; -----------------------------
@@ -2609,7 +2605,12 @@ noinstruction ENDP
 ; Side Effects
 ;
 
+; rbx holds the address
+; al the effect number
 handle_write_sideeffect proc
+
+
+
 
 	;vmovdqu8 zmm0, zmmword ptr [rcx+rambank_ptr]
 	nop

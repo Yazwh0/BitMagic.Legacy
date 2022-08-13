@@ -8,12 +8,28 @@ public class Emulator : IDisposable
     [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
     private static extern int fnEmulatorCode(ref CpuState state);
 
+    public enum ReadEffectType : byte
+    { 
+        Nothing = 0,
+        Vera
+    }
+
+    public enum WriteEffectType : byte
+    { 
+        Nothing = 0,
+        RamBank,
+        RomBank
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
         public ulong Memory = 0;
         public ulong Rom = 0;
         public ulong RamBank = 0;
+
+        public ReadEffectType[] ReadEffect;
+        public WriteEffectType[] WriteEffect;
 
         public ulong Clock = 0;
         public ushort Pc = 0;
@@ -37,6 +53,13 @@ public class Emulator : IDisposable
             Memory = memory;
             Rom = rom;
             RamBank = ramBank;
+
+            ReadEffect = new ReadEffectType[0x10000];
+            WriteEffect = new WriteEffectType[0x10000];
+
+            // todo, move to some machine specific initialisation?
+            WriteEffect[0x0000] = WriteEffectType.RamBank;
+            WriteEffect[0x0001] = WriteEffectType.RomBank;
         }
     }
 
