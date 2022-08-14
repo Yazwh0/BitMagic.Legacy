@@ -20,8 +20,7 @@ state struct
 	memory_ptr				qword ?
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
-	readeffect_ptr			qword ?
-	writeeffect_ptr			qword ?
+	vram_ptr				qword ?
 
 	clock					qword ?
 	register_pc				word ?
@@ -81,9 +80,6 @@ read_state_obj macro
 	movzx r11, word ptr [rdx].state.register_pc	; PC
 	mov r14, [rdx].state.clock			; Clock
 	
-	mov r12, [rdx].state.readeffect_ptr
-	mov r13, [rdx].state.writeeffect_ptr
-
 	; Flags
 	xor r15, r15 ; clear flags register
 
@@ -154,13 +150,11 @@ endm
 ; r15  : Flags
 
 asm_func proc  state_ptr:QWORD
-	mov rdx, rcx						; move state to rcx
-	mov rcx, [rdx].state.memory_ptr		; rcx points to memory
+	mov rdx, rcx						; move state to rdx
 
 	store_registers
 
 	push rdx
-	push rcx
 
 	; see if lahf is supported. if not return -1.
 	mov eax, 80000001h
@@ -168,14 +162,6 @@ asm_func proc  state_ptr:QWORD
 	test ecx,1           ; Is bit 0 (the "LAHF-SAHF" bit) set?
 	je not_supported     ; no, LAHF is not supported
 
-	; see if AVX2 is supported.
-	mov eax, 00000007h
-	xor rcx, rcx
-	cpuid
-	test ebx, 100000b
-	je not_supported
-
-	pop rcx
 	pop rdx
 	
 	read_state_obj
@@ -189,7 +175,7 @@ main_loop:
 
 next_opcode::
 
-	movzx rax, byte ptr [rcx+r11]				; Get opcode
+	movzx rax, byte ptr [rcx+r11]	; Get opcode
 	add r11w, 1						; PC+1
 	lea rbx, opcode_00				; start of jump table
 

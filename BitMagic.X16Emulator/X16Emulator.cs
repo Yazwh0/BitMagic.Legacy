@@ -8,17 +8,17 @@ public class Emulator : IDisposable
     [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
     private static extern int fnEmulatorCode(ref CpuState state);
 
-    public enum ReadEffectType : byte
-    { 
-        Nothing = 0,
-        Vera
-    }
+    //public enum ReadEffectType : byte
+    //{ 
+    //    Nothing = 0,
+    //    Vera
+    //}
 
-    public enum WriteEffectType : byte
-    { 
-        Nothing = 0,
-        Vera,
-    }
+    //public enum WriteEffectType : byte
+    //{ 
+    //    Nothing = 0,
+    //    Vera,
+    //}
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
@@ -26,9 +26,7 @@ public class Emulator : IDisposable
         public ulong MemoryPtr = 0;
         public ulong RomPtr = 0;
         public ulong RamBankPtr = 0;
-
-        public ReadEffectType[] ReadEffect;
-        public WriteEffectType[] WriteEffect;
+        public ulong VramPtr = 0;
 
         public ulong Clock = 0;
         public ushort Pc = 0;
@@ -47,14 +45,12 @@ public class Emulator : IDisposable
 
         public byte Interrupt = 0;
 
-        public CpuState(ulong memory, ulong rom, ulong ramBank)
+        public CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
         {
             MemoryPtr = memory;
             RomPtr = rom;
             RamBankPtr = ramBank;
-
-            ReadEffect = new ReadEffectType[0x10000];
-            WriteEffect = new WriteEffectType[0x10000];
+            VramPtr = vram;
         }
     }
 
@@ -86,18 +82,21 @@ public class Emulator : IDisposable
     private readonly ulong _memory_ptr;
     private readonly ulong _rom_ptr;
     private readonly ulong _ram_ptr;
+    private readonly ulong _vram_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
+    private const int VramSize = 0x20000;
 
     public unsafe Emulator() 
     {
         _memory_ptr = (ulong)NativeMemory.Alloc(RamSize);
         _rom_ptr = (ulong)NativeMemory.Alloc(RomSize);
         _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
+        _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr);
+        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)

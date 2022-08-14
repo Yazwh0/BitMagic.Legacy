@@ -29,9 +29,7 @@ extern "C"
         int8_t* memory_ptr;
         int8_t* rom_ptr;
         int8_t* rambank_ptr;
-
-        int8_t* readeffect_ptr;
-        int8_t* writeeffect_ptr;
+        int8_t* vram_ptr;
 
         uint64_t clock;
         uint16_t pc;

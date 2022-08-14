@@ -2,36 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
+#include "../EmulatorCore/EmulatorCore.h"
 
 extern "C" 
 {
-    struct state 
-    {
-        int8_t* memory_ptr;
-        int8_t* rom_ptr;
-        int8_t* rambank_ptr;
 
-        int8_t* readeffect_ptr;
-        int8_t* writeeffect_ptr;
-
-        uint64_t clock;
-        uint16_t pc;
-        uint16_t stackpointer;
-        uint8_t a;
-        uint8_t x;
-        uint8_t y;
-
-        bool decimal;
-        bool breakFlag;
-        bool overflow;
-        bool negative;
-        bool carry;
-        bool zero;
-        bool interruptDisable;
-        bool interrupt;
-    };
-
-    int __fastcall fnEmulatorCode(state* test);
+    //int __fastcall fnEmulatorCode(state* test);
 }
 
 int main()
@@ -84,16 +60,12 @@ int main()
     state.memory_ptr = memory_ptr;
     state.rom_ptr = (int8_t*)r_ptr;
     state.rambank_ptr = (int8_t*)b_ptr;
-    state.writeeffect_ptr = new int8_t[0x10000];
-    state.readeffect_ptr = new int8_t[0x10000];
+    state.vram_ptr = new int8_t[0x20000];
 
-    for (int i = 0; i < 0x10000; i++)
+    for (int i = 0; i < 0x20000; i++)
     {
-        state.writeeffect_ptr[i] = 0;
-        state.readeffect_ptr[i] = 0;
+        state.vram_ptr[i] = 0;
     }
-
-    state.writeeffect_ptr[0] = 1; // ram bank change
 
     // initiliase machine
     state.a = 0x02;
@@ -133,8 +105,7 @@ int main()
 
     int x = fnEmulatorCode(& state);
 
-    delete [] state.writeeffect_ptr;
-    delete [] state.readeffect_ptr;
+    delete [] state.vram_ptr;
 
     _aligned_free(m_ptr);
     _aligned_free(r_ptr);
