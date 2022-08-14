@@ -901,7 +901,8 @@ x98_tya endp
 ; ASL
 ;
 
-asl_body macro clock, pc
+asl_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
 	read_sideeffects_rbx
 	read_flags_rax
 	sal byte ptr [rcx+rbx],1		; shift
@@ -913,11 +914,27 @@ asl_body macro clock, pc
 	add r14, clock					; Clock
 
 	jmp opcode_done	
+
+if checkreadonly eq 1
+skip:
+	read_sideeffects_rbx
+	read_flags_rax
+	movzx r12, byte ptr [rcx+rbx]
+	sal r12b, 1						; shift
+
+	write_flags_r15
+	write_sideeffects_rbx
+
+	add r11w, pc					; move PC on
+	add r14, clock					; Clock
+
+	jmp opcode_done	
+endif
 endm
 
 x0A_asl_a proc
 	read_flags_rax
-	sal r8b,1		; shift
+	sal r8b, 1		; shift
 	write_flags_r15
 
 	add r14, 2		; Clock
@@ -927,29 +944,30 @@ x0A_asl_a endp
 
 x0E_asl_abs proc
 	read_abs_rbx
-	asl_body 6, 2
+	asl_body 1, 6, 2
 x0E_asl_abs endp
 
 x1E_asl_absx proc
 	read_absx_rbx
-	asl_body 7, 2
+	asl_body 1, 7, 2
 x1E_asl_absx endp
 
 x06_asl_zp proc
 	read_zp_rbx
-	asl_body 5, 1
+	asl_body 0, 5, 1
 x06_asl_zp endp
 
 x16_asl_zpx proc
 	read_zpx_rbx
-	asl_body 6, 1
+	asl_body 0, 6, 1
 x16_asl_zpx endp
 
 ;
 ; LSR
 ;
 
-lsr_body macro clock, pc
+lsr_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
 	read_flags_rax
 	read_sideeffects_rbx
 
@@ -962,6 +980,23 @@ lsr_body macro clock, pc
 	add r11w, pc				; add on PC
 
 	jmp opcode_done	
+
+if checkreadonly eq 1
+skip:
+	read_flags_rax
+	read_sideeffects_rbx
+
+	movzx r12, byte ptr [rcx+rbx]
+	sar r12b,1					; shift
+
+	write_flags_r15
+	write_sideeffects_rbx
+
+	add r14, clock				; Clock
+	add r11w, pc				; add on PC
+
+	jmp opcode_done	
+endif
 endm
 
 x4A_lsr_a proc
@@ -976,29 +1011,30 @@ x4A_lsr_a endp
 
 x4E_lsr_abs proc
 	read_abs_rbx
-	lsr_body 6, 2
+	lsr_body 1, 6, 2
 x4E_lsr_abs endp
 
 x5E_lsr_absx proc
 	read_absx_rbx
-	lsr_body 7, 2
+	lsr_body 1, 7, 2
 x5E_lsr_absx endp
 
 x46_lsr_zp proc
 	read_zp_rbx
-	lsr_body 5, 1
+	lsr_body 0, 5, 1
 x46_lsr_zp endp
 
 x56_lsr_zpx proc
 	read_zpx_rbx
-	lsr_body 6, 1
+	lsr_body 0, 6, 1
 x56_lsr_zpx endp
 
 ;
 ; ROL
 ;
 
-rol_body macro clock, pc
+rol_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
 	read_sideeffects_rbx
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
@@ -1012,6 +1048,23 @@ rol_body macro clock, pc
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
 	jmp opcode_done	
+
+if checkreadonly eq 1
+skip:
+	read_sideeffects_rbx
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 8						; move to lower byte
+
+	movzx r12, byte ptr [rcx+rbx]
+	sal r12b, 1						; shift
+	write_flags_r15
+	write_sideeffects_rbx
+	
+	add r14, clock					; Clock
+	add r11w, pc					; add on PC
+	jmp opcode_done	
+endif
 endm
 
 x2A_rol_a proc
@@ -1029,29 +1082,30 @@ x2A_rol_a endp
 
 x2E_rol_abs proc	
 	read_abs_rbx
-	rol_body 6, 2
+	rol_body 1, 6, 2
 x2E_rol_abs endp
 
 x3E_rol_absx proc	
 	read_absx_rbx
-	rol_body 7, 2
+	rol_body 1, 7, 2
 x3E_rol_absx endp
 
 x26_rol_zp proc
 	read_zp_rbx
-	rol_body 5, 1
+	rol_body 0, 5, 1
 x26_rol_zp endp
 
 x36_rol_zpx proc
 	read_zpx_rbx
-	rol_body 6, 1
+	rol_body 0, 6, 1
 x36_rol_zpx endp
 
 ;
 ; ROR
 ;
 
-ror_body macro clock, pc
+ror_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
 	read_sideeffects_rbx
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
@@ -1068,6 +1122,27 @@ ror_body macro clock, pc
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
 	jmp opcode_done	
+
+if checkreadonly eq 1
+skip:
+	read_sideeffects_rbx
+	mov rsi, r15					; save registers
+	and rsi, 0100h					; mask carry
+	ror rsi, 1						; move to high bit on lower byte
+
+	movzx r12, byte ptr [rcx+rbx]
+	shr r12b, 1						; shift
+	write_flags_r15
+
+	rol rsi, 8						; change carry to negative
+	or r15, rsi						; add on to flags
+
+	write_sideeffects_rbx
+	
+	add r14, clock					; Clock
+	add r11w, pc					; add on PC
+	jmp opcode_done	
+endif
 endm
 
 x6A_ror_a proc
@@ -1087,22 +1162,22 @@ x6A_ror_a endp
 
 x6E_ror_abs proc	
 	read_abs_rbx
-	ror_body 6, 2
+	ror_body 1, 6, 2
 x6E_ror_abs endp
 
 x7E_ror_absx proc	
 	read_absx_rbx
-	ror_body 7, 2
+	ror_body 1, 7, 2
 x7E_ror_absx endp
 
 x66_ror_zp proc
 	read_zp_rbx
-	ror_body 5, 1
+	ror_body 0, 5, 1
 x66_ror_zp endp
 
 x76_ror_zpx proc
 	read_zpx_rbx
-	ror_body 6, 1
+	ror_body 0, 6, 1
 x76_ror_zpx endp
 
 ;

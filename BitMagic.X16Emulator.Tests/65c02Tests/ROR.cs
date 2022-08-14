@@ -412,4 +412,86 @@ public class ROR
         emulator.AssertState(0x00, 0x72, 0x00, 0x813, 6);
         emulator.AssertFlags(false, false, false, false);
     }
+
+    [TestMethod]
+    public async Task Readonly_Abs()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0b00000010;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror $c000
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0b00000010, emulator.RomBank[0x0000]);
+
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Readonly_AbsSet()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0b10000001;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror $c000
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0b10000001, emulator.RomBank[0x0000]);
+
+        emulator.AssertFlags(false, false, false, true);
+    }
+
+    [TestMethod]
+    public async Task Readonly_AbsX()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0002] = 0b00000010;
+        emulator.X = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror $c000, x
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0b00000010, emulator.RomBank[0x0002]);
+
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Readonly_AbsXSet()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0002] = 0b10000001;
+        emulator.X = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror $c000, x
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0b10000001, emulator.RomBank[0x0002]);
+
+        emulator.AssertFlags(false, false, false, true);
+    }
 }

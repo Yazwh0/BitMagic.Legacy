@@ -81,18 +81,18 @@ int main()
     state.interrupt = false;
 
     state.rambank_ptr[0x2000] = 0xff;
-
+    state.rom_ptr[0x0000] = 0x02;
 
     state.memory_ptr[0x1234] = 0x02;
 
-    state.memory_ptr[0x810] = 0xce;
-    state.memory_ptr[0x811] = 0x34;
-    state.memory_ptr[0x812] = 0x12;
+    state.memory_ptr[0x810] = 0x0e;
+    state.memory_ptr[0x811] = 0x00;
+    state.memory_ptr[0x812] = 0xc0;
     state.memory_ptr[0x813] = 0xdb;
-    state.memory_ptr[0x814] = 0xae;
+    state.memory_ptr[0x814] = 0x00;
     state.memory_ptr[0x815] = 0x00;
-    state.memory_ptr[0x816] = 0xa0;
-    state.memory_ptr[0x817] = 0xdb;
+    state.memory_ptr[0x816] = 0x00;
+    state.memory_ptr[0x817] = 0x00;
 
     state.memory_ptr[0x900] = 0x40;
 
