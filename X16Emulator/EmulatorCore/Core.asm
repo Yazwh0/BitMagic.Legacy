@@ -51,7 +51,7 @@ readonly_memory equ 0c000h - 1		; stop all writes above this location
 ; r10b : y
 ; r11w : PC
 ; r12  : scratch
-; r13  : scratch
+; r13  : scratch / use to indicate vera data0\1 read
 ; r14  : Clock Ticks
 ; r15  : Flags
 
@@ -210,10 +210,10 @@ asm_func ENDP
 ; Banked rom starts at 0xc000 (+0x4000)
 ;
 read_banked_rbx macro
-	local done, banked_ram
+	local done, banked_ram, check_vera
 
 	cmp rbx, 0a000h
-	jl done
+	jl check_vera
 
 	cmp rbx, 0c000h
 	jl banked_ram
@@ -232,27 +232,21 @@ banked_ram:
 	sal rax, 13							; * 0x2000
 	mov rsi, [rdx].state.rambank_ptr
 	lea rcx, [rsi - 0a000h + rax]		; can now add rbx to get value
+	jmp done
+
+check_vera:
+	lea rax, [rbx-09f23h]				; get value to check
+	cmp rax, 1
+	setbe r13b							; store if we need to let vera know data has changed
 
 done:
 
 endm
 
 read_sideeffects_rbx macro
-	;local skip
-	;jnz skip
-	;skip:
-
-	;mov r13, rbx
 endm
 
 write_sideeffects_rbx macro
-	local skip
-;	mov al, byte ptr [r13+rbx]	; get write effect
-;	test al, al
-;	jz skip
-;	call handle_write_sideeffect
-
-;	skip:
 endm
 
 ; -----------------------------
@@ -271,7 +265,6 @@ endm
 ; -----------------------------
 ; Put value into al
 ; and increment PC.
-
 
 read_zp_rbx macro
 	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.

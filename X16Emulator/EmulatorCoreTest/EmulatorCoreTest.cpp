@@ -85,9 +85,9 @@ int main()
 
     state.memory_ptr[0x1234] = 0x02;
 
-    state.memory_ptr[0x810] = 0x0e;
-    state.memory_ptr[0x811] = 0x00;
-    state.memory_ptr[0x812] = 0xc0;
+    state.memory_ptr[0x810] = 0xad;
+    state.memory_ptr[0x811] = 0x22;
+    state.memory_ptr[0x812] = 0x9f;
     state.memory_ptr[0x813] = 0xdb;
     state.memory_ptr[0x814] = 0x00;
     state.memory_ptr[0x815] = 0x00;
