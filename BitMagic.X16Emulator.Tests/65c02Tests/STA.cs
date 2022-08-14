@@ -271,4 +271,122 @@ public class STA
         emulator.AssertState(0x44, 0x00, 0x00, 0x813, 5);
         emulator.AssertFlags(false, false, false, false);
     }
+
+    [TestMethod]
+    public async Task ReadOnly_Abs()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0x10;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta $c000
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0000]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_AbsX()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0001] = 0x10;
+        emulator.X = 0x01;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta $c000, x
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0001]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_AbsY()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0001] = 0x10;
+        emulator.Y = 0x01;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta $c000, y
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0001]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_Ind()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0x10;
+        emulator.Memory[0x20] = 0x00;
+        emulator.Memory[0x21] = 0xc0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta ($20)
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0000]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_IndX()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0x10;
+        emulator.Memory[0x20] = 0x00;
+        emulator.Memory[0x21] = 0xc0;
+        emulator.X = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta ($1e, x)
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0000]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_IndY()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0002] = 0x10;
+        emulator.Memory[0x20] = 0x00;
+        emulator.Memory[0x21] = 0xc0;
+        emulator.Y = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$ff
+                sta ($20), y
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0002]);
+    }
 }

@@ -464,4 +464,39 @@ public class DEC
         emulator.AssertState(0x00, 0x02, 0x00, 0x813, 6);
         emulator.AssertFlags(false, true, false, false);
     }
+
+    [TestMethod]
+    public async Task ReadOnly_Abs()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0x10;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                dec $c000
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0000]);
+    }
+
+    [TestMethod]
+    public async Task ReadOnly_AbsX()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0002] = 0x10;
+        emulator.X = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                dec $c000, x
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0002]);
+    }
 }

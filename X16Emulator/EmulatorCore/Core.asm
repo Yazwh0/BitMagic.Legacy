@@ -38,6 +38,23 @@ state struct
 	interrupt				byte ?
 state ends
 
+readonly_memory equ 0c000h - 1		; stop all writes above this location
+
+; rax  : scratch
+; rbx  : scratch
+; rcx  : current memory context
+; rdx  : state object 
+; rsi  : scratch
+; rdi  : scratch
+; r8b  : a
+; r9b  : x
+; r10b : y
+; r11w : PC
+; r12  : scratch
+; r13  : scratch
+; r14  : Clock Ticks
+; r15  : Flags
+
 write_state_obj macro	
 	mov	byte ptr [rdx].state.register_a, r8b			; a
 	mov	byte ptr [rdx].state.register_x, r9b			; x
@@ -76,9 +93,9 @@ read_state_obj macro
 
 	movzx r8, byte ptr [rdx].state.register_a		; a
 	movzx r9, byte ptr [rdx].state.register_x		; x
-	movzx r10, byte ptr [rdx].state.register_y	; y
-	movzx r11, word ptr [rdx].state.register_pc	; PC
-	mov r14, [rdx].state.clock			; Clock
+	movzx r10, byte ptr [rdx].state.register_y		; y
+	movzx r11, word ptr [rdx].state.register_pc		; PC
+	mov r14, [rdx].state.clock						; Clock
 	
 	; Flags
 	xor r15, r15 ; clear flags register
@@ -129,27 +146,7 @@ restore_registers macro
 	pop rbx
 endm
 
-; rax : scratch
-; rbx : scratch
-; rcx : memory
-; rdx : state = {
-;         a
-;         x
-;         y
-;         PC
-;         Flags }
-; rsi  : scratch
-; rdi  : scratch
-; r8b  : a
-; r9b  : x
-; r10b : y
-; r11w : PC
-; r12  : ReadEffect
-; r13  : WriteEffect
-; r14  : Clock Ticks
-; r15  : Flags
-
-asm_func proc  state_ptr:QWORD
+asm_func proc state_ptr:QWORD
 	mov rdx, rcx						; move state to rdx
 
 	store_registers
@@ -204,8 +201,6 @@ asm_func ENDP
 ;
 ; Side effects macros
 ;
-; r12 Write
-; r13 Read
 
 ; 
 ; rcx must start pointing to ram
@@ -223,20 +218,20 @@ read_banked_rbx macro
 	cmp rbx, 0c000h
 	jl banked_ram
 
-	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
-	and al, 00011111b				; remove top bits
-	sal rax, 14						; * 0x4000
+	movzx rax, byte ptr [rcx+1]			; 0x0001 -- get bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; * 0x4000
 	mov rsi, [rdx].state.rom_ptr
-	lea rcx, [rsi - 0c000h + rax]	; can now add rbx to get value
+	lea rcx, [rsi - 0c000h + rax]		; can now add rbx to get value
 	jmp done
 
 banked_ram:
 
 	; banked ram
 	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
-	sal rax, 13						; * 0x2000
+	sal rax, 13							; * 0x2000
 	mov rsi, [rdx].state.rambank_ptr
-	lea rcx, [rsi - 0a000h + rax]	; can now add rbx to get value
+	lea rcx, [rsi - 0a000h + rax]		; can now add rbx to get value
 
 done:
 
@@ -258,6 +253,17 @@ write_sideeffects_rbx macro
 ;	call handle_write_sideeffect
 
 ;	skip:
+endm
+
+; -----------------------------
+; Read Only Memory
+; -----------------------------
+
+skipwrite_ifreadonly macro checkreadonly
+if checkreadonly eq 1
+	cmp rbx, readonly_memory
+	jg skip
+endif
 endm
 
 ; -----------------------------
@@ -380,81 +386,6 @@ write_flags_r15_setnegative macro
 	lahf						; move new flags to rax
 	or rax, 1000000000000000b	; set negative flag
 	mov r15, rax				; store
-endm
-
-; -----------------------------
-; Write Memory
-; -----------------------------
-; Put al into memory
-; and increment PC.
-
-write_zp macro
-	movzx rbx, byte ptr [rcx+r11]	; ZP address
-	mov [rcx+rbx], al
-	add r11w, 1
-endm
-
-write_zpx macro
-	movzx rbx, byte ptr [rcx+r11]	; ZP address
-	add bl, r9b			; Add X
-	mov [rcx+rbx], al  
-	add r11w, 1
-endm
-
-write_zpy macro
-	movzx rbx, byte ptr [rcx+r11]	; ZP address
-	add bl, r10b		; Add Y
-	mov [rcx+rbx], al  
-	add r11w, 1
-endm
-
-write_abs macro
-	movzx rbx, word ptr [rcx+r11]	; Get address
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 2			; Increment PC
-endm
-
-write_absx macro
-	movzx rbx, word ptr [rcx+r11]	; Get Address
-	add bx, r9w			; Add X
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 2			; Increment PC
-endm
-
-write_absy macro
-	movzx rbx, word ptr [rcx+r11]	; Get Address
-	add bx, r10w		; Add Y
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 2			; Increment PC
-endm
-
-write_indx macro
-	movzx rbx, byte ptr [rcx+r11]	; Get address
-	add bl, r9b			; Add X, use bl so it wraps
-	mov bx, [rcx+rbx]	; Get destination address
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 1				; Increment PC
-endm
-
-write_indy macro
-	movzq rbx, byte ptr [rcx+r11]	; Get address
-	mov bx, [rcx+rbx]	; Get destination address
-	add bx, r10w		; Add Y
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 1				; Increment PC
-endm
-
-write_indzp macro
-	mov rbx, byte ptr [rcx+r11]	; Get address
-	mov bx, [rcx+rbx]	; Get destination address
-	mov [rcx+rbx], al	; Update
-
-	add r11w, 1				; Increment PC
 endm
 
 ; -----------------------------
@@ -626,9 +557,13 @@ xBC_ldy_absx endp
 ; STA
 ; -----------------------------
 
-sta_body macro clock, pc
+sta_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	mov byte ptr [rcx+rbx], r8b
 	write_sideeffects_rbx
+
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
@@ -637,52 +572,56 @@ endm
 
 x85_sta_zp proc	
 	read_zp_rbx
-	sta_body 3, 1
+	sta_body 0, 3, 1
 x85_sta_zp endp
 
 x95_sta_zpx proc
 	read_zpx_rbx
-	sta_body 4, 1
+	sta_body 0, 4, 1
 x95_sta_zpx endp
 
 x8D_sta_abs proc
 	read_abs_rbx
-	sta_body 4, 2
+	sta_body 1, 4, 2
 x8D_sta_abs endp
 
 x9D_sta_absx proc
 	read_absx_rbx
-	sta_body 5, 2
+	sta_body 1, 5, 2
 x9D_sta_absx endp
 
 x99_sta_absy proc
 	read_absy_rbx
-	sta_body 5, 2
+	sta_body 1, 5, 2
 x99_sta_absy endp
 
 x81_sta_indx proc
 	read_indx_rbx
-	sta_body 6, 1
+	sta_body 1, 6, 1
 x81_sta_indx endp
 
 x91_sta_indy proc
 	read_indy_rbx
-	sta_body 6, 1
+	sta_body 1, 6, 1
 x91_sta_indy endp
 
 x92_sta_indzp proc
 	read_indzp_rbx
-	sta_body 5, 1
+	sta_body 1, 5, 1
 x92_sta_indzp endp
 
 ;
 ; STX
 ;
 
-stx_body macro clock, pc
+stx_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	mov byte ptr [rcx+rbx], r9b
+
 	write_sideeffects_rbx
 
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
@@ -691,27 +630,30 @@ endm
 
 x86_stx_zp proc
 	read_zp_rbx
-	stx_body 3, 1
+	stx_body 0, 3, 1
 x86_stx_zp endp
 
 x96_stx_zpy proc
 	read_zpy_rbx
-	stx_body 4, 1
+	stx_body 0, 4, 1
 x96_stx_zpy endp
 
 x8E_stx_abs proc
 	read_abs_rbx
-	stx_body 4, 2
+	stx_body 1, 4, 2
 x8E_stx_abs endp
 
 ;
 ; STY
 ;
 
-sty_body macro clock, pc
+sty_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	mov byte ptr [rcx+rbx], r10b
 	write_sideeffects_rbx
 
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
@@ -720,27 +662,30 @@ endm
 
 x84_sty_zp proc
 	read_zp_rbx
-	sty_body 3, 1
+	sty_body 0, 3, 1
 x84_sty_zp endp
 
 x94_sty_zpx proc
 	read_zpx_rbx
-	sty_body 4, 1
+	sty_body 0, 4, 1
 x94_sty_zpx endp
 
 x8C_sty_abs proc
 	read_abs_rbx
-	sty_body 4, 2
+	sty_body 1, 4, 2
 x8C_sty_abs endp
 
 ;
 ; STZ
 ;
 
-stz_body macro clock, pc
+stz_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	mov byte ptr [rcx+rbx], 0
 	write_sideeffects_rbx
 
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
@@ -749,48 +694,54 @@ endm
 
 x64_stz_zp proc
 	read_zp_rbx
-	stz_body 3, 1
+	stz_body 0, 3, 1
 x64_stz_zp endp
 
 x74_stz_zpx proc
 	read_zpx_rbx
-	stz_body 4, 1
+	stz_body 0, 4, 1
 x74_stz_zpx endp
 
 x9C_stz_abs proc
 	read_abs_rbx
-	stz_body 4, 2
+	stz_body 1, 4, 2
 x9C_stz_abs endp
 
 x9E_stz_absx proc
 	read_absx_rbx
-	stz_body 5, 2
+	stz_body 1, 5, 2
 x9E_stz_absx endp
 
 ;
 ; INC\DEC
 ;
 
-inc_body macro clock, pc
+inc_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	read_sideeffects_rbx
 	clc
 	inc byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
 
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
 	jmp opcode_done
 endm
 
-dec_body macro clock, pc
+dec_body macro checkreadonly, clock, pc
+	skipwrite_ifreadonly checkreadonly
+
 	read_sideeffects_rbx
 	clc
 	dec byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
 
+skip:
 	add r14, clock
 	add r11w, pc			; add on PC
 
@@ -816,45 +767,45 @@ x3A_dec_a endp
 
 xEE_inc_abs proc
 	read_abs_rbx
-	inc_body 6, 2
+	inc_body 1, 6, 2
 xEE_inc_abs endp
 
 xCE_dec_abs proc
 	read_abs_rbx
-	dec_body 6, 2
+	dec_body 1, 6, 2
 xCE_dec_abs endp
 
 
 xFE_inc_absx proc
 	read_absx_rbx
-	inc_body 7, 2
+	inc_body 1, 7, 2
 xFE_inc_absx endp
 
 xDE_dec_absx proc
 	read_absx_rbx
-	dec_body 7, 2
+	dec_body 1, 7, 2
 xDE_dec_absx endp
 
 
 xE6_inc_zp proc
 	read_zp_rbx
-	inc_body 5, 1
+	inc_body 0, 5, 1
 xE6_inc_zp endp
 
-xC6_dec_absx proc
+xC6_dec_zp proc
 	read_zp_rbx
-	dec_body 5, 1
-xC6_dec_absx endp
+	dec_body 0, 5, 1
+xC6_dec_zp endp
 
 
 xF6_inc_zpx proc
 	read_zpx_rbx
-	inc_body 6, 1
+	inc_body 0, 6, 1
 xF6_inc_zpx endp
 
 xD6_dec_zpx proc
 	read_zpx_rbx
-	dec_body 6, 1
+	dec_body 0, 6, 1
 xD6_dec_zpx endp
 
 ;
@@ -2843,7 +2794,7 @@ opcode_C2	qword	noinstruction 	; $C2
 opcode_C3	qword	noinstruction 	; $C3
 opcode_C4	qword	xC4_cmpy_zp 	; $C4
 opcode_C5	qword	xC5_cmp_zp	 	; $C5
-opcode_C6	qword	xC6_dec_absx 	; $C6
+opcode_C6	qword	xC6_dec_zp	 	; $C6
 opcode_C7	qword	xC7_smb4	 	; $C7
 opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	xC9_cmp_imm 	; $C9

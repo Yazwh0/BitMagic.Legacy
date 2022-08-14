@@ -105,11 +105,21 @@ public class Emulator : IDisposable
         var ram_span = new Span<byte>((void*)_ram_ptr, BankedRamSize);
         for (var i = 0; i < BankedRamSize; i++)
             ram_span[i] = 0;
+
+        var vram_span = new Span<byte>((void*)_vram_ptr, VramSize);
+        for (var i = 0; i < VramSize; i++)
+            vram_span[i] = 0;
+
+
+        var rom_span = new Span<byte>((void*)_rom_ptr, RomSize);
+        for (var i = 0; i < RomSize; i++)
+            rom_span[i] = 0;
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
     public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
+    public unsafe Span<byte> Vram => new Span<byte>((void*)_vram_ptr, VramSize);
 
     public EmulatorResult Emulate()
     {
@@ -129,5 +139,6 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_memory_ptr);
         NativeMemory.Free((void*)_rom_ptr);
         NativeMemory.Free((void*)_ram_ptr);
+        NativeMemory.Free((void*)_vram_ptr);
     }
 }

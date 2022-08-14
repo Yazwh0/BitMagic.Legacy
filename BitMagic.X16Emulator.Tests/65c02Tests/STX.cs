@@ -109,4 +109,23 @@ public class STX
         emulator.AssertState(0x00, 0x44, 0x00, 0x814, 4);
         emulator.AssertFlags(false, false, false, false);
     }
+
+
+    [TestMethod]
+    public async Task ReadOnly_Abs()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0000] = 0x10;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ldx #$ff
+                stx $c000
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10, emulator.RomBank[0x0000]);
+    }
 }
