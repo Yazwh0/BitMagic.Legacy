@@ -1884,7 +1884,6 @@ x7F_bbr7 endp
 ; BBS
 ;
 
-
 bbs_body macro bitnumber
 	read_zp_rbx
 	movzx rax, byte ptr[rcx+rbx]
@@ -2412,168 +2411,92 @@ x0C_tsb_abs endp
 ; RMB
 ;
 
-x07_rmb0 proc
+rmb_body macro mask
 	read_zp_rbx
 	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11111110b
+	and byte ptr [rcx+rbx], mask
 	write_sideeffects_rbx
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
+endm
+
+x07_rmb0 proc
+	rmb_body 11111110b
 x07_rmb0 endp
 
 x17_rmb1 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11111101b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 11111101b
 x17_rmb1 endp
 
 x27_rmb2 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11111011b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 11111011b
 x27_rmb2 endp
 
 x37_rmb3 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11110111b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 11110111b
 x37_rmb3 endp
 
 x47_rmb4 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11101111b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 11101111b
 x47_rmb4 endp
 
 x57_rmb5 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 11011111b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 11011111b
 x57_rmb5 endp
 
 x67_rmb6 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 10111111b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 10111111b
 x67_rmb6 endp
 
 x77_rmb7 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	and byte ptr [rcx+rbx], 01111111b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	rmb_body 01111111b	
 x77_rmb7 endp
 
 ;
 ; SMB
 ;
 
-x87_smb0 proc
+smb_body macro mask
 	read_zp_rbx
 	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00000001b
+	or byte ptr [rcx+rbx], mask
 	write_sideeffects_rbx
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
+endm
+
+x87_smb0 proc
+	smb_body 00000001b
 x87_smb0 endp
 
 x97_smb1 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00000010b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 00000010b
 x97_smb1 endp
 
 xa7_smb2 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00000100b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 00000100b
 xa7_smb2 endp
 
 xb7_smb3 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00001000b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 00001000b
 xb7_smb3 endp
 
 xc7_smb4 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00010000b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 00010000b
 xc7_smb4 endp
 
 xd7_smb5 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 00100000b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 00100000b
 xd7_smb5 endp
 
 xe7_smb6 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 01000000b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 01000000b
 xe7_smb6 endp
 
 xf7_smb7 proc
-	read_zp_rbx
-	read_sideeffects_rbx
-	or byte ptr [rcx+rbx], 10000000b
-	write_sideeffects_rbx
-	add r14, 5
-	add r11w, 1
-	jmp opcode_done
+	smb_body 10000000b
 xf7_smb7 endp
 
 ;
