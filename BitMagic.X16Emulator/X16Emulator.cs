@@ -8,17 +8,19 @@ public class Emulator : IDisposable
     [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
     private static extern int fnEmulatorCode(ref CpuState state);
 
-    //public enum ReadEffectType : byte
-    //{ 
-    //    Nothing = 0,
-    //    Vera
-    //}
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VeraState
+    {
+        public ulong VramPtr = 0;
+        public ulong Data0_Address = 0;
+        public ulong Data1_Address = 0;
+        public ulong Data0_Step = 0;
+        public ulong Data1_Step = 0;
 
-    //public enum WriteEffectType : byte
-    //{ 
-    //    Nothing = 0,
-    //    Vera,
-    //}
+        public VeraState()
+        { 
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
@@ -26,9 +28,9 @@ public class Emulator : IDisposable
         public ulong MemoryPtr = 0;
         public ulong RomPtr = 0;
         public ulong RamBankPtr = 0;
-        public ulong VramPtr = 0;
+        public ulong VeraPtr = 0;
 
-        public ulong Clock = 0;
+        public ulong Clock = 0x00;
         public ushort Pc = 0;
         public ushort StackPointer = 0x1ff;
         public byte A = 0;
@@ -45,12 +47,13 @@ public class Emulator : IDisposable
 
         public byte Interrupt = 0;
 
-        public CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
+
+        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, IntPtr vera)
         {
             MemoryPtr = memory;
             RomPtr = rom;
             RamBankPtr = ramBank;
-            VramPtr = vram;
+            VeraPtr = (ulong)vera;
         }
     }
 
@@ -62,27 +65,30 @@ public class Emulator : IDisposable
         Unsupported = -1
     }
 
-    private CpuState _state;
+    private CpuState _cpu;
+    private VeraState _vera;
 
-    public byte A {get => _state.A; set => _state.A = value; }
-    public byte X { get => _state.X; set => _state.X = value; }
-    public byte Y { get => _state.Y; set => _state.Y = value; }
-    public ushort Pc { get => _state.Pc; set => _state.Pc = value; }
-    public ushort StackPointer { get => _state.StackPointer; set => _state.StackPointer = value; }
-    public ulong Clock { get => _state.Clock; set => _state.Clock = value; }
-    public bool Carry { get => _state.Carry != 0; set => _state.Carry = (byte)(value ? 0x01 : 0x00); }
-    public bool Zero { get => _state.Zero != 0; set => _state.Zero = (byte)(value ? 0x01 : 0x00); }
-    public bool InterruptDisable { get => _state.InterruptDisable != 0; set => _state.InterruptDisable = (byte)(value ? 0x01 : 0x00); }
-    public bool Decimal { get => _state.Decimal != 0; set => _state.Decimal = (byte)(value ? 0x01 : 0x00); }
-    public bool BreakFlag { get => _state.BreakFlag != 0; set => _state.BreakFlag = (byte)(value ? 0x01 : 0x00); }
-    public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
-    public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
-    public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
+
+    public byte A {get => _cpu.A; set => _cpu.A = value; }
+    public byte X { get => _cpu.X; set => _cpu.X = value; }
+    public byte Y { get => _cpu.Y; set => _cpu.Y = value; }
+    public ushort Pc { get => _cpu.Pc; set => _cpu.Pc = value; }
+    public ushort StackPointer { get => _cpu.StackPointer; set => _cpu.StackPointer = value; }
+    public ulong Clock { get => _cpu.Clock; set => _cpu.Clock = value; }
+    public bool Carry { get => _cpu.Carry != 0; set => _cpu.Carry = (byte)(value ? 0x01 : 0x00); }
+    public bool Zero { get => _cpu.Zero != 0; set => _cpu.Zero = (byte)(value ? 0x01 : 0x00); }
+    public bool InterruptDisable { get => _cpu.InterruptDisable != 0; set => _cpu.InterruptDisable = (byte)(value ? 0x01 : 0x00); }
+    public bool Decimal { get => _cpu.Decimal != 0; set => _cpu.Decimal = (byte)(value ? 0x01 : 0x00); }
+    public bool BreakFlag { get => _cpu.BreakFlag != 0; set => _cpu.BreakFlag = (byte)(value ? 0x01 : 0x00); }
+    public bool Overflow { get => _cpu.Overflow != 0; set => _cpu.Overflow = (byte)(value ? 0x01 : 0x00); }
+    public bool Negative { get => _cpu.Negative != 0; set => _cpu.Negative = (byte)(value ? 0x01 : 0x00); }
+    public bool Interrupt { get => _cpu.Interrupt != 0; set => _cpu.Interrupt = (byte)(value ? 0x01 : 0x00); }
 
     private readonly ulong _memory_ptr;
     private readonly ulong _rom_ptr;
     private readonly ulong _ram_ptr;
     private readonly ulong _vram_ptr;
+    private readonly IntPtr _vera_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
@@ -96,7 +102,12 @@ public class Emulator : IDisposable
         _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr);
+        _vera_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(_vera));
+        Marshal.StructureToPtr(_vera, _vera_ptr, false);
+
+        _vera.VramPtr = _vram_ptr;
+
+        _cpu = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vera_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -119,11 +130,12 @@ public class Emulator : IDisposable
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
     public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
-    public unsafe Span<byte> Vram => new Span<byte>((void*)_vram_ptr, VramSize);
+    public unsafe Span<byte> Vram => new Span<byte>((void*)_vram_ptr, VramSize);    
 
     public EmulatorResult Emulate()
     {
-        var r = fnEmulatorCode(ref _state);
+        //_state.VeraStatePtr.Data1_Step = 0xffee;
+        var r = fnEmulatorCode(ref _cpu);
         var result = (EmulatorResult)r;
         return result;
     }
@@ -140,5 +152,6 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_rom_ptr);
         NativeMemory.Free((void*)_ram_ptr);
         NativeMemory.Free((void*)_vram_ptr);
+        Marshal.FreeHGlobal(_vera_ptr);
     }
 }

@@ -24,29 +24,38 @@
 
 extern "C" 
 {
-    struct state 
-    {
-        int8_t* memory_ptr;
-        int8_t* rom_ptr;
-        int8_t* rambank_ptr;
-        int8_t* vram_ptr;
+	struct vera_state
+	{
+		int8_t* vram_ptr;
+		int8_t data0_address;
+		int8_t data1_address;
+		int8_t data0_step;
+		int8_t data1_step;
+	};
 
-        uint64_t clock;
-        uint16_t pc;
-        uint16_t stackpointer;
-        uint8_t a;
-        uint8_t x;
-        uint8_t y;
+	struct state 
+	{
+		int8_t* memory_ptr;
+		int8_t* rom_ptr;
+		int8_t* rambank_ptr;
+		vera_state* vera_ptr;
 
-        bool decimal;
-        bool breakFlag;
-        bool overflow;
-        bool negative;
-        bool carry;
-        bool zero;
-        bool interruptDisable;
-        bool interrupt;
-    };
+		uint64_t clock;
+		uint16_t pc;
+		uint16_t stackpointer;
+		uint8_t a;
+		uint8_t x;
+		uint8_t y;
+
+		bool decimal;
+		bool breakFlag;
+		bool overflow;
+		bool negative;
+		bool carry;
+		bool zero;
+		bool interruptDisable;
+		bool interrupt;
+	};
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);
 }

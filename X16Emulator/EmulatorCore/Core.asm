@@ -14,13 +14,14 @@
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
 .CODE
-ALIGN 16
+
+include vera.inc
 
 state struct 
 	memory_ptr				qword ?
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
-	vram_ptr				qword ?
+	vera_ptr				qword ?
 
 	clock					qword ?
 	register_pc				word ?
@@ -84,8 +85,7 @@ write_state_obj macro
 	;        NZ A P C
 	and rax, 1000000000000000b
 	ror rax, 7+8
-	mov byte ptr [rdx].state.flags_negative, al
-
+	mov byte ptr [rdx].state.flags_negative, al	
 endm
 
 read_state_obj macro
@@ -162,6 +162,8 @@ asm_func proc state_ptr:QWORD
 	pop rdx
 	
 	read_state_obj
+
+	call vera_init
 
 main_loop:
 	mov rcx, [rdx].state.memory_ptr		; reset rcx so it points to memory

@@ -126,12 +126,18 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
     </Link>
+    <MASM>
+      <NoLogo>false</NoLogo>
+      <ListAllAvailableInformation>false</ListAllAvailableInformation>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -172,6 +178,12 @@
   </ItemGroup>
   <ItemGroup>
     <MASM Include="Core.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Vera_Constants.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Vera.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

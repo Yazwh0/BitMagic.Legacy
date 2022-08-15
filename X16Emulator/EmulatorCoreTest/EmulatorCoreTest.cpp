@@ -48,14 +48,17 @@ int main()
 
 
     struct state state {};
+    struct vera_state vera_state {};
 
     state.memory_ptr = new int8_t[0xa000];
     state.rom_ptr = new int8_t[0x4000 * 32];
     state.rambank_ptr = new int8_t[0x2000 * 256];
-    state.vram_ptr = new int8_t[0x20000];
+    state.vera_ptr = &vera_state;
+
+    vera_state.vram_ptr = new int8_t[0x20000];
 
     for (int i = 0; i < 0x20000; i++)
-        state.vram_ptr[i] = 0;
+        vera_state.vram_ptr[i] = 0;
 
     for (int i = 0; i < 0xa000; i++)
         state.memory_ptr[i] = 0;
@@ -102,7 +105,7 @@ int main()
     delete[] state.memory_ptr;
     delete[] state.rom_ptr;
     delete[] state.rambank_ptr;
-    delete[] state.vram_ptr;
+    delete[] vera_state.vram_ptr;
 
     //_aligned_free(m_ptr);
     //_aligned_free(r_ptr);
