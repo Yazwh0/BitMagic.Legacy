@@ -2238,11 +2238,11 @@ x40_rti endp
 x08_php proc
 	set_status_register_al
 
-	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	sub byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
-	mov [rcx+rbx], al					; Put status on stack
+	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
+	sub byte ptr [rdx].state.stackpointer, 1		; Increment stack pointer
+	mov [rcx+rbx], al								; Put status on stack
 	
-	add r14, 3							; Add cycles
+	add r14, 3										; Add cycles
 
 	jmp opcode_done
 
@@ -2266,8 +2266,7 @@ bit_body_end macro clock, pc
 	write_flags_r15_preservecarry
 
 	bt bx, 6				; test overflow
-	setc bl
-	mov byte ptr [rdx].state.flags_overflow, bl
+	setc byte ptr [rdx].state.flags_overflow
 	
 	add r14, clock			
 	add r11w, pc			
@@ -2312,6 +2311,8 @@ x34_bit_zpx endp
 
 x1C_trb_abs proc
 	read_abs_rbx
+	skipwrite_ifreadonly 1
+
 	read_sideeffects_rbx
 	mov rax, r8
 	not al
@@ -2323,6 +2324,18 @@ x1C_trb_abs proc
 	add r11w, 2
 	jmp opcode_done
 
+skip:
+	read_sideeffects_rbx
+	mov rax, r8
+	not al
+	and al, byte ptr [rcx+rbx]
+
+	jz set_zero
+	write_sideeffects_rbx
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+	
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
@@ -2358,6 +2371,38 @@ x14_trb_zp endp
 ; TSB
 ;
 
+x0C_tsb_abs proc
+	read_abs_rbx
+	skipwrite_ifreadonly 1
+	read_sideeffects_rbx
+
+	or byte ptr [rcx+rbx], r8b
+
+	jz set_zero
+	write_sideeffects_rbx
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+	
+skip:
+	mov rax, r8
+	or al, byte ptr [rcx+rbx]
+
+	jz set_zero
+	write_sideeffects_rbx
+	add r14, 5
+	add r11w, 1
+	jmp opcode_done
+
+set_zero:
+	;        NZ A P C
+	or r15w, 0100000000000000b
+	write_sideeffects_rbx
+	add r14, 6
+	add r11w, 2
+	jmp opcode_done
+x0C_tsb_abs endp
+
 x04_tsb_zp proc
 	read_zp_rbx
 	read_sideeffects_rbx
@@ -2378,27 +2423,6 @@ set_zero:
 	add r11w, 1
 	jmp opcode_done
 x04_tsb_zp endp
-
-x0C_tsb_abs proc
-	read_zp_rbx
-	read_sideeffects_rbx
-
-	or byte ptr [rcx+rbx], r8b
-
-	jz set_zero
-	write_sideeffects_rbx
-	add r14, 6
-	add r11w, 2
-	jmp opcode_done
-
-set_zero:
-	;        NZ A P C
-	or r15w, 0100000000000000b
-	write_sideeffects_rbx
-	add r14, 6
-	add r11w, 2
-	jmp opcode_done
-x0C_tsb_abs endp
 
 ;
 ; RMB

@@ -11,7 +11,7 @@ public class TSB
         var emulator = new Emulator();
 
         emulator.A = 0x02;
-        emulator.Memory[0x10] = 0x03;
+        emulator.Memory[0x10] = 0x01;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -36,7 +36,7 @@ public class TSB
         var emulator = new Emulator();
 
         emulator.A = 0x02;
-        emulator.Memory[0x10] = 0x03;
+        emulator.Memory[0x10] = 0x01;
 
         emulator.Carry = true;
         emulator.Negative = true;
@@ -80,7 +80,7 @@ public class TSB
         var emulator = new Emulator();
 
         emulator.A = 0x02;
-        emulator.Memory[0x1234] = 0x03;
+        emulator.Memory[0x1234] = 0x01;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -96,6 +96,27 @@ public class TSB
 
         // emulation
         Assert.AreEqual(0x03, emulator.Memory[0x1234]);
+        emulator.AssertState(0x02, 0x00, 0x00, 0x814, 6);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_Readonly()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+        emulator.RomBank[0x0000] = 0x01;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                tsb $a000
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x01, emulator.RomBank[0x0000]);
         emulator.AssertState(0x02, 0x00, 0x00, 0x814, 6);
         emulator.AssertFlags(false, false, false, false);
     }

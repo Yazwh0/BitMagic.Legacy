@@ -101,6 +101,27 @@ public class TRB
     }
 
     [TestMethod]
+    public async Task Abs_Readonly()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+        emulator.RomBank[0x0000] = 0x03;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                trb $c000
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x03, emulator.RomBank[0x0000]);
+        emulator.AssertState(0x02);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task Abs_PreserveFlags()
     {
         var emulator = new Emulator();
