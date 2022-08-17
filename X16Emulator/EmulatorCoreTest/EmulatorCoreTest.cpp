@@ -48,17 +48,15 @@ int main()
 
 
     struct state state {};
-    struct vera_state vera_state {};
 
     state.memory_ptr = new int8_t[0xa000];
     state.rom_ptr = new int8_t[0x4000 * 32];
     state.rambank_ptr = new int8_t[0x2000 * 256];
-    state.vera_ptr = &vera_state;
 
-    vera_state.vram_ptr = new int8_t[0x20000];
+    state.vram_ptr = new int8_t[0x20000];
 
     for (int i = 0; i < 0x20000; i++)
-        vera_state.vram_ptr[i] = 0;
+        state.vram_ptr[i] = 0;
 
     for (int i = 0; i < 0xa000; i++)
         state.memory_ptr[i] = 0;
@@ -75,7 +73,7 @@ int main()
     state.clock = 0x0;
     
     state.decimal = false;
-    state.carry = true;
+    state.carry = false;
     state.breakFlag = false;
     state.interruptDisable = false;
     state.negative = false;
@@ -83,12 +81,19 @@ int main()
     state.zero = false;
     state.interrupt = false;
 
-    state.rambank_ptr[0x2000] = 0xff;
-    state.rom_ptr[0x0000] = 0x02;
+    state.rambank_ptr[0x2000] = 0x00;
+    state.rom_ptr[0x0000] = 0x00;
+    state.vram_ptr[0x0000] = 0xee;
+    state.vram_ptr[0x0001] = 0xff;
+    state.data0_step = 128;
+    state.data0_address = 0x00000;
+    state.data1_step = 0x02;
+    state.data1_address = 0x00001;
+
 
     state.memory_ptr[0x1234] = 0x01;
 
-    state.memory_ptr[0x810] = 0x0c;
+    state.memory_ptr[0x810] = 0xdb;
     state.memory_ptr[0x811] = 0x34;
     state.memory_ptr[0x812] = 0x12;
     state.memory_ptr[0x813] = 0xdb;
@@ -105,7 +110,7 @@ int main()
     delete[] state.memory_ptr;
     delete[] state.rom_ptr;
     delete[] state.rambank_ptr;
-    delete[] vera_state.vram_ptr;
+    delete[] state.vram_ptr;
 
     //_aligned_free(m_ptr);
     //_aligned_free(r_ptr);

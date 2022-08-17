@@ -137,7 +137,23 @@
     <MASM>
       <NoLogo>false</NoLogo>
       <ListAllAvailableInformation>false</ListAllAvailableInformation>
+      <AssembledCodeListingFile>$(IntDir)$(ProjectName).lst</AssembledCodeListingFile>
+      <IncludePaths>
+      </IncludePaths>
     </MASM>
+    <Manifest>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Manifest>
+    <Bscmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Bscmake>
+    <CustomBuildStep>
+      <Inputs>
+      </Inputs>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>echo</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -180,10 +196,9 @@
     <MASM Include="Core.asm" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="Vera_Constants.inc" />
-  </ItemGroup>
-  <ItemGroup>
-    <MASM Include="Vera.inc" />
+    <CustomBuild Include="Vera_Constants.inc">
+      <FileType>Document</FileType>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

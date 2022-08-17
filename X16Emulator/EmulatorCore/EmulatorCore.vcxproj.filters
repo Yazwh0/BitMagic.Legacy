@@ -43,13 +43,10 @@
     <MASM Include="Core.asm">
       <Filter>Source Files</Filter>
     </MASM>
-    <MASM Include="Vera_Constants.inc">
-      <Filter>Source Files</Filter>
-    </MASM>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Vera.inc">
+    <CustomBuild Include="Vera_Constants.inc">
       <Filter>Source Files</Filter>
-    </Text>
+    </CustomBuild>
   </ItemGroup>
 </Project>

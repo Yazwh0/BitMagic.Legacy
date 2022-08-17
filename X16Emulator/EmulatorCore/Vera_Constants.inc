@@ -35,7 +35,3 @@ AUDIO_RATE		equ 9F3Ch
 AUDIO_DATA		equ 9F3Dh
 SPI_DATA		equ 9F3Eh
 SPI_CTRL		equ 9F3Fh
-
-end
-
-

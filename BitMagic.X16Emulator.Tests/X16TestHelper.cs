@@ -58,6 +58,9 @@ namespace BitMagic.X16Emulator.Tests
             Console.Write(emulator.Carry ? "C]" : " ]");
             Console.WriteLine();
             Console.WriteLine($"Speed:\t{emulator.Clock / ts.TotalSeconds / 1000000.0 :0.00}Mhz");
+            Console.WriteLine();
+            Console.WriteLine($"D0 Adr:\t${emulator.Vera.Data0_Address:X5} (step ${emulator.Vera.Data0_Step:X2})");
+            Console.WriteLine($"D1 Adr:\t${emulator.Vera.Data1_Address:X5} (step ${emulator.Vera.Data1_Step:X2})");
 
             if (emulateResult != Emulator.EmulatorResult.DebugOpCode)
                 Assert.Fail($"Emulate Result is not from a stp. {emulateResult}");

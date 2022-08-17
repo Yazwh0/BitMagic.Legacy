@@ -15,13 +15,17 @@
 
 .CODE
 
-include vera.inc
-
 state struct 
 	memory_ptr				qword ?
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
-	vera_ptr				qword ?
+
+	vram_ptr				qword ?
+	data0_address			qword ?
+	data1_address			qword ?
+	data0_step				qword ?
+	data1_step				qword ?
+
 
 	clock					qword ?
 	register_pc				word ?
@@ -245,7 +249,15 @@ done:
 
 endm
 
-read_sideeffects_rbx macro
+step_vera_read macro checkvera
+	local skip
+if checkvera eq 1
+	cmp r13b, 0
+	je skip
+	call vera_afterread
+
+	skip:
+endif
 endm
 
 write_sideeffects_rbx macro
@@ -393,11 +405,12 @@ endm
 ; LDA
 ; -----------------------------
 
-lda_body_end macro clock, pc
+lda_body_end macro checkvera, clock, pc
 	test r8b, r8b
 	lahf
 	and r15w, 0100h			; preserve carry		
 	or r15w, ax				; store flags over (carry is always clear)
+	step_vera_read checkvera
 
 	add r14, clock
 	add r11w, pc
@@ -405,55 +418,54 @@ lda_body_end macro clock, pc
 	jmp opcode_done
 endm
 
-lda_body macro clock, pc
-	read_sideeffects_rbx
+lda_body macro checkvera, clock, pc
 	mov r8b, [rcx+rbx]
-	lda_body_end clock, pc
+	lda_body_end checkvera, clock, pc
 endm
 
 xA9_lda_imm PROC
 	mov	r8b, [rcx+r11]
-	lda_body_end 2, 1
+	lda_body_end 0, 2, 1
 xA9_lda_imm ENDP
 
 xA5_lda_zp PROC
 	read_zp_rbx
-	lda_body 3, 1
+	lda_body 0, 3, 1
 xA5_lda_zp ENDP
 
 xB5_lda_zpx PROC
 	read_zpx_rbx
-	lda_body 4, 1
+	lda_body 0, 4, 1
 xB5_lda_zpx endp
 
 xAD_lda_abs proc
 	read_abs_rbx
-	lda_body 4, 2
+	lda_body 1, 4, 2
 xAD_lda_abs endp
 
 xBD_lda_absx proc
 	read_absx_rbx_pagepenalty
-	lda_body 4, 2
+	lda_body 1, 4, 2
 xBD_lda_absx endp
 
 xB9_lda_absy proc
 	read_absy_rbx_pagepenalty
-	lda_body 4, 2
+	lda_body 1, 4, 2
 xB9_lda_absy endp
 
 xA1_lda_indx proc
 	read_indx_rbx
-	lda_body 6, 1
+	lda_body 1 ,6, 1
 xA1_lda_indx endp
 
 xB1_lda_indy proc
 	read_indy_rbx_pagepenalty
-	lda_body 5, 1
+	lda_body 1, 5, 1
 xB1_lda_indy endp
 
 xB2_lda_indzp proc
 	read_indzp_rbx
-	lda_body 5, 1
+	lda_body 1, 5, 1
 xB2_lda_indzp endp
 
 
@@ -461,9 +473,10 @@ xB2_lda_indzp endp
 ; LDX
 ; -----------------------------
 
-ldx_body_end macro clock, pc
+ldx_body_end macro checkvera, clock, pc
 	test r9b, r9b
 	write_flags_r15_preservecarry
+	step_vera_read checkvera
 
 	add r14, clock
 	add r11w, pc
@@ -471,35 +484,34 @@ ldx_body_end macro clock, pc
 	jmp opcode_done
 endm
 
-ldx_body macro clock, pc
-	read_sideeffects_rbx
+ldx_body macro checkvera, clock, pc
 	mov r9b, [rcx+rbx]
-	ldx_body_end clock, pc
+	ldx_body_end checkvera, clock, pc
 endm
 
 xA2_ldx_imm PROC
 	mov	r9b, [rcx+r11]
-	ldx_body_end 2, 1
+	ldx_body_end 0, 2, 1
 xA2_ldx_imm ENDP
 
 xA6_ldx_zp PROC
 	read_zp_rbx
-	ldx_body 3, 1
+	ldx_body 0, 3, 1
 xA6_ldx_zp  ENDP
 
 xB6_ldx_zpy PROC
 	read_zpy_rbx
-	ldx_body 4, 1
+	ldx_body 0, 4, 1
 xB6_ldx_zpy endp
 
 xAE_ldx_abs proc
 	read_abs_rbx
-	ldx_body 4, 2
+	ldx_body 1, 4, 2
 xAE_ldx_abs endp
 
 xBE_ldx_absy proc
 	read_absy_rbx_pagepenalty
-	ldx_body 4, 2
+	ldx_body 1, 4, 2
 xBE_ldx_absy endp
 
 ; -----------------------------
@@ -517,7 +529,6 @@ ldy_body_end macro clock, pc
 endm
 
 ldy_body macro clock, pc
-	read_sideeffects_rbx
 	mov r10b, [rcx+rbx]
 	ldy_body_end clock, pc
 endm
@@ -714,7 +725,7 @@ x9E_stz_absx endp
 inc_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	read_sideeffects_rbx
+
 	clc
 	inc byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
@@ -730,7 +741,7 @@ endm
 dec_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	read_sideeffects_rbx
+
 	clc
 	dec byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
@@ -898,7 +909,7 @@ x98_tya endp
 
 asl_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	read_sideeffects_rbx
+
 	read_flags_rax
 	sal byte ptr [rcx+rbx],1		; shift
 
@@ -912,7 +923,7 @@ asl_body macro checkreadonly, clock, pc
 
 if checkreadonly eq 1
 skip:
-	read_sideeffects_rbx
+
 	read_flags_rax
 	movzx r12, byte ptr [rcx+rbx]
 	sal r12b, 1						; shift
@@ -964,7 +975,7 @@ x16_asl_zpx endp
 lsr_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 	read_flags_rax
-	read_sideeffects_rbx
+
 
 	sar byte ptr [rcx+rbx],1	; shift
 
@@ -979,7 +990,7 @@ lsr_body macro checkreadonly, clock, pc
 if checkreadonly eq 1
 skip:
 	read_flags_rax
-	read_sideeffects_rbx
+
 
 	movzx r12, byte ptr [rcx+rbx]
 	sar r12b,1					; shift
@@ -1030,7 +1041,7 @@ x56_lsr_zpx endp
 
 rol_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	read_sideeffects_rbx
+
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
 	ror rsi, 8						; move to lower byte
@@ -1046,7 +1057,7 @@ rol_body macro checkreadonly, clock, pc
 
 if checkreadonly eq 1
 skip:
-	read_sideeffects_rbx
+
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
 	ror rsi, 8						; move to lower byte
@@ -1101,7 +1112,7 @@ x36_rol_zpx endp
 
 ror_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	read_sideeffects_rbx
+
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
 	ror rsi, 1						; move to high bit on lower byte
@@ -1120,7 +1131,7 @@ ror_body macro checkreadonly, clock, pc
 
 if checkreadonly eq 1
 skip:
-	read_sideeffects_rbx
+
 	mov rsi, r15					; save registers
 	and rsi, 0100h					; mask carry
 	ror rsi, 1						; move to high bit on lower byte
@@ -1180,7 +1191,7 @@ x76_ror_zpx endp
 ;
 
 and_body_end macro clock, pc
-	read_sideeffects_rbx
+
 	and r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
@@ -1244,7 +1255,7 @@ x31_and_indy endp
 ;
 
 eor_body_end macro clock, pc
-	read_sideeffects_rbx
+
 	xor r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
@@ -1310,7 +1321,7 @@ x51_eor_indy endp
 ;
 
 ora_body macro clock, pc
-	read_sideeffects_rbx
+
 	or r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
 	write_sideeffects_rbx
@@ -1384,7 +1395,7 @@ adc_body_end macro clock, pc
 endm
 
 adc_body macro clock, pc
-	read_sideeffects_rbx
+
 	read_flags_rax
 
 	adc r8b, [rcx+rbx]
@@ -1445,7 +1456,7 @@ x71_adc_indy endp
 ;
 
 sbc_body_end macro clock, pc
-	read_sideeffects_rbx
+
 	write_flags_r15
 
 	seto bl
@@ -1530,7 +1541,7 @@ cmp_body_end macro clock, pc
 endm
 
 cmp_body macro clock, pc
-	read_sideeffects_rbx
+
 	cmp r8b, [rcx+rbx]
 	cmp_body_end clock, pc
 endm
@@ -1585,7 +1596,7 @@ xD1_cmp_indy endp
 ;
 
 cmpx_body macro clock, pc
-	read_sideeffects_rbx
+
 	cmp r9b, [rcx+rbx]
 	cmp_body_end clock, pc
 endm
@@ -1610,7 +1621,7 @@ xE4_cmpx_zp endp
 ;
 
 cmpy_body macro clock, pc
-	read_sideeffects_rbx
+
 	cmp r10b, [rcx+rbx]
 	cmp_body_end clock, pc
 endm
@@ -2277,7 +2288,7 @@ bit_body_end macro clock, pc
 endm
 
 bit_body macro clock, pc
-	read_sideeffects_rbx
+
 	movzx rbx, byte ptr [rcx+rbx]
 	bit_body_end clock, pc
 endm
@@ -2315,7 +2326,7 @@ x1C_trb_abs proc
 	read_abs_rbx
 	skipwrite_ifreadonly 1
 
-	read_sideeffects_rbx
+
 	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
@@ -2327,7 +2338,7 @@ x1C_trb_abs proc
 	jmp opcode_done
 
 skip:
-	read_sideeffects_rbx
+
 	mov rax, r8
 	not al
 	and al, byte ptr [rcx+rbx]
@@ -2349,7 +2360,7 @@ x1C_trb_abs endp
 
 x14_trb_zp proc
 	read_zp_rbx
-	read_sideeffects_rbx
+
 	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
@@ -2376,7 +2387,7 @@ x14_trb_zp endp
 x0C_tsb_abs proc
 	read_abs_rbx
 	skipwrite_ifreadonly 1
-	read_sideeffects_rbx
+
 
 	or byte ptr [rcx+rbx], r8b
 
@@ -2407,7 +2418,7 @@ x0C_tsb_abs endp
 
 x04_tsb_zp proc
 	read_zp_rbx
-	read_sideeffects_rbx
+
 
 	or byte ptr [rcx+rbx], r8b
 
@@ -2432,7 +2443,7 @@ x04_tsb_zp endp
 
 rmb_body macro mask
 	read_zp_rbx
-	read_sideeffects_rbx
+
 	and byte ptr [rcx+rbx], mask
 	write_sideeffects_rbx
 	add r14, 5
@@ -2478,7 +2489,7 @@ x77_rmb7 endp
 
 smb_body macro mask
 	read_zp_rbx
-	read_sideeffects_rbx
+
 	or byte ptr [rcx+rbx], mask
 	write_sideeffects_rbx
 	add r14, 5
@@ -2869,6 +2880,133 @@ opcode_FC	qword	noinstruction 	; $FC
 opcode_FD	qword	xFD_sbc_absx 	; $FD
 opcode_FE	qword	xFE_inc_absx 	; $FE
 opcode_FF	qword	xFF_bbs7	 	; $FF
+
+
+.code
+
+; ----------------------------------------------------
+; VERA
+; ----------------------------------------------------
+
+
+; Cpu emulation:
+; rax  : scratch
+; rbx  : scratch
+; rcx  : current memory context
+; rdx  : state object 
+; rsi  : scratch
+; rdi  : scratch
+; r8b  : a
+; r9b  : x
+; r10b : y
+; r11w : PC
+; r12  : scratch
+; r13  : scratch / use to indicate vera data0 or 1 read
+; r14  : Clock Ticks
+; r15  : Flags
+
+include vera_constants.inc
+
+vera_setaddress_0 macro 
+	local search_loop, match
+
+	mov rax, [rdx].state.data0_step
+
+	xor rbx, rbx
+	mov rcx, vera_step_table
+
+search_loop:
+	cmp ax, word ptr [rcx+rbx]
+	je match
+	add rbx, 2
+	cmp rbx, 20h
+	jne search_loop
+
+match:
+	shr rbx, 1
+	and rbx, 0fh
+	shl rbx, 4+8+8 
+	mov rax, [rdx].state.data0_address
+	or rax, rbx
+	
+	mov rcx, [rdx].state.memory_ptr
+	mov [rcx+ADDRx_L], ax
+
+	shr rax, 16
+	mov [rcx+ADDRx_H], al
+endm
+
+; initialise colours etc
+; rdx points to cpu state
+vera_init proc
+	
+	; Set Data0/1 based on initial values
+	mov rcx, [rdx].state.memory_ptr
+	mov rsi, [rdx].state.vram_ptr
+	
+	mov rax, [rdx].state.data0_address
+	mov bl, byte ptr [rsi+rax]
+	mov byte ptr [rcx+DATA0], bl
+
+	mov rax, [rdx].state.data1_address
+	mov bl, byte ptr [rsi+rax]
+	mov byte ptr [rcx+DATA1], bl
+
+	; Set Address 0 - init to ctrl as 0
+	vera_setaddress_0
+
+	ret
+vera_init endp
+
+; rbx			address read from
+; [rcx+rbx]		output location in main memory
+; 
+; should only be called if data0\data1 is read from.
+vera_afterread proc
+
+	cmp rbx, DATA0
+	jne step_data1
+
+	mov rsi, [rdx].state.data0_address
+	add rsi, [rdx].state.data0_step
+	and rsi, 1ffffh								; mask off high bits so we wrap
+	mov [rdx].state.data0_address, rsi
+
+	mov rax, [rdx].state.vram_ptr				; get value from vram
+	mov r13b, byte ptr [rax+rsi]
+	mov [rcx+rbx], r13b							; store in ram
+	mov r13b, 0									; clear r13b, as we use this to detect if we need to call vera
+
+	ret
+step_data1:
+	mov rsi, [rdx].state.data1_address
+	add rsi, [rdx].state.data1_step
+	and rsi, 1ffffh								; mask off high bits so we wrap
+	mov [rdx].state.data1_address, rsi
+
+	mov rax, [rdx].state.vram_ptr				; get value from vram
+	mov r13b, byte ptr [rax+rsi]
+	mov [rcx+rbx], r13b							; store in ram
+	mov r13b, 0									; clear r13b, as we use this to detect if we need to call vera
+
+	ret
+vera_afterread endp
+
+
+
+vera_afterreadwrite proc
+vera_afterreadwrite endp
+
+vera_afterwrite proc
+vera_afterwrite endp
+
+.data
+
+vera_step_table:
+	dw 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 40, 80, 160, 320, 640
+
+.code
+
 
 
 

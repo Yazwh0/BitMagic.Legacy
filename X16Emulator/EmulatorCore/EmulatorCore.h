@@ -24,21 +24,17 @@
 
 extern "C" 
 {
-	struct vera_state
-	{
-		int8_t* vram_ptr;
-		int8_t data0_address;
-		int8_t data1_address;
-		int8_t data0_step;
-		int8_t data1_step;
-	};
-
 	struct state 
 	{
 		int8_t* memory_ptr;
 		int8_t* rom_ptr;
 		int8_t* rambank_ptr;
-		vera_state* vera_ptr;
+		int8_t* vram_ptr;
+
+		uint64_t data0_address;
+		uint64_t data1_address;
+		uint64_t data0_step;
+		uint64_t data1_step;
 
 		uint64_t clock;
 		uint16_t pc;
