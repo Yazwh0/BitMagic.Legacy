@@ -61,6 +61,11 @@ extern "C"
 		uint8_t dc_hstop;
 		uint8_t dc_vstart;
 		uint8_t dc_vstop;
+
+		bool spriteEnable;
+		bool layer0Enable;
+		bool layer1Enable;
+
 	};
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);

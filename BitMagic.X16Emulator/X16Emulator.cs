@@ -45,6 +45,9 @@ public class Emulator : IDisposable
         public byte Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
         public byte Dc_VStart { get => _emulator._state.Dc_VStart; set => _emulator._state.Dc_VStart = value; }
         public byte Dc_VStop { get => _emulator._state.Dc_VStop; set => _emulator._state.Dc_VStop = value; }
+        public bool SpriteEnable { get => _emulator._state.SpriteEnable != 0; set => _emulator._state.SpriteEnable = (value ? (byte)1 : (byte)0); }
+        public bool Layer0Enable { get => _emulator._state.Layer0Enable != 0; set => _emulator._state.Layer0Enable = (value ? (byte)1 : (byte)0); }
+        public bool Layer1Enable { get => _emulator._state.Layer1Enable != 0; set => _emulator._state.Layer1Enable = (value ? (byte)1 : (byte)0); }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -88,6 +91,10 @@ public class Emulator : IDisposable
         public byte Dc_HStop = 0;
         public byte Dc_VStart = 0;
         public byte Dc_VStop = 0;
+
+        public byte SpriteEnable = 0;
+        public byte Layer0Enable = 0;
+        public byte Layer1Enable = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
         {

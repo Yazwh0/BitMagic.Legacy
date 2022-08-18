@@ -55,6 +55,10 @@ state struct
 	dc_vstart				byte ?
 	dc_vstop				byte ?
 
+	sprite_enable			byte ?
+	layer0_enable			byte ?
+	layer1_enable			byte ?
+
 state ends
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
@@ -3026,6 +3030,17 @@ addr_done:
 	;
 	test r13b, r13b
 	jnz set_dc1
+
+	xor rax, rax
+	mov al, byte ptr [rdx].state.sprite_enable
+	shl rax, 6
+	mov bl, byte ptr [rdx].state.layer1_enable
+	shl rbx, 5
+	or rax, rbx
+	mov bl, byte ptr [rdx].state.layer0_enable
+	shl rbx, 4
+	or rax, rbx
+	mov byte ptr [rcx+DC_VIDEO], al
 
 	mov al, byte ptr [rdx].state.dc_hscale
 	mov byte ptr [rcx+DC_HSCALE], al

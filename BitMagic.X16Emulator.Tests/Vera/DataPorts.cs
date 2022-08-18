@@ -141,6 +141,7 @@ public class VeraInitialise
                 stp",
                 emulator);
 
+        Assert.AreEqual(0x00, emulator.Memory[0x9F29]);
         Assert.AreEqual(0x01, emulator.Memory[0x9F2A]);
         Assert.AreEqual(0x02, emulator.Memory[0x9F2B]);
         Assert.AreEqual(0x03, emulator.Memory[0x9F2C]);
@@ -170,5 +171,74 @@ public class VeraInitialise
         Assert.AreEqual(0x05, emulator.Memory[0x9F2A]);
         Assert.AreEqual(0x06, emulator.Memory[0x9F2B]);
         Assert.AreEqual(0x07, emulator.Memory[0x9F2C]);
+    }
+
+    [TestMethod]
+    public async Task DCVideo_SpriteEnable()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.DcSel = false;
+        emulator.Vera.SpriteEnable = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b01000000, emulator.Memory[0x9F29]);
+    }
+    [TestMethod]
+    public async Task DCVideo_Layer1Enable()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.DcSel = false;
+        emulator.Vera.Layer1Enable = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00100000, emulator.Memory[0x9F29]);
+    }
+
+    [TestMethod]
+    public async Task DCVideo_Layer0Enable()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.DcSel = false;
+        emulator.Vera.Layer0Enable = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00010000, emulator.Memory[0x9F29]);
+    }
+
+    [TestMethod]
+    public async Task DCVideo_AllEnable()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.DcSel = false;
+        emulator.Vera.Layer0Enable = true;
+        emulator.Vera.Layer1Enable = true;
+        emulator.Vera.SpriteEnable = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b01110000, emulator.Memory[0x9F29]);
     }
 }
