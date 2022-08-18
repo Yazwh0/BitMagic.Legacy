@@ -36,6 +36,15 @@ public class Emulator : IDisposable
         public int Data1_Address { get => (int)_emulator._state.Data1_Address; set => _emulator._state.Data1_Address = (ulong)value; }
         public int Data0_Step { get => (int)_emulator._state.Data0_Step; set => _emulator._state.Data0_Step = (ulong)value; }
         public int Data1_Step { get => (int)_emulator._state.Data1_Step; set => _emulator._state.Data1_Step = (ulong)value; }
+        public bool AddrSel { get => _emulator._state.AddrSel != 0; set => _emulator._state.AddrSel = (value ? (byte)1 : (byte)0); }
+        public bool DcSel { get => _emulator._state.DcSel != 0; set => _emulator._state.DcSel = (value ? (byte)1 : (byte)0); }
+        public byte Dc_HScale { get => _emulator._state.Dc_HScale; set => _emulator._state.Dc_HScale = value; }
+        public byte Dc_VScale { get => _emulator._state.Dc_VScale; set => _emulator._state.Dc_VScale = value; }
+        public byte Dc_Border { get => _emulator._state.Dc_Border; set => _emulator._state.Dc_Border = value; }
+        public byte Dc_HStart { get => _emulator._state.Dc_HStart; set => _emulator._state.Dc_HStart = value; }
+        public byte Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
+        public byte Dc_VStart { get => _emulator._state.Dc_VStart; set => _emulator._state.Dc_VStart = value; }
+        public byte Dc_VStop { get => _emulator._state.Dc_VStop; set => _emulator._state.Dc_VStop = value; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -68,6 +77,17 @@ public class Emulator : IDisposable
         public byte InterruptDisable = 0;
 
         public byte Interrupt = 0;
+
+        public byte AddrSel = 0;
+        public byte DcSel = 0;
+
+        public byte Dc_HScale = 0;
+        public byte Dc_VScale = 0;
+        public byte Dc_Border = 0;
+        public byte Dc_HStart = 0;
+        public byte Dc_HStop = 0;
+        public byte Dc_VStart = 0;
+        public byte Dc_VStop = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
         {

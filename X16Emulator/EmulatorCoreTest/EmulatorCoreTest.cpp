@@ -85,17 +85,18 @@ int main()
     state.rom_ptr[0x0000] = 0x00;
     state.vram_ptr[0x0000] = 0xee;
     state.vram_ptr[0x0001] = 0xff;
-    state.data0_step = 128;
+    
+    state.data0_step = 0x01;
     state.data0_address = 0x00000;
-    state.data1_step = 0x02;
-    state.data1_address = 0x00001;
+    state.data1_step = 0x00;
+    state.data1_address = 0x00000;
+    state.addrsel = false;
+    state.dcsel = true;
+    
 
-
-    state.memory_ptr[0x1234] = 0x01;
-
-    state.memory_ptr[0x810] = 0xdb;
-    state.memory_ptr[0x811] = 0x34;
-    state.memory_ptr[0x812] = 0x12;
+    state.memory_ptr[0x810] = 0xad;
+    state.memory_ptr[0x811] = 0x23;
+    state.memory_ptr[0x812] = 0x9f;
     state.memory_ptr[0x813] = 0xdb;
     state.memory_ptr[0x814] = 0x00;
     state.memory_ptr[0x815] = 0x00;

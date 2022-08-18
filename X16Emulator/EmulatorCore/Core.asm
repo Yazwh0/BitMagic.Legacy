@@ -20,6 +20,7 @@ state struct
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
 
+	; Vera
 	vram_ptr				qword ?
 	data0_address			qword ?
 	data1_address			qword ?
@@ -40,7 +41,20 @@ state struct
 	flags_carry				byte ?
 	flags_zero				byte ?
 	flags_interruptDisable	byte ?
+
 	interrupt				byte ?
+
+	; Vera
+	addrsel					byte ?
+	dcsel					byte ?
+	dc_hscale				byte ?
+	dc_vscale				byte ?
+	dc_border				byte ?
+	dc_hstart				byte ?
+	dc_hstop				byte ?
+	dc_vstart				byte ?
+	dc_vstop				byte ?
+
 state ends
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
@@ -2926,21 +2940,52 @@ match:
 	shr rbx, 1
 	and rbx, 0fh
 	shl rbx, 4+8+8 
-	mov rax, [rdx].state.data0_address
-	or rax, rbx
+	mov rsi, [rdx].state.data0_address
+	or rsi, rbx
 	
 	mov rcx, [rdx].state.memory_ptr
-	mov [rcx+ADDRx_L], ax
+	mov [rcx+ADDRx_L], si
 
-	shr rax, 16
-	mov [rcx+ADDRx_H], al
+	shr rsi, 16
+	mov [rcx+ADDRx_H], sil
+endm
+
+vera_setaddress_1 macro 
+	local search_loop, match
+
+	mov rax, [rdx].state.data1_step
+
+	xor rbx, rbx
+	mov rcx, vera_step_table
+
+search_loop:
+	cmp ax, word ptr [rcx+rbx]
+	je match
+	add rbx, 2
+	cmp rbx, 20h
+	jne search_loop
+
+match:
+	shr rbx, 1
+	and rbx, 0fh
+	shl rbx, 4+8+8 
+	mov rsi, [rdx].state.data1_address
+	or rsi, rbx
+	
+	mov rcx, [rdx].state.memory_ptr
+	mov [rcx+ADDRx_L], si
+
+	shr rsi, 16
+	mov [rcx+ADDRx_H], sil
 endm
 
 ; initialise colours etc
 ; rdx points to cpu state
 vera_init proc
 	
-	; Set Data0/1 based on initial values
+	;
+	; DATA0\1
+	;
 	mov rcx, [rdx].state.memory_ptr
 	mov rsi, [rdx].state.vram_ptr
 	
@@ -2952,8 +2997,65 @@ vera_init proc
 	mov bl, byte ptr [rsi+rax]
 	mov byte ptr [rcx+DATA1], bl
 
+	;
+	; AddrSel CTRL + ADDR_x
+	;
+	cmp [rdx].state.addrsel, 0
+	jne set_address1
+
 	; Set Address 0 - init to ctrl as 0
 	vera_setaddress_0
+	mov byte ptr [rcx+CTRL], 0
+	jmp addr_done
+
+set_address1:
+	vera_setaddress_1
+	mov byte ptr [rcx+CTRL], 1
+	
+addr_done:
+
+	;
+	; DcSel CTRL
+	;
+	mov r13b, [rdx].state.dcsel
+	shl r13b, 1
+	or byte ptr [rcx+CTRL], r13b
+
+	;
+	; DC_xxx
+	;
+	test r13b, r13b
+	jnz set_dc1
+
+	mov al, byte ptr [rdx].state.dc_hscale
+	mov byte ptr [rcx+DC_HSCALE], al
+
+	mov al, byte ptr [rdx].state.dc_vscale
+	mov byte ptr [rcx+DC_VSCALE], al
+
+	mov al, byte ptr [rdx].state.dc_border
+	mov byte ptr [rcx+DC_BORDER], al
+
+	jmp dc_done
+
+set_dc1:
+
+	mov al, byte ptr [rdx].state.dc_hstart
+	mov byte ptr [rcx+DC_HSTART], al
+
+	mov al, byte ptr [rdx].state.dc_hstop
+	mov byte ptr [rcx+DC_HSTOP], al
+
+	mov al, byte ptr [rdx].state.dc_vstart
+	mov byte ptr [rcx+DC_VSTART], al
+
+	mov al, byte ptr [rdx].state.dc_vstop
+	mov byte ptr [rcx+DC_VSTOP], al
+
+dc_done:
+
+
+
 
 	ret
 vera_init endp
@@ -2975,9 +3077,26 @@ vera_afterread proc
 	mov rax, [rdx].state.vram_ptr				; get value from vram
 	mov r13b, byte ptr [rax+rsi]
 	mov [rcx+rbx], r13b							; store in ram
-	mov r13b, 0									; clear r13b, as we use this to detect if we need to call vera
+	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
 
+	cmp [rdx].state.addrsel, 0
+	je set_data0_address
 	ret
+
+set_data0_address:
+		
+	mov rcx, [rdx].state.memory_ptr
+	mov [rcx+ADDRx_L], si
+
+	shr rsi, 16
+	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
+	and al, 0f0h
+	or sil, al
+	mov [rcx+ADDRx_H], sil
+
+	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
+	ret
+
 step_data1:
 	mov rsi, [rdx].state.data1_address
 	add rsi, [rdx].state.data1_step
@@ -2987,11 +3106,26 @@ step_data1:
 	mov rax, [rdx].state.vram_ptr				; get value from vram
 	mov r13b, byte ptr [rax+rsi]
 	mov [rcx+rbx], r13b							; store in ram
-	mov r13b, 0									; clear r13b, as we use this to detect if we need to call vera
+	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
+
+	cmp [rdx].state.addrsel, 1
+	je set_data1_address
+	ret
+
+set_data1_address:
+		
+	mov rcx, [rdx].state.memory_ptr
+	mov [rcx+ADDRx_L], si
+
+	shr rsi, 16
+	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
+	and al, 0f0h
+	or sil, al
+	mov [rcx+ADDRx_H], sil
 
 	ret
-vera_afterread endp
 
+vera_afterread endp
 
 
 vera_afterreadwrite proc

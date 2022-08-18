@@ -51,6 +51,16 @@ extern "C"
 		bool zero;
 		bool interruptDisable;
 		bool interrupt;
+
+		bool addrsel;
+		bool dcsel;
+		uint8_t dc_hscale;
+		uint8_t dc_vscale;
+		uint8_t dc_border;
+		uint8_t dc_hstart;
+		uint8_t dc_hstop;
+		uint8_t dc_vstart;
+		uint8_t dc_vstop;
 	};
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);
