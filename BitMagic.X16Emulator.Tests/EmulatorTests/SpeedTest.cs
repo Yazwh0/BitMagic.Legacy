@@ -42,6 +42,7 @@ public class SpeedTest
                 ",
                 emulator);
     }
+
     [TestMethod]
 
     public async Task BankedRam()
@@ -73,6 +74,48 @@ public class SpeedTest
                 dex
                 txa
                 sta $a003
+                bne mainloop
+                stp
+                ",
+                emulator);
+    }
+
+    [TestMethod]
+    public async Task VeraDataPort()
+    {
+        var emulator = new Emulator();
+
+        // need this until register writes are added.
+        emulator.Vera.Data0_Address = 0x00001;
+        emulator.Vera.Data1_Address = 0x00002;
+        emulator.Vera.Vram[0x00001] = 0x50;
+        emulator.Vera.Vram[0x00002] = 0x50;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$50
+                sta $a002
+                sta $a003
+                ldy #$ff
+                .mainloop:
+                ldx #$ff
+                .loop:
+                dex
+                bne loop
+                dey
+                bne mainloop
+                lda DATA0
+                tax
+                dex
+                txa
+                sta DATA0
+                bne mainloop
+                lda DATA1
+                tax
+                dex
+                txa
+                sta DATA1
                 bne mainloop
                 stp
                 ",

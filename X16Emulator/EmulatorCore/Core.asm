@@ -1576,114 +1576,112 @@ xF1_sbc_indy endp
 ; CMP
 ;
 
-cmp_body_end macro clock, pc
+cmp_body_end macro checkvera, clock, pc
 	cmc
 	write_flags_r15
+	step_vera_read checkvera
 
 	add r14, clock			; Clock
 	add r11w, pc			; add on PC
 	jmp opcode_done	
 endm
 
-cmp_body macro clock, pc
-
+cmp_body macro checkvera, clock, pc
 	cmp r8b, [rcx+rbx]
-	cmp_body_end clock, pc
+	cmp_body_end checkvera, clock, pc
 endm
 
 xC9_cmp_imm proc
 	cmp r8b, [rcx+r11]		
-	cmp_body_end 2, 1
+	cmp_body_end 0, 2, 1
 xC9_cmp_imm endp
 
 xCD_cmp_abs proc
 	read_abs_rbx
-	cmp_body 4, 2
+	cmp_body 1, 4, 2
 xCD_cmp_abs endp
 
 xDD_cmp_absx proc
 	read_absx_rbx_pagepenalty
-	cmp_body 4, 2
+	cmp_body 1, 4, 2
 xDD_cmp_absx endp
 
 xD9_cmp_absy proc
 	read_absy_rbx_pagepenalty
-	cmp_body 4, 2
+	cmp_body 1, 4, 2
 xD9_cmp_absy endp
 
 xC5_cmp_zp proc
 	read_zp_rbx
-	cmp_body 3, 1
+	cmp_body 0, 3, 1
 xC5_cmp_zp endp
 
 xD5_cmp_zpx proc
 	read_zpx_rbx
-	cmp_body 4, 1
+	cmp_body 0, 4, 1
 xD5_cmp_zpx endp
 
 xD2_cmp_indzp proc
 	read_indzp_rbx
-	cmp_body 5, 1
+	cmp_body 1, 5, 1
 xD2_cmp_indzp endp
 
 xC1_sbc_indx proc
 	read_indx_rbx
-	cmp_body 6, 1
+	cmp_body 1, 6, 1
 xC1_sbc_indx endp
 
 xD1_cmp_indy proc
 	read_indy_rbx_pagepenalty
-	cmp_body 5, 1
+	cmp_body 1, 5, 1
 xD1_cmp_indy endp
 
 ;
 ; CMPX
 ;
 
-cmpx_body macro clock, pc
-
+cmpx_body macro checkvera, clock, pc
 	cmp r9b, [rcx+rbx]
-	cmp_body_end clock, pc
+	cmp_body_end checkvera, clock, pc
 endm
 
 xE0_cmpx_imm proc
 	cmp r9b, [rcx+r11]		
-	cmp_body_end 2, 1
+	cmp_body_end 0, 2, 1
 xE0_cmpx_imm endp
 
 xEC_cmpx_abs proc
 	read_abs_rbx
-	cmpx_body 4, 2
+	cmpx_body 1, 4, 2
 xEC_cmpx_abs endp
 
 xE4_cmpx_zp proc
 	read_zp_rbx
-	cmpx_body 3, 1
+	cmpx_body 0, 3, 1
 xE4_cmpx_zp endp
 
 ;
 ; CMPY
 ;
 
-cmpy_body macro clock, pc
-
+cmpy_body macro checkvera, clock, pc
 	cmp r10b, [rcx+rbx]
-	cmp_body_end clock, pc
+	cmp_body_end checkvera, clock, pc
 endm
 
 xC0_cmpy_imm proc
 	cmp r10b, [rcx+r11]		
-	cmp_body_end 2, 1
+	cmp_body_end 0, 2, 1
 xC0_cmpy_imm endp
 
 xCC_cmpy_abs proc
 	read_abs_rbx
-	cmpy_body 4, 2
+	cmpy_body 1, 4, 2
 xCC_cmpy_abs endp
 
 xC4_cmpy_zp proc
 	read_zp_rbx
-	cmpy_body 3, 1
+	cmpy_body 0, 3, 1
 xC4_cmpy_zp endp
 
 ;
