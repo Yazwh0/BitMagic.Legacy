@@ -2376,13 +2376,12 @@ x1C_trb_abs proc
 	read_abs_rbx
 	skipwrite_ifreadonly 1
 
-
 	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
-
 	jz set_zero
 	
+	step_vera_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2392,9 +2391,9 @@ skip:
 	mov rax, r8
 	not al
 	and al, byte ptr [rcx+rbx]
-
 	jz set_zero
 	
+	step_vera_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2403,6 +2402,7 @@ set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
 	
+
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2414,7 +2414,6 @@ x14_trb_zp proc
 	mov rax, r8
 	not al
 	and byte ptr [rcx+rbx], al
-
 	jz set_zero
 	
 	add r14, 5
@@ -2438,11 +2437,10 @@ x0C_tsb_abs proc
 	read_abs_rbx
 	skipwrite_ifreadonly 1
 
-
 	or byte ptr [rcx+rbx], r8b
-
 	jz set_zero
 	
+	step_vera_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2450,9 +2448,9 @@ x0C_tsb_abs proc
 skip:
 	mov rax, r8
 	or al, byte ptr [rcx+rbx]
-
 	jz set_zero
 	
+	step_vera_readwrite 1
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
