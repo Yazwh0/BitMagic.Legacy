@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class Data1
+public class Data1_LDA
 {
     [TestMethod]
     public async Task Read_Data1_Step0()

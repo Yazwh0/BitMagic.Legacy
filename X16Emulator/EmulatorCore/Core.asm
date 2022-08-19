@@ -563,9 +563,10 @@ xBE_ldx_absy endp
 ; LDY
 ; -----------------------------
 
-ldy_body_end macro clock, pc
+ldy_body_end macro checkvera, clock, pc
 	test r10b, r10b
 	write_flags_r15_preservecarry
+	step_vera_read checkvera
 
 	add r14, clock
 	add r11w, pc
@@ -573,34 +574,34 @@ ldy_body_end macro clock, pc
 	jmp opcode_done
 endm
 
-ldy_body macro clock, pc
+ldy_body macro checkvera, clock, pc
 	mov r10b, [rcx+rbx]
-	ldy_body_end clock, pc
+	ldy_body_end checkvera, clock, pc
 endm
 
 xA0_ldy_imm PROC
 	mov	r10b, [rcx+r11]
-	ldy_body_end 2, 1
+	ldy_body_end 0, 2, 1
 xA0_ldy_imm ENDP
 
 xA4_ldy_zp PROC
 	read_zp_rbx
-	ldy_body 3, 1
+	ldy_body 0, 3, 1
 xA4_ldy_zp  ENDP
 
 xB4_ldy_zpx PROC
 	read_zpx_rbx
-	ldy_body 4, 1
+	ldy_body 0, 4, 1
 xB4_ldy_zpx endp
 
 xAC_ldy_abs proc
 	read_abs_rbx
-	ldy_body 4, 2
+	ldy_body 1, 4, 2
 xAC_ldy_abs endp
 
 xBC_ldy_absx proc
 	read_absx_rbx_pagepenalty
-	ldy_body 4, 2
+	ldy_body 1, 4, 2
 xBC_ldy_absx endp
 
 
