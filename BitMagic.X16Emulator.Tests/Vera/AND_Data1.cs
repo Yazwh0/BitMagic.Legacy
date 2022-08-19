@@ -6,7 +6,7 @@ namespace BitMagic.X16Emulator.Tests;
 public class AND_Data1
 {
     [TestMethod]
-    public async Task Read_Data1_Abs_Step0()
+    public async Task Abs_Step0()
     {
         var emulator = new Emulator();
 
@@ -35,7 +35,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_Abs_Step1()
+    public async Task Abs_Step1()
     {
         var emulator = new Emulator();
 
@@ -64,7 +64,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_AbsX_Step0()
+    public async Task AbsX_Step0()
     {
         var emulator = new Emulator();
 
@@ -94,7 +94,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_AbsX_Step1()
+    public async Task AbsX_Step1()
     {
         var emulator = new Emulator();
 
@@ -125,7 +125,7 @@ public class AND_Data1
 
 
     [TestMethod]
-    public async Task Read_Data1_AbsY_Step0()
+    public async Task AbsY_Step0()
     {
         var emulator = new Emulator();
 
@@ -155,7 +155,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_AbsY_Step1()
+    public async Task AbsY_Step1()
     {
         var emulator = new Emulator();
 
@@ -185,7 +185,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_Ind_Step0()
+    public async Task Ind_Step0()
     {
         var emulator = new Emulator();
 
@@ -216,7 +216,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_Ind_Step1()
+    public async Task Ind_Step1()
     {
         var emulator = new Emulator();
 
@@ -247,7 +247,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_IndX_Step0()
+    public async Task IndX_Step0()
     {
         var emulator = new Emulator();
 
@@ -279,7 +279,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_IndX_Step1()
+    public async Task IndX_Step1()
     {
         var emulator = new Emulator();
 
@@ -312,7 +312,7 @@ public class AND_Data1
 
 
     [TestMethod]
-    public async Task Read_Data1_IndY_Step0()
+    public async Task IndY_Step0()
     {
         var emulator = new Emulator();
 
@@ -344,7 +344,7 @@ public class AND_Data1
     }
 
     [TestMethod]
-    public async Task Read_Data1_IndY_Step1()
+    public async Task IndY_Step1()
     {
         var emulator = new Emulator();
 

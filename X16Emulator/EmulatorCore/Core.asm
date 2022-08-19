@@ -1371,7 +1371,7 @@ ora_body macro checkvera, clock, pc
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
 	
-	add r11w, pc			; add on PC
+	add r11w, pc		; add on PC
 	add r14, clock		; Clock
 	jmp opcode_done	
 endm
@@ -1428,24 +1428,24 @@ x11_ora_indy endp
 ;
 ; ADC
 ;
-adc_body_end macro clock, pc
+adc_body_end macro checkvera, clock, pc
 	write_flags_r15
 
-	seto bl
-	mov byte ptr [rdx].state.flags_overflow, bl
+	seto sil
+	mov byte ptr [rdx].state.flags_overflow, sil
+	step_vera_read checkvera
 
 	add r14, clock			; Clock
 	add r11w, pc			; add on PC
 	jmp opcode_done	
 endm
 
-adc_body macro clock, pc
-
+adc_body macro checkvera, clock, pc
 	read_flags_rax
 
 	adc r8b, [rcx+rbx]
 
-	adc_body_end clock, pc
+	adc_body_end checkvera, clock, pc
 endm
 
 x69_adc_imm proc
@@ -1453,47 +1453,47 @@ x69_adc_imm proc
 
 	adc r8b, [rcx+r11]
 
-	adc_body_end 2, 1
+	adc_body_end 0, 2, 1
 x69_adc_imm endp
 
 x6D_adc_abs proc
 	read_abs_rbx
-	adc_body 4, 2
+	adc_body 1, 4, 2
 x6D_adc_abs endp
 
 x7D_adc_absx proc
 	read_absx_rbx_pagepenalty
-	adc_body 4, 2
+	adc_body 1, 4, 2
 x7D_adc_absx endp
 
 x79_adc_absy proc
 	read_absy_rbx_pagepenalty
-	adc_body 4, 2
+	adc_body 1, 4, 2
 x79_adc_absy endp
 
 x65_adc_zp proc
 	read_zp_rbx
-	adc_body 3, 1
+	adc_body 0, 3, 1
 x65_adc_zp endp
 
 x75_adc_zpx proc
 	read_zpx_rbx
-	adc_body 4, 1
+	adc_body 0, 4, 1
 x75_adc_zpx endp
 
 x72_adc_indzp proc
 	read_indzp_rbx
-	adc_body 5, 1
+	adc_body 1, 5, 1
 x72_adc_indzp endp
 
 x61_adc_indx proc
 	read_indx_rbx
-	adc_body 6, 1
+	adc_body 1, 6, 1
 x61_adc_indx endp
 
 x71_adc_indy proc
 	read_indy_rbx_pagepenalty
-	adc_body 5, 1
+	adc_body 1, 5, 1
 x71_adc_indy endp
 
 ;
