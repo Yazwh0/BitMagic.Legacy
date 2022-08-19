@@ -122,5 +122,4 @@ public class DEC_Data1
         Assert.AreEqual(0x00, emulator.Memory[0x9F21]);
         Assert.AreEqual(0x10, emulator.Memory[0x9F22]);
     }
-
 }

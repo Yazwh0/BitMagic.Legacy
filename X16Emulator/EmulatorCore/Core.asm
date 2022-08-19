@@ -316,7 +316,15 @@ if checkvera eq 1
 endif
 endm
 
-write_sideeffects_rbx macro
+step_vera_write macro checkvera
+	local skip
+if checkvera eq 1
+	cmp r13b, 0
+	je skip
+	call vera_afterwrite
+
+	skip:
+endif
 endm
 
 ; -----------------------------
@@ -621,11 +629,11 @@ xBC_ldy_absx endp
 ; STA
 ; -----------------------------
 
-sta_body macro checkreadonly, clock, pc
+sta_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], r8b
-	write_sideeffects_rbx
+	step_vera_write checkvera
 
 skip:
 	add r14, clock
@@ -636,42 +644,42 @@ endm
 
 x85_sta_zp proc	
 	read_zp_rbx
-	sta_body 0, 3, 1
+	sta_body 0, 0, 3, 1
 x85_sta_zp endp
 
 x95_sta_zpx proc
 	read_zpx_rbx
-	sta_body 0, 4, 1
+	sta_body 0, 0, 4, 1
 x95_sta_zpx endp
 
 x8D_sta_abs proc
 	read_abs_rbx
-	sta_body 1, 4, 2
+	sta_body 1, 1, 4, 2
 x8D_sta_abs endp
 
 x9D_sta_absx proc
 	read_absx_rbx
-	sta_body 1, 5, 2
+	sta_body 1, 1, 5, 2
 x9D_sta_absx endp
 
 x99_sta_absy proc
 	read_absy_rbx
-	sta_body 1, 5, 2
+	sta_body 1, 1, 5, 2
 x99_sta_absy endp
 
 x81_sta_indx proc
 	read_indx_rbx
-	sta_body 1, 6, 1
+	sta_body 1, 1, 6, 1
 x81_sta_indx endp
 
 x91_sta_indy proc
 	read_indy_rbx
-	sta_body 1, 6, 1
+	sta_body 1, 1, 6, 1
 x91_sta_indy endp
 
 x92_sta_indzp proc
 	read_indzp_rbx
-	sta_body 1, 5, 1
+	sta_body 1, 1, 5, 1
 x92_sta_indzp endp
 
 ;
@@ -683,7 +691,7 @@ stx_body macro checkreadonly, clock, pc
 
 	mov byte ptr [rcx+rbx], r9b
 
-	write_sideeffects_rbx
+	
 
 skip:
 	add r14, clock
@@ -715,7 +723,7 @@ sty_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], r10b
-	write_sideeffects_rbx
+	
 
 skip:
 	add r14, clock
@@ -747,7 +755,7 @@ stz_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], 0
-	write_sideeffects_rbx
+	
 
 skip:
 	add r14, clock
@@ -970,8 +978,7 @@ asl_body macro checkreadonly, clock, pc
 	read_flags_rax
 	sal byte ptr [rcx+rbx],1		; shift
 
-	write_flags_r15
-	write_sideeffects_rbx
+	write_flags_r15	
 
 	add r11w, pc					; move PC on
 	add r14, clock					; Clock
@@ -985,8 +992,7 @@ skip:
 	movzx r12, byte ptr [rcx+rbx]
 	sal r12b, 1						; shift
 
-	write_flags_r15
-	write_sideeffects_rbx
+	write_flags_r15	
 
 	add r11w, pc					; move PC on
 	add r14, clock					; Clock
@@ -1036,8 +1042,7 @@ lsr_body macro checkreadonly, clock, pc
 
 	sar byte ptr [rcx+rbx],1	; shift
 
-	write_flags_r15
-	write_sideeffects_rbx
+	write_flags_r15	
 
 	add r14, clock				; Clock
 	add r11w, pc				; add on PC
@@ -1052,8 +1057,7 @@ skip:
 	movzx r12, byte ptr [rcx+rbx]
 	sar r12b,1					; shift
 
-	write_flags_r15
-	write_sideeffects_rbx
+	write_flags_r15	
 
 	add r14, clock				; Clock
 	add r11w, pc				; add on PC
@@ -1106,7 +1110,6 @@ rol_body macro checkreadonly, clock, pc
 	sal byte ptr [rcx+rbx], 1		; shift
 	write_flags_r15
 	or byte ptr [rcx+rbx], sil		; add carry on
-	write_sideeffects_rbx
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1122,7 +1125,6 @@ skip:
 	movzx r12, byte ptr [rcx+rbx]
 	sal r12b, 1						; shift
 	write_flags_r15
-	write_sideeffects_rbx
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1179,8 +1181,6 @@ ror_body macro checkreadonly, clock, pc
 	or byte ptr [rcx+rbx], sil		; add carry on
 	rol rsi, 8						; change carry to negative
 	or r15, rsi						; add on to flags
-
-	write_sideeffects_rbx
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1200,8 +1200,6 @@ skip:
 	rol rsi, 8						; change carry to negative
 	or r15, rsi						; add on to flags
 
-	write_sideeffects_rbx
-	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
 	jmp opcode_done	
@@ -2385,7 +2383,7 @@ x1C_trb_abs proc
 	and byte ptr [rcx+rbx], al
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2397,7 +2395,7 @@ skip:
 	and al, byte ptr [rcx+rbx]
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2405,7 +2403,7 @@ skip:
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
-	write_sideeffects_rbx
+	
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2419,7 +2417,7 @@ x14_trb_zp proc
 	and byte ptr [rcx+rbx], al
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1			
 	jmp opcode_done
@@ -2427,7 +2425,7 @@ x14_trb_zp proc
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1			
 	jmp opcode_done
@@ -2445,7 +2443,7 @@ x0C_tsb_abs proc
 	or byte ptr [rcx+rbx], r8b
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2455,7 +2453,7 @@ skip:
 	or al, byte ptr [rcx+rbx]
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
@@ -2463,7 +2461,7 @@ skip:
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
-	write_sideeffects_rbx
+	
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2476,7 +2474,7 @@ x04_tsb_zp proc
 	or byte ptr [rcx+rbx], r8b
 
 	jz set_zero
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
@@ -2484,7 +2482,7 @@ x04_tsb_zp proc
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
@@ -2498,7 +2496,7 @@ rmb_body macro mask
 	read_zp_rbx
 
 	and byte ptr [rcx+rbx], mask
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
@@ -2544,7 +2542,7 @@ smb_body macro mask
 	read_zp_rbx
 
 	or byte ptr [rcx+rbx], mask
-	write_sideeffects_rbx
+	
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done
@@ -3222,21 +3220,28 @@ vera_init endp
 ; should only be called if data0\data1 is read\written.
 
 vera_dataaccess_body macro doublestep, write_value
+
+	mov rax, [rdx].state.vram_ptr				; get value from vram
+
 	cmp rbx, DATA0
 	jne step_data1
 
 	mov rsi, [rdx].state.data0_address
-	add rsi, [rdx].state.data0_step
-	and rsi, 1ffffh								; mask off high bits so we wrap
 
-	mov rax, [rdx].state.vram_ptr				; get value from vram
-
-	if write_value eq 1
+	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
 		mov byte ptr [rax+rsi], r13b			; store in vram
 	endif
 
+	add rsi, [rdx].state.data0_step
+	and rsi, 1ffffh								; mask off high bits so we wrap
+
 	if doublestep eq 1
+		if write_value eq 1
+			mov r13b, byte ptr [rcx+rbx]			; get value that has been written
+			mov byte ptr [rax+rsi], r13b			; store in vram
+		endif
+
 		add rsi, [rdx].state.data0_step			; perform second step
 		and rsi, 1ffffh							; mask off high bits so we wrap
 	endif
@@ -3268,17 +3273,21 @@ set_data0_address:
 
 step_data1:
 	mov rsi, [rdx].state.data1_address
-	add rsi, [rdx].state.data1_step
-	and rsi, 1ffffh								; mask off high bits so we wrap
 
-	mov rax, [rdx].state.vram_ptr				; get value from vram
-
-	if write_value eq 1
+	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
 		mov byte ptr [rax+rsi], r13b			; store in vram
 	endif
 
+	add rsi, [rdx].state.data1_step
+	and rsi, 1ffffh								; mask off high bits so we wrap
+
 	if doublestep eq 1
+		if write_value eq 1
+			mov r13b, byte ptr [rcx+rbx]		; get value that has been written
+			mov byte ptr [rax+rsi], r13b		; store in vram
+		endif
+
 		add rsi, [rdx].state.data1_step
 		and rsi, 1ffffh							; mask off high bits so we wrap
 	endif
