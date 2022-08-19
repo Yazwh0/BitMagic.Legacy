@@ -1300,11 +1300,11 @@ x31_and_indy endp
 ; EOR
 ;
 
-eor_body_end macro clock, pc
+eor_body_end macro checkvera, clock, pc
 
 	xor r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
-	write_sideeffects_rbx
+	step_vera_read checkvera
 
 	add r14, clock	
 	add r11w, pc
@@ -1324,42 +1324,42 @@ x49_eor_imm endp
 
 x4D_eor_abs proc
 	read_abs_rbx
-	eor_body_end 4, 2
+	eor_body_end 1, 4, 2
 x4D_eor_abs endp
 
 x5D_eor_absx proc
 	read_absx_rbx_pagepenalty
-	eor_body_end 4, 2
+	eor_body_end 1, 4, 2
 x5D_eor_absx endp
 
 x59_eor_absy proc
 	read_absy_rbx_pagepenalty
-	eor_body_end 4, 2
+	eor_body_end 1, 4, 2
 x59_eor_absy endp
 
 x45_eor_zp proc
 	read_zp_rbx
-	eor_body_end 3, 1
+	eor_body_end 0, 3, 1
 x45_eor_zp endp
 
 x55_eor_zpx proc
 	read_zpx_rbx
-	eor_body_end 4, 1
+	eor_body_end 0, 4, 1
 x55_eor_zpx endp
 
 x52_eor_indzp proc
 	read_indzp_rbx
-	eor_body_end 5, 1
+	eor_body_end 1, 5, 1
 x52_eor_indzp endp
 
 x41_eor_indx proc
 	read_indx_rbx
-	eor_body_end 6, 1
+	eor_body_end 1, 6, 1
 x41_eor_indx endp
 
 x51_eor_indy proc
 	read_indy_rbx_pagepenalty
-	eor_body_end 5, 1
+	eor_body_end 1, 5, 1
 x51_eor_indy endp
 
 ;
