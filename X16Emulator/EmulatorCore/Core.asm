@@ -686,13 +686,12 @@ x92_sta_indzp endp
 ; STX
 ;
 
-stx_body macro checkreadonly, clock, pc
+stx_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], r9b
-
+	step_vera_write checkvera
 	
-
 skip:
 	add r14, clock
 	add r11w, pc			; add on PC
@@ -702,29 +701,29 @@ endm
 
 x86_stx_zp proc
 	read_zp_rbx
-	stx_body 0, 3, 1
+	stx_body 0, 0, 3, 1
 x86_stx_zp endp
 
 x96_stx_zpy proc
 	read_zpy_rbx
-	stx_body 0, 4, 1
+	stx_body 0, 0, 4, 1
 x96_stx_zpy endp
 
 x8E_stx_abs proc
 	read_abs_rbx
-	stx_body 1, 4, 2
+	stx_body 1, 1, 4, 2
 x8E_stx_abs endp
 
 ;
 ; STY
 ;
 
-sty_body macro checkreadonly, clock, pc
+sty_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], r10b
+	step_vera_write checkvera
 	
-
 skip:
 	add r14, clock
 	add r11w, pc			; add on PC
@@ -734,28 +733,28 @@ endm
 
 x84_sty_zp proc
 	read_zp_rbx
-	sty_body 0, 3, 1
+	sty_body 0, 0, 3, 1
 x84_sty_zp endp
 
 x94_sty_zpx proc
 	read_zpx_rbx
-	sty_body 0, 4, 1
+	sty_body 0, 0, 4, 1
 x94_sty_zpx endp
 
 x8C_sty_abs proc
 	read_abs_rbx
-	sty_body 1, 4, 2
+	sty_body 1, 1, 4, 2
 x8C_sty_abs endp
 
 ;
 ; STZ
 ;
 
-stz_body macro checkreadonly, clock, pc
+stz_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	mov byte ptr [rcx+rbx], 0
-	
+	step_vera_write checkvera
 
 skip:
 	add r14, clock
@@ -766,22 +765,22 @@ endm
 
 x64_stz_zp proc
 	read_zp_rbx
-	stz_body 0, 3, 1
+	stz_body 0, 0, 3, 1
 x64_stz_zp endp
 
 x74_stz_zpx proc
 	read_zpx_rbx
-	stz_body 0, 4, 1
+	stz_body 0, 0, 4, 1
 x74_stz_zpx endp
 
 x9C_stz_abs proc
 	read_abs_rbx
-	stz_body 1, 4, 2
+	stz_body 1, 1, 4, 2
 x9C_stz_abs endp
 
 x9E_stz_absx proc
 	read_absx_rbx
-	stz_body 1, 5, 2
+	stz_body 1, 1, 5, 2
 x9E_stz_absx endp
 
 ;
