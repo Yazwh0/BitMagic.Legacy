@@ -1366,11 +1366,10 @@ x51_eor_indy endp
 ; OR
 ;
 
-ora_body macro clock, pc
-
+ora_body macro checkvera, clock, pc
 	or r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
-	write_sideeffects_rbx
+	step_vera_read checkvera
 	
 	add r11w, pc			; add on PC
 	add r14, clock		; Clock
@@ -1388,42 +1387,42 @@ x09_ora_imm endp
 
 x0D_ora_abs proc
 	read_abs_rbx
-	ora_body 4, 2
+	ora_body 1, 4, 2
 x0D_ora_abs endp
 
 x1D_ora_absx proc
 	read_absx_rbx_pagepenalty
-	ora_body 4, 2
+	ora_body 1 ,4, 2
 x1D_ora_absx endp
 
 x19_ora_absy proc
 	read_absy_rbx_pagepenalty
-	ora_body 4, 2
+	ora_body 1, 4, 2
 x19_ora_absy endp
 
 x05_ora_zp proc
 	read_zp_rbx
-	ora_body 3, 1
+	ora_body 0, 3, 1
 x05_ora_zp endp
 
 x15_ora_zpx proc
 	read_zpx_rbx
-	ora_body 4, 1
+	ora_body 0, 4, 1
 x15_ora_zpx endp
 
 x12_ora_indzp proc
 	read_indzp_rbx
-	ora_body 5, 1
+	ora_body 1 ,5, 1
 x12_ora_indzp endp
 
 x01_ora_indx proc
 	read_indx_rbx
-	ora_body 6, 1
+	ora_body 1, 6, 1
 x01_ora_indx endp
 
 x11_ora_indy proc
 	read_indy_rbx_pagepenalty
-	ora_body 5, 1
+	ora_body 1, 5, 1
 x11_ora_indy endp
 
 ;
