@@ -382,6 +382,7 @@ read_indx_rbx macro
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	movzx rbx, word ptr [rcx+rbx]	; Address at location
+	read_banked_rbx
 endm
 
 read_indy_rbx_pagepenalty macro
@@ -1236,11 +1237,10 @@ x76_ror_zpx endp
 ; AND
 ;
 
-and_body_end macro clock, pc
-
+and_body_end macro checkvera, clock, pc
 	and r8b, [rcx+rbx]
 	write_flags_r15_preservecarry
-	write_sideeffects_rbx
+	step_vera_read checkvera
 
 	add r14, clock		; Clock
 	add r11w, pc			; add on PC
@@ -1258,42 +1258,42 @@ x29_and_imm endp
 
 x2D_and_abs proc
 	read_abs_rbx
-	and_body_end 4, 2
+	and_body_end 1, 4, 2
 x2D_and_abs endp
 
 x3D_and_absx proc
 	read_absx_rbx_pagepenalty
-	and_body_end 4, 2
+	and_body_end 1, 4, 2
 x3D_and_absx endp
 
 x39_and_absy proc
 	read_absy_rbx_pagepenalty
-	and_body_end 4, 2
+	and_body_end 1, 4, 2
 x39_and_absy endp
 
 x25_and_zp proc
 	read_zp_rbx
-	and_body_end 3, 1
+	and_body_end 0, 3, 1
 x25_and_zp endp
 
 x35_and_zpx proc
 	read_zpx_rbx
-	and_body_end 4, 1
+	and_body_end 0, 4, 1
 x35_and_zpx endp
 
 x32_and_indzp proc
 	read_indzp_rbx
-	and_body_end 5, 1
+	and_body_end 1, 5, 1
 x32_and_indzp endp
 
 x21_and_indx proc
 	read_indx_rbx
-	and_body_end 6, 1
+	and_body_end 1, 6, 1
 x21_and_indx endp
 
 x31_and_indy proc
 	read_indy_rbx_pagepenalty
-	and_body_end 5, 1
+	and_body_end 1, 5, 1
 x31_and_indy endp
 
 ;
@@ -2319,13 +2319,14 @@ x28_plp endp
 ; BIT
 ;
 
-bit_body_end macro clock, pc
-	and bl, r8b				; cant just test, as we need to check bit 6 for overflow.
-	test bl, bl				; sets zero and sign flags
+bit_body_end macro checkvera, clock, pc
+	and sil, r8b				; cant just test, as we need to check bit 6 for overflow.
+	test sil, sil				; sets zero and sign flags
 	write_flags_r15_preservecarry
-
-	bt bx, 6				; test overflow
+	
+	bt si, 6				; test overflow
 	setc byte ptr [rdx].state.flags_overflow
+	step_vera_read checkvera
 	
 	add r14, clock			
 	add r11w, pc			
@@ -2333,35 +2334,34 @@ bit_body_end macro clock, pc
 	jmp opcode_done
 endm
 
-bit_body macro clock, pc
-
-	movzx rbx, byte ptr [rcx+rbx]
-	bit_body_end clock, pc
+bit_body macro checkvera, clock, pc
+	movzx rsi, byte ptr [rcx+rbx]
+	bit_body_end checkvera, clock, pc
 endm
 
 x89_bit_imm proc
-	movzx rbx, byte ptr [rcx+r11]
-	bit_body_end 3, 1
+	movzx rsi, byte ptr [rcx+r11]
+	bit_body_end 0, 3, 1
 x89_bit_imm endp
 
 x2C_bit_abs proc
 	read_abs_rbx
-	bit_body 4, 2
+	bit_body 1, 4, 2
 x2C_bit_abs endp
 
 x3C_bit_absx proc
 	read_absx_rbx
-	bit_body 4, 2
+	bit_body 1, 4, 2
 x3C_bit_absx endp
 
 x24_bit_zp proc
 	read_zp_rbx
-	bit_body 3, 1
+	bit_body 0, 3, 1
 x24_bit_zp endp
 
 x34_bit_zpx proc
 	read_zpx_rbx
-	bit_body 3, 1
+	bit_body 0, 3, 1
 x34_bit_zpx endp
 
 ;

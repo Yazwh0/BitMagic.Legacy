@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class Data0_LDA
+public class LDY_Data0
 {
     [TestMethod]
     public async Task Read_Data0_Step1()
@@ -18,11 +18,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00001, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -45,11 +45,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00002, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -72,11 +72,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00004, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -99,11 +99,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00008, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -126,11 +126,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00010, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -153,11 +153,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00020, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -180,11 +180,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00040, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -207,11 +207,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00080, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -234,11 +234,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00100, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -261,11 +261,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00200, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -288,11 +288,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00028, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -315,11 +315,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00050, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -342,11 +342,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x000a0, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -369,11 +369,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00140, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
@@ -396,11 +396,11 @@ public class Data0_LDA
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                lda DATA0
+                ldy DATA0
                 stp",
                 emulator);
 
-        emulator.AssertState(A: 0xee);
+        emulator.AssertState(Y: 0xee);
 
         Assert.AreEqual(0x00280, emulator.Vera.Data0_Address);
         Assert.AreEqual(0xff, emulator.Memory[0x9F23]);

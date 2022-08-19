@@ -92,8 +92,11 @@ int main()
     state.data1_address = 0x00000;
     state.addrsel = false;
     state.dcsel = true;
-    
-    state.memory_ptr[0x810] = 0xad;
+
+    state.memory_ptr[0x10] = 0x23;
+    state.memory_ptr[0x11] = 0x9f;
+
+    state.memory_ptr[0x810] = 0x2c;
     state.memory_ptr[0x811] = 0x23;
     state.memory_ptr[0x812] = 0x9f;
     state.memory_ptr[0x813] = 0xdb;
