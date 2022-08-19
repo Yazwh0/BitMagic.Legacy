@@ -1500,26 +1500,26 @@ x71_adc_indy endp
 ; SBC
 ;
 
-sbc_body_end macro clock, pc
-
+sbc_body_end macro checkvera, clock, pc
 	write_flags_r15
 
-	seto bl
-	mov byte ptr [rdx].state.flags_overflow, bl
+	seto sil
+	mov byte ptr [rdx].state.flags_overflow, sil
+	step_vera_read checkvera
 
 	add r14, clock			; Clock
 	add r11w, pc			; add on PC
 	jmp opcode_done	
 endm
 
-sbc_body macro clock, pc
+sbc_body macro checkvera, clock, pc
 	read_flags_rax
 
 	cmc
 	sbb r8b, [rcx+rbx]
 	cmc
 
-	sbc_body_end clock, pc
+	sbc_body_end checkvera, clock, pc
 endm
 
 xE9_sbc_imm proc
@@ -1529,47 +1529,47 @@ xE9_sbc_imm proc
 	sbb r8b, [rcx+r11]
 	cmc
 
-	sbc_body_end 2, 1
+	sbc_body_end 0, 2, 1
 xE9_sbc_imm endp
 
 xED_sbc_abs proc
 	read_abs_rbx
-	sbc_body 4, 2
+	sbc_body 1, 4, 2
 xED_sbc_abs endp
 
 xFD_sbc_absx proc
 	read_absx_rbx_pagepenalty
-	sbc_body 4, 2
+	sbc_body 1, 4, 2
 xFD_sbc_absx endp
 
 xF9_sbc_absy proc
 	read_absy_rbx_pagepenalty
-	sbc_body 4, 2
+	sbc_body 1, 4, 2
 xF9_sbc_absy endp
 
 xE5_sbc_zp proc
 	read_zp_rbx
-	sbc_body 3, 1
+	sbc_body 0, 3, 1
 xE5_sbc_zp endp
 
 xF5_sbc_zpx proc
 	read_zpx_rbx
-	sbc_body 4, 1
+	sbc_body 0, 4, 1
 xF5_sbc_zpx endp
 
 xF2_sbc_indzp proc
 	read_indzp_rbx
-	sbc_body 5, 1
+	sbc_body 1, 5, 1
 xF2_sbc_indzp endp
 
 xE1_sbc_indx proc
 	read_indx_rbx
-	sbc_body 6, 1
+	sbc_body 1, 6, 1
 xE1_sbc_indx endp
 
 xF1_sbc_indy proc
 	read_indy_rbx_pagepenalty
-	sbc_body 5, 1
+	sbc_body 1, 5, 1
 xF1_sbc_indy endp
 
 ;
