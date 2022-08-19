@@ -305,6 +305,17 @@ if checkvera eq 1
 endif
 endm
 
+step_vera_readwrite macro checkvera
+	local skip
+if checkvera eq 1
+	cmp r13b, 0
+	je skip
+	call vera_afterreadwrite
+
+	skip:
+endif
+endm
+
 write_sideeffects_rbx macro
 endm
 
@@ -769,14 +780,14 @@ x9E_stz_absx endp
 ; INC\DEC
 ;
 
-inc_body macro checkreadonly, clock, pc
+inc_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-
 
 	clc
 	inc byte ptr [rcx+rbx]
+
 	write_flags_r15_preservecarry
-	write_sideeffects_rbx
+	step_vera_readwrite checkvera
 
 skip:
 	add r14, clock
@@ -785,14 +796,13 @@ skip:
 	jmp opcode_done
 endm
 
-dec_body macro checkreadonly, clock, pc
+dec_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-
 
 	clc
 	dec byte ptr [rcx+rbx]
 	write_flags_r15_preservecarry
-	write_sideeffects_rbx
+	step_vera_readwrite checkvera
 
 skip:
 	add r14, clock
@@ -820,45 +830,45 @@ x3A_dec_a endp
 
 xEE_inc_abs proc
 	read_abs_rbx
-	inc_body 1, 6, 2
+	inc_body 1, 1, 6, 2
 xEE_inc_abs endp
 
 xCE_dec_abs proc
 	read_abs_rbx
-	dec_body 1, 6, 2
+	dec_body 1, 1, 6, 2
 xCE_dec_abs endp
 
 
 xFE_inc_absx proc
 	read_absx_rbx
-	inc_body 1, 7, 2
+	inc_body 1, 1, 7, 2
 xFE_inc_absx endp
 
 xDE_dec_absx proc
 	read_absx_rbx
-	dec_body 1, 7, 2
+	dec_body 1, 1, 7, 2
 xDE_dec_absx endp
 
 
 xE6_inc_zp proc
 	read_zp_rbx
-	inc_body 0, 5, 1
+	inc_body 0, 0, 5, 1
 xE6_inc_zp endp
 
 xC6_dec_zp proc
 	read_zp_rbx
-	dec_body 0, 5, 1
+	dec_body 0, 0, 5, 1
 xC6_dec_zp endp
 
 
 xF6_inc_zpx proc
 	read_zpx_rbx
-	inc_body 0, 6, 1
+	inc_body 0, 0, 6, 1
 xF6_inc_zpx endp
 
 xD6_dec_zpx proc
 	read_zpx_rbx
-	dec_body 0, 6, 1
+	dec_body 0, 0, 6, 1
 xD6_dec_zpx endp
 
 ;
@@ -3206,23 +3216,36 @@ dc_done:
 	ret
 vera_init endp
 
-; rbx			address read from
+; rbx			address
 ; [rcx+rbx]		output location in main memory
 ; 
-; should only be called if data0\data1 is read from.
-vera_afterread proc
+; should only be called if data0\data1 is read\written.
 
+vera_dataaccess_body macro doublestep, write_value
 	cmp rbx, DATA0
 	jne step_data1
 
 	mov rsi, [rdx].state.data0_address
 	add rsi, [rdx].state.data0_step
 	and rsi, 1ffffh								; mask off high bits so we wrap
-	mov [rdx].state.data0_address, rsi
 
 	mov rax, [rdx].state.vram_ptr				; get value from vram
+
+	if write_value eq 1
+		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
+		mov byte ptr [rax+rsi], r13b			; store in vram
+	endif
+
+	if doublestep eq 1
+		add rsi, [rdx].state.data0_step			; perform second step
+		and rsi, 1ffffh							; mask off high bits so we wrap
+	endif
+
+	mov [rdx].state.data0_address, rsi
+
 	mov r13b, byte ptr [rax+rsi]
-	mov [rcx+rbx], r13b							; store in ram
+	mov [rcx+rbx], r13b						; store in ram
+
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
 
 	cmp [rdx].state.addrsel, 0
@@ -3247,11 +3270,24 @@ step_data1:
 	mov rsi, [rdx].state.data1_address
 	add rsi, [rdx].state.data1_step
 	and rsi, 1ffffh								; mask off high bits so we wrap
-	mov [rdx].state.data1_address, rsi
 
 	mov rax, [rdx].state.vram_ptr				; get value from vram
+
+	if write_value eq 1
+		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
+		mov byte ptr [rax+rsi], r13b			; store in vram
+	endif
+
+	if doublestep eq 1
+		add rsi, [rdx].state.data1_step
+		and rsi, 1ffffh							; mask off high bits so we wrap
+	endif
+
+	mov [rdx].state.data1_address, rsi
+
 	mov r13b, byte ptr [rax+rsi]
-	mov [rcx+rbx], r13b							; store in ram
+	mov [rcx+rbx], r13b						; store in ram
+
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
 
 	cmp [rdx].state.addrsel, 1
@@ -3270,14 +3306,19 @@ set_data1_address:
 	mov [rcx+ADDRx_H], sil
 
 	ret
+endm
 
+vera_afterread proc
+	vera_dataaccess_body 0, 0
 vera_afterread endp
 
-
+; eg inc, asl
 vera_afterreadwrite proc
+	vera_dataaccess_body 1, 1
 vera_afterreadwrite endp
 
 vera_afterwrite proc
+	vera_dataaccess_body 0, 1
 vera_afterwrite endp
 
 .data
