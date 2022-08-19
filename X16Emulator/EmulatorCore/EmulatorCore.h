@@ -66,6 +66,27 @@ extern "C"
 		bool layer0Enable;
 		bool layer1Enable;
 
+		uint32_t layer0_mapAddress;
+		uint32_t layer0_tileAddress;
+		uint16_t layer0_hscroll;
+		uint16_t layer0_vscroll;
+		uint8_t layer0_mapHeight;
+		uint8_t layer0_mapWidth;
+		bool layer0_bitmapMode;
+		uint8_t layer0_colourDepth;
+		uint8_t layer0_tileHeight;
+		uint8_t layer0_tileWidth;
+
+		uint32_t layer1_mapAddress;
+		uint32_t layer1_tileAddress;
+		uint16_t layer1_hscroll;
+		uint16_t layer1_vscroll;
+		uint8_t layer1_mapHeight;
+		uint8_t layer1_mapWidth;
+		bool layer1_bitmapMode;
+		uint8_t layer1_colourDepth;
+		uint8_t layer1_tileHeight;
+		uint8_t layer1_tileWidth;
 	};
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);

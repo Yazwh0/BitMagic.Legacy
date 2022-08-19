@@ -59,6 +59,33 @@ state struct
 	layer0_enable			byte ?
 	layer1_enable			byte ?
 
+	_padding				byte ?
+
+	layer0_mapAddress		dword ?
+	layer0_tileAddress		dword ?
+	layer0_hscroll			word ?
+	layer0_vscroll			word ?
+	layer0_mapHeight		byte ?
+	layer0_mapWidth			byte ?
+	layer0_bitmapMode		byte ?
+	layer0_colourDepth		byte ?
+	layer0_tileHeight		byte ?
+	layer0_tileWidth		byte ?
+
+	_padding1				byte ?
+	_padding2				byte ?
+
+
+	layer1_mapAddress		dword ?
+	layer1_tileAddress		dword ?
+	layer1_hscroll			word ?
+	layer1_vscroll			word ?
+	layer1_mapHeight		byte ?
+	layer1_mapWidth			byte ?
+	layer1_bitmapMode		byte ?
+	layer1_colourDepth		byte ?
+	layer1_tileHeight		byte ?
+	layer1_tileWidth		byte ?
 state ends
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
@@ -3026,7 +3053,7 @@ addr_done:
 	or byte ptr [rcx+CTRL], r13b
 
 	;
-	; DC_xxx
+	; DC_xxx + DC_ Video Settings
 	;
 	test r13b, r13b
 	jnz set_dc1
@@ -3069,7 +3096,113 @@ set_dc1:
 
 dc_done:
 
+	;
+	; Layer 0
+	;
 
+	; Config
+
+	xor rax, rax
+	mov al, byte ptr [rdx].state.layer0_mapHeight
+	and rax, 00000011b
+	shl rax, 6
+	mov bl, byte ptr [rdx].state.layer0_mapWidth
+	and rbx, 00000011b
+	shl rbx, 4
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer0_bitmapMode
+	and rbx, 00000001b
+	shl rbx, 2
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer0_colourDepth
+	and rbx, 00000011b
+	or al, bl
+
+	mov byte ptr [rcx+L0_CONFIG], al
+
+	; Map Base Address
+	mov eax, dword ptr [rdx].state.layer0_mapAddress
+	shr rax, 9
+	mov byte ptr [rcx+L0_MAPBASE], al
+
+	; Tile Base Address + Tile Height\Width
+	mov eax, dword ptr [rdx].state.layer0_tileAddress
+	shr rax, 9
+	and rax, 11111100b
+	mov bl, byte ptr [rdx].state.layer0_tileHeight
+	and bl, 00000001b
+	shl bl, 1
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer0_tileWidth
+	and bl, 00000001b
+	or al, bl
+	mov byte ptr [rcx+L0_TILEBASE], al
+
+	; HScroll
+	mov ax, word ptr [rdx].state.layer0_hscroll
+	and ax, 0fffh
+	mov byte ptr [rcx+L0_HSCROLL_L], al
+	mov byte ptr [rcx+L0_HSCROLL_H], ah
+
+	; VScroll
+	mov ax, word ptr [rdx].state.layer0_vscroll
+	and ax, 0fffh
+	mov byte ptr [rcx+L0_VSCROLL_L], al
+	mov byte ptr [rcx+L0_VSCROLL_H], ah
+
+	;
+	; Layer 1
+	;
+
+	; Config
+
+	xor rax, rax
+	mov al, byte ptr [rdx].state.layer1_mapHeight
+	and rax, 00000011b
+	shl rax, 6
+	mov bl, byte ptr [rdx].state.layer1_mapWidth
+	and rbx, 00000011b
+	shl rbx, 4
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer1_bitmapMode
+	and rbx, 00000001b
+	shl rbx, 2
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer1_colourDepth
+	and rbx, 00000011b
+	or al, bl
+
+	mov byte ptr [rcx+L1_CONFIG], al
+
+	; Map Base Address
+	mov eax, dword ptr [rdx].state.layer1_mapAddress
+	shr rax, 9
+	mov byte ptr [rcx+L1_MAPBASE], al
+
+	; Tile Base Address + Tile Height\Width
+	mov eax, dword ptr [rdx].state.layer1_tileAddress
+	shr rax, 9
+	and rax, 11111100b
+	mov bl, byte ptr [rdx].state.layer1_tileHeight
+	and bl, 00000001b
+	shl bl, 1
+	or al, bl
+	mov bl, byte ptr [rdx].state.layer1_tileWidth
+	and bl, 00000001b
+	or al, bl
+	mov byte ptr [rcx+L1_TILEBASE], al
+
+	; HScroll
+	mov ax, word ptr [rdx].state.layer1_hscroll
+	and ax, 0fffh
+	mov byte ptr [rcx+L1_HSCROLL_L], al
+	mov byte ptr [rcx+L1_HSCROLL_H], ah
+
+	; VScroll
+	mov ax, word ptr [rdx].state.layer1_vscroll
+	and ax, 0fffh
+	mov byte ptr [rcx+L1_VSCROLL_L], al
+	mov byte ptr [rcx+L1_VSCROLL_H], ah
 
 
 	ret

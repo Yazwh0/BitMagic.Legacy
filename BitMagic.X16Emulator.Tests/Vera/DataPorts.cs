@@ -241,4 +241,434 @@ public class VeraInitialise
 
         Assert.AreEqual(0b01110000, emulator.Memory[0x9F29]);
     }
+
+    [TestMethod]
+    public async Task Layer0_Config_Height()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapHeight = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b11000000, emulator.Memory[0x9f2d]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_Width()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00110000, emulator.Memory[0x9f2d]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_Bitmap()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_BitMapMode = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00000100, emulator.Memory[0x9f2d]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_ColourDepth()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_ColourDepth = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00000011, emulator.Memory[0x9f2d]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_All()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_ColourDepth = 0x3;
+        emulator.Vera.Layer0_BitMapMode = true;
+        emulator.Vera.Layer0_MapWidth = 0x3;
+        emulator.Vera.Layer0_MapHeight = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b11110111, emulator.Memory[0x9f2d]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_MapAddress()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapAddress = 0x10000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9f2e]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_TileAddress()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_TileAddress = 0x10000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9f2f]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_TileAddress_Full()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_TileAddress = 0x1ffff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfc, emulator.Memory[0x9f2f]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_TileAddress_TileHeight()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_TileHeight = 1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x02, emulator.Memory[0x9f2f]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_TileAddress_TileWidth()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_TileWidth = 1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x01, emulator.Memory[0x9f2f]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_TileAddress_All()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_TileWidth = 1;
+        emulator.Vera.Layer0_TileHeight = 1;
+        emulator.Vera.Layer0_TileAddress = 0x1ffff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9f2f]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_HScroll()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_HScroll = 0xffed;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xed, emulator.Memory[0x9f30]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9f31]);
+    }
+
+    [TestMethod]
+    public async Task Layer0_VScroll()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_VScroll = 0xffed;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xed, emulator.Memory[0x9f32]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9f33]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_Height()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapHeight = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b11000000, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_Width()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00110000, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_Bitmap()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_BitMapMode = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00000100, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_ColourDepth()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_ColourDepth = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b00000011, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_All()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_ColourDepth = 0x3;
+        emulator.Vera.Layer1_BitMapMode = true;
+        emulator.Vera.Layer1_MapWidth = 0x3;
+        emulator.Vera.Layer1_MapHeight = 0x3;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0b11110111, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_MapAddress()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapAddress = 0x10000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9f35]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_TileAddress()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_TileAddress = 0x10000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9f36]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_TileAddress_Full()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_TileAddress = 0x1ffff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfc, emulator.Memory[0x9f36]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_TileAddress_TileHeight()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_TileHeight = 1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x02, emulator.Memory[0x9f36]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_TileAddress_TileWidth()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_TileWidth = 1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x01, emulator.Memory[0x9f36]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_TileAddress_All()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_TileWidth = 1;
+        emulator.Vera.Layer1_TileHeight = 1;
+        emulator.Vera.Layer1_TileAddress = 0x1ffff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9f36]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_HScroll()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_HScroll = 0xffed;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xed, emulator.Memory[0x9f37]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9f38]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_VScroll()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_VScroll = 0xffed;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xed, emulator.Memory[0x9f39]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9f3a]);
+    }
 }

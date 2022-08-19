@@ -93,7 +93,6 @@ int main()
     state.addrsel = false;
     state.dcsel = true;
     
-
     state.memory_ptr[0x810] = 0xad;
     state.memory_ptr[0x811] = 0x23;
     state.memory_ptr[0x812] = 0x9f;
@@ -103,8 +102,24 @@ int main()
     state.memory_ptr[0x816] = 0x00;
     state.memory_ptr[0x817] = 0x00;
 
-    state.memory_ptr[0x900] = 0x40;
+    state.layer1Enable = true;
+    
+    state.layer0_mapAddress = 0xff;
+    state.layer0_tileAddress = 0x1ffff;
+    state.layer0_mapHeight = 0;
+    state.layer0_mapWidth = 0;
+    state.layer0_bitmapMode = 0;
+    state.layer0_colourDepth = 0;
+    state.layer0_tileHeight = 0;
+    state.layer0_tileWidth = 0;
 
+    state.layer1_mapAddress = 0xef;
+    state.layer1_mapHeight = 0;
+    state.layer1_mapWidth = 0;
+    state.layer1_bitmapMode = 0;
+    state.layer1_colourDepth = 0;
+    state.layer1_tileHeight = 0;
+    state.layer1_tileWidth = 0;
 
     int x = fnEmulatorCode(& state);
 

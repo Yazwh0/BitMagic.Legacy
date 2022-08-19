@@ -48,6 +48,29 @@ public class Emulator : IDisposable
         public bool SpriteEnable { get => _emulator._state.SpriteEnable != 0; set => _emulator._state.SpriteEnable = (value ? (byte)1 : (byte)0); }
         public bool Layer0Enable { get => _emulator._state.Layer0Enable != 0; set => _emulator._state.Layer0Enable = (value ? (byte)1 : (byte)0); }
         public bool Layer1Enable { get => _emulator._state.Layer1Enable != 0; set => _emulator._state.Layer1Enable = (value ? (byte)1 : (byte)0); }
+
+        public byte Layer0_MapHeight { get => _emulator._state.Layer0_MapHeight; set => _emulator._state.Layer0_MapHeight = value; }
+        public byte Layer0_MapWidth { get => _emulator._state.Layer0_MapWidth; set => _emulator._state.Layer0_MapWidth = value; }
+        public bool Layer0_BitMapMode { get => _emulator._state.Layer0_BitMapMode != 0; set => _emulator._state.Layer0_BitMapMode = (value ? (byte)1 : (byte)0); }
+        public byte Layer0_ColourDepth { get => _emulator._state.Layer0_ColourDepth; set => _emulator._state.Layer0_ColourDepth = value; }
+        public UInt32 Layer0_MapAddress { get => _emulator._state.Layer0_MapAddress; set => _emulator._state.Layer0_MapAddress = value; }
+        public UInt32 Layer0_TileAddress { get => _emulator._state.Layer0_TileAddress; set => _emulator._state.Layer0_TileAddress = value; }
+        public byte Layer0_TileHeight { get => _emulator._state.Layer0_TileHeight; set => _emulator._state.Layer0_TileHeight = value; }
+        public byte Layer0_TileWidth { get => _emulator._state.Layer0_TileWidth; set => _emulator._state.Layer0_TileWidth = value; }
+        public ushort Layer0_HScroll { get => _emulator._state.Layer0_HScroll; set => _emulator._state.Layer0_HScroll = value; }
+        public ushort Layer0_VScroll { get => _emulator._state.Layer0_VScroll; set => _emulator._state.Layer0_VScroll = value; }
+
+        public byte Layer1_MapHeight { get => _emulator._state.Layer1_MapHeight; set => _emulator._state.Layer1_MapHeight = value; }
+        public byte Layer1_MapWidth { get => _emulator._state.Layer1_MapWidth; set => _emulator._state.Layer1_MapWidth = value; }
+        public bool Layer1_BitMapMode { get => _emulator._state.Layer1_BitMapMode != 0; set => _emulator._state.Layer1_BitMapMode = (value ? (byte)1 : (byte)0); }
+        public byte Layer1_ColourDepth { get => _emulator._state.Layer1_ColourDepth; set => _emulator._state.Layer1_ColourDepth = value; }
+        public UInt32 Layer1_MapAddress { get => _emulator._state.Layer1_MapAddress; set => _emulator._state.Layer1_MapAddress = value; }
+        public UInt32 Layer1_TileAddress { get => _emulator._state.Layer1_TileAddress; set => _emulator._state.Layer1_TileAddress = value; }
+        public byte Layer1_TileHeight { get => _emulator._state.Layer1_TileHeight; set => _emulator._state.Layer1_TileHeight = value; }
+        public byte Layer1_TileWidth { get => _emulator._state.Layer1_TileWidth; set => _emulator._state.Layer1_TileWidth = value; }
+        public ushort Layer1_HScroll { get => _emulator._state.Layer1_HScroll; set => _emulator._state.Layer1_HScroll = value; }
+        public ushort Layer1_VScroll { get => _emulator._state.Layer1_VScroll; set => _emulator._state.Layer1_VScroll = value; }
+
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -95,6 +118,34 @@ public class Emulator : IDisposable
         public byte SpriteEnable = 0;
         public byte Layer0Enable = 0;
         public byte Layer1Enable = 0;
+
+        // 1 byte of padding
+
+        // layer 0
+        public UInt32 Layer0_MapAddress = 0;
+        public UInt32 Layer0_TileAddress = 0;
+        public ushort Layer0_HScroll = 0;
+        public ushort Layer0_VScroll = 0;
+        public byte Layer0_MapHeight = 0;
+        public byte Layer0_MapWidth = 0;
+        public byte Layer0_BitMapMode = 0;
+        public byte Layer0_ColourDepth = 0;
+        public byte Layer0_TileHeight = 0;
+        public byte Layer0_TileWidth = 0;
+
+        // 2 bytes of padding
+
+        // layer 1
+        public UInt32 Layer1_MapAddress = 0;
+        public UInt32 Layer1_TileAddress = 0;
+        public ushort Layer1_HScroll = 0;
+        public ushort Layer1_VScroll = 0;
+        public byte Layer1_MapHeight = 0;
+        public byte Layer1_MapWidth = 0;
+        public byte Layer1_BitMapMode = 0;
+        public byte Layer1_ColourDepth = 0;
+        public byte Layer1_TileHeight = 0;
+        public byte Layer1_TileWidth = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
         {
