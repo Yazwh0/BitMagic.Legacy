@@ -260,8 +260,8 @@ asm_func ENDP
 ; Banked ram starts at 0xa000 (+0x2000)
 ; Banked rom starts at 0xc000 (+0x4000)
 ;
-read_banked_rbx macro
-	local done, banked_ram, check_vera
+read_banked_rbx macro check_allvera
+	local done, banked_ram, check_vera, vera_skip
 
 	cmp rbx, 0a000h
 	jl check_vera
@@ -286,14 +286,24 @@ banked_ram:
 	jmp done
 
 check_vera:
-	lea rax, [rbx-09f23h]				; get value to check
-	cmp rax, 1
-	setbe r13b							; store if we need to let vera know data has changed
+	if check_allvera eq 1
+		xor r13, r13
+		lea rax, [rbx-09f20h]				; set to bottom of range we're interested in
+		cmp rax, 20h						; check how far we want
+		ja vera_skip
+		mov r13, rax
+		vera_skip:
+	else
+		lea rax, [rbx-09f23h]				; get value to check
+		cmp rax, 1
+		setbe r13b							; store if we need to let vera know data has changed
+	endif
 
 done:
 
 endm
 
+; Expects r13b to be set only if one of the Data registers have been read from.
 step_vera_read macro checkvera
 	local skip
 if checkvera eq 1
@@ -327,6 +337,8 @@ if checkvera eq 1
 endif
 endm
 
+
+
 ; -----------------------------
 ; Read Only Memory
 ; -----------------------------
@@ -358,15 +370,15 @@ read_zpy_rbx macro
 	add bl, r10b		; Add Y
 endm
 
-read_abs_rbx macro
+read_abs_rbx macro check_allvera
 	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
-read_absx_rbx macro
+read_absx_rbx macro check_allvera
 	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bx, r9w			; Add X
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
 read_absx_rbx_pagepenalty macro
@@ -377,13 +389,13 @@ read_absx_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
-	read_banked_rbx
+	read_banked_rbx 0
 endm
 
-read_absy_rbx macro
+read_absy_rbx macro check_allvera
 	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
 	add bx, r10w		; Add Y
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
 read_absy_rbx_pagepenalty macro
@@ -394,14 +406,14 @@ read_absy_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
-	read_banked_rbx
+	read_banked_rbx 0
 endm
 
-read_indx_rbx macro
+read_indx_rbx macro check_allvera
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	movzx rbx, word ptr [rcx+rbx]	; Address at location
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
 read_indy_rbx_pagepenalty macro
@@ -416,21 +428,21 @@ read_indy_rbx_pagepenalty macro
 	clc
 
 no_overflow:
-	read_banked_rbx
+	read_banked_rbx 0
 endm
 
-read_indy_rbx macro
+read_indy_rbx macro check_allvera
 	local no_overflow
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	movzx rbx, word ptr [rcx+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
-read_indzp_rbx macro
+read_indzp_rbx macro check_allvera
 	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
 	movzx rbx, word ptr [rcx+rbx]	; Address at location
-	read_banked_rbx
+	read_banked_rbx check_allvera
 endm
 
 ; -----------------------------
@@ -504,7 +516,7 @@ xB5_lda_zpx PROC
 xB5_lda_zpx endp
 
 xAD_lda_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	lda_body 1, 4, 2
 xAD_lda_abs endp
 
@@ -519,7 +531,7 @@ xB9_lda_absy proc
 xB9_lda_absy endp
 
 xA1_lda_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	lda_body 1 ,6, 1
 xA1_lda_indx endp
 
@@ -529,7 +541,7 @@ xB1_lda_indy proc
 xB1_lda_indy endp
 
 xB2_lda_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	lda_body 1, 5, 1
 xB2_lda_indzp endp
 
@@ -570,7 +582,7 @@ xB6_ldx_zpy PROC
 xB6_ldx_zpy endp
 
 xAE_ldx_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	ldx_body 1, 4, 2
 xAE_ldx_abs endp
 
@@ -615,7 +627,7 @@ xB4_ldy_zpx PROC
 xB4_ldy_zpx endp
 
 xAC_ldy_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	ldy_body 1, 4, 2
 xAC_ldy_abs endp
 
@@ -653,32 +665,32 @@ x95_sta_zpx proc
 x95_sta_zpx endp
 
 x8D_sta_abs proc
-	read_abs_rbx
+	read_abs_rbx 1
 	sta_body 1, 1, 4, 2
 x8D_sta_abs endp
 
 x9D_sta_absx proc
-	read_absx_rbx
+	read_absx_rbx 1
 	sta_body 1, 1, 5, 2
 x9D_sta_absx endp
 
 x99_sta_absy proc
-	read_absy_rbx
+	read_absy_rbx 1
 	sta_body 1, 1, 5, 2
 x99_sta_absy endp
 
 x81_sta_indx proc
-	read_indx_rbx
+	read_indx_rbx 1
 	sta_body 1, 1, 6, 1
 x81_sta_indx endp
 
 x91_sta_indy proc
-	read_indy_rbx
+	read_indy_rbx 1
 	sta_body 1, 1, 6, 1
 x91_sta_indy endp
 
 x92_sta_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 1
 	sta_body 1, 1, 5, 1
 x92_sta_indzp endp
 
@@ -710,7 +722,7 @@ x96_stx_zpy proc
 x96_stx_zpy endp
 
 x8E_stx_abs proc
-	read_abs_rbx
+	read_abs_rbx 1
 	stx_body 1, 1, 4, 2
 x8E_stx_abs endp
 
@@ -742,7 +754,7 @@ x94_sty_zpx proc
 x94_sty_zpx endp
 
 x8C_sty_abs proc
-	read_abs_rbx
+	read_abs_rbx 1
 	sty_body 1, 1, 4, 2
 x8C_sty_abs endp
 
@@ -774,12 +786,12 @@ x74_stz_zpx proc
 x74_stz_zpx endp
 
 x9C_stz_abs proc
-	read_abs_rbx
+	read_abs_rbx 1
 	stz_body 1, 1, 4, 2
 x9C_stz_abs endp
 
 x9E_stz_absx proc
-	read_absx_rbx
+	read_absx_rbx 1
 	stz_body 1, 1, 5, 2
 x9E_stz_absx endp
 
@@ -836,23 +848,23 @@ x3A_dec_a endp
 
 
 xEE_inc_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	inc_body 1, 1, 6, 2
 xEE_inc_abs endp
 
 xCE_dec_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	dec_body 1, 1, 6, 2
 xCE_dec_abs endp
 
 
 xFE_inc_absx proc
-	read_absx_rbx
+	read_absx_rbx 0
 	inc_body 1, 1, 7, 2
 xFE_inc_absx endp
 
 xDE_dec_absx proc
-	read_absx_rbx
+	read_absx_rbx 0
 	dec_body 1, 1, 7, 2
 xDE_dec_absx endp
 
@@ -1011,12 +1023,12 @@ x0A_asl_a proc
 x0A_asl_a endp
 
 x0E_asl_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	asl_body 1, 6, 2
 x0E_asl_abs endp
 
 x1E_asl_absx proc
-	read_absx_rbx
+	read_absx_rbx 0
 	asl_body 1, 7, 2
 x1E_asl_absx endp
 
@@ -1076,12 +1088,12 @@ x4A_lsr_a proc
 x4A_lsr_a endp
 
 x4E_lsr_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	lsr_body 1, 6, 2
 x4E_lsr_abs endp
 
 x5E_lsr_absx proc
-	read_absx_rbx
+	read_absx_rbx 0
 	lsr_body 1, 7, 2
 x5E_lsr_absx endp
 
@@ -1145,12 +1157,12 @@ x2A_rol_a proc
 x2A_rol_a endp
 
 x2E_rol_abs proc	
-	read_abs_rbx
+	read_abs_rbx 0
 	rol_body 1, 6, 2
 x2E_rol_abs endp
 
 x3E_rol_absx proc	
-	read_absx_rbx
+	read_absx_rbx 0
 	rol_body 1, 7, 2
 x3E_rol_absx endp
 
@@ -1221,12 +1233,12 @@ x6A_ror_a proc
 x6A_ror_a endp
 
 x6E_ror_abs proc	
-	read_abs_rbx
+	read_abs_rbx 0
 	ror_body 1, 6, 2
 x6E_ror_abs endp
 
 x7E_ror_absx proc	
-	read_absx_rbx
+	read_absx_rbx 0
 	ror_body 1, 7, 2
 x7E_ror_absx endp
 
@@ -1264,7 +1276,7 @@ x29_and_imm proc
 x29_and_imm endp
 
 x2D_and_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	and_body_end 1, 4, 2
 x2D_and_abs endp
 
@@ -1289,12 +1301,12 @@ x35_and_zpx proc
 x35_and_zpx endp
 
 x32_and_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	and_body_end 1, 5, 1
 x32_and_indzp endp
 
 x21_and_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	and_body_end 1, 6, 1
 x21_and_indx endp
 
@@ -1330,7 +1342,7 @@ x49_eor_imm proc
 x49_eor_imm endp
 
 x4D_eor_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	eor_body_end 1, 4, 2
 x4D_eor_abs endp
 
@@ -1355,12 +1367,12 @@ x55_eor_zpx proc
 x55_eor_zpx endp
 
 x52_eor_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	eor_body_end 1, 5, 1
 x52_eor_indzp endp
 
 x41_eor_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	eor_body_end 1, 6, 1
 x41_eor_indx endp
 
@@ -1393,7 +1405,7 @@ x09_ora_imm proc
 x09_ora_imm endp
 
 x0D_ora_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	ora_body 1, 4, 2
 x0D_ora_abs endp
 
@@ -1418,12 +1430,12 @@ x15_ora_zpx proc
 x15_ora_zpx endp
 
 x12_ora_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	ora_body 1 ,5, 1
 x12_ora_indzp endp
 
 x01_ora_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	ora_body 1, 6, 1
 x01_ora_indx endp
 
@@ -1464,7 +1476,7 @@ x69_adc_imm proc
 x69_adc_imm endp
 
 x6D_adc_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	adc_body 1, 4, 2
 x6D_adc_abs endp
 
@@ -1489,12 +1501,12 @@ x75_adc_zpx proc
 x75_adc_zpx endp
 
 x72_adc_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	adc_body 1, 5, 1
 x72_adc_indzp endp
 
 x61_adc_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	adc_body 1, 6, 1
 x61_adc_indx endp
 
@@ -1540,7 +1552,7 @@ xE9_sbc_imm proc
 xE9_sbc_imm endp
 
 xED_sbc_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	sbc_body 1, 4, 2
 xED_sbc_abs endp
 
@@ -1565,12 +1577,12 @@ xF5_sbc_zpx proc
 xF5_sbc_zpx endp
 
 xF2_sbc_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	sbc_body 1, 5, 1
 xF2_sbc_indzp endp
 
 xE1_sbc_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	sbc_body 1, 6, 1
 xE1_sbc_indx endp
 
@@ -1604,7 +1616,7 @@ xC9_cmp_imm proc
 xC9_cmp_imm endp
 
 xCD_cmp_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	cmp_body 1, 4, 2
 xCD_cmp_abs endp
 
@@ -1629,12 +1641,12 @@ xD5_cmp_zpx proc
 xD5_cmp_zpx endp
 
 xD2_cmp_indzp proc
-	read_indzp_rbx
+	read_indzp_rbx 0
 	cmp_body 1, 5, 1
 xD2_cmp_indzp endp
 
 xC1_sbc_indx proc
-	read_indx_rbx
+	read_indx_rbx 0
 	cmp_body 1, 6, 1
 xC1_sbc_indx endp
 
@@ -1658,7 +1670,7 @@ xE0_cmpx_imm proc
 xE0_cmpx_imm endp
 
 xEC_cmpx_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	cmpx_body 1, 4, 2
 xEC_cmpx_abs endp
 
@@ -1682,7 +1694,7 @@ xC0_cmpy_imm proc
 xC0_cmpy_imm endp
 
 xCC_cmpy_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	cmpy_body 1, 4, 2
 xCC_cmpy_abs endp
 
@@ -2349,12 +2361,12 @@ x89_bit_imm proc
 x89_bit_imm endp
 
 x2C_bit_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	bit_body 1, 4, 2
 x2C_bit_abs endp
 
 x3C_bit_absx proc
-	read_absx_rbx
+	read_absx_rbx 0
 	bit_body 1, 4, 2
 x3C_bit_absx endp
 
@@ -2373,7 +2385,7 @@ x34_bit_zpx endp
 ;
 
 x1C_trb_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	skipwrite_ifreadonly 1
 
 	mov rax, r8
@@ -2434,7 +2446,7 @@ x14_trb_zp endp
 ;
 
 x0C_tsb_abs proc
-	read_abs_rbx
+	read_abs_rbx 0
 	skipwrite_ifreadonly 1
 
 	or byte ptr [rcx+rbx], r8b
@@ -3324,8 +3336,52 @@ vera_afterreadwrite proc
 vera_afterreadwrite endp
 
 vera_afterwrite proc
-	vera_dataaccess_body 0, 1
+	lea rax, vera_registers
+	jmp qword ptr [rax + r13 * 8]
+	;vera_dataaccess_body 0, 1
 vera_afterwrite endp
+
+vera_update_notimplemented proc
+	ret
+vera_update_notimplemented endp
+
+vera_update_data proc
+	vera_dataaccess_body 0, 1
+vera_update_data endp
+
+vera_registers:
+	vera_9f20 qword vera_update_notimplemented
+	vera_9f21 qword vera_update_notimplemented
+	vera_9f22 qword vera_update_notimplemented
+	vera_9f23 qword vera_update_data
+	vera_9f24 qword vera_update_data
+	vera_9f25 qword vera_update_notimplemented
+	vera_9f26 qword vera_update_notimplemented
+	vera_9f27 qword vera_update_notimplemented
+	vera_9f28 qword vera_update_notimplemented
+	vera_9f29 qword vera_update_notimplemented
+	vera_9f2a qword vera_update_notimplemented
+	vera_9f2b qword vera_update_notimplemented
+	vera_9f2c qword vera_update_notimplemented
+	vera_9f2d qword vera_update_notimplemented
+	vera_9f2e qword vera_update_notimplemented
+	vera_9f2f qword vera_update_notimplemented
+	vera_9f30 qword vera_update_notimplemented
+	vera_9f31 qword vera_update_notimplemented
+	vera_9f32 qword vera_update_notimplemented
+	vera_9f33 qword vera_update_notimplemented
+	vera_9f34 qword vera_update_notimplemented
+	vera_9f35 qword vera_update_notimplemented
+	vera_9f36 qword vera_update_notimplemented
+	vera_9f37 qword vera_update_notimplemented
+	vera_9f38 qword vera_update_notimplemented
+	vera_9f39 qword vera_update_notimplemented
+	vera_9f3a qword vera_update_notimplemented
+	vera_9f3b qword vera_update_notimplemented
+	vera_9f3c qword vera_update_notimplemented
+	vera_9f3d qword vera_update_notimplemented
+	vera_9f3e qword vera_update_notimplemented
+	vera_9f3f qword vera_update_notimplemented
 
 .data
 

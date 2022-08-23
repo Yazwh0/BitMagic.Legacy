@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class SDX_Data0
+public class STX_Data0
 {
     [TestMethod]
     public async Task Abs_Step0()
