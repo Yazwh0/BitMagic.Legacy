@@ -3376,15 +3376,25 @@ vera_update_data endp
 
 vera_update_addrl proc	
 	mov r13b, byte ptr [rcx+rbx]
-	mov byte ptr [rdx].state.data0_address, r13b
+	cmp byte ptr [rdx].state.addrsel, 0
 
+	jnz write_data1
+	mov byte ptr [rdx].state.data0_address, r13b
+	ret
+write_data1:
+	mov byte ptr [rdx].state.data1_address, r13b
 	ret
 vera_update_addrl endp
 
 vera_update_addrm proc	
 	mov r13b, byte ptr [rcx+rbx]
-	mov byte ptr [rdx].state.data0_address + 1, r13b
+	cmp byte ptr [rdx].state.addrsel, 0
 
+	jnz write_data1
+	mov byte ptr [rdx].state.data0_address + 1, r13b
+	ret
+write_data1:
+	mov byte ptr [rdx].state.data1_address + 1, r13b
 	ret
 vera_update_addrm endp
 
