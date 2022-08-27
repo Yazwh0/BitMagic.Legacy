@@ -292,10 +292,10 @@ banked_ram:
 check_vera:
 	if check_allvera eq 1
 		xor r13, r13
-		lea rax, [rbx-09f20h]				; set to bottom of range we're interested in
-		cmp rax, 20h						; check how far we want
+		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
+		cmp rax, 21h						; check how far we want
 		ja vera_skip
-		mov r13, rax
+		mov r13, rax						; set r13 to the address in vera + 1.
 		vera_skip:
 	else
 		lea rax, [rbx-09f23h]				; get value to check
@@ -3349,15 +3349,18 @@ set_data1_address:
 endm
 
 vera_afterread proc
+	dec r13
 	vera_dataaccess_body 0, 0
 vera_afterread endp
 
 ; eg inc, asl
 vera_afterreadwrite proc
+	dec r13
 	vera_dataaccess_body 1, 1
 vera_afterreadwrite endp
 
 vera_afterwrite proc
+	dec r13
 	lea rax, vera_registers
 	jmp qword ptr [rax + r13 * 8]
 	;vera_dataaccess_body 0, 1
@@ -3371,9 +3374,23 @@ vera_update_data proc
 	vera_dataaccess_body 0, 1
 vera_update_data endp
 
+vera_update_addrl proc	
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.data0_address, r13b
+
+	ret
+vera_update_addrl endp
+
+vera_update_addrm proc	
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.data0_address + 1, r13b
+
+	ret
+vera_update_addrm endp
+
 vera_registers:
-	vera_9f20 qword vera_update_notimplemented
-	vera_9f21 qword vera_update_notimplemented
+	vera_9f20 qword vera_update_addrl
+	vera_9f21 qword vera_update_addrm
 	vera_9f22 qword vera_update_notimplemented
 	vera_9f23 qword vera_update_data
 	vera_9f24 qword vera_update_data
@@ -3411,8 +3428,5 @@ vera_step_table:
 	dw 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 40, 80, 160, 320, 640
 
 .code
-
-
-
 
 END
