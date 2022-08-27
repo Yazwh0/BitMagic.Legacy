@@ -261,4 +261,28 @@ public class Addr
         Assert.AreEqual(0x23, emulator.Memory[0x9F21]);
         Assert.AreEqual(0x58, emulator.Memory[0x9F22]);
     }
+
+    [TestMethod]
+    public async Task AddrH_Set_CorrectMask()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 2;
+        emulator.Vera.Data0_Address = 0x0000;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta ADDRx_H
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x10000, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0x00000, emulator.Vera.Data1_Address);
+
+        Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xf9, emulator.Memory[0x9F22]);
+    }
 }

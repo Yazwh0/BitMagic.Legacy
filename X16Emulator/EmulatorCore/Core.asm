@@ -3400,6 +3400,8 @@ vera_update_addrm endp
 
 vera_update_addrh proc	
 	mov r13b, byte ptr [rcx+rbx]						; value that has been written
+	and r13, 11111001b
+	mov byte ptr [rcx+rbx], r13b						; write back masked value
 	cmp byte ptr [rdx].state.addrsel, 0					; data 0 or 1?
 
 	jnz write_data1
@@ -3412,12 +3414,12 @@ vera_update_addrh proc
 
 	; Index
 	mov r12, r13
-	and r12, 11110000b	; mask off the index
-	shr r12, 3			; index in the table, not 4 as its a word
+	and r12, 11110000b									; mask off the index
+	shr r12, 3											; index in the table, not 4 as its a word
 	mov rax, vera_step_table
-	mov r12w, word ptr [rax + r12]		; get value from table
+	mov r12w, word ptr [rax + r12]						; get value from table
 
-	bt r13w, 3			; check DECR
+	bt r13w, 3											; check DECR
 	jnc no_decr_0
 	neg r12
 	
@@ -3434,12 +3436,12 @@ write_data1:
 
 	; Index
 	mov r12, r13
-	and r12, 11110000b	; mask off the index
-	shr r12, 3			; index in the table, not 4 as its a word
+	and r12, 11110000b									; mask off the index
+	shr r12, 3											; index in the table, not 4 as its a word
 	mov rax, vera_step_table
-	mov r12w, word ptr [rax + r12]		; get value from table
+	mov r12w, word ptr [rax + r12]						; get value from table
 
-	bt r13w, 3			; check DECR
+	bt r13w, 3											; check DECR
 	jnc no_decr_1
 	neg r12
 	
@@ -3448,6 +3450,76 @@ no_decr_1:
 	ret
 vera_update_addrh endp
 
+vera_update_ctrl proc
+	mov r13b, byte ptr [rcx+rbx]						; value that has been written
+
+	; Addrsel
+	xor r12, r12
+	bt r13w, 0
+	jc set_addr
+
+	mov byte ptr [rdx].state.addrsel, 0
+	vera_setaddress_0
+	jmp addr_done
+
+set_addr:
+	mov byte ptr [rdx].state.addrsel, 1
+	vera_setaddress_1
+
+addr_done:
+
+	xor rax, rax
+
+	bt r13w, 1
+	jc set_dcsel
+
+	mov byte ptr [rdx].state.dcsel, 0
+	
+	xor r12, r12
+	mov al, byte ptr [rdx].state.sprite_enable
+	shl rax, 6
+	mov r12b, byte ptr [rdx].state.layer1_enable
+	shl r12b, 5
+	or rax, r12
+	mov r12b, byte ptr [rdx].state.layer0_enable
+	shl rbx, 4
+	or rax, rbx
+	mov byte ptr [rcx+DC_VIDEO], al
+
+	mov al, byte ptr [rdx].state.dc_hscale
+	mov byte ptr [rcx+DC_HSCALE], al
+
+	mov al, byte ptr [rdx].state.dc_vscale
+	mov byte ptr [rcx+DC_VSCALE], al
+
+	mov al, byte ptr [rdx].state.dc_border
+	mov byte ptr [rcx+DC_BORDER], al
+
+	jmp dcsel_done
+set_dcsel:
+	mov byte ptr [rdx].state.dcsel, 1
+
+	mov al, byte ptr [rdx].state.dc_hstart
+	mov byte ptr [rcx+DC_HSTART], al
+
+	mov al, byte ptr [rdx].state.dc_hstop
+	mov byte ptr [rcx+DC_HSTOP], al
+
+	mov al, byte ptr [rdx].state.dc_vstart
+	mov byte ptr [rcx+DC_VSTART], al
+
+	mov al, byte ptr [rdx].state.dc_vstop
+	mov byte ptr [rcx+DC_VSTOP], al
+
+dcsel_done:
+
+	; Todo: handle reset
+
+	and r13b, 00000011b
+	mov byte ptr [rcx+rbx], r13b
+
+	ret
+vera_update_ctrl endp
 
 vera_registers:
 	vera_9f20 qword vera_update_addrl
@@ -3455,7 +3527,7 @@ vera_registers:
 	vera_9f22 qword vera_update_addrh
 	vera_9f23 qword vera_update_data
 	vera_9f24 qword vera_update_data
-	vera_9f25 qword vera_update_notimplemented
+	vera_9f25 qword vera_update_ctrl
 	vera_9f26 qword vera_update_notimplemented
 	vera_9f27 qword vera_update_notimplemented
 	vera_9f28 qword vera_update_notimplemented
