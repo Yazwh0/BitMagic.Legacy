@@ -3451,7 +3451,10 @@ no_decr_1:
 vera_update_addrh endp
 
 vera_update_ctrl proc
+	; todo: Handle reset
 	mov r13b, byte ptr [rcx+rbx]						; value that has been written
+	and r13b, 00000011b
+	mov byte ptr [rcx+rbx], r13b
 
 	; Addrsel
 	xor r12, r12
@@ -3482,8 +3485,8 @@ addr_done:
 	shl r12b, 5
 	or rax, r12
 	mov r12b, byte ptr [rdx].state.layer0_enable
-	shl rbx, 4
-	or rax, rbx
+	shl r12b, 4
+	or rax, r12
 	mov byte ptr [rcx+DC_VIDEO], al
 
 	mov al, byte ptr [rdx].state.dc_hscale
@@ -3495,7 +3498,7 @@ addr_done:
 	mov al, byte ptr [rdx].state.dc_border
 	mov byte ptr [rcx+DC_BORDER], al
 
-	jmp dcsel_done
+	ret
 set_dcsel:
 	mov byte ptr [rdx].state.dcsel, 1
 
@@ -3510,13 +3513,6 @@ set_dcsel:
 
 	mov al, byte ptr [rdx].state.dc_vstop
 	mov byte ptr [rcx+DC_VSTOP], al
-
-dcsel_done:
-
-	; Todo: handle reset
-
-	and r13b, 00000011b
-	mov byte ptr [rcx+rbx], r13b
 
 	ret
 vera_update_ctrl endp
