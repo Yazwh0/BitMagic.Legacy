@@ -3398,10 +3398,61 @@ write_data1:
 	ret
 vera_update_addrm endp
 
+vera_update_addrh proc	
+	mov r13b, byte ptr [rcx+rbx]						; value that has been written
+	cmp byte ptr [rdx].state.addrsel, 0					; data 0 or 1?
+
+	jnz write_data1
+
+	; Top address bit
+	xor r12, r12
+	bt r13w, 0											; check bit 0, if set then set r12b and move to data address
+	setc r12b
+	mov byte ptr [rdx].state.data0_address + 2, r12b
+
+	; Index
+	mov r12, r13
+	and r12, 11110000b	; mask off the index
+	shr r12, 3			; index in the table, not 4 as its a word
+	mov rax, vera_step_table
+	mov r12w, word ptr [rax + r12]		; get value from table
+
+	bt r13w, 3			; check DECR
+	jnc no_decr_0
+	neg r12
+	
+no_decr_0:
+	mov qword ptr [rdx].state.data0_step, r12
+	ret
+
+write_data1:
+	; Top address bit
+	xor r12, r12
+	bt r13w, 0											; check bit 0, if set then set r12b and move to data address
+	setc r12b
+	mov byte ptr [rdx].state.data1_address + 2, r12b
+
+	; Index
+	mov r12, r13
+	and r12, 11110000b	; mask off the index
+	shr r12, 3			; index in the table, not 4 as its a word
+	mov rax, vera_step_table
+	mov r12w, word ptr [rax + r12]		; get value from table
+
+	bt r13w, 3			; check DECR
+	jnc no_decr_1
+	neg r12
+	
+no_decr_1:
+	mov qword ptr [rdx].state.data1_step, r12
+	ret
+vera_update_addrh endp
+
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
-	vera_9f22 qword vera_update_notimplemented
+	vera_9f22 qword vera_update_addrh
 	vera_9f23 qword vera_update_data
 	vera_9f24 qword vera_update_data
 	vera_9f25 qword vera_update_notimplemented
