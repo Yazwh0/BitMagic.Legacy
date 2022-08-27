@@ -6,7 +6,34 @@ namespace BitMagic.X16Emulator.Tests;
 public class LDA_Data0
 {
     [TestMethod]
-    public async Task Read_Data0_Step1()
+    public async Task Abs_Data0_Step0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Vram[0x0000] = 0xee;
+        emulator.Vera.Vram[0x0001] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x00000, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xee, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Abs_Data0_Step1()
     {
         var emulator = new Emulator();
 
@@ -33,7 +60,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step2()
+    public async Task Abs_Data0_Step2()
     {
         var emulator = new Emulator();
 
@@ -60,7 +87,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step3()
+    public async Task Abs_Data0_Step3()
     {
         var emulator = new Emulator();
 
@@ -87,7 +114,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step4()
+    public async Task Abs_Data0_Step4()
     {
         var emulator = new Emulator();
 
@@ -114,7 +141,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step5()
+    public async Task Abs_Data0_Step5()
     {
         var emulator = new Emulator();
 
@@ -141,7 +168,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step6()
+    public async Task Abs_Data0_Step6()
     {
         var emulator = new Emulator();
 
@@ -168,7 +195,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step7()
+    public async Task Abs_Data0_Step7()
     {
         var emulator = new Emulator();
 
@@ -195,7 +222,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step8()
+    public async Task Abs_Data0_Step8()
     {
         var emulator = new Emulator();
 
@@ -222,7 +249,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step9()
+    public async Task Abs_Data0_Step9()
     {
         var emulator = new Emulator();
 
@@ -249,7 +276,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepA()
+    public async Task Abs_Data0_StepA()
     {
         var emulator = new Emulator();
 
@@ -276,7 +303,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepB()
+    public async Task Abs_Data0_StepB()
     {
         var emulator = new Emulator();
 
@@ -303,7 +330,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepC()
+    public async Task Abs_Data0_StepC()
     {
         var emulator = new Emulator();
 
@@ -330,7 +357,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepD()
+    public async Task Abs_Data0_StepD()
     {
         var emulator = new Emulator();
 
@@ -357,7 +384,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepE()
+    public async Task Abs_Data0_StepE()
     {
         var emulator = new Emulator();
 
@@ -384,7 +411,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_StepF()
+    public async Task Abs_Data0_StepF()
     {
         var emulator = new Emulator();
 
@@ -410,9 +437,8 @@ public class LDA_Data0
         Assert.AreEqual(0xf0, emulator.Memory[0x9F22]);
     }
 
-
     [TestMethod]
-    public async Task Read_Data0_Step_Minus1()
+    public async Task Abs_Data0_Step_Minus1()
     {
         var emulator = new Emulator();
 
@@ -439,7 +465,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus2()
+    public async Task Abs_Data0_Step_Minus2()
     {
         var emulator = new Emulator();
 
@@ -466,7 +492,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus3()
+    public async Task Abs_Data0_Step_Minus3()
     {
         var emulator = new Emulator();
 
@@ -493,7 +519,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus4()
+    public async Task Abs_Data0_Step_Minus4()
     {
         var emulator = new Emulator();
 
@@ -520,7 +546,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus5()
+    public async Task Abs_Data0_Step_Minus5()
     {
         var emulator = new Emulator();
 
@@ -547,7 +573,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus6()
+    public async Task Abs_Data0_Step_Minus6()
     {
         var emulator = new Emulator();
 
@@ -574,7 +600,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus7()
+    public async Task Abs_Data0_Step_Minus7()
     {
         var emulator = new Emulator();
 
@@ -601,7 +627,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus8()
+    public async Task Abs_Data0_Step_Minus8()
     {
         var emulator = new Emulator();
 
@@ -628,7 +654,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_Minus9()
+    public async Task Abs_Data0_Step_Minus9()
     {
         var emulator = new Emulator();
 
@@ -655,7 +681,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusA()
+    public async Task Abs_Data0_Step_MinusA()
     {
         var emulator = new Emulator();
 
@@ -682,7 +708,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusB()
+    public async Task Abs_Data0_Step_MinusB()
     {
         var emulator = new Emulator();
 
@@ -709,7 +735,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusC()
+    public async Task Abs_Data0_Step_MinusC()
     {
         var emulator = new Emulator();
 
@@ -736,7 +762,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusD()
+    public async Task Abs_Data0_Step_MinusD()
     {
         var emulator = new Emulator();
 
@@ -763,7 +789,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusE()
+    public async Task Abs_Data0_Step_MinusE()
     {
         var emulator = new Emulator();
 
@@ -790,7 +816,7 @@ public class LDA_Data0
     }
 
     [TestMethod]
-    public async Task Read_Data0_Step_MinusF()
+    public async Task Abs_Data0_Step_MinusF()
     {
         var emulator = new Emulator();
 
