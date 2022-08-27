@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BitMagic.X16Emulator.Tests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

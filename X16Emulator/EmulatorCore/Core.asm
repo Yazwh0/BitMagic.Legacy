@@ -13,6 +13,8 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
+includelib      msvcrtd
+
 .CODE
 
 state struct 
@@ -194,6 +196,8 @@ restore_registers macro
 	pop rbp
 	pop rbx
 endm
+
+public asm_func
 
 asm_func proc state_ptr:QWORD
 	mov rdx, rcx						; move state to rdx
@@ -2968,9 +2972,18 @@ opcode_FF	qword	xFF_bbs7	 	; $FF
 include vera_constants.inc
 
 vera_setaddress_0 macro 
-	local search_loop, match
+	local search_loop, match, not_negative
 
+	xor r12, r12						; use r12 to store if decr should be set
 	mov rax, [rdx].state.data0_step
+
+	test rax, rax
+	jns not_negative
+
+	mov r12b, 1000b
+	neg rax
+
+not_negative:
 
 	xor rbx, rbx
 	mov rcx, vera_step_table
@@ -2983,9 +2996,8 @@ search_loop:
 	jne search_loop
 
 match:
-	shr rbx, 1
-	and rbx, 0fh
-	shl rbx, 4+8+8 
+	and rbx, 11110b						; mask off index step (nof 0x0t as we x2 this value earlier)
+	shl rbx, 4+8+8-1					; shift to the correct position for the registers
 	mov rsi, [rdx].state.data0_address
 	or rsi, rbx
 	
@@ -2993,13 +3005,23 @@ match:
 	mov [rcx+ADDRx_L], si
 
 	shr rsi, 16
+	or sil, r12b						; or on the DECR bit
 	mov [rcx+ADDRx_H], sil
 endm
 
 vera_setaddress_1 macro 
 	local search_loop, match
 
+	xor r12, r12						; use r12 to store if decr should be set
 	mov rax, [rdx].state.data1_step
+
+	test rax, rax
+	jns not_negative
+
+	mov r12b, 1000b
+	neg rax
+
+not_negative:
 
 	xor rbx, rbx
 	mov rcx, vera_step_table
@@ -3012,9 +3034,8 @@ search_loop:
 	jne search_loop
 
 match:
-	shr rbx, 1
-	and rbx, 0fh
-	shl rbx, 4+8+8 
+	and rbx, 11110b
+	shl rbx, 4+8+8-1
 	mov rsi, [rdx].state.data1_address
 	or rsi, rbx
 	
@@ -3022,6 +3043,7 @@ match:
 	mov [rcx+ADDRx_L], si
 
 	shr rsi, 16
+	or sil, r12b						; or on the DECR bit
 	mov [rcx+ADDRx_H], sil
 endm
 
@@ -3273,7 +3295,7 @@ set_data0_address:
 
 	shr rsi, 16
 	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
-	and al, 0f0h
+	and al, 0f8h								; mask off what isnt changable
 	or sil, al
 	mov [rcx+ADDRx_H], sil
 
@@ -3304,7 +3326,7 @@ step_data1:
 	mov [rdx].state.data1_address, rsi
 
 	mov r13b, byte ptr [rax+rsi]
-	mov [rcx+rbx], r13b						; store in ram
+	mov [rcx+rbx], r13b							; store in ram
 
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
 
@@ -3319,7 +3341,7 @@ set_data1_address:
 
 	shr rsi, 16
 	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
-	and al, 0f0h
+	and al, 0f8h								; mask off what isnt changable
 	or sil, al
 	mov [rcx+ADDRx_H], sil
 

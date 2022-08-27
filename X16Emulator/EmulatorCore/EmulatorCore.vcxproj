@@ -74,6 +74,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>EmulatorCore</TargetName>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>EmulatorCode</TargetName>
@@ -140,6 +141,8 @@
       <AssembledCodeListingFile>$(IntDir)$(ProjectName).lst</AssembledCodeListingFile>
       <IncludePaths>
       </IncludePaths>
+      <MakeAllSymbolsPublic>true</MakeAllSymbolsPublic>
+      <ObjectFileName>%(FileName).obj</ObjectFileName>
     </MASM>
     <Manifest>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -193,7 +196,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="Core.asm" />
+    <CustomBuild Include="Core.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ml64 /c /Zi /Fo$(OutDir)\core.obj core.asm</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\core.obj</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Vera_Constants.inc">

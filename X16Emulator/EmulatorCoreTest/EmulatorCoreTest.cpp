@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
-#include "../EmulatorCore/EmulatorCore.h"
+#include <EmulatorCore.h>
 
 int main()
 {

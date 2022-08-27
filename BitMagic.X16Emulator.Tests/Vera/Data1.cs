@@ -3,15 +3,16 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class Data0_Initialise
+public class Data1_Initialise
 {
     [TestMethod]
     public async Task Initial_Data_Step2()
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 2;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 2;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -29,8 +30,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 4;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 4;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -48,8 +50,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 8;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 8;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -67,8 +70,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 16;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 16;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -86,8 +90,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 32;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 32;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -105,8 +110,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 64;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 64;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -124,8 +130,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 128;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 128;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -143,8 +150,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 256;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 256;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -162,8 +170,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 512;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 512;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -181,8 +190,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 40;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 40;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -200,8 +210,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 80;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 80;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -219,8 +230,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 160;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 160;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -238,8 +250,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 320;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 320;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -257,8 +270,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = 640;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = 640;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -277,8 +291,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -2;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -2;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -296,8 +311,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -4;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -4;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -315,8 +331,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -8;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -8;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -334,8 +351,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -16;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -16;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -353,8 +371,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -32;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -32;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -372,8 +391,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -64;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -64;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -391,8 +411,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -128;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -128;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -410,8 +431,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -256;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -256;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -429,8 +451,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -512;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -512;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -448,8 +471,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -40;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -40;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -467,8 +491,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -80;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -80;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -486,8 +511,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -160;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -160;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -505,8 +531,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -320;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -320;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -524,8 +551,9 @@ public class Data0_Initialise
     {
         var emulator = new Emulator();
 
-        emulator.Vera.Data0_Step = -640;
-        emulator.Vera.Data0_Address = 0x0000;
+        emulator.Vera.Data1_Step = -640;
+        emulator.Vera.Data1_Address = 0x0000;
+        emulator.Vera.AddrSel = true;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40

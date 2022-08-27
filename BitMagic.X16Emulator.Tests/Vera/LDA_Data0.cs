@@ -409,4 +409,410 @@ public class LDA_Data0
         Assert.AreEqual(0x02, emulator.Memory[0x9F21]);
         Assert.AreEqual(0xf0, emulator.Memory[0x9F22]);
     }
+
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -1;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x01] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 1, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x18, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus2()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -2;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x02] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 2, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xfe, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x28, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus3()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -4;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 4] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 4, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xfc, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x38, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus4()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -8;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x08] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x08, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xf8, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x48, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus5()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -16;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x10] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x10, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xf0, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x58, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus6()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -32;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x20] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x20, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xe0, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x68, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus7()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -64;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x40] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x40, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xc0, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x78, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus8()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -128;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x80] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x80, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x88, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_Minus9()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -256;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x100] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x100, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x98, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusA()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -512;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x200] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x200, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0e, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xa8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusB()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -40;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x28] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x28, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xd8, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xb8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusC()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -80;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x50] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x50, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xb0, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xc8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusD()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -160;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0xa0] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0xa0, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x60, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xd8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusE()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -320;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x140] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x140, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xc0, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0e, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xe8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Read_Data0_Step_MinusF()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -640;
+        emulator.Vera.Data0_Address = 0x1000;
+        emulator.Vera.Vram[0x1000] = 0xee;
+        emulator.Vera.Vram[0x1000 - 0x280] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1000 - 0x280, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x0d, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0xf8, emulator.Memory[0x9F22]);
+    }
 }

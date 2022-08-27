@@ -41,6 +41,41 @@ public class VeraInitialise
     }
 
     [TestMethod]
+    public async Task Data_HighAddress()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 1;
+        emulator.Vera.Data0_Address = 0x12345;
+
+        emulator.Vera.Data1_Step = 2;
+        emulator.Vera.Data1_Address = 0x1ffff;
+
+        emulator.Vera.Vram[0x12345] = 0xee;
+        emulator.Vera.Vram[0x1ffff] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xee, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x45, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x23, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x11, emulator.Memory[0x9F22]);
+
+        Assert.AreEqual(0x12345, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0x01, emulator.Vera.Data0_Step);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F24]);
+        Assert.AreEqual(0x1ffff, emulator.Vera.Data1_Address);
+        Assert.AreEqual(0x02, emulator.Vera.Data1_Step);
+    }
+
+
+    [TestMethod]
     public async Task CtrlSet()
     {
         var emulator = new Emulator();

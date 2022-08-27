@@ -5,24 +5,9 @@ namespace BitMagic.X16Emulator;
 
 public class Emulator : IDisposable
 {
-    [DllImport(@"..\..\..\..\x64\Debug\EmulatorCore.dll")]
+    [DllImport(@"..\..\..\..\X16Emulator\EmulatorCore\x64\Debug\EmulatorCore.dll")]
     private static extern int fnEmulatorCode(ref CpuState state);
 
-
-    //public class VeraState
-    //{
-    //    private VeraStateStruct _struct;
-
-    //    public VeraState(ref VeraStateStruct s)
-    //    {
-    //        _struct = s;
-    //    }
-
-    //    public ulong Data0_Address { get => _struct.Data0_Address; set => _struct.Data0_Address = value; }
-    //    public ulong Data1_Address { get => _struct.Data1_Address; set => _struct.Data1_Address = value; }
-    //    public ulong Data0_Step { get => _struct.Data0_Step ; set => _struct.Data0_Step = value; }
-    //    public ulong Data1_Step { get => _struct.Data1_Step; set => _struct.Data1_Step = value; }
-    //}
     public class VeraState
     {
         private readonly Emulator _emulator;
@@ -225,7 +210,6 @@ public class Emulator : IDisposable
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
     public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
-
 
     public EmulatorResult Emulate()
     {

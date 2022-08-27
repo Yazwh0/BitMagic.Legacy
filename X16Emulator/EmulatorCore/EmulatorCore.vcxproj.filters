@@ -40,12 +40,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="Core.asm">
-      <Filter>Source Files</Filter>
-    </MASM>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="Vera_Constants.inc">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Core.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>
