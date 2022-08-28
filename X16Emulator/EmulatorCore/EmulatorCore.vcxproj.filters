@@ -40,11 +40,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Vera_Constants.inc">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="Core.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Vera_Display.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Constants.inc">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="State.asm">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using BitMagic.Common;
 
 namespace BitMagic.X16Emulator;
 
@@ -69,6 +70,7 @@ public class Emulator : IDisposable
         public ulong MemoryPtr = 0;
         public ulong RomPtr = 0;
         public ulong RamBankPtr = 0;
+        public ulong DisplayPtr = 0;
         public ulong VramPtr = 0;
 
         public ulong Data0_Address = 0;
@@ -184,21 +186,23 @@ public class Emulator : IDisposable
     private readonly ulong _rom_ptr;
     private readonly ulong _ram_ptr;
     private readonly ulong _vram_ptr;
+    private readonly ulong _display_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
     private const int VramSize = 0x20000;
+    private const int DisplaySize = 640 * 480 * 4;
 
     public unsafe Emulator()
     {
         _memory_ptr = (ulong)NativeMemory.Alloc(RamSize);
         _rom_ptr = (ulong)NativeMemory.Alloc(RomSize);
         _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
+        _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
 
         _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr);
-
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -221,6 +225,7 @@ public class Emulator : IDisposable
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
     public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
+    public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
 
     public EmulatorResult Emulate()
     {
@@ -240,6 +245,7 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_memory_ptr);
         NativeMemory.Free((void*)_rom_ptr);
         NativeMemory.Free((void*)_ram_ptr);
+        NativeMemory.Free((void*)_display_ptr);
         NativeMemory.Free((void*)_vram_ptr);
     }
 }
