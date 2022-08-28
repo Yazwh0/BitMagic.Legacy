@@ -3550,6 +3550,46 @@ set_dcsel:
 	ret
 vera_update_ctrl endp
 
+vera_update_ien proc
+	mov r13b, byte ptr [rcx+rbx]
+	and r13b, 10001111b					; mask off unused bits
+	mov byte ptr [rcx+rbx], r13b
+
+	xor rax, rax
+	bt r13w, 0
+	setc al
+	mov byte ptr [rdx].state.interrupt_vsync, al
+	
+	xor rax, rax
+	bt r13w, 1
+	setc al
+	mov byte ptr [rdx].state.interrupt_line, al
+
+	xor rax, rax
+	bt r13w, 2
+	setc al
+	mov byte ptr [rdx].state.interrupt_spcol, al
+
+	xor rax, rax
+	bt r13w, 3
+	setc al
+	mov byte ptr [rdx].state.interrupt_aflow, al
+
+	xor rax, rax
+	bt r13w, 7
+	setc al
+	mov byte ptr [rdx].state.interrupt_linenum + 1, al
+
+	ret
+vera_update_ien endp
+
+vera_update_irqline_l proc
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.interrupt_linenum, r13b
+
+	ret
+vera_update_irqline_l endp
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
@@ -3557,9 +3597,9 @@ vera_registers:
 	vera_9f23 qword vera_update_data
 	vera_9f24 qword vera_update_data
 	vera_9f25 qword vera_update_ctrl
-	vera_9f26 qword vera_update_notimplemented
+	vera_9f26 qword vera_update_ien
 	vera_9f27 qword vera_update_notimplemented
-	vera_9f28 qword vera_update_notimplemented
+	vera_9f28 qword vera_update_irqline_l
 	vera_9f29 qword vera_update_notimplemented
 	vera_9f2a qword vera_update_notimplemented
 	vera_9f2b qword vera_update_notimplemented
