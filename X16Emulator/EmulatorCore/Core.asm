@@ -3657,6 +3657,112 @@ dcsel_set:
 	ret
 vera_update_9f2c endp
 
+vera_update_l0config proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	mov rax, r13
+	and rax, 00000011b
+	mov byte ptr [rdx].state.layer0_colourDepth, al
+
+	mov rax, r13
+	and rax, 00000100b
+	shr rax, 2
+	mov byte ptr [rdx].state.layer0_bitmapMode, al
+
+	mov rax, r13
+	and rax, 00110000b
+	shr rax, 4
+	mov byte ptr [rdx].state.layer0_mapWidth, al
+
+	mov rax, r13
+	and rax, 11000000b
+	shr rax, 6
+	mov byte ptr [rdx].state.layer0_mapHeight, al
+
+	ret
+vera_update_l0config endp
+
+vera_update_l0mapbase proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	shl r13, 9
+	mov dword ptr [rdx].state.layer0_mapAddress, r13d
+
+	ret
+vera_update_l0mapbase endp
+
+vera_update_l0tilebase proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	mov rax, r13
+	and rax, 00000001b
+	mov byte ptr [rdx].state.layer0_tileWidth, al
+
+	mov rax, r13
+	and rax, 00000010b
+	shr rax, 1
+	mov byte ptr [rdx].state.layer0_tileHeight, al
+
+	and r13, 11111100b
+	shl r13, 9											; not 11, as we're shifted by 2 bits already
+	mov dword ptr [rdx].state.layer0_tileAddress, r13d
+
+	ret
+vera_update_l0tilebase endp
+
+vera_update_l1config proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	mov rax, r13
+	and rax, 00000011b
+	mov byte ptr [rdx].state.layer1_colourDepth, al
+
+	mov rax, r13
+	and rax, 00000100b
+	shr rax, 2
+	mov byte ptr [rdx].state.layer1_bitmapMode, al
+
+	mov rax, r13
+	and rax, 00110000b
+	shr rax, 4
+	mov byte ptr [rdx].state.layer1_mapWidth, al
+
+	mov rax, r13
+	and rax, 11000000b
+	shr rax, 6
+	mov byte ptr [rdx].state.layer1_mapHeight, al
+
+	ret
+vera_update_l1config endp
+
+vera_update_l1mapbase proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	shl r13, 9
+	mov dword ptr [rdx].state.layer1_mapAddress, r13d
+
+	ret
+vera_update_l1mapbase endp
+
+vera_update_l1tilebase proc
+	movzx r13, byte ptr [rcx+rbx]
+
+	mov rax, r13
+	and rax, 00000001b
+	mov byte ptr [rdx].state.layer1_tileWidth, al
+
+	mov rax, r13
+	and rax, 00000010b
+	shr rax, 1
+	mov byte ptr [rdx].state.layer1_tileHeight, al
+
+	and r13, 11111100b
+	shl r13, 9											; not 11, as we're shifted by 2 bits already
+	mov dword ptr [rdx].state.layer1_tileAddress, r13d
+
+	ret
+vera_update_l1tilebase endp
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
@@ -3671,16 +3777,16 @@ vera_registers:
 	vera_9f2a qword vera_update_9f2a
 	vera_9f2b qword vera_update_9f2b
 	vera_9f2c qword vera_update_9f2c
-	vera_9f2d qword vera_update_notimplemented
-	vera_9f2e qword vera_update_notimplemented
-	vera_9f2f qword vera_update_notimplemented
+	vera_9f2d qword vera_update_l0config
+	vera_9f2e qword vera_update_l0mapbase
+	vera_9f2f qword vera_update_l0tilebase
 	vera_9f30 qword vera_update_notimplemented
 	vera_9f31 qword vera_update_notimplemented
 	vera_9f32 qword vera_update_notimplemented
 	vera_9f33 qword vera_update_notimplemented
-	vera_9f34 qword vera_update_notimplemented
-	vera_9f35 qword vera_update_notimplemented
-	vera_9f36 qword vera_update_notimplemented
+	vera_9f34 qword vera_update_l1config
+	vera_9f35 qword vera_update_l1mapbase
+	vera_9f36 qword vera_update_l1tilebase
 	vera_9f37 qword vera_update_notimplemented
 	vera_9f38 qword vera_update_notimplemented
 	vera_9f39 qword vera_update_notimplemented
