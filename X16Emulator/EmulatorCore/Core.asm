@@ -88,6 +88,12 @@ state struct
 	layer1_colourDepth		byte ?
 	layer1_tileHeight		byte ?
 	layer1_tileWidth		byte ?
+
+	interrupt_linenum		word ?
+	interrupt_aflow			byte ?
+	interrupt_spcol			byte ?
+	interrupt_line			byte ?
+	interrupt_vsync			byte ?
 state ends
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
@@ -3245,6 +3251,25 @@ dc_done:
 	mov byte ptr [rcx+L1_VSCROLL_L], al
 	mov byte ptr [rcx+L1_VSCROLL_H], ah
 
+	; Interrupt Flags
+	mov al, byte ptr [rdx].state.interrupt_vsync
+	mov bl, byte ptr [rdx].state.interrupt_line
+	shl bl, 1
+	or al, bl
+	mov bl, byte ptr [rdx].state.interrupt_spcol
+	shl bl, 2
+	or al, bl
+	mov bl, byte ptr [rdx].state.interrupt_aflow
+	shl bl, 3
+	or al, bl
+	mov bx, word ptr [rdx].state.interrupt_linenum
+
+	mov byte ptr [rcx+IRQLINE_L], bl
+
+	and bx, 100h
+	shr bx, 1
+	or al, bl
+	mov byte ptr [rcx+IEN], al
 
 	ret
 vera_init endp

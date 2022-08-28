@@ -706,4 +706,89 @@ public class VeraInitialise
         Assert.AreEqual(0xed, emulator.Memory[0x9f39]);
         Assert.AreEqual(0x0f, emulator.Memory[0x9f3a]);
     }
+
+    [TestMethod]
+    public async Task Interrupt_Vsync()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Interrupt_VSync = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x01, emulator.Memory[0x9f26]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9f28]);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_Line()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Interrupt_Line = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x02, emulator.Memory[0x9f26]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9f28]);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_SpCol()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Interrupt_SpCol = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x04, emulator.Memory[0x9f26]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9f28]);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_Aflow()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Interrupt_AFlow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x08, emulator.Memory[0x9f26]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9f28]);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_LineNum()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Interrupt_LineNum = 0x1ff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x80, emulator.Memory[0x9f26]);
+        Assert.AreEqual(0xff, emulator.Memory[0x9f28]);
+    }
 }

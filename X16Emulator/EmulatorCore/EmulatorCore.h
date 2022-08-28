@@ -87,6 +87,12 @@ extern "C"
 		uint8_t layer1_colourDepth;
 		uint8_t layer1_tileHeight;
 		uint8_t layer1_tileWidth;
+
+		uint16_t interrupt_linenum;
+		bool interrupt_aflow;
+		bool interrupt_spcol;
+		bool interrupt_line;
+		bool interrupt_vsync;
 	};
 
 	EMULATORCODE_API int fnEmulatorCode(state* state);

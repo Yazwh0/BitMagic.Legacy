@@ -56,6 +56,11 @@ public class Emulator : IDisposable
         public ushort Layer1_HScroll { get => _emulator._state.Layer1_HScroll; set => _emulator._state.Layer1_HScroll = value; }
         public ushort Layer1_VScroll { get => _emulator._state.Layer1_VScroll; set => _emulator._state.Layer1_VScroll = value; }
 
+        public ushort Interrupt_LineNum { get => _emulator._state.Interrupt_LineNum; set => _emulator._state.Interrupt_LineNum = value; }
+        public bool Interrupt_AFlow { get => _emulator._state.Interrupt_AFlow != 0; set => _emulator._state.Interrupt_AFlow = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_SpCol { get => _emulator._state.Interrupt_SpCol != 0; set => _emulator._state.Interrupt_SpCol = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Line { get => _emulator._state.Interrupt_Line != 0; set => _emulator._state.Interrupt_Line = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_VSync { get => _emulator._state.Interrupt_VSync != 0; set => _emulator._state.Interrupt_VSync = (value ? (byte)1 : (byte)0); }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -131,6 +136,12 @@ public class Emulator : IDisposable
         public byte Layer1_ColourDepth = 0;
         public byte Layer1_TileHeight = 0;
         public byte Layer1_TileWidth = 0;
+
+        public ushort Interrupt_LineNum = 0;
+        public byte Interrupt_AFlow = 0;
+        public byte Interrupt_SpCol = 0;
+        public byte Interrupt_Line = 0;
+        public byte Interrupt_VSync = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
         {
