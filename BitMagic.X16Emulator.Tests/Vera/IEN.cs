@@ -162,7 +162,6 @@ public class Ien
         Assert.AreEqual(0xff, emulator.Memory[0x9F28]);
     }
 
-
     [TestMethod]
     public async Task Set_IrqLineFull()
     {

@@ -26,10 +26,10 @@ public class Emulator : IDisposable
         public byte Dc_HScale { get => _emulator._state.Dc_HScale; set => _emulator._state.Dc_HScale = value; }
         public byte Dc_VScale { get => _emulator._state.Dc_VScale; set => _emulator._state.Dc_VScale = value; }
         public byte Dc_Border { get => _emulator._state.Dc_Border; set => _emulator._state.Dc_Border = value; }
-        public byte Dc_HStart { get => _emulator._state.Dc_HStart; set => _emulator._state.Dc_HStart = value; }
-        public byte Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
-        public byte Dc_VStart { get => _emulator._state.Dc_VStart; set => _emulator._state.Dc_VStart = value; }
-        public byte Dc_VStop { get => _emulator._state.Dc_VStop; set => _emulator._state.Dc_VStop = value; }
+        public ushort Dc_HStart { get => _emulator._state.Dc_HStart; set => _emulator._state.Dc_HStart = value; }
+        public ushort Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
+        public ushort Dc_VStart { get => _emulator._state.Dc_VStart; set => _emulator._state.Dc_VStart = value; }
+        public ushort Dc_VStop { get => _emulator._state.Dc_VStop; set => _emulator._state.Dc_VStop = value; }
         public bool SpriteEnable { get => _emulator._state.SpriteEnable != 0; set => _emulator._state.SpriteEnable = (value ? (byte)1 : (byte)0); }
         public bool Layer0Enable { get => _emulator._state.Layer0Enable != 0; set => _emulator._state.Layer0Enable = (value ? (byte)1 : (byte)0); }
         public bool Layer1Enable { get => _emulator._state.Layer1Enable != 0; set => _emulator._state.Layer1Enable = (value ? (byte)1 : (byte)0); }
@@ -100,10 +100,10 @@ public class Emulator : IDisposable
         public byte Dc_HScale = 0;
         public byte Dc_VScale = 0;
         public byte Dc_Border = 0;
-        public byte Dc_HStart = 0;
-        public byte Dc_HStop = 0;
-        public byte Dc_VStart = 0;
-        public byte Dc_VStop = 0;
+        public ushort Dc_HStart = 0;
+        public ushort Dc_HStop = 0;
+        public ushort Dc_VStart = 0;
+        public ushort Dc_VStop = 0;
 
         public byte SpriteEnable = 0;
         public byte Layer0Enable = 0;

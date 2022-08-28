@@ -52,10 +52,10 @@ state struct
 	dc_hscale				byte ?
 	dc_vscale				byte ?
 	dc_border				byte ?
-	dc_hstart				byte ?
-	dc_hstop				byte ?
-	dc_vstart				byte ?
-	dc_vstop				byte ?
+	dc_hstart				word ?
+	dc_hstop				word ?
+	dc_vstart				word ?
+	dc_vstop				word ?
 
 	sprite_enable			byte ?
 	layer0_enable			byte ?
@@ -3556,27 +3556,27 @@ vera_update_ien proc
 	mov byte ptr [rcx+rbx], r13b
 
 	xor rax, rax
-	bt r13w, 0
+	bt r13, 0
 	setc al
 	mov byte ptr [rdx].state.interrupt_vsync, al
 	
 	xor rax, rax
-	bt r13w, 1
+	bt r13, 1
 	setc al
 	mov byte ptr [rdx].state.interrupt_line, al
 
 	xor rax, rax
-	bt r13w, 2
+	bt r13, 2
 	setc al
 	mov byte ptr [rdx].state.interrupt_spcol, al
 
 	xor rax, rax
-	bt r13w, 3
+	bt r13, 3
 	setc al
 	mov byte ptr [rdx].state.interrupt_aflow, al
 
 	xor rax, rax
-	bt r13w, 7
+	bt r13, 7
 	setc al
 	mov byte ptr [rdx].state.interrupt_linenum + 1, al
 
@@ -3590,6 +3590,73 @@ vera_update_irqline_l proc
 	ret
 vera_update_irqline_l endp
 
+vera_update_9f29 proc
+	movzx r13, byte ptr [rcx+rbx]
+	cmp byte ptr [rdx].state.dcsel, 0
+	jnz dcsel_set
+
+	and r13, 01110111b
+	mov byte ptr [rcx+rbx], r13b
+
+	xor rax, rax
+	bt r13, 4
+	setc al
+	mov byte ptr [rdx].state.layer0_enable, al 
+
+	xor rax, rax
+	bt r13, 5
+	setc al
+	mov byte ptr [rdx].state.layer1_enable, al 
+
+	xor rax, rax
+	bt r13, 6
+	setc al
+	mov byte ptr [rdx].state.sprite_enable, al 
+
+	ret
+dcsel_set:
+	shl r13, 2
+	mov word ptr [rdx].state.dc_hstart, r13w
+
+	ret
+vera_update_9f29 endp
+
+vera_update_9f2a proc
+	movzx r13, byte ptr [rcx+rbx]
+	cmp byte ptr [rdx].state.dcsel, 0
+	jnz dcsel_set
+	mov byte ptr [rdx].state.dc_hscale, r13b
+	ret
+dcsel_set:
+	shl r13, 2
+	mov word ptr [rdx].state.dc_hstop, r13w
+	ret
+vera_update_9f2a endp
+
+vera_update_9f2b proc
+	movzx r13, byte ptr [rcx+rbx]
+	cmp byte ptr [rdx].state.dcsel, 0
+	jnz dcsel_set
+	mov byte ptr [rdx].state.dc_vscale, r13b
+	ret
+dcsel_set:
+	shl r13, 1
+	mov word ptr [rdx].state.dc_vstart, r13w
+	ret
+vera_update_9f2b endp
+
+vera_update_9f2c proc
+	movzx r13, byte ptr [rcx+rbx]
+	cmp byte ptr [rdx].state.dcsel, 0
+	jnz dcsel_set
+	mov byte ptr [rdx].state.dc_border, r13b
+	ret
+dcsel_set:
+	shl r13, 1
+	mov word ptr [rdx].state.dc_vstop, r13w
+	ret
+vera_update_9f2c endp
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
@@ -3600,10 +3667,10 @@ vera_registers:
 	vera_9f26 qword vera_update_ien
 	vera_9f27 qword vera_update_notimplemented
 	vera_9f28 qword vera_update_irqline_l
-	vera_9f29 qword vera_update_notimplemented
-	vera_9f2a qword vera_update_notimplemented
-	vera_9f2b qword vera_update_notimplemented
-	vera_9f2c qword vera_update_notimplemented
+	vera_9f29 qword vera_update_9f29
+	vera_9f2a qword vera_update_9f2a
+	vera_9f2b qword vera_update_9f2b
+	vera_9f2c qword vera_update_9f2c
 	vera_9f2d qword vera_update_notimplemented
 	vera_9f2e qword vera_update_notimplemented
 	vera_9f2f qword vera_update_notimplemented
