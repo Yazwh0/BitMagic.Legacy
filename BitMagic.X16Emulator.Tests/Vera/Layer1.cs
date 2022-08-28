@@ -218,4 +218,84 @@ public class Layer1
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F36]);
     }
+
+    [TestMethod]
+    public async Task HScroll_L()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_HScroll = 0xf00;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L1_HSCROLL_L
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer1_HScroll);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F37]);
+    }
+
+    [TestMethod]
+    public async Task HScroll_H()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_HScroll = 0x0ff;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L1_HSCROLL_H
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer1_HScroll);
+
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F38]);
+    }
+
+    [TestMethod]
+    public async Task VScroll_L()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_VScroll = 0xf00;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L1_VSCROLL_L
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer1_VScroll);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F39]);
+    }
+
+    [TestMethod]
+    public async Task VScroll_H()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_VScroll = 0x0ff;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L1_VSCROLL_H
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer1_VScroll);
+
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F3a]);
+    }
 }

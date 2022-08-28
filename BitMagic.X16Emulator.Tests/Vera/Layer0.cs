@@ -197,7 +197,6 @@ public class Layer0
         Assert.AreEqual(0xfc, emulator.Memory[0x9F2f]);
     }
 
-
     [TestMethod]
     public async Task TileAll()
     {
@@ -217,5 +216,85 @@ public class Layer0
         Assert.AreEqual((UInt32)0x1f800, emulator.Vera.Layer0_TileAddress);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2f]);
+    }
+
+    [TestMethod]
+    public async Task HScroll_L()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_HScroll = 0xf00;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L0_HSCROLL_L
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer0_HScroll);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F30]);
+    }
+
+    [TestMethod]
+    public async Task HScroll_H()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_HScroll = 0x0ff;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L0_HSCROLL_H
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer0_HScroll);
+
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F31]);
+    }
+
+    [TestMethod]
+    public async Task VScroll_L()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_VScroll = 0xf00;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L0_VSCROLL_L
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer0_VScroll);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F32]);
+    }
+
+    [TestMethod]
+    public async Task VScroll_H()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_VScroll = 0x0ff;
+        emulator.A = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta L0_VSCROLL_H
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xfff, emulator.Vera.Layer0_VScroll);
+
+        Assert.AreEqual(0x0f, emulator.Memory[0x9F33]);
     }
 }

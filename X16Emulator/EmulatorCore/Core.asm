@@ -3657,6 +3657,10 @@ dcsel_set:
 	ret
 vera_update_9f2c endp
 
+;
+; Layer 0 Config
+;
+
 vera_update_l0config proc
 	movzx r13, byte ptr [rcx+rbx]
 
@@ -3709,6 +3713,41 @@ vera_update_l0tilebase proc
 
 	ret
 vera_update_l0tilebase endp
+
+vera_update_l0hscroll_l proc
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.layer0_hscroll, r13b
+
+	ret
+vera_update_l0hscroll_l endp
+
+vera_update_l0hscroll_h proc
+	mov r13b, byte ptr [rcx+rbx]
+	and r13b, 0fh
+	mov byte ptr [rcx+rbx], r13b
+	mov byte ptr [rdx].state.layer0_hscroll + 1, r13b
+
+	ret
+vera_update_l0hscroll_h endp
+
+vera_update_l0vscroll_l proc
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.layer0_vscroll, r13b
+
+	ret
+vera_update_l0vscroll_l endp
+
+vera_update_l0vscroll_h proc
+	mov r13b, byte ptr [rcx+rbx]
+	and r13b, 0fh
+	mov byte ptr [rcx+rbx], r13b
+	mov byte ptr [rdx].state.layer0_vscroll + 1, r13b
+
+	ret
+vera_update_l0vscroll_h endp
+;
+; Layer 1 Config
+;
 
 vera_update_l1config proc
 	movzx r13, byte ptr [rcx+rbx]
@@ -3763,6 +3802,38 @@ vera_update_l1tilebase proc
 	ret
 vera_update_l1tilebase endp
 
+vera_update_l1hscroll_l proc
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.layer1_hscroll, r13b
+
+	ret
+vera_update_l1hscroll_l endp
+
+vera_update_l1hscroll_h proc
+	mov r13b, byte ptr [rcx+rbx]
+	and r13b, 0fh
+	mov byte ptr [rcx+rbx], r13b
+	mov byte ptr [rdx].state.layer1_hscroll + 1, r13b
+
+	ret
+vera_update_l1hscroll_h endp
+
+vera_update_l1vscroll_l proc
+	mov r13b, byte ptr [rcx+rbx]
+	mov byte ptr [rdx].state.layer1_vscroll, r13b
+
+	ret
+vera_update_l1vscroll_l endp
+
+vera_update_l1vscroll_h proc
+	mov r13b, byte ptr [rcx+rbx]
+	and r13b, 0fh
+	mov byte ptr [rcx+rbx], r13b
+	mov byte ptr [rdx].state.layer1_vscroll + 1, r13b
+
+	ret
+vera_update_l1vscroll_h endp
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
@@ -3780,17 +3851,17 @@ vera_registers:
 	vera_9f2d qword vera_update_l0config
 	vera_9f2e qword vera_update_l0mapbase
 	vera_9f2f qword vera_update_l0tilebase
-	vera_9f30 qword vera_update_notimplemented
-	vera_9f31 qword vera_update_notimplemented
-	vera_9f32 qword vera_update_notimplemented
-	vera_9f33 qword vera_update_notimplemented
+	vera_9f30 qword vera_update_l0hscroll_l
+	vera_9f31 qword vera_update_l0hscroll_h
+	vera_9f32 qword vera_update_l0vscroll_l
+	vera_9f33 qword vera_update_l0vscroll_h
 	vera_9f34 qword vera_update_l1config
 	vera_9f35 qword vera_update_l1mapbase
 	vera_9f36 qword vera_update_l1tilebase
-	vera_9f37 qword vera_update_notimplemented
-	vera_9f38 qword vera_update_notimplemented
-	vera_9f39 qword vera_update_notimplemented
-	vera_9f3a qword vera_update_notimplemented
+	vera_9f37 qword vera_update_l1hscroll_l
+	vera_9f38 qword vera_update_l1hscroll_h
+	vera_9f39 qword vera_update_l1vscroll_l
+	vera_9f3a qword vera_update_l1vscroll_h
 	vera_9f3b qword vera_update_notimplemented
 	vera_9f3c qword vera_update_notimplemented
 	vera_9f3d qword vera_update_notimplemented
