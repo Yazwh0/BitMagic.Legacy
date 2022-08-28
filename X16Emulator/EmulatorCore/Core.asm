@@ -3120,15 +3120,19 @@ addr_done:
 set_dc1:
 
 	mov al, byte ptr [rdx].state.dc_hstart
+	shr ax, 2
 	mov byte ptr [rcx+DC_HSTART], al
 
 	mov al, byte ptr [rdx].state.dc_hstop
+	shr ax, 2
 	mov byte ptr [rcx+DC_HSTOP], al
 
 	mov al, byte ptr [rdx].state.dc_vstart
+	shr ax, 1
 	mov byte ptr [rcx+DC_VSTART], al
 
 	mov al, byte ptr [rdx].state.dc_vstop
+	shr ax, 1
 	mov byte ptr [rcx+DC_VSTOP], al
 
 dc_done:
@@ -3503,15 +3507,19 @@ set_dcsel:
 	mov byte ptr [rdx].state.dcsel, 1
 
 	mov al, byte ptr [rdx].state.dc_hstart
+	shr ax, 2
 	mov byte ptr [rcx+DC_HSTART], al
 
 	mov al, byte ptr [rdx].state.dc_hstop
+	shr ax, 2
 	mov byte ptr [rcx+DC_HSTOP], al
 
 	mov al, byte ptr [rdx].state.dc_vstart
+	shr ax, 1
 	mov byte ptr [rcx+DC_VSTART], al
 
 	mov al, byte ptr [rdx].state.dc_vstop
+	shr ax, 1
 	mov byte ptr [rcx+DC_VSTOP], al
 
 	ret

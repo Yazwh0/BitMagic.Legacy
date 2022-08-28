@@ -191,10 +191,10 @@ public class VeraInitialise
         emulator.Vera.Dc_HScale = 0x01; // not real values
         emulator.Vera.Dc_VScale = 0x02;
         emulator.Vera.Dc_Border = 0x03;
-        emulator.Vera.Dc_HStart = 0x04;
-        emulator.Vera.Dc_HStop = 0x05;
-        emulator.Vera.Dc_VStart = 0x06;
-        emulator.Vera.Dc_VStop = 0x07;
+        emulator.Vera.Dc_HStart = 0x44;
+        emulator.Vera.Dc_HStop = 0x55;
+        emulator.Vera.Dc_VStart = 0x66;
+        emulator.Vera.Dc_VStop = 0x77;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -202,10 +202,10 @@ public class VeraInitialise
                 stp",
                 emulator);
 
-        Assert.AreEqual(0x04, emulator.Memory[0x9F29]);
-        Assert.AreEqual(0x05, emulator.Memory[0x9F2A]);
-        Assert.AreEqual(0x06, emulator.Memory[0x9F2B]);
-        Assert.AreEqual(0x07, emulator.Memory[0x9F2C]);
+        Assert.AreEqual(0x11, emulator.Memory[0x9F29]);
+        Assert.AreEqual(0x15, emulator.Memory[0x9F2A]);
+        Assert.AreEqual(0x33, emulator.Memory[0x9F2B]);
+        Assert.AreEqual(0x3b, emulator.Memory[0x9F2C]);
     }
 
     [TestMethod]
