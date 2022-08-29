@@ -30,7 +30,7 @@ vera_render_display proc
 	push r10
 	push r11
 
-	mov rcx, [rdx].state.vram_ptr
+	mov rsi, [rdx].state.vram_ptr
 	mov rdi, [rdx].state.display_ptr
 
 	pop r11
@@ -44,7 +44,7 @@ vera_render_display endp
 
 vera_initialise_palette proc
 	xor rax, rax
-	mov rcx, [rdx].state.palette_ptr
+	mov rsi, [rdx].state.palette_ptr
 initloop:
 	
 

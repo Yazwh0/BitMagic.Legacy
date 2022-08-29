@@ -24,9 +24,9 @@ readonly_memory equ 0c000h - 1		; stop all writes above this location
 
 ; rax  : scratch
 ; rbx  : scratch
-; rcx  : current memory context
+; rcx  : scratch
 ; rdx  : state object 
-; rsi  : scratch
+; rsi  : current memory context
 ; rdi  : scratch
 ; r8b  : a
 ; r9b  : x
@@ -130,7 +130,7 @@ endm
 public asm_func
 
 asm_func proc state_ptr:QWORD
-	mov rdx, rcx						; move state to rdx
+	mov rdx, rsi						; move state to rdx
 
 	store_registers
 
@@ -149,7 +149,7 @@ asm_func proc state_ptr:QWORD
 	call vera_init
 
 main_loop::
-	mov rcx, [rdx].state.memory_ptr		; reset rcx so it points to memory
+	mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
 
 	; check for interrupt
 	cmp byte ptr [rdx].state.interrupt, 0
@@ -157,7 +157,7 @@ main_loop::
 
 next_opcode::
 
-	movzx rax, byte ptr [rcx+r11]	; Get opcode
+	movzx rax, byte ptr [rsi+r11]	; Get opcode
 	add r11w, 1						; PC+1
 	lea rbx, opcode_00				; start of jump table
 
@@ -192,8 +192,8 @@ asm_func ENDP
 ;
 
 ; 
-; rcx must start pointing to ram
-; Modify rcx to the correct start address when we add rbx
+; rsi must start pointing to ram
+; Modify rsi to the correct start address when we add rbx
 ;
 ; Banked ram starts at 0xa000 (+0x2000)
 ; Banked rom starts at 0xc000 (+0x4000)
@@ -207,20 +207,20 @@ read_banked_rbx macro check_allvera
 	cmp rbx, 0c000h
 	jl banked_ram
 
-	movzx rax, byte ptr [rcx+1]			; 0x0001 -- get bank
+	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; * 0x4000
 	mov rdi, [rdx].state.rom_ptr
-	lea rcx, [rdi - 0c000h + rax]		; can now add rbx to get value
+	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
 	jmp done
 
 banked_ram:
 
 	; banked ram
-	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
+	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
 	sal rax, 13							; * 0x2000
 	mov rdi, [rdx].state.rambank_ptr
-	lea rcx, [rdi - 0a000h + rax]		; can now add rbx to get value
+	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
 	jmp done
 
 check_vera:
@@ -295,33 +295,33 @@ endm
 ; and increment PC.
 
 read_zp_rbx macro
-	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rsi+r11]	; Get 8bit value in memory.
 endm
 
 read_zpx_rbx macro
-	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rsi+r11]	; Get 8bit value in memory.
 	add bl, r9b			; Add X
 endm
 
 read_zpy_rbx macro
-	movzx rbx, byte ptr [rcx+r11]	; Get 8bit value in memory.
+	movzx rbx, byte ptr [rsi+r11]	; Get 8bit value in memory.
 	add bl, r10b		; Add Y
 endm
 
 read_abs_rbx macro check_allvera
-	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	read_banked_rbx check_allvera
 endm
 
 read_absx_rbx macro check_allvera
-	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bx, r9w			; Add X
 	read_banked_rbx check_allvera
 endm
 
 read_absx_rbx_pagepenalty macro
 	local no_overflow
-	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bl, r9b			; Add X
 	jnc no_overflow
 	add bh, 1			; Add high bit
@@ -331,14 +331,14 @@ no_overflow:
 endm
 
 read_absy_rbx macro check_allvera
-	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bx, r10w		; Add Y
 	read_banked_rbx check_allvera
 endm
 
 read_absy_rbx_pagepenalty macro
 	local no_overflow
-	movzx rbx, word ptr [rcx+r11]	; Get 16bit value in memory.
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bl, r10b		; Add Y
 	jnc no_overflow
 	add bh, 1			; Add high bit
@@ -348,16 +348,16 @@ no_overflow:
 endm
 
 read_indx_rbx macro check_allvera
-	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
+	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
-	movzx rbx, word ptr [rcx+rbx]	; Address at location
+	movzx rbx, word ptr [rsi+rbx]	; Address at location
 	read_banked_rbx check_allvera
 endm
 
 read_indy_rbx_pagepenalty macro
 	local no_overflow
-	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	movzx rbx, word ptr [rcx+rbx]	; Address pointed at in ZP
+	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 
 	adc bl, r10b		; Add Y to the lower address byte
 	jnc no_overflow
@@ -371,15 +371,15 @@ endm
 
 read_indy_rbx macro check_allvera
 	local no_overflow
-	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	movzx rbx, word ptr [rcx+rbx]	; Address pointed at in ZP
+	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
 	read_banked_rbx check_allvera
 endm
 
 read_indzp_rbx macro check_allvera
-	movzx rbx, byte ptr [rcx+r11]	; Address in ZP
-	movzx rbx, word ptr [rcx+rbx]	; Address at location
+	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	movzx rbx, word ptr [rsi+rbx]	; Address at location
 	read_banked_rbx check_allvera
 endm
 
@@ -434,12 +434,12 @@ lda_body_end macro checkvera, clock, pc
 endm
 
 lda_body macro checkvera, clock, pc
-	mov r8b, [rcx+rbx]
+	mov r8b, [rsi+rbx]
 	lda_body_end checkvera, clock, pc
 endm
 
 xA9_lda_imm PROC
-	mov	r8b, [rcx+r11]
+	mov	r8b, [rsi+r11]
 	lda_body_end 0, 2, 1
 xA9_lda_imm ENDP
 
@@ -500,12 +500,12 @@ ldx_body_end macro checkvera, clock, pc
 endm
 
 ldx_body macro checkvera, clock, pc
-	mov r9b, [rcx+rbx]
+	mov r9b, [rsi+rbx]
 	ldx_body_end checkvera, clock, pc
 endm
 
 xA2_ldx_imm PROC
-	mov	r9b, [rcx+r11]
+	mov	r9b, [rsi+r11]
 	ldx_body_end 0, 2, 1
 xA2_ldx_imm ENDP
 
@@ -545,12 +545,12 @@ ldy_body_end macro checkvera, clock, pc
 endm
 
 ldy_body macro checkvera, clock, pc
-	mov r10b, [rcx+rbx]
+	mov r10b, [rsi+rbx]
 	ldy_body_end checkvera, clock, pc
 endm
 
 xA0_ldy_imm PROC
-	mov	r10b, [rcx+r11]
+	mov	r10b, [rsi+r11]
 	ldy_body_end 0, 2, 1
 xA0_ldy_imm ENDP
 
@@ -582,7 +582,7 @@ xBC_ldy_absx endp
 sta_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov byte ptr [rcx+rbx], r8b
+	mov byte ptr [rsi+rbx], r8b
 	step_vera_write checkvera
 
 skip:
@@ -639,7 +639,7 @@ x92_sta_indzp endp
 stx_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov byte ptr [rcx+rbx], r9b
+	mov byte ptr [rsi+rbx], r9b
 	step_vera_write checkvera
 	
 skip:
@@ -671,7 +671,7 @@ x8E_stx_abs endp
 sty_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov byte ptr [rcx+rbx], r10b
+	mov byte ptr [rsi+rbx], r10b
 	step_vera_write checkvera
 	
 skip:
@@ -703,7 +703,7 @@ x8C_sty_abs endp
 stz_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov byte ptr [rcx+rbx], 0
+	mov byte ptr [rsi+rbx], 0
 	step_vera_write checkvera
 
 skip:
@@ -741,7 +741,7 @@ inc_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	clc
-	inc byte ptr [rcx+rbx]
+	inc byte ptr [rsi+rbx]
 
 	write_flags_r15_preservecarry
 	step_vera_readwrite checkvera
@@ -757,7 +757,7 @@ dec_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	clc
-	dec byte ptr [rcx+rbx]
+	dec byte ptr [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_readwrite checkvera
 
@@ -925,7 +925,7 @@ asl_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
 	read_flags_rax
-	sal byte ptr [rcx+rbx],1		; shift
+	sal byte ptr [rsi+rbx],1		; shift
 
 	write_flags_r15	
 
@@ -938,7 +938,7 @@ if checkreadonly eq 1
 skip:
 
 	read_flags_rax
-	movzx r12, byte ptr [rcx+rbx]
+	movzx r12, byte ptr [rsi+rbx]
 	sal r12b, 1						; shift
 
 	write_flags_r15	
@@ -989,7 +989,7 @@ lsr_body macro checkreadonly, clock, pc
 	read_flags_rax
 
 
-	sar byte ptr [rcx+rbx],1	; shift
+	sar byte ptr [rsi+rbx],1	; shift
 
 	write_flags_r15	
 
@@ -1003,7 +1003,7 @@ skip:
 	read_flags_rax
 
 
-	movzx r12, byte ptr [rcx+rbx]
+	movzx r12, byte ptr [rsi+rbx]
 	sar r12b,1					; shift
 
 	write_flags_r15	
@@ -1056,9 +1056,9 @@ rol_body macro checkreadonly, clock, pc
 	and rdi, 0100h					; mask carry
 	ror rdi, 8						; move to lower byte
 
-	sal byte ptr [rcx+rbx], 1		; shift
+	sal byte ptr [rsi+rbx], 1		; shift
 	write_flags_r15
-	or byte ptr [rcx+rbx], dil		; add carry on
+	or byte ptr [rsi+rbx], dil		; add carry on
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1071,7 +1071,7 @@ skip:
 	and rdi, 0100h					; mask carry
 	ror rdi, 8						; move to lower byte
 
-	movzx r12, byte ptr [rcx+rbx]
+	movzx r12, byte ptr [rsi+rbx]
 	sal r12b, 1						; shift
 	write_flags_r15
 	
@@ -1125,9 +1125,9 @@ ror_body macro checkreadonly, clock, pc
 	and rdi, 0100h					; mask carry
 	ror rdi, 1						; move to high bit on lower byte
 
-	shr byte ptr [rcx+rbx], 1		; shift
+	shr byte ptr [rsi+rbx], 1		; shift
 	write_flags_r15
-	or byte ptr [rcx+rbx], dil		; add carry on
+	or byte ptr [rsi+rbx], dil		; add carry on
 	rol rdi, 8						; change carry to negative
 	or r15, rdi						; add on to flags
 	
@@ -1142,7 +1142,7 @@ skip:
 	and rdi, 0100h					; mask carry
 	ror rdi, 1						; move to high bit on lower byte
 
-	movzx r12, byte ptr [rcx+rbx]
+	movzx r12, byte ptr [rsi+rbx]
 	shr r12b, 1						; shift
 	write_flags_r15
 
@@ -1195,7 +1195,7 @@ x76_ror_zpx endp
 ;
 
 and_body_end macro checkvera, clock, pc
-	and r8b, [rcx+rbx]
+	and r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
 
@@ -1205,7 +1205,7 @@ and_body_end macro checkvera, clock, pc
 endm
 
 x29_and_imm proc
-	and r8b, [rcx+r11]
+	and r8b, [rsi+r11]
 	write_flags_r15_preservecarry
 
 	add r14, 2		; Clock
@@ -1259,7 +1259,7 @@ x31_and_indy endp
 
 eor_body_end macro checkvera, clock, pc
 
-	xor r8b, [rcx+rbx]
+	xor r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
 
@@ -1270,7 +1270,7 @@ eor_body_end macro checkvera, clock, pc
 endm
 
 x49_eor_imm proc
-	xor r8b, [rcx+r11]
+	xor r8b, [rsi+r11]
 	write_flags_r15_preservecarry
 
 	add r14, 2		; Clock
@@ -1324,7 +1324,7 @@ x51_eor_indy endp
 ;
 
 ora_body macro checkvera, clock, pc
-	or r8b, [rcx+rbx]
+	or r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
 	
@@ -1334,7 +1334,7 @@ ora_body macro checkvera, clock, pc
 endm
 
 x09_ora_imm proc
-	or r8b, [rcx+r11]
+	or r8b, [rsi+r11]
 	write_flags_r15_preservecarry
 
 	add r11w, 1		; PC
@@ -1400,7 +1400,7 @@ endm
 adc_body macro checkvera, clock, pc
 	read_flags_rax
 
-	adc r8b, [rcx+rbx]
+	adc r8b, [rsi+rbx]
 
 	adc_body_end checkvera, clock, pc
 endm
@@ -1408,7 +1408,7 @@ endm
 x69_adc_imm proc
 	read_flags_rax
 
-	adc r8b, [rcx+r11]
+	adc r8b, [rsi+r11]
 
 	adc_body_end 0, 2, 1
 x69_adc_imm endp
@@ -1473,7 +1473,7 @@ sbc_body macro checkvera, clock, pc
 	read_flags_rax
 
 	cmc
-	sbb r8b, [rcx+rbx]
+	sbb r8b, [rsi+rbx]
 	cmc
 
 	sbc_body_end checkvera, clock, pc
@@ -1483,7 +1483,7 @@ xE9_sbc_imm proc
 	read_flags_rax
 
 	cmc
-	sbb r8b, [rcx+r11]
+	sbb r8b, [rsi+r11]
 	cmc
 
 	sbc_body_end 0, 2, 1
@@ -1544,12 +1544,12 @@ cmp_body_end macro checkvera, clock, pc
 endm
 
 cmp_body macro checkvera, clock, pc
-	cmp r8b, [rcx+rbx]
+	cmp r8b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
 
 xC9_cmp_imm proc
-	cmp r8b, [rcx+r11]		
+	cmp r8b, [rsi+r11]		
 	cmp_body_end 0, 2, 1
 xC9_cmp_imm endp
 
@@ -1598,12 +1598,12 @@ xD1_cmp_indy endp
 ;
 
 cmpx_body macro checkvera, clock, pc
-	cmp r9b, [rcx+rbx]
+	cmp r9b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
 
 xE0_cmpx_imm proc
-	cmp r9b, [rcx+r11]		
+	cmp r9b, [rsi+r11]		
 	cmp_body_end 0, 2, 1
 xE0_cmpx_imm endp
 
@@ -1622,12 +1622,12 @@ xE4_cmpx_zp endp
 ;
 
 cmpy_body macro checkvera, clock, pc
-	cmp r10b, [rcx+rbx]
+	cmp r10b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
 
 xC0_cmpy_imm proc
-	cmp r10b, [rcx+r11]		
+	cmp r10b, [rsi+r11]		
 	cmp_body_end 0, 2, 1
 xC0_cmpy_imm endp
 
@@ -1698,7 +1698,7 @@ xB8_clv endp
 bra_perform_jump macro
 	local page_change
 
-	movsx bx, byte ptr [rcx+r11]	; Get value at PC and turn it into a 2byte signed value
+	movsx bx, byte ptr [rsi+r11]	; Get value at PC and turn it into a 2byte signed value
 	add r11w, 1						; move PC on -- all jumps are relative
 	mov rax, r11					; store PC
 	add r11w, bx
@@ -1822,7 +1822,7 @@ x70_bvs endp
 bb_perform_jump macro
 	local page_change
 
-	movsx bx, byte ptr [rcx+r11+1]	; Get value at PC+1 and turn it into a 2byte signed value
+	movsx bx, byte ptr [rsi+r11+1]	; Get value at PC+1 and turn it into a 2byte signed value
 	add r11w, 1						; move PC on -- all jumps are relative
 	mov rax, r11					; store PC
 	add r11w, bx
@@ -1843,7 +1843,7 @@ endm
 
 bbr_body macro bitnumber
 	read_zp_rbx
-	movzx rax, byte ptr[rcx+rbx]
+	movzx rax, byte ptr[rsi+rbx]
 	bt ax, bitnumber
 	jnc branch
 	add r11w, 2						; move PC on
@@ -1892,7 +1892,7 @@ x7F_bbr7 endp
 
 bbs_body macro bitnumber
 	read_zp_rbx
-	movzx rax, byte ptr[rcx+rbx]
+	movzx rax, byte ptr[rsi+rbx]
 	bt ax, bitnumber
 	jc branch
 	add r11w, 2						; move PC on
@@ -1940,7 +1940,7 @@ xFF_bbs7 endp
 ;
 
 x4C_jmp_abs proc
-	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the PC
+	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the PC
 
 	add r14, 3
 	jmp opcode_done
@@ -1948,17 +1948,17 @@ x4C_jmp_abs proc
 x4C_jmp_abs endp
 
 x6C_jmp_ind proc
-	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
-	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the clock
+	mov r11w, [rsi+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
 
 	add r14, 5
 	jmp opcode_done
 x6C_jmp_ind endp
 
 x7C_jmp_absx proc
-	mov r11w, [rcx+r11]		; Get 16bit value in memory and set it to the clock
+	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the clock
 	add	r11, r9				; Add on X
-	mov r11w, [rcx+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+	mov r11w, [rsi+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
 
 	add r14, 6
 	jmp opcode_done
@@ -1973,14 +1973,14 @@ x20_jsr proc
 	add rax, 1
 
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov [rcx+rbx], al					; Put PC Low byte on stack
+	mov [rsi+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
-	mov [rcx+rbx], ah					; Put PC High byte on stack
+	mov [rsi+rbx], ah					; Put PC High byte on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
-	mov r11w, [rcx+r11]					; Get 16bit value in memory and set it to the PC
+	mov r11w, [rsi+r11]					; Get 16bit value in memory and set it to the PC
 
 	add r14, 6							; Add cycles
 
@@ -1990,9 +1990,9 @@ x20_jsr endp
 x60_rts proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	add bl, 1							; Move stack pointer on
-	mov ah, [rcx+rbx]					; Get PC High byte on stack
+	mov ah, [rsi+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
-	mov al, [rcx+rbx]					; Get PC Low byte on stack
+	mov al, [rsi+rbx]					; Get PC Low byte on stack
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
@@ -2011,7 +2011,7 @@ x60_rts endp
 x48_pha proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1	; Decrement stack pointer
-	mov [rcx+rbx], r8b					; Put A on stack
+	mov [rsi+rbx], r8b					; Put A on stack
 	
 	add r14, 3							; Add cycles
 
@@ -2023,7 +2023,7 @@ x68_pla proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
-	mov r8b, byte ptr [rcx+rbx] 		; Pull A from the stack
+	mov r8b, byte ptr [rsi+rbx] 		; Pull A from the stack
 	test r8b, r8b
 	write_flags_r15_preservecarry
 	
@@ -2034,7 +2034,7 @@ x68_pla endp
 
 xDA_phx proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov [rcx+rbx], r9b					; Put X on stack
+	mov [rsi+rbx], r9b					; Put X on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
@@ -2047,7 +2047,7 @@ xFA_plx proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
-	mov r9b, byte ptr [rcx+rbx] 		; Pull X from the stack
+	mov r9b, byte ptr [rsi+rbx] 		; Pull X from the stack
 	test r9b, r9b
 	write_flags_r15_preservecarry
 	
@@ -2058,7 +2058,7 @@ xFA_plx endp
 
 x5A_phy proc	
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov [rcx+rbx], r10b					; Put Y on stack
+	mov [rsi+rbx], r10b					; Put Y on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
 	add r14, 3							; Add cycles
@@ -2070,7 +2070,7 @@ x7A_ply proc
 	add byte ptr [rdx].state.stackpointer ,1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
-	mov r10b, byte ptr [rcx+rbx] 		; Pull Y from the stack
+	mov r10b, byte ptr [rsi+rbx] 		; Pull Y from the stack
 	test r10b, r10b
 	write_flags_r15_preservecarry
 	
@@ -2145,7 +2145,7 @@ endm
 get_status_register macro preservebx
 	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
 	add bl, 1							; Decrement stack pointer
-	movzx rax, byte ptr [rcx+rbx]			; Get status from stack
+	movzx rax, byte ptr [rsi+rbx]			; Get status from stack
 	
 	xor r15w, r15w
 
@@ -2203,27 +2203,27 @@ handle_interrupt proc
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
 	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
-	mov [rcx+rbx], al					; Put PC Low byte on stack
+	mov [rsi+rbx], al					; Put PC Low byte on stack
 	dec bl								; Move stack pointer on
-	mov [rcx+rbx], ah					; Put PC High byte on stack
+	mov [rsi+rbx], ah					; Put PC High byte on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	push bx
 	set_status_register_al
 	pop bx
 
-	mov [rcx+rbx], al					; Put P on stack
+	mov [rsi+rbx], al					; Put P on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
-	movzx rax, byte ptr [rcx+1]						; get rom bank
+	movzx rax, byte ptr [rsi+1]						; get rom bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; multiply by 0x4000
 	mov rdi, [rdx].state.rom_ptr
 	mov r11w, word ptr [rdi + rax + 03ffeh] ; get address at $fffe of current rom
 
-	;mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
+	;mov r11w, [rsi+0fffeh]				; set PC to address at $fffe
 
 	add r14, 7							; Clock 
 
@@ -2233,9 +2233,9 @@ handle_interrupt endp
 x40_rti proc
 	get_status_register	1				; set bx to stack pointer
 	inc bl							
-	mov ah, [rcx+rbx]					; high PC byte
+	mov ah, [rsi+rbx]					; high PC byte
 	inc bl
-	mov al, [rcx+rbx]					; low PC byte
+	mov al, [rsi+rbx]					; low PC byte
 	mov r11w, ax						; set PC
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
@@ -2253,7 +2253,7 @@ x08_php proc
 
 	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1		; Increment stack pointer
-	mov [rcx+rbx], al								; Put status on stack
+	mov [rsi+rbx], al								; Put status on stack
 	
 	add r14, 3										; Add cycles
 
@@ -2289,12 +2289,12 @@ bit_body_end macro checkvera, clock, pc
 endm
 
 bit_body macro checkvera, clock, pc
-	movzx rdi, byte ptr [rcx+rbx]
+	movzx rdi, byte ptr [rsi+rbx]
 	bit_body_end checkvera, clock, pc
 endm
 
 x89_bit_imm proc
-	movzx rdi, byte ptr [rcx+r11]
+	movzx rdi, byte ptr [rsi+r11]
 	bit_body_end 0, 3, 1
 x89_bit_imm endp
 
@@ -2328,7 +2328,7 @@ x1C_trb_abs proc
 
 	mov rax, r8
 	not al
-	and byte ptr [rcx+rbx], al
+	and byte ptr [rsi+rbx], al
 	jz set_zero
 	
 	step_vera_readwrite 1
@@ -2340,7 +2340,7 @@ skip:
 
 	mov rax, r8
 	not al
-	and al, byte ptr [rcx+rbx]
+	and al, byte ptr [rsi+rbx]
 	jz set_zero
 	
 	step_vera_readwrite 1
@@ -2363,7 +2363,7 @@ x14_trb_zp proc
 
 	mov rax, r8
 	not al
-	and byte ptr [rcx+rbx], al
+	and byte ptr [rsi+rbx], al
 	jz set_zero
 	
 	add r14, 5
@@ -2387,7 +2387,7 @@ x0C_tsb_abs proc
 	read_abs_rbx 0
 	skipwrite_ifreadonly 1
 
-	or byte ptr [rcx+rbx], r8b
+	or byte ptr [rsi+rbx], r8b
 	jz set_zero
 	
 	step_vera_readwrite 1
@@ -2397,7 +2397,7 @@ x0C_tsb_abs proc
 	
 skip:
 	mov rax, r8
-	or al, byte ptr [rcx+rbx]
+	or al, byte ptr [rsi+rbx]
 	jz set_zero
 	
 	step_vera_readwrite 1
@@ -2418,7 +2418,7 @@ x04_tsb_zp proc
 	read_zp_rbx
 
 
-	or byte ptr [rcx+rbx], r8b
+	or byte ptr [rsi+rbx], r8b
 
 	jz set_zero
 	
@@ -2442,7 +2442,7 @@ x04_tsb_zp endp
 rmb_body macro mask
 	read_zp_rbx
 
-	and byte ptr [rcx+rbx], mask
+	and byte ptr [rsi+rbx], mask
 	
 	add r14, 5
 	add r11w, 1
@@ -2488,7 +2488,7 @@ x77_rmb7 endp
 smb_body macro mask
 	read_zp_rbx
 
-	or byte ptr [rcx+rbx], mask
+	or byte ptr [rsi+rbx], mask
 	
 	add r14, 5
 	add r11w, 1
@@ -2580,7 +2580,7 @@ handle_write_sideeffect proc
 
 	jmp qword ptr [r13 + rax*8]		; jump to opcode
 
-	;vmovdqu8 zmm0, zmmword ptr [rcx+rambank_ptr]
+	;vmovdqu8 zmm0, zmmword ptr [rsi+rambank_ptr]
 	nop
 
 	ret
