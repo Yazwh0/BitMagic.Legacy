@@ -108,7 +108,7 @@ endm
 store_registers macro
 	push rbx
 	push rbp
-	push rdi
+	push rsi
 	push rdi
 	push r12
 	push r13
@@ -122,7 +122,7 @@ restore_registers macro
 	pop r13
 	pop r12
 	pop rdi
-	pop rdi
+	pop rsi
 	pop rbp
 	pop rbx
 endm
