@@ -72,6 +72,7 @@ public class Emulator : IDisposable
         public ulong RamBankPtr = 0;
         public ulong DisplayPtr = 0;
         public ulong VramPtr = 0;
+        public ulong PalettePtr = 0;
 
         public ulong Data0_Address = 0;
         public ulong Data1_Address = 0;
@@ -187,12 +188,14 @@ public class Emulator : IDisposable
     private readonly ulong _ram_ptr;
     private readonly ulong _vram_ptr;
     private readonly ulong _display_ptr;
+    private readonly ulong _palette_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
     private const int VramSize = 0x20000;
-    private const int DisplaySize = 640 * 480 * 4;
+    private const int DisplaySize = 640 * 480 * 4 * 6; // *6 for each layer
+    private const int PaletteSize = 256 * 4;
 
     public unsafe Emulator()
     {
@@ -201,6 +204,7 @@ public class Emulator : IDisposable
         _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
         _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
+        _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
 
         _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr);
 
@@ -216,7 +220,6 @@ public class Emulator : IDisposable
         for (var i = 0; i < VramSize; i++)
             vram_span[i] = 0;
 
-
         var rom_span = new Span<byte>((void*)_rom_ptr, RomSize);
         for (var i = 0; i < RomSize; i++)
             rom_span[i] = 0;
@@ -226,6 +229,7 @@ public class Emulator : IDisposable
     public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
     public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
+    public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
 
     public EmulatorResult Emulate()
     {
@@ -247,5 +251,6 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_ram_ptr);
         NativeMemory.Free((void*)_display_ptr);
         NativeMemory.Free((void*)_vram_ptr);
+        NativeMemory.Free((void*)_palette_ptr);
     }
 }

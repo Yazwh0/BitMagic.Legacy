@@ -109,7 +109,7 @@ store_registers macro
 	push rbx
 	push rbp
 	push rdi
-	push rsi
+	push rdi
 	push r12
 	push r13
 	push r14
@@ -121,7 +121,7 @@ restore_registers macro
 	pop r14
 	pop r13
 	pop r12
-	pop rsi
+	pop rdi
 	pop rdi
 	pop rbp
 	pop rbx
@@ -210,8 +210,8 @@ read_banked_rbx macro check_allvera
 	movzx rax, byte ptr [rcx+1]			; 0x0001 -- get bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; * 0x4000
-	mov rsi, [rdx].state.rom_ptr
-	lea rcx, [rsi - 0c000h + rax]		; can now add rbx to get value
+	mov rdi, [rdx].state.rom_ptr
+	lea rcx, [rdi - 0c000h + rax]		; can now add rbx to get value
 	jmp done
 
 banked_ram:
@@ -219,8 +219,8 @@ banked_ram:
 	; banked ram
 	movzx rax, byte ptr [rcx]			; 0x0000 -- get bank
 	sal rax, 13							; * 0x2000
-	mov rsi, [rdx].state.rambank_ptr
-	lea rcx, [rsi - 0a000h + rax]		; can now add rbx to get value
+	mov rdi, [rdx].state.rambank_ptr
+	lea rcx, [rdi - 0a000h + rax]		; can now add rbx to get value
 	jmp done
 
 check_vera:
@@ -1052,13 +1052,13 @@ x56_lsr_zpx endp
 rol_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 8						; move to lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 8						; move to lower byte
 
 	sal byte ptr [rcx+rbx], 1		; shift
 	write_flags_r15
-	or byte ptr [rcx+rbx], sil		; add carry on
+	or byte ptr [rcx+rbx], dil		; add carry on
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1067,9 +1067,9 @@ rol_body macro checkreadonly, clock, pc
 if checkreadonly eq 1
 skip:
 
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 8						; move to lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 8						; move to lower byte
 
 	movzx r12, byte ptr [rcx+rbx]
 	sal r12b, 1						; shift
@@ -1082,13 +1082,13 @@ endif
 endm
 
 x2A_rol_a proc
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 8						; move to lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 8						; move to lower byte
 
 	sal r8b,1						; shift
 	write_flags_r15
-	or r8b, sil						; add carry on
+	or r8b, dil						; add carry on
 
 	add r14, 2						; Clock
 	jmp opcode_done	
@@ -1121,15 +1121,15 @@ x36_rol_zpx endp
 ror_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
 
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 1						; move to high bit on lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 1						; move to high bit on lower byte
 
 	shr byte ptr [rcx+rbx], 1		; shift
 	write_flags_r15
-	or byte ptr [rcx+rbx], sil		; add carry on
-	rol rsi, 8						; change carry to negative
-	or r15, rsi						; add on to flags
+	or byte ptr [rcx+rbx], dil		; add carry on
+	rol rdi, 8						; change carry to negative
+	or r15, rdi						; add on to flags
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1138,16 +1138,16 @@ ror_body macro checkreadonly, clock, pc
 if checkreadonly eq 1
 skip:
 
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 1						; move to high bit on lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 1						; move to high bit on lower byte
 
 	movzx r12, byte ptr [rcx+rbx]
 	shr r12b, 1						; shift
 	write_flags_r15
 
-	rol rsi, 8						; change carry to negative
-	or r15, rsi						; add on to flags
+	rol rdi, 8						; change carry to negative
+	or r15, rdi						; add on to flags
 
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1156,15 +1156,15 @@ endif
 endm
 
 x6A_ror_a proc
-	mov rsi, r15					; save registers
-	and rsi, 0100h					; mask carry
-	ror rsi, 1						; move to high bit on lower byte
+	mov rdi, r15					; save registers
+	and rdi, 0100h					; mask carry
+	ror rdi, 1						; move to high bit on lower byte
 
 	shr r8b,1						; shift
 	write_flags_r15
-	or r8b, sil						; add carry on
-	rol rsi, 8						; change carry to negative
-	or r15, rsi						; add on to flags
+	or r8b, dil						; add carry on
+	rol rdi, 8						; change carry to negative
+	or r15, rdi						; add on to flags
 
 	add r14, 2						; Clock
 	jmp opcode_done	
@@ -1388,8 +1388,8 @@ x11_ora_indy endp
 adc_body_end macro checkvera, clock, pc
 	write_flags_r15
 
-	seto sil
-	mov byte ptr [rdx].state.flags_overflow, sil
+	seto dil
+	mov byte ptr [rdx].state.flags_overflow, dil
 	step_vera_read checkvera
 
 	add r14, clock			; Clock
@@ -1460,8 +1460,8 @@ x71_adc_indy endp
 sbc_body_end macro checkvera, clock, pc
 	write_flags_r15
 
-	seto sil
-	mov byte ptr [rdx].state.flags_overflow, sil
+	seto dil
+	mov byte ptr [rdx].state.flags_overflow, dil
 	step_vera_read checkvera
 
 	add r14, clock			; Clock
@@ -2220,8 +2220,8 @@ handle_interrupt proc
 	movzx rax, byte ptr [rcx+1]						; get rom bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; multiply by 0x4000
-	mov rsi, [rdx].state.rom_ptr
-	mov r11w, word ptr [rsi + rax + 03ffeh] ; get address at $fffe of current rom
+	mov rdi, [rdx].state.rom_ptr
+	mov r11w, word ptr [rdi + rax + 03ffeh] ; get address at $fffe of current rom
 
 	;mov r11w, [rcx+0fffeh]				; set PC to address at $fffe
 
@@ -2274,11 +2274,11 @@ x28_plp endp
 ;
 
 bit_body_end macro checkvera, clock, pc
-	and sil, r8b				; cant just test, as we need to check bit 6 for overflow.
-	test sil, sil				; sets zero and sign flags
+	and dil, r8b				; cant just test, as we need to check bit 6 for overflow.
+	test dil, dil				; sets zero and sign flags
 	write_flags_r15_preservecarry
 	
-	bt si, 6				; test overflow
+	bt di, 6				; test overflow
 	setc byte ptr [rdx].state.flags_overflow
 	step_vera_read checkvera
 	
@@ -2289,12 +2289,12 @@ bit_body_end macro checkvera, clock, pc
 endm
 
 bit_body macro checkvera, clock, pc
-	movzx rsi, byte ptr [rcx+rbx]
+	movzx rdi, byte ptr [rcx+rbx]
 	bit_body_end checkvera, clock, pc
 endm
 
 x89_bit_imm proc
-	movzx rsi, byte ptr [rcx+r11]
+	movzx rdi, byte ptr [rcx+r11]
 	bit_body_end 0, 3, 1
 x89_bit_imm endp
 

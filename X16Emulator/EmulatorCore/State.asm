@@ -7,6 +7,7 @@ state struct
 
 	; Vera
 	vram_ptr				qword ?
+	palette_ptr				qword ? 
 	data0_address			qword ?
 	data1_address			qword ?
 	data0_step				qword ?

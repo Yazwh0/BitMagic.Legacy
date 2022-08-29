@@ -9,8 +9,8 @@
 ; rbx  : scratch
 ; rcx  : current memory context
 ; rdx  : state object 
-; rsi  : scratch
 ; rdi  : scratch
+; rsi  : scratch
 ; r8b  : a
 ; r9b  : x
 ; r10b : y
@@ -51,15 +51,15 @@ search_loop:
 match:
 	and rbx, 11110b						; mask off index step (nof 0x0t as we x2 this value earlier)
 	shl rbx, 4+8+8-1					; shift to the correct position for the registers
-	mov rsi, [rdx].state.data0_address
-	or rsi, rbx
+	mov rdi, [rdx].state.data0_address
+	or rdi, rbx
 	
 	mov rcx, [rdx].state.memory_ptr
-	mov [rcx+ADDRx_L], si
+	mov [rcx+ADDRx_L], di
 
-	shr rsi, 16
-	or sil, r12b						; or on the DECR bit
-	mov [rcx+ADDRx_H], sil
+	shr rdi, 16
+	or dil, r12b						; or on the DECR bit
+	mov [rcx+ADDRx_H], dil
 endm
 
 vera_setaddress_1 macro 
@@ -89,15 +89,15 @@ search_loop:
 match:
 	and rbx, 11110b
 	shl rbx, 4+8+8-1
-	mov rsi, [rdx].state.data1_address
-	or rsi, rbx
+	mov rdi, [rdx].state.data1_address
+	or rdi, rbx
 	
 	mov rcx, [rdx].state.memory_ptr
-	mov [rcx+ADDRx_L], si
+	mov [rcx+ADDRx_L], di
 
-	shr rsi, 16
-	or sil, r12b						; or on the DECR bit
-	mov [rcx+ADDRx_H], sil
+	shr rdi, 16
+	or dil, r12b						; or on the DECR bit
+	mov [rcx+ADDRx_H], dil
 endm
 
 ; initialise colours etc
@@ -108,14 +108,14 @@ vera_init proc
 	; DATA0\1
 	;
 	mov rcx, [rdx].state.memory_ptr
-	mov rsi, [rdx].state.vram_ptr
+	mov rdi, [rdx].state.vram_ptr
 	
 	mov rax, [rdx].state.data0_address
-	mov bl, byte ptr [rsi+rax]
+	mov bl, byte ptr [rdi+rax]
 	mov byte ptr [rcx+DATA0], bl
 
 	mov rax, [rdx].state.data1_address
-	mov bl, byte ptr [rsi+rax]
+	mov bl, byte ptr [rdi+rax]
 	mov byte ptr [rcx+DATA1], bl
 
 	;
@@ -318,7 +318,7 @@ dc_done:
 	or al, bl
 	mov byte ptr [rcx+IEN], al
 
-	ret
+	jmp vera_initialise_palette
 vera_init endp
 
 ; rbx			address
@@ -333,29 +333,29 @@ vera_dataaccess_body macro doublestep, write_value
 	cmp rbx, DATA0
 	jne step_data1
 
-	mov rsi, [rdx].state.data0_address
+	mov rdi, [rdx].state.data0_address
 
 	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
-		mov byte ptr [rax+rsi], r13b			; store in vram
+		mov byte ptr [rax+rdi], r13b			; store in vram
 	endif
 
-	add rsi, [rdx].state.data0_step
-	and rsi, 1ffffh								; mask off high bits so we wrap
+	add rdi, [rdx].state.data0_step
+	and rdi, 1ffffh								; mask off high bits so we wrap
 
 	if doublestep eq 1
 		if write_value eq 1
 			mov r13b, byte ptr [rcx+rbx]			; get value that has been written
-			mov byte ptr [rax+rsi], r13b			; store in vram
+			mov byte ptr [rax+rdi], r13b			; store in vram
 		endif
 
-		add rsi, [rdx].state.data0_step			; perform second step
-		and rsi, 1ffffh							; mask off high bits so we wrap
+		add rdi, [rdx].state.data0_step			; perform second step
+		and rdi, 1ffffh							; mask off high bits so we wrap
 	endif
 
-	mov [rdx].state.data0_address, rsi
+	mov [rdx].state.data0_address, rdi
 
-	mov r13b, byte ptr [rax+rsi]
+	mov r13b, byte ptr [rax+rdi]
 	mov [rcx+rbx], r13b						; store in ram
 
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
@@ -367,41 +367,41 @@ vera_dataaccess_body macro doublestep, write_value
 set_data0_address:
 		
 	mov rcx, [rdx].state.memory_ptr
-	mov [rcx+ADDRx_L], si
+	mov [rcx+ADDRx_L], di
 
-	shr rsi, 16
+	shr rdi, 16
 	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
 	and al, 0f8h								; mask off what isnt changable
-	or sil, al
-	mov [rcx+ADDRx_H], sil
+	or dil, al
+	mov [rcx+ADDRx_H], dil
 
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
 	ret
 
 step_data1:
-	mov rsi, [rdx].state.data1_address
+	mov rdi, [rdx].state.data1_address
 
 	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rcx+rbx]			; get value that has been written
-		mov byte ptr [rax+rsi], r13b			; store in vram
+		mov byte ptr [rax+rdi], r13b			; store in vram
 	endif
 
-	add rsi, [rdx].state.data1_step
-	and rsi, 1ffffh								; mask off high bits so we wrap
+	add rdi, [rdx].state.data1_step
+	and rdi, 1ffffh								; mask off high bits so we wrap
 
 	if doublestep eq 1
 		if write_value eq 1
 			mov r13b, byte ptr [rcx+rbx]		; get value that has been written
-			mov byte ptr [rax+rsi], r13b		; store in vram
+			mov byte ptr [rax+rdi], r13b		; store in vram
 		endif
 
-		add rsi, [rdx].state.data1_step
-		and rsi, 1ffffh							; mask off high bits so we wrap
+		add rdi, [rdx].state.data1_step
+		and rdi, 1ffffh							; mask off high bits so we wrap
 	endif
 
-	mov [rdx].state.data1_address, rsi
+	mov [rdx].state.data1_address, rdi
 
-	mov r13b, byte ptr [rax+rsi]
+	mov r13b, byte ptr [rax+rdi]
 	mov [rcx+rbx], r13b							; store in ram
 
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
@@ -413,13 +413,13 @@ step_data1:
 set_data1_address:
 		
 	mov rcx, [rdx].state.memory_ptr
-	mov [rcx+ADDRx_L], si
+	mov [rcx+ADDRx_L], di
 
-	shr rsi, 16
+	shr rdi, 16
 	mov al, [rcx+ADDRx_H]						; Add on stepping nibble
 	and al, 0f8h								; mask off what isnt changable
-	or sil, al
-	mov [rcx+ADDRx_H], sil
+	or dil, al
+	mov [rcx+ADDRx_H], dil
 
 	ret
 endm
