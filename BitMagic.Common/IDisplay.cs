@@ -79,5 +79,7 @@ namespace BitMagic.Common
             B = b;
             A = a;
         }
+
+        public override string ToString() => $"R: ${R:X2} G:${G:X2} B: ${B:X2} A:${A:X2}";
     }
 }

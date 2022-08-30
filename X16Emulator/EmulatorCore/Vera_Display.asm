@@ -7,10 +7,10 @@ include State.asm
 ; rdx  : state object 
 ; rsi  : scratch
 ; rdi  : display
-; r8b  : scratch
-; r9b  : scratch
-; r10b : scratch
-; r11w : scratch
+; r8   : scratch
+; r9   : scratch
+; r10  : scratch
+; r11  : scratch
 ; r12  : scratch
 ; r13  : scratch
 ; r14  : Clock Ticks
@@ -42,16 +42,49 @@ vera_render_display proc
 
 vera_render_display endp
 
-vera_initialise_palette proc
+vera_initialise_palette proc	
 	xor rax, rax
 	mov rsi, [rdx].state.palette_ptr
-initloop:
-	
+	lea rcx, vera_default_palette
 
+create_argb_palette:
+	; need to go from xRBG
+	; to xxBBGGRR as its little endian
+	mov r9, 0ff000000h
+	mov word ptr bx, [rcx + rax * 2]
 
-	inc rax
-	cmp rax, 100b
-	jne initloop
+	; Red
+	mov r8, rbx
+	and r8, 0f00h
+	shr r8, 8
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	; Green
+	mov r8, rbx
+	and r8, 000fh
+	shl r8, 16
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	;Blue
+	mov r8, rbx
+	and r8, 00f0h
+	shl r8, 4
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	mov dword ptr [rsi + rax * 4], r9d
+
+	add rax, 1
+	cmp rax, 100h
+	jne create_argb_palette
 
 	ret
 vera_initialise_palette endp

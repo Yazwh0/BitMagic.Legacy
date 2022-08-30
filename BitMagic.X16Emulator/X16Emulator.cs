@@ -146,12 +146,14 @@ public class Emulator : IDisposable
         public byte Interrupt_Line = 0;
         public byte Interrupt_VSync = 0;
 
-        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram)
+        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, ulong display, ulong palette)
         {
             MemoryPtr = memory;
             RomPtr = rom;
             RamBankPtr = ramBank;
             VramPtr = vram;
+            DisplayPtr = display;
+            PalettePtr = palette;
         }
     }
 
@@ -206,7 +208,7 @@ public class Emulator : IDisposable
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr);
+        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)

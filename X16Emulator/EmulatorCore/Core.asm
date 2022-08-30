@@ -143,10 +143,10 @@ asm_func proc state_ptr:QWORD
 	je not_supported     ; no, LAHF is not supported
 
 	pop rdx
-	
-	read_state_obj
 
 	call vera_init
+	
+	read_state_obj
 
 main_loop::
 	mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory

@@ -791,4 +791,62 @@ public class VeraInitialise
         Assert.AreEqual(0x80, emulator.Memory[0x9f26]);
         Assert.AreEqual(0xff, emulator.Memory[0x9f28]);
     }
+
+    [TestMethod]
+    public async Task Palette_1()
+    {
+        var emulator = new Emulator();
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Common.PixelRgba(0xff, 0xff, 0xff), emulator.Palette[1]);
+    }
+
+
+    [TestMethod]
+    public async Task Palette_2()
+    {
+        var emulator = new Emulator();
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Common.PixelRgba(0x88, 0x00, 0x00), emulator.Palette[2]);
+    }
+
+
+    [TestMethod]
+    public async Task Palette_3()
+    {
+        var emulator = new Emulator();
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Common.PixelRgba(0xaa, 0xff, 0xee), emulator.Palette[3]);
+    }
+
+    [TestMethod]
+    public async Task Palette_255()
+    {
+        var emulator = new Emulator();
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Common.PixelRgba(0xff, 0x00, 0xbb), emulator.Palette[255]);
+    }
 }
