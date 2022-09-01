@@ -321,6 +321,69 @@ dc_done:
 	jmp vera_initialise_palette
 vera_init endp
 
+;
+; rdi			address
+; rax			base address
+; r13b			value
+;
+; Todo, add PSG\Sprite changes if reqd
+;
+vera_dataupdate_stuctures macro
+	local skip, xx_red
+
+	cmp rdi, 1fa00h
+	jb skip
+
+	cmp rdi, 1fbffh
+	ja skip
+
+	push rax
+
+	mov rsi, [rdx].state.palette_ptr
+	mov rax, rdi
+	sub rax, 01fa00h
+	and rax, 0fffeh							; take off the low bit, as we want the colour index
+	mov ecx, [rsi + rax * 2]
+
+	bt rdi, 0
+	jc xx_red
+
+	; r13 is GB
+	and rcx, 0ff0000ffh						; take off GB from current colour
+	
+	mov r12, r13
+	and r12, 00fh							; Isolate B
+	shl r12, 16
+	or rcx, r12								; or in first nibble
+	shl r12, 4
+	or rcx, r12								; or in second nibble
+	
+	mov r12, r13
+	and r12, 0f0h							; Isolate G
+	shl r12, 4		
+	or rcx, r12								; or in first nibble
+	shl r12, 4
+	or rcx, r12								; or in second nibble
+
+	mov dword ptr [rsi + rax * 2], ecx		; persist
+	pop rax
+	jmp skip
+xx_red:
+	; r13 is xR
+	
+	and rcx, 0ffffff00h						; take off R from current colour
+
+	mov r12, r13
+	and r12, 00fh
+	or rcx, r12								; or in first nibble
+	shl r12, 4
+	or rcx, r12								; or in second nibble
+
+	mov dword ptr [rsi + rax * 2], ecx
+	pop rax
+skip:
+endm
+
 ; rbx			address
 ; [rsi+rbx]		output location in main memory
 ; 
@@ -338,6 +401,7 @@ vera_dataaccess_body macro doublestep, write_value
 	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 		mov byte ptr [rax+rdi], r13b			; store in vram
+		vera_dataupdate_stuctures
 	endif
 
 	add rdi, [rdx].state.data0_step
@@ -347,6 +411,7 @@ vera_dataaccess_body macro doublestep, write_value
 		if write_value eq 1
 			mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 			mov byte ptr [rax+rdi], r13b			; store in vram
+			vera_dataupdate_stuctures
 		endif
 
 		add rdi, [rdx].state.data0_step			; perform second step
@@ -384,6 +449,7 @@ step_data1:
 	if write_value eq 1 and doublestep eq 0
 		mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 		mov byte ptr [rax+rdi], r13b			; store in vram
+		vera_dataupdate_stuctures
 	endif
 
 	add rdi, [rdx].state.data1_step
@@ -393,6 +459,7 @@ step_data1:
 		if write_value eq 1
 			mov r13b, byte ptr [rsi+rbx]		; get value that has been written
 			mov byte ptr [rax+rdi], r13b		; store in vram
+			vera_dataupdate_stuctures
 		endif
 
 		add rdi, [rdx].state.data1_step
