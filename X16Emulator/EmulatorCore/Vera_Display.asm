@@ -85,8 +85,13 @@ next_line:
 	xor r12, r12
 	add r13, 1	; no need to check for max lines, as we do that with the beam check.
 	cmp r13, SCREEN_HEIGHT
-	je new_screen
+	jne not_new_screen
 
+	xor r11, r11
+	xor r12, r12
+	xor r13, r13
+
+not_new_screen:
 	; check line IRQ
 	cmp byte ptr [rdx].state.interrupt_line, 0			; have a line interrupt?
 	je line_irqskip
@@ -121,13 +126,6 @@ line_irqskip:
 	mov byte ptr [rdx].state.interrupt, 1
 
 vblank_irqskip:
-
-	jmp loop_end
-
-new_screen:
-	xor r11, r11
-	xor r12, r12
-	xor r13, r13
 
 	jmp loop_end
 
