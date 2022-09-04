@@ -62,6 +62,13 @@ public class Emulator : IDisposable
         public bool Interrupt_SpCol { get => _emulator._state.Interrupt_SpCol != 0; set => _emulator._state.Interrupt_SpCol = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_Line { get => _emulator._state.Interrupt_Line != 0; set => _emulator._state.Interrupt_Line = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_VSync { get => _emulator._state.Interrupt_VSync != 0; set => _emulator._state.Interrupt_VSync = (value ? (byte)1 : (byte)0); }
+
+        public ushort Beam_X { get => _emulator._state.Beam_x; set => _emulator._state.Beam_x = value; }
+        public ushort Beam_Y { get => _emulator._state.Beam_y; set => _emulator._state.Beam_y = value; }
+
+        public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value? (byte)1 : (byte)0); }
+        public bool Interrupt_Vsync_Hit { get => _emulator._state.Interrupt_Vsync_Hit != 0; set => _emulator._state.Interrupt_Vsync_Hit = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_SpCol_Hit { get => _emulator._state.Interrupt_SpCol_Hit != 0; set => _emulator._state.Interrupt_SpCol_Hit = (value ? (byte)1 : (byte)0); }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -71,6 +78,7 @@ public class Emulator : IDisposable
         public ulong RomPtr = 0;
         public ulong RamBankPtr = 0;
         public ulong DisplayPtr = 0;
+
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
 
@@ -80,6 +88,7 @@ public class Emulator : IDisposable
         public ulong Data1_Step = 0;
 
         public ulong Clock = 0x00;
+        public ulong VeraClock = 0x00;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1ff;
@@ -145,6 +154,16 @@ public class Emulator : IDisposable
         public byte Interrupt_SpCol = 0;
         public byte Interrupt_Line = 0;
         public byte Interrupt_VSync = 0;
+
+        public byte Interrupt_Line_Hit = 0;
+        public byte Interrupt_Vsync_Hit = 0;
+        public byte Interrupt_SpCol_Hit = 0;
+
+        // 1 byte of padding
+
+        public UInt32 Beam_Position = 0;
+        public ushort Beam_x = 0;
+        public ushort Beam_y = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, ulong display, ulong palette)
         {

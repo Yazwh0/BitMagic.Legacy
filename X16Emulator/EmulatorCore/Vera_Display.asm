@@ -3,7 +3,7 @@ include State.asm
 
 ; rax  : scratch
 ; rbx  : scratch
-; rcx  : current memory context (vram)
+; rcx  : scratch
 ; rdx  : state object 
 ; rsi  : scratch
 ; rdi  : display
@@ -16,6 +16,8 @@ include State.asm
 ; r14  : Clock Ticks
 ; r15  : Flags
 
+; xmm0 : Vera Clock Rounding
+
 BACKGROUND	equ 0
 SPRITE_L1	equ 640*480*4
 LAYER0		equ 650*480*4*2
@@ -23,8 +25,14 @@ SPRITE_L2	equ 640*480*4*3
 LAYER1		equ 650*480*4*4
 SPRITE_L3	equ 640*480*4*5
 
+SCREEN_WIDTH	equ 800
+SCREEN_HEIGHT	equ 525
+SCREEN_DOTS		equ SCREEN_WIDTH * SCREEN_HEIGHT
+
+VBLANK			equ 480
 
 vera_render_display proc
+
 	push r8
 	push r9
 	push r10
@@ -33,12 +41,109 @@ vera_render_display proc
 	mov rsi, [rdx].state.vram_ptr
 	mov rdi, [rdx].state.display_ptr
 
+	mov r13, [rdx].state.vera_clock
+	mov rcx, r14
+	sub rcx, r13						; number of cpu ticks we need to process
+	mov [rdx].state.vera_clock, r14		; store vera clock
+	
+										; prevFloat + (end-start) * 3.15 
+	cvtsi2sd xmm1, rcx					; change count to double
+	mulsd xmm1, display_step			; multiply up by pixel to cpu ratio
+	addsd xmm1, xmm0					; add on previous count floating part
+
+										; prevFloat = pixels - (int)pixels : get floating part
+	cvttsd2si rcx, xmm1					; rcx now has the pixels to draw
+	cvtsi2sd xmm0, rcx					; convert back to remove floating part
+	subsd xmm1, xmm0					; xmm1 now contains floating part
+	movsd xmm0, xmm1					; store in xmm0 for next cycle
+	
+	comisd xmm0, display_reset			; check if we're under the reset
+	ja not_under_reset
+	pxor xmm0, xmm0
+
+not_under_reset:
+	mov r11d, dword ptr [rdx].state.display_position
+	movzx r12, word ptr [rdx].state.display_x
+	movzx r13, word ptr [rdx].state.display_y
+
+display_loop:
+	
+	; do render
+
+
+
+	; coords
+	add r12, 1
+	cmp r12, SCREEN_WIDTH
+	je next_line
+
+loop_end:
+	loop display_loop
+	jmp done
+
+next_line:
+	xor r12, r12
+	add r13, 1	; no need to check for max lines, as we do that with the beam check.
+	cmp r13, SCREEN_HEIGHT
+	je new_screen
+
+	; check line IRQ
+	cmp byte ptr [rdx].state.interrupt_line, 0			; have a line interrupt?
+	je line_irqskip
+
+	cmp r13w, word ptr [rdx].state.interrupt_linenum	; are we on the line?
+	jne line_irqskip
+
+	cmp byte ptr [rdx].state.interrupt_line_hit, 0		; has it been set and not cleared?
+	jne line_irqskip
+
+	mov rbx, [rdx].state.memory_ptr		
+	or byte ptr [rbx+ISR], 2							; set bit in memory
+	mov byte ptr [rdx].state.interrupt_line_hit, 1		; record that its been hit
+
+	mov byte ptr [rdx].state.interrupt, 1				; cpu interrupt
+
+line_irqskip:
+	; Check vblank IRQ
+	cmp r13, VBLANK
+	jne vblank_irqskip
+
+	cmp byte ptr [rdx].state.interrupt_vsync, 0			; have a vsync interrupt?
+	je vblank_irqskip
+
+	cmp byte ptr [rdx].state.interrupt_vsync_hit, 0		; has it been set and not cleared?
+	jne vblank_irqskip
+
+	mov rbx, [rdx].state.memory_ptr
+	or byte ptr [rbx+ISR], 1
+	mov byte ptr [rdx].state.interrupt_vsync_hit, 1		; record that its been hit
+
+	mov byte ptr [rdx].state.interrupt, 1
+
+vblank_irqskip:
+
+	jmp loop_end
+
+new_screen:
+	xor r11, r11
+	xor r12, r12
+	xor r13, r13
+
+	jmp loop_end
+
+done:
+	mov [rdx].state.display_position, r11d
+	mov [rdx].state.display_x, r12w
+	mov [rdx].state.display_y, r13w
+
+	xor r13, r13 ; r13 needs to be cleared for the CPU emulation
+
 	pop r11
 	pop r10
 	pop r9
 	pop r8
 
-	jmp main_loop
+	jmp display_done
 
 vera_render_display endp
 
@@ -109,4 +214,8 @@ dw 036fh, 0002h, 0014h, 0016h, 0028h, 002ah, 003ch, 003fh, 0112h, 0334h, 0546h, 
 dw 0324h, 0436h, 0648h, 085ah, 096ch, 0b7fh, 0102h, 0214h, 0416h, 0528h, 062ah, 083ch, 093fh, 0102h, 0204h, 0306h
 dw 0408h, 050ah, 060ch, 070fh, 0212h, 0434h, 0646h, 0868h, 0a8ah, 0c9ch, 0fbeh, 0211h, 0423h, 0635h, 0847h, 0a59h
 dw 0c6bh, 0f7dh, 0201h, 0413h, 0615h, 0826h, 0a28h, 0c3ah, 0f3ch, 0201h, 0403h, 0604h, 0806h, 0a08h, 0c09h, 0f0bh
+
+display_step real8 3.1500000001f ; add small error, so we dont under count as 3.15 is actually 3.1499999999
+display_reset real8 0.00001	     ; reset if under this value to account for the error added above
+
 .code

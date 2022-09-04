@@ -20,6 +20,8 @@
 ; r14  : Clock Ticks
 ; r15  : Flags
 
+; xmmm0 : Vera Clock Rounding
+
 include vera_constants.inc
 include State.asm
 include Vera_Display.asm
@@ -104,6 +106,10 @@ endm
 ; rdx points to cpu state
 vera_init proc
 	
+	; use xmm0 to store how many pixels we're doing to cpu tick
+	pxor xmm0, xmm0
+	pxor xmm1, xmm1	; we use xmm1 as scratch
+
 	;
 	; DATA0\1
 	;
@@ -349,7 +355,7 @@ vera_dataupdate_stuctures macro
 	jc xx_red
 
 	; r13 is GB
-	and rcx, 0ff0000ffh						; take off GB from current colour
+	and rcx, 0ff0000ffh						; take GB from current colour
 	
 	mov r12, r13
 	and r12, 00fh							; Isolate B
@@ -371,7 +377,7 @@ vera_dataupdate_stuctures macro
 xx_red:
 	; r13 is xR
 	
-	and rcx, 0ffffff00h						; take off R from current colour
+	and rcx, 0ffffff00h						; take R from current colour
 
 	mov r12, r13
 	and r12, 00fh
@@ -948,6 +954,38 @@ vera_update_l1vscroll_h proc
 	ret
 vera_update_l1vscroll_h endp
 
+; Todo: reconstruct ISR
+vera_update_isr proc
+	mov r13b, byte ptr [rsi+rbx]
+
+	bt r13, 0
+	jnc check_line
+
+	mov [rdx].state.interrupt_vsync_hit, 0
+
+check_line:
+	bt r13, 1
+	jnc check_spcol
+
+	mov [rdx].state.interrupt_line_hit, 0
+
+check_spcol:
+	bt r13, 2
+	jnc construct_isr
+
+	mov [rdx].state.interrupt_spcol_hit, 0
+
+construct_isr:
+	mov r13b, byte ptr [rdx].state.interrupt_spcol_hit
+	shl r13, 1
+	or r13b, byte ptr [rdx].state.interrupt_line_hit
+	shl r13, 1
+	or r13b, byte ptr [rdx].state.interrupt_vsync_hit
+	mov byte ptr [rsi+rbx], r13b
+	ret
+vera_update_isr endp
+
+
 vera_registers:
 	vera_9f20 qword vera_update_addrl
 	vera_9f21 qword vera_update_addrm
@@ -956,7 +994,7 @@ vera_registers:
 	vera_9f24 qword vera_update_data
 	vera_9f25 qword vera_update_ctrl
 	vera_9f26 qword vera_update_ien
-	vera_9f27 qword vera_update_notimplemented
+	vera_9f27 qword vera_update_isr
 	vera_9f28 qword vera_update_irqline_l
 	vera_9f29 qword vera_update_9f29
 	vera_9f2a qword vera_update_9f2a

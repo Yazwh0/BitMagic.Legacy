@@ -37,6 +37,8 @@ readonly_memory equ 0c000h - 1		; stop all writes above this location
 ; r14  : Clock Ticks
 ; r15  : Flags
 
+; xmm1 : Vera Clock
+
 write_state_obj macro	
 	mov	byte ptr [rdx].state.register_a, r8b			; a
 	mov	byte ptr [rdx].state.register_x, r9b			; x

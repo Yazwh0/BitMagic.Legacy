@@ -16,6 +16,7 @@ state struct
 
 
 	clock					qword ?
+	vera_clock				qword ?
 	register_pc				word ?
 	stackpointer			word ?
 	register_a				byte ?
@@ -79,5 +80,15 @@ state struct
 	interrupt_spcol			byte ?
 	interrupt_line			byte ?
 	interrupt_vsync			byte ?
+
+	interrupt_line_hit		byte ?
+	interrupt_vsync_hit		byte ?
+	interrupt_spcol_hit		byte ?
+	_padding3				byte ?
+
+	; Rendering
+	display_position		dword ?
+	display_x				word ?
+	display_y				word ?
 state ends
 

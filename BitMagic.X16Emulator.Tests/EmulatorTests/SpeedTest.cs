@@ -15,6 +15,7 @@ public class SpeedTest
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
+                sei
                 lda #$50
                 sta $02
                 sta $03
@@ -52,6 +53,7 @@ public class SpeedTest
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
+                sei
                 lda #$50
                 sta $a002
                 sta $a003
@@ -94,6 +96,7 @@ public class SpeedTest
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
+                sei
                 lda #$50
                 sta $a002
                 sta $a003
