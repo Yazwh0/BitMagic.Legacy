@@ -9,10 +9,10 @@ include State.asm
 ; rdi  : display
 ; r8   : scratch
 ; r9   : scratch
-; r10  : scratch
-; r11  : scratch
-; r12  : scratch
-; r13  : scratch
+; r10  : drawing
+; r11  : display position
+; r12  : x
+; r13  : y
 ; r14  : Clock Ticks
 ; r15  : Flags
 
@@ -29,6 +29,9 @@ SCREEN_WIDTH	equ 800
 SCREEN_HEIGHT	equ 525
 SCREEN_DOTS		equ SCREEN_WIDTH * SCREEN_HEIGHT
 
+VISIBLE_WIDTH	equ 640
+VISIBLE_HEIGHT	equ 480
+
 VBLANK			equ 480
 
 vera_render_display proc
@@ -38,30 +41,20 @@ vera_render_display proc
 	push r10
 	push r11
 
+	mov rax, [rdx].state.vera_clock
+	mov [rdx].state.vera_clock, r14		; store vera clock
+	mov rcx, r14						; Cpu Clock ticks
+	sub rcx, rax						; Take off vera ticks for the number of cpu ticks we need to process
+
+	and rax, 0111b						; mask off start value
+	shl rax, 3							; multiply up
+	add rax, rcx						; add on steps
+	lea r11, cpu_step_table
+	movzx rcx, byte ptr [r11 + rax]
+		
+	movzx r10, byte ptr [rdx].state.drawing
 	mov rsi, [rdx].state.vram_ptr
 	mov rdi, [rdx].state.display_ptr
-
-	mov r13, [rdx].state.vera_clock
-	mov rcx, r14
-	sub rcx, r13						; number of cpu ticks we need to process
-	mov [rdx].state.vera_clock, r14		; store vera clock
-	
-										; prevFloat + (end-start) * 3.15 
-	cvtsi2sd xmm1, rcx					; change count to double
-	mulsd xmm1, display_step			; multiply up by pixel to cpu ratio
-	addsd xmm1, xmm0					; add on previous count floating part
-
-										; prevFloat = pixels - (int)pixels : get floating part
-	cvttsd2si rcx, xmm1					; rcx now has the pixels to draw
-	cvtsi2sd xmm0, rcx					; convert back to remove floating part
-	subsd xmm1, xmm0					; xmm1 now contains floating part
-	movsd xmm0, xmm1					; store in xmm0 for next cycle
-	
-	comisd xmm0, display_reset			; check if we're under the reset
-	ja not_under_reset
-	pxor xmm0, xmm0
-
-not_under_reset:
 	mov r11d, dword ptr [rdx].state.display_position
 	movzx r12, word ptr [rdx].state.display_x
 	movzx r13, word ptr [rdx].state.display_y
@@ -69,17 +62,44 @@ not_under_reset:
 display_loop:
 	
 	; do render
+	test r10, r10
+	jz render_done
+
+	; pixel is in visible window
 
 
 
+	add r11, 1											; move pixel ptr on
+
+render_done:
 	; coords
 	add r12, 1
-	cmp r12, SCREEN_WIDTH
-	je next_line
+
+	;cmp r12, VISIBLE_WIDTH
+	;jl loop_end
+
+	;cmp r12, SCREEN_WIDTH
+	;je next_line
+
+	;xor r10, r10										; we're outside the bounds, stop drawing
 
 loop_end:
 	loop display_loop
-	jmp done
+
+	mov [rdx].state.display_position, r11d
+	mov [rdx].state.display_x, r12w
+	mov [rdx].state.display_y, r13w
+
+	mov byte ptr [rdx].state.drawing, r10b
+
+	xor r13, r13 ; r13 needs to be cleared for the CPU emulation
+
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+
+	jmp display_done
 
 next_line:
 	xor r12, r12
@@ -92,6 +112,8 @@ next_line:
 	xor r13, r13
 
 not_new_screen:
+	mov r10, 1											; new line, start drawing, gets changed if vsync
+
 	; check line IRQ
 	cmp byte ptr [rdx].state.interrupt_line, 0			; have a line interrupt?
 	je line_irqskip
@@ -111,37 +133,21 @@ not_new_screen:
 line_irqskip:
 	; Check vblank IRQ
 	cmp r13, VBLANK
-	jne vblank_irqskip
+	jne loop_end
+
+	xor r10, r10										; vblank means we're out of bounds, stop drawing
 
 	cmp byte ptr [rdx].state.interrupt_vsync, 0			; have a vsync interrupt?
-	je vblank_irqskip
+	je loop_end
 
 	cmp byte ptr [rdx].state.interrupt_vsync_hit, 0		; has it been set and not cleared?
-	jne vblank_irqskip
+	jne loop_end
 
 	mov rbx, [rdx].state.memory_ptr
 	or byte ptr [rbx+ISR], 1
 	mov byte ptr [rdx].state.interrupt_vsync_hit, 1		; record that its been hit
 
 	mov byte ptr [rdx].state.interrupt, 1
-
-vblank_irqskip:
-
-	jmp loop_end
-
-done:
-	mov [rdx].state.display_position, r11d
-	mov [rdx].state.display_x, r12w
-	mov [rdx].state.display_y, r13w
-
-	xor r13, r13 ; r13 needs to be cleared for the CPU emulation
-
-	pop r11
-	pop r10
-	pop r9
-	pop r8
-
-	jmp display_done
 
 vera_render_display endp
 
@@ -215,5 +221,17 @@ dw 0c6bh, 0f7dh, 0201h, 0413h, 0615h, 0826h, 0a28h, 0c3ah, 0f3ch, 0201h, 0403h, 
 
 display_step real8 3.1500000001f ; add small error, so we dont under count as 3.15 is actually 3.1499999999
 display_reset real8 0.00001	     ; reset if under this value to account for the error added above
+
+cpu_step_table:
+db 0, 3, 6, 9, 12, 15, 18, 21
+db 0, 3, 6, 9, 12, 15, 18, 22
+db 0, 3, 6, 9, 12, 15, 19, 22
+db 0, 3, 6, 9, 12, 16, 19, 22
+db 0, 3, 6, 9, 13, 16, 19, 22
+db 0, 3, 6, 10, 13, 16, 19, 22
+db 0, 3, 7, 10, 13, 16, 19, 22
+db 0, 4, 7, 10, 13, 16, 19, 22
+
+;include Vera_Display_Lookup.inc
 
 .code

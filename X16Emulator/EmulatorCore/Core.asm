@@ -146,6 +146,8 @@ asm_func proc state_ptr:QWORD
 
 	pop rdx
 
+	mov last_cpuclock, 0
+
 	call vera_init
 	
 	read_state_obj
@@ -167,7 +169,61 @@ next_opcode::
 
 opcode_done::
 
-	jmp vera_render_display
+	; check for line irq
+	mov rax, r14
+	and rax, 0ffffffffffffff00h		; mask off lower bytes
+	mov rbx, last_cpuclock
+	cmp rax, rbx
+	je display_done
+
+	mov last_cpuclock, rax			; store for next time
+
+	movzx rbx, word ptr [rdx].state.display_y
+	add rbx, 1
+	cmp rbx, 545					; are we into the new frame?
+	jle check_line
+	xor rbx, rbx
+	mov word ptr [rdx].state.display_y, bx
+	jmp line_check
+
+check_line:
+	mov word ptr [rdx].state.display_y, bx
+	cmp rbx, 480
+	jg display_done
+	je vsync
+line_check:
+	; check for line IRQ
+	movzx rcx, byte ptr [rdx].state.interrupt_line
+	test cl, cl
+	jz display_done
+	
+	mov cx, word ptr [rdx].state.interrupt_linenum
+	cmp cx, bx
+	jne display_done
+
+	mov cl, byte ptr [rdx].state.interrupt_line_hit
+	test cl, cl
+	jnz display_done
+
+	or byte ptr [rsi+ISR], 2							; set bit in memory
+	mov byte ptr [rdx].state.interrupt_line_hit, 1		; record that its been hit
+	mov byte ptr [rdx].state.interrupt, 1				; cpu interrupt
+
+	jmp display_done
+vsync:
+	; fire vsync IRQ
+	movzx rcx, byte ptr [rdx].state.interrupt_vsync
+	test cl, cl
+	jz display_done
+
+	mov cl, byte ptr [rdx].state.interrupt_vsync_hit
+	test cl, cl
+	jnz display_done
+
+	; set vsync
+	or byte ptr [rsi+ISR], 1
+	mov byte ptr [rdx].state.interrupt_vsync_hit, 1
+	mov byte ptr [rdx].state.interrupt, 1
 
 display_done::
 
@@ -247,8 +303,8 @@ endm
 step_vera_read macro checkvera
 	local skip
 if checkvera eq 1
-	cmp r13b, 0
-	je skip
+	test r13b, r13b
+	jz skip
 	call vera_afterread
 
 	skip:
@@ -258,8 +314,8 @@ endm
 step_vera_readwrite macro checkvera
 	local skip
 if checkvera eq 1
-	cmp r13b, 0
-	je skip
+	test r13b, r13b
+	jz skip
 	call vera_afterreadwrite
 
 	skip:
@@ -269,8 +325,8 @@ endm
 step_vera_write macro checkvera
 	local skip
 if checkvera eq 1
-	cmp r13b, 0
-	je skip
+	test r13b, r13b
+	jz skip
 	call vera_afterwrite
 
 	skip:
@@ -2617,7 +2673,11 @@ write_sideeffect_02 qword write_sideeffect_rombank
 ; Read
 ;
 
+;
+; Variables
+;
 
+last_cpuclock qword 0
 
 ;
 ; Opcode jump table

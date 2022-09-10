@@ -84,7 +84,7 @@ state struct
 	interrupt_line_hit		byte ?
 	interrupt_vsync_hit		byte ?
 	interrupt_spcol_hit		byte ?
-	_padding3				byte ?
+	drawing					byte ?
 
 	; Rendering
 	display_position		dword ?

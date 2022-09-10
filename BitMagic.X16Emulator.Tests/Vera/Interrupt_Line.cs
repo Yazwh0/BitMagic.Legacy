@@ -83,7 +83,7 @@ public class Interrupt_Line
         Assert.AreEqual(true, emulator.Vera.Interrupt_Line_Hit);
         Assert.AreEqual(false, emulator.Vera.Interrupt_SpCol_Hit);
         Assert.AreEqual(0x02, emulator.Memory[0x9F27]);
-        //Assert.AreEqual(0, emulator.Vera.Beam_X);
+        //Assert.AreEqual(0, emulator.Vera.Beam_X); cant check as interrupt hits mid instruction
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 

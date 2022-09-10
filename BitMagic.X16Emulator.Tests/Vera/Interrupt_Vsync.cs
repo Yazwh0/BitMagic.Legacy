@@ -42,6 +42,7 @@ public class Interrupt_Vsync
         Assert.AreEqual(0x01, emulator.Memory[0x9F27]);
         Assert.AreEqual(0, emulator.Vera.Beam_X);
         Assert.AreEqual(480, emulator.Vera.Beam_Y);
+        Assert.AreEqual((UInt32)(640 * 480), emulator.Vera.Beam_Position);
     }
 
     [TestMethod]

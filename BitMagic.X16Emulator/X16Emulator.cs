@@ -65,6 +65,7 @@ public class Emulator : IDisposable
 
         public ushort Beam_X { get => _emulator._state.Beam_x; set => _emulator._state.Beam_x = value; }
         public ushort Beam_Y { get => _emulator._state.Beam_y; set => _emulator._state.Beam_y = value; }
+        public UInt32 Beam_Position { get => _emulator._state.Beam_Position; set => _emulator._state.Beam_Position = value; }
 
         public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value? (byte)1 : (byte)0); }
         public bool Interrupt_Vsync_Hit { get => _emulator._state.Interrupt_Vsync_Hit != 0; set => _emulator._state.Interrupt_Vsync_Hit = (value ? (byte)1 : (byte)0); }
@@ -159,7 +160,7 @@ public class Emulator : IDisposable
         public byte Interrupt_Vsync_Hit = 0;
         public byte Interrupt_SpCol_Hit = 0;
 
-        // 1 byte of padding
+        public byte Drawing = 0;
 
         public UInt32 Beam_Position = 0;
         public ushort Beam_x = 0;
@@ -254,8 +255,10 @@ public class Emulator : IDisposable
 
     public EmulatorResult Emulate()
     {
+        Thread.CurrentThread.Priority = ThreadPriority.Highest;
         var r = fnEmulatorCode(ref _state);
         var result = (EmulatorResult)r;
+        Thread.CurrentThread.Priority = ThreadPriority.Normal;
         return result;
     }
 
