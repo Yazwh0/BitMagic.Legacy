@@ -178,16 +178,16 @@ opcode_done::
 
 	mov last_cpuclock, rax			; store for next time
 
-	movzx rbx, word ptr [rdx].state.display_y
+	mov rbx, cpu_posy
 	add rbx, 1
 	cmp rbx, 545					; are we into the new frame?
 	jle check_line
 	xor rbx, rbx
-	mov word ptr [rdx].state.display_y, bx
+	mov cpu_posy, rbx
 	jmp line_check
 
 check_line:
-	mov word ptr [rdx].state.display_y, bx
+	mov cpu_posy, rbx
 	cmp rbx, 480
 	jg display_done
 	je vsync
@@ -2678,6 +2678,7 @@ write_sideeffect_02 qword write_sideeffect_rombank
 ;
 
 last_cpuclock qword 0
+cpu_posy qword 0
 
 ;
 ; Opcode jump table
