@@ -17,8 +17,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 6 pixels on.
-        Assert.AreEqual(6, emulator.Vera.Beam_X);
+        // NOP is 2+3 cycles, so should be 5 * 3.125 = 15 pixels on.
+        Assert.AreEqual(15, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 
@@ -36,8 +36,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 2 * 3 * 3.125 = 18 pixels on.
-        Assert.AreEqual(18, emulator.Vera.Beam_X);
+        // NOP is 2 cycles, so should be (2 * 3 + 3) * 3.125 = 28 pixels on.
+        Assert.AreEqual(28, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 
@@ -56,8 +56,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 2 * 4 * 3.125 = 25 pixels on. First 'extra' pixel
-        Assert.AreEqual(25, emulator.Vera.Beam_X);
+        // NOP is 2 cycles, so should be (2 * 4 + 3) * 3.125 = 34 pixels on. First 'extra' pixel
+        Assert.AreEqual(34, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 
@@ -77,8 +77,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 2 * 5 * 3.125 = 31 pixels on.
-        Assert.AreEqual(31, emulator.Vera.Beam_X);
+        // NOP is 2 cycles, so should be (2 * 5 + 3) * 3.125 = 40 pixels on.
+        Assert.AreEqual(40, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 
@@ -103,8 +103,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 10 * 2 * 3.125 = 63 pixels on. 
-        Assert.AreEqual(62, emulator.Vera.Beam_X);
+        // NOP is 2 cycles, so should be (10 * 2 + 3)* 3.125 = 71 pixels on. 
+        Assert.AreEqual(71, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 
@@ -140,8 +140,8 @@ public class Beam
                 stp",
                 emulator);
 
-        // NOP is 2 cycles, so should be 20 * 2 * 3.125 = 125 pixels on.
-        Assert.AreEqual(125, emulator.Vera.Beam_X);
+        // NOP is 2 cycles, so should be (20 * 2 + 3) * 3.125 = 134 pixels on.
+        Assert.AreEqual(134, emulator.Vera.Beam_X);
         Assert.AreEqual(0, emulator.Vera.Beam_Y);
     }
 }

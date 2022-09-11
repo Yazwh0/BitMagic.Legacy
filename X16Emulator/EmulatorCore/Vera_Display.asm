@@ -94,8 +94,6 @@ no_reset:
 
 done:
 	mov dword ptr [rdx].state.display_position, r9d
-	;mov word ptr [rdx].state.display_x, 0		; set display x, y
-	;mov word ptr [rdx].state.display_y, 0
 
 	pop r9
 	pop r8
