@@ -1,40 +1,116 @@
 .code
 include State.asm
 
-; rax  : scratch
+; rax  : counter
 ; rbx  : scratch
-; rcx  : scratch
+; rcx  : loop target
 ; rdx  : state object 
-; rsi  : scratch
+; rsi  : vram
 ; rdi  : display
-; r8   : scratch
-; r9   : scratch
-; r10  : drawing
-; r11  : display position
-; r12  : x
-; r13  : y
-; r14  : Clock Ticks
-; r15  : Flags
+; r8   : palette
+; r9   : output offset
+; r10  : scratch
+; r11  : scratch
+; r12  : scratch
+; r13  : scratch
+; r14  : scratch
+; r15  : scratch
 
-; xmm0 : Vera Clock Rounding
 
-BACKGROUND	equ 0
-SPRITE_L1	equ 640*480*4
-LAYER0		equ 650*480*4*2
-SPRITE_L2	equ 640*480*4*3
-LAYER1		equ 650*480*4*4
-SPRITE_L3	equ 640*480*4*5
+
 
 SCREEN_WIDTH	equ 800
 SCREEN_HEIGHT	equ 525
 SCREEN_DOTS		equ SCREEN_WIDTH * SCREEN_HEIGHT
+
+BACKGROUND		equ 0
+SPRITE_L1		equ SCREEN_DOTS
+LAYER0			equ SCREEN_DOTS*2
+SPRITE_L2		equ SCREEN_DOTS*3
+LAYER1			equ SCREEN_DOTS*4
+SPRITE_L3		equ SCREEN_DOTS*5
 
 VISIBLE_WIDTH	equ 640
 VISIBLE_HEIGHT	equ 480
 
 VBLANK			equ 480
 
+;
+; Render the rest of the display, only gets called on vsync
+;
 vera_render_display proc
+	push rsi
+	push rdi
+	push r8
+	push r9
+
+	mov rax, [rdx].state.vera_clock
+	mov [rdx].state.vera_clock, r14				; store vera clock
+	mov rcx, r14								; Cpu Clock ticks
+	sub rcx, rax								; Take off vera ticks for the number of cpu ticks we need to process
+
+	jz done										; if nothing to do, leave
+
+	mov rax, rcx								; keep hold of base ticks
+	shl rcx, 3
+	mov rbx, rcx
+	add rcx, rbx								; now * 3
+	add rcx, rbx								
+	add rcx, rax								; now * 3.125
+
+
+	movzx rax, [rdx].state.display_carry		; Get carry, and add it on
+	add rcx, rax
+
+	mov rax, rcx								; Store to trim
+	and al, 111b
+	mov byte ptr [rdx].state.display_carry, al	; save carry
+	shr rcx, 3									; round, rcx now contains the steps
+
+	mov rsi, [rdx].state.vram_ptr
+	mov rdi, [rdx].state.display_ptr
+	mov r8, [rdx].state.palette_ptr
+	mov r9d, [rdx].state.display_position
+
+	xor rax, rax
+display_loop:
+	; background
+	mov ebx, dword ptr [r8]
+	mov [rdi + r9 * 4 + BACKGROUND], ebx
+
+
+
+
+
+	add r9, 1
+	cmp r9, SCREEN_DOTS
+	jne no_reset
+	xor r9, r9
+
+no_reset:
+	add rax, 1
+	cmp rax, rcx
+	jne display_loop
+
+done:
+	mov dword ptr [rdx].state.display_position, r9d
+	;mov word ptr [rdx].state.display_x, 0		; set display x, y
+	;mov word ptr [rdx].state.display_y, 0
+
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	ret
+vera_render_display endp
+
+; Render the display to the CPU clock
+vera_render_display_cpu proc
+	ret
+vera_render_display_cpu endp
+
+
+vera_render_display_old proc
 
 	push r8
 	push r9
@@ -56,8 +132,8 @@ vera_render_display proc
 	mov rsi, [rdx].state.vram_ptr
 	mov rdi, [rdx].state.display_ptr
 	mov r11d, dword ptr [rdx].state.display_position
-	movzx r12, word ptr [rdx].state.display_x
-	movzx r13, word ptr [rdx].state.display_y
+;	movzx r12, word ptr [rdx].state.display_x
+;	movzx r13, word ptr [rdx].state.display_y
 
 display_loop:
 	
@@ -87,8 +163,8 @@ loop_end:
 	loop display_loop
 
 	mov [rdx].state.display_position, r11d
-	mov [rdx].state.display_x, r12w
-	mov [rdx].state.display_y, r13w
+;	mov [rdx].state.display_x, r12w
+;	mov [rdx].state.display_y, r13w
 
 	mov byte ptr [rdx].state.drawing, r10b
 
@@ -149,7 +225,9 @@ line_irqskip:
 
 	mov byte ptr [rdx].state.interrupt, 1
 
-vera_render_display endp
+vera_render_display_old endp
+
+
 
 vera_initialise_palette proc	
 	xor rax, rax

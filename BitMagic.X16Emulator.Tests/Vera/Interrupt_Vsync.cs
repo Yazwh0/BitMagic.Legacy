@@ -40,9 +40,8 @@ public class Interrupt_Vsync
         Assert.AreEqual(false, emulator.Vera.Interrupt_Line_Hit);
         Assert.AreEqual(false, emulator.Vera.Interrupt_SpCol_Hit);
         Assert.AreEqual(0x01, emulator.Memory[0x9F27]);
-        Assert.AreEqual(0, emulator.Vera.Beam_X);
-        Assert.AreEqual(480, emulator.Vera.Beam_Y);
-        Assert.AreEqual((UInt32)(640 * 480), emulator.Vera.Beam_Position);
+        Assert.IsTrue(emulator.Vera.Beam_X <= 31);      // not 0 as the interrupt has to process + stp
+        Assert.AreEqual(480, emulator.Vera.Beam_Y);     // will be on line 480
     }
 
     [TestMethod]

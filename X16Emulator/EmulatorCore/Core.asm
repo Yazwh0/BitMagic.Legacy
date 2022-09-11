@@ -147,6 +147,8 @@ asm_func proc state_ptr:QWORD
 	pop rdx
 
 	mov last_cpuclock, 0
+	;movzx rax, word ptr [rdx].state.display_y
+	mov cpu_posy, rax
 
 	call vera_init
 	
@@ -168,57 +170,60 @@ next_opcode::
 	jmp qword ptr [rbx + rax*8]		; jump to opcode
 
 opcode_done::
-
 	; check for line irq
 	mov rax, r14
 	and rax, 0ffffffffffffff00h		; mask off lower bytes
 	mov rbx, last_cpuclock
 	cmp rax, rbx
-	je display_done
+	je main_loop
 
 	mov last_cpuclock, rax			; store for next time
 
 	mov rbx, cpu_posy
 	add rbx, 1
-	cmp rbx, 545					; are we into the new frame?
-	jle check_line
+	cmp rbx, SCREEN_HEIGHT			; are we into the new frame?
+	jl check_line_type
 	xor rbx, rbx
 	mov cpu_posy, rbx
 	jmp line_check
 
-check_line:
+check_line_type:
 	mov cpu_posy, rbx
-	cmp rbx, 480
-	jg display_done
+	cmp rbx, VBLANK
+	jg main_loop
 	je vsync
 line_check:
 	; check for line IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_line
 	test cl, cl
-	jz display_done
+	jz main_loop
 	
 	mov cx, word ptr [rdx].state.interrupt_linenum
 	cmp cx, bx
-	jne display_done
+	jne main_loop
 
 	mov cl, byte ptr [rdx].state.interrupt_line_hit
 	test cl, cl
-	jnz display_done
+	jnz main_loop
 
 	or byte ptr [rsi+ISR], 2							; set bit in memory
 	mov byte ptr [rdx].state.interrupt_line_hit, 1		; record that its been hit
 	mov byte ptr [rdx].state.interrupt, 1				; cpu interrupt
 
-	jmp display_done
+	jmp main_loop
 vsync:
+	; update display
+
+	call vera_render_display
+
 	; fire vsync IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_vsync
 	test cl, cl
-	jz display_done
+	jz main_loop
 
 	mov cl, byte ptr [rdx].state.interrupt_vsync_hit
 	test cl, cl
-	jnz display_done
+	jnz main_loop
 
 	; set vsync
 	or byte ptr [rsi+ISR], 1
@@ -226,7 +231,6 @@ vsync:
 	mov byte ptr [rdx].state.interrupt, 1
 
 display_done::
-
 	jmp main_loop
 
 exit_loop: ; how do we get here?
@@ -2601,6 +2605,8 @@ xEA_nop endp
 xDB_stp proc
 
 	add r14, 3	; Clock
+	
+	call vera_render_display
 
 	; return stp was hit.
 	write_state_obj

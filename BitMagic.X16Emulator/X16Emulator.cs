@@ -63,8 +63,8 @@ public class Emulator : IDisposable
         public bool Interrupt_Line { get => _emulator._state.Interrupt_Line != 0; set => _emulator._state.Interrupt_Line = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_VSync { get => _emulator._state.Interrupt_VSync != 0; set => _emulator._state.Interrupt_VSync = (value ? (byte)1 : (byte)0); }
 
-        public ushort Beam_X { get => _emulator._state.Beam_x; set => _emulator._state.Beam_x = value; }
-        public ushort Beam_Y { get => _emulator._state.Beam_y; set => _emulator._state.Beam_y = value; }
+        public ushort Beam_X { get => (ushort)(_emulator._state.Beam_Position % 800); }
+        public ushort Beam_Y { get => (ushort)Math.Floor(_emulator._state.Beam_Position / 800.0); }
         public UInt32 Beam_Position { get => _emulator._state.Beam_Position; set => _emulator._state.Beam_Position = value; }
 
         public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value? (byte)1 : (byte)0); }
@@ -163,8 +163,8 @@ public class Emulator : IDisposable
         public byte Drawing = 0;
 
         public UInt32 Beam_Position = 0;
-        public ushort Beam_x = 0;
-        public ushort Beam_y = 0;
+        //public ushort Beam_x = 0;
+        //public ushort Beam_y = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, ulong display, ulong palette)
         {
@@ -216,7 +216,7 @@ public class Emulator : IDisposable
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
     private const int VramSize = 0x20000;
-    private const int DisplaySize = 640 * 480 * 4 * 6; // *6 for each layer
+    private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
 
     public unsafe Emulator()

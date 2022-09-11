@@ -47,7 +47,8 @@ state struct
 	layer0_enable			byte ?
 	layer1_enable			byte ?
 
-	_padding				byte ?
+	display_carry			byte ?
+	;_padding				byte ?
 
 	layer0_mapAddress		dword ?
 	layer0_tileAddress		dword ?
@@ -88,7 +89,7 @@ state struct
 
 	; Rendering
 	display_position		dword ?
-	display_x				word ?
-	display_y				word ?
+;	display_x				word ?
+;	display_y				word ?
 state ends
 
