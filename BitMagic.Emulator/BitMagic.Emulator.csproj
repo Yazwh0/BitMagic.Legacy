@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>net6.0</TargetFramework>
 	  <Nullable>enable</Nullable>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Shader\shader.frag" />
-    <None Remove="Shader\shader.vert" />
+	<None Remove="Shader\shader.frag" />
+	<None Remove="Shader\shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Shader\shader.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shader\shader.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+	<EmbeddedResource Include="Shader\shader.frag">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</EmbeddedResource>
+	<EmbeddedResource Include="Shader\shader.vert">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</EmbeddedResource>
   </ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -22,15 +22,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
-    <PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+	<PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
+	<PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
+	<PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
-    <ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />
-    <ProjectReference Include="..\BitMagic.Machines\BitMagic.Machines.csproj" />
+	<ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
+	<ProjectReference Include="..\BitMagic.Cpu\BitMagic.Cpu.csproj" />
+	<ProjectReference Include="..\BitMagic.Machines\BitMagic.Machines.csproj" />
   </ItemGroup>
 
 </Project>

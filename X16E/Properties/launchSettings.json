@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "X16E": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom D:\\Documents\\Source\\BitMagic\\rom\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm"
+    }
+  }
+}
