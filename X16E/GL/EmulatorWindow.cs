@@ -11,10 +11,8 @@ internal class EmulatorWindow
     private static GL? _gl;
     private static IWindow? _window;
     private static Shader? _shader;
-    private static Emulator? _emulator;
-    private static X16EImage[] _images;
+    private static X16EImage[]? _images;
 
-//        private static IDisplay? _display;
 
     private static GlObject[]? _layers;
 
@@ -22,7 +20,7 @@ internal class EmulatorWindow
 
     public static void Run(Emulator emulator)
     {
-        _emulator = emulator;
+        var _emulator = emulator;
         _window = Window.Create(WindowOptions.Default);
 
         _images = new X16EImage[6];
