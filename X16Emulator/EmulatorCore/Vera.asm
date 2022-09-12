@@ -427,6 +427,7 @@ vera_dataaccess_body macro doublestep, write_value
 	mov rdi, [rdx].state.data0_address
 
 	if write_value eq 1 and doublestep eq 0
+		call vera_render_display
 		mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 		mov byte ptr [rax+rdi], r13b			; store in vram
 		vera_dataupdate_stuctures
@@ -437,6 +438,7 @@ vera_dataaccess_body macro doublestep, write_value
 
 	if doublestep eq 1
 		if write_value eq 1
+			call vera_render_display
 			mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 			mov byte ptr [rax+rdi], r13b			; store in vram
 			vera_dataupdate_stuctures
@@ -475,6 +477,7 @@ step_data1:
 	mov rdi, [rdx].state.data1_address
 
 	if write_value eq 1 and doublestep eq 0
+		call vera_render_display
 		mov r13b, byte ptr [rsi+rbx]			; get value that has been written
 		mov byte ptr [rax+rdi], r13b			; store in vram
 		vera_dataupdate_stuctures
@@ -485,6 +488,7 @@ step_data1:
 
 	if doublestep eq 1
 		if write_value eq 1
+			call vera_render_display
 			mov r13b, byte ptr [rsi+rbx]		; get value that has been written
 			mov byte ptr [rax+rdi], r13b		; store in vram
 			vera_dataupdate_stuctures

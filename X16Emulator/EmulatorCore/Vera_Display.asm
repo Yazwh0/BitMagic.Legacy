@@ -54,12 +54,14 @@ VBLANK			equ 480
 ; Render the rest of the display, only gets called on vsync
 ;
 vera_render_display proc
+	push rax
 	mov rax, [rdx].state.vera_clock
 	mov [rdx].state.vera_clock, r14				; store vera clock
 	mov rcx, r14								; Cpu Clock ticks
 	sub rcx, rax								; Take off vera ticks for the number of cpu ticks we need to process
 
 	jnz change									; if nothing to do, leave
+	pop rax
 	ret
 
 change:
@@ -68,6 +70,7 @@ change:
 	push r8
 	push r9
 	push r10
+	push rbx 
 
 	mov rax, rcx								; keep hold of base ticks
 	shl rcx, 3
@@ -117,11 +120,13 @@ no_reset:
 done:
 	mov dword ptr [rdx].state.display_position, r9d
 
+	pop rbx 
 	pop r10
 	pop r9
 	pop r8
 	pop rdi
 	pop rsi
+	pop rax
 	ret
 vera_render_display endp
 
