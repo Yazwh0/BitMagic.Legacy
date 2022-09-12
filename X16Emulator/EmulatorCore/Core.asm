@@ -158,8 +158,12 @@ main_loop::
 	mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
 
 	; check for interrupt
+	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
 	cmp byte ptr [rdx].state.interrupt, 0
 	jne handle_interrupt
+
+	test rcx, rcx
+	jnz cpu_is_waiting					; if we're waiting, dont process next opcode
 
 next_opcode::
 
@@ -169,6 +173,8 @@ next_opcode::
 
 	jmp qword ptr [rbx + rax*8]		; jump to opcode
 
+cpu_is_waiting:
+	add r14, 1
 opcode_done::
 	; check for line irq
 	mov rax, r14
@@ -2259,8 +2265,13 @@ endif
 
 endm
 
+; important: rcx is if the cpu waiting, so dont clobber this register.
 handle_interrupt proc
 	mov byte ptr [rdx].state.interrupt, 0
+
+	movzx rax, byte ptr [rdx].state.flags_interruptDisable
+	test rax, rax
+	jnz interupt_disabled
 
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
@@ -2289,6 +2300,16 @@ handle_interrupt proc
 
 	add r14, 7							; Clock 
 
+	jmp next_opcode
+
+interupt_disabled:
+	test rcx, rcx						; check if we're waiting
+	jz next_opcode
+	
+cpu_waiting:
+	xor rcx, rcx						; clear waiting
+	mov byte ptr [rdx].state.cpu_waiting, 0
+	add r14, 1							; Clock 
 	jmp next_opcode
 handle_interrupt endp
 
@@ -2599,6 +2620,16 @@ xEA_nop proc
 xEA_nop endp
 
 ;
+; Wait
+;
+
+xCB_wai proc
+	add r14, 2	; Clock	
+	mov [rdx].state.cpu_waiting, 1
+	jmp opcode_done	
+xCB_wai endp
+
+;
 ; Exit
 ;
 
@@ -2894,7 +2925,7 @@ opcode_C7	qword	xC7_smb4	 	; $C7
 opcode_C8	qword	xC8_iny			; $C8
 opcode_C9	qword	xC9_cmp_imm 	; $C9
 opcode_CA	qword	xCA_dex		 	; $CA
-opcode_CB	qword	noinstruction 	; $CB
+opcode_CB	qword	xCB_wai		 	; $CB
 opcode_CC	qword	xCC_cmpy_abs 	; $CC
 opcode_CD	qword	xCD_cmp_abs 	; $CD
 opcode_CE	qword	xCE_dec_abs 	; $CE

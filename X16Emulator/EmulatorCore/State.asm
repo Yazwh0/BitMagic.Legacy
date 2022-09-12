@@ -61,7 +61,8 @@ state struct
 	layer0_tileHeight		byte ?
 	layer0_tileWidth		byte ?
 
-	_padding1				byte ?
+	cpu_waiting				byte ?
+;	_padding1				byte ?
 	_padding2				byte ?
 
 
