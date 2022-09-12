@@ -1,7 +1,7 @@
 .code
 include State.asm
 
-; rax  : counter
+; rax  : scratch
 ; rbx  : scratch
 ; rcx  : loop target
 ; rdx  : state object 
@@ -9,7 +9,7 @@ include State.asm
 ; rdi  : display
 ; r8   : palette
 ; r9   : output offset
-; r10  : scratch
+; r10  : should display
 ; r11  : scratch
 ; r12  : scratch
 ; r13  : scratch
@@ -39,17 +39,20 @@ VBLANK			equ 480
 ; Render the rest of the display, only gets called on vsync
 ;
 vera_render_display proc
-	push rsi
-	push rdi
-	push r8
-	push r9
-
 	mov rax, [rdx].state.vera_clock
 	mov [rdx].state.vera_clock, r14				; store vera clock
 	mov rcx, r14								; Cpu Clock ticks
 	sub rcx, rax								; Take off vera ticks for the number of cpu ticks we need to process
 
-	jz done										; if nothing to do, leave
+	jnz change									; if nothing to do, leave
+	ret
+
+change:
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
 
 	mov rax, rcx								; keep hold of base ticks
 	shl rcx, 3
@@ -72,8 +75,13 @@ vera_render_display proc
 	mov r8, [rdx].state.palette_ptr
 	mov r9d, [rdx].state.display_position
 
-	xor rax, rax
+	lea r10, should_display_table
+
 display_loop:
+	mov al, byte ptr [r10 + r9]
+	test al, al
+	jz display_skip
+
 	; background
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
@@ -81,20 +89,20 @@ display_loop:
 
 
 
-
+display_skip:
 	add r9, 1
 	cmp r9, SCREEN_DOTS
 	jne no_reset
 	xor r9, r9
 
 no_reset:
-	add rax, 1
-	cmp rax, rcx
-	jne display_loop
+	dec rcx
+	jnz display_loop
 
 done:
 	mov dword ptr [rdx].state.display_position, r9d
 
+	pop r10
 	pop r9
 	pop r8
 	pop rdi
@@ -308,6 +316,19 @@ db 0, 3, 6, 10, 13, 16, 19, 22
 db 0, 3, 7, 10, 13, 16, 19, 22
 db 0, 4, 7, 10, 13, 16, 19, 22
 
-;include Vera_Display_Lookup.inc
+should_display_table:
+REPT 480
+	REPT 640
+		db 1
+	ENDM
+	REPT 800-640
+		db 0
+	ENDM
+ENDM
+REPT 525-480
+	REPT 800
+		db 0
+	ENDM
+ENDM
 
 .code
