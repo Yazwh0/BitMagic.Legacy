@@ -116,9 +116,9 @@ public class Emulator : IDisposable
         public byte Dc_VScale = 0;
         public byte Dc_Border = 0;
         public ushort Dc_HStart = 0;
-        public ushort Dc_HStop = 0;
+        public ushort Dc_HStop = 480;
         public ushort Dc_VStart = 0;
-        public ushort Dc_VStop = 0;
+        public ushort Dc_VStop = 640;
 
         public byte SpriteEnable = 0;
         public byte Layer0Enable = 0;
@@ -166,8 +166,8 @@ public class Emulator : IDisposable
 
         public UInt32 Beam_Position = 0;
         public UInt32 Frame_Count = 0;
-        //public ushort Beam_x = 0;
-        //public ushort Beam_y = 0;
+        public ushort Beam_x = 0;
+        public ushort Beam_y = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer)

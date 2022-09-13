@@ -106,7 +106,7 @@ state struct
 	; Rendering
 	display_position		dword ?
 	frame_count				dword ?
-;	display_x				word ?
-;	display_y				word ?
+	display_x				word ?
+	display_y				word ?
 state ends
 

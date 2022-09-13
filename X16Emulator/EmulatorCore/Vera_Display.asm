@@ -25,8 +25,8 @@ include State.asm
 ; r8   : palette
 ; r9   : output offset
 ; r10  : should display
-; r11  : scratch
-; r12  : scratch
+; r11  : x
+; r12  : y
 ; r13  : scratch
 ; r14  : scratch
 ; r15  : scratch
@@ -71,6 +71,8 @@ change:
 	push r9
 	push r10
 	push rbx 
+	push r11
+	push r12
 
 	mov rax, rcx								; keep hold of base ticks
 	shl rcx, 3
@@ -92,19 +94,56 @@ change:
 	mov rdi, [rdx].state.display_ptr
 	mov r8, [rdx].state.palette_ptr
 	mov r9d, [rdx].state.display_position
+	mov r11w, [rdx].state.display_x
+	mov r12w, [rdx].state.display_y
 
 	lea r10, should_display_table
 
 display_loop:
+	; check if we're in the visible area as a trivial skip
 	mov al, byte ptr [r10 + r9]
 	test al, al
 	jz display_skip
 
+	movzx rax, [rdx].state.dc_vstart
+	cmp r12, rax
+	jl draw_border
+
+	movzx rax, [rdx].state.dc_vstop
+	cmp r12, rax
+	jg draw_border
+
+	movzx rax, [rdx].state.dc_hstart
+	cmp r11, rax
+	jl draw_border
+
+	movzx rax, [rdx].state.dc_hstop
+	cmp r11, rax
+	jg draw_border
+
+	jmp draw_pixel
+draw_border:
+	movzx rax, [rdx].state.dc_border
+	mov ebx, dword ptr [r8 + rax * 4]
+	mov [rdi + r9 * 4 + BACKGROUND], ebx
+
+	jmp draw_complete
+
+draw_pixel:
 	; background
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
 
+	; layer 0
 
+
+
+draw_complete:
+	add r11, 1
+	cmp r11, VISIBLE_WIDTH
+	jne display_skip
+	xor r11, r11
+	add r12, 1
 
 
 display_skip:
@@ -112,6 +151,8 @@ display_skip:
 	cmp r9, SCREEN_DOTS
 	jne no_reset
 	xor r9, r9
+	xor r11, r11
+	xor r12, r12
 
 no_reset:
 	dec rcx
@@ -119,7 +160,11 @@ no_reset:
 
 done:
 	mov dword ptr [rdx].state.display_position, r9d
+	mov word ptr [rdx].state.display_x, r11w
+	mov word ptr [rdx].state.display_y, r12w
 
+	pop r12
+	pop r11
 	pop rbx 
 	pop r10
 	pop r9
