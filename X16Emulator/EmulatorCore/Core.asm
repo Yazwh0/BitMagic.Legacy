@@ -188,8 +188,9 @@ opcode_done::
 	mov rbx, cpu_posy
 	add rbx, 1
 	cmp rbx, SCREEN_HEIGHT			; are we into the new frame?
-	jl check_line_type
-	xor rbx, rbx
+	jl check_line_type		
+	
+	xor rbx, rbx					; if so, zero the current line
 	mov cpu_posy, rbx
 	jmp line_check
 
@@ -236,7 +237,6 @@ vsync:
 	mov byte ptr [rdx].state.interrupt_vsync_hit, 1
 	mov byte ptr [rdx].state.interrupt, 1
 
-display_done::
 	jmp main_loop
 
 exit_loop: ; how do we get here?

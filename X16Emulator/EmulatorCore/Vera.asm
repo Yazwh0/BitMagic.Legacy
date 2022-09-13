@@ -120,13 +120,6 @@ endm
 ; initialise colours etc
 ; rdx points to cpu state
 vera_init proc
-	
-	; use xmm0 to store how many pixels we're doing to cpu tick
-	pxor xmm0, xmm0
-	pxor xmm1, xmm1	; we use xmm1 as scratch
-	movsd xmm2, display_step
-	movsd xmm3, display_reset
-
 	;
 	; Set to be drawing, as we'll start at 0,0
 	;
