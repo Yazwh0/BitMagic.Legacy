@@ -18,6 +18,7 @@ state struct
 	rom_ptr					qword ?
 	rambank_ptr				qword ?
 	display_ptr				qword ?
+	display_buffer_ptr		qword ?
 
 	; Vera
 	vram_ptr				qword ?
@@ -104,6 +105,7 @@ state struct
 
 	; Rendering
 	display_position		dword ?
+	frame_count				dword ?
 ;	display_x				word ?
 ;	display_y				word ?
 state ends

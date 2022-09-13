@@ -157,6 +157,8 @@ asm_func proc state_ptr:QWORD
 main_loop::
 	mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
 
+
+
 	; check for interrupt
 	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
 	cmp byte ptr [rdx].state.interrupt, 0
@@ -218,11 +220,21 @@ line_check:
 	mov byte ptr [rdx].state.interrupt, 1				; cpu interrupt
 
 	jmp main_loop
-vsync:
+vsync:	
 	; update display
-
 	call vera_render_display
 
+	; Check if the cpu has gotten too high. if so then reset it.
+	mov rax, 08000000000000000h
+	test r14, rax
+	jz no_cpu_reset
+	mov rax, 07fffffffffffffffh
+	and r14, rax
+	mov [rdx].state.vera_clock, r14	; update vera clock as well.
+
+no_cpu_reset:
+
+	add dword ptr [rdx].state.frame_count, 1
 	; fire vsync IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_vsync
 	test cl, cl

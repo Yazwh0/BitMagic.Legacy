@@ -70,6 +70,7 @@ public class Emulator : IDisposable
         public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value? (byte)1 : (byte)0); }
         public bool Interrupt_Vsync_Hit { get => _emulator._state.Interrupt_Vsync_Hit != 0; set => _emulator._state.Interrupt_Vsync_Hit = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_SpCol_Hit { get => _emulator._state.Interrupt_SpCol_Hit != 0; set => _emulator._state.Interrupt_SpCol_Hit = (value ? (byte)1 : (byte)0); }
+        public UInt32 Frame_Count { get => _emulator._state.Frame_Count; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -79,6 +80,7 @@ public class Emulator : IDisposable
         public ulong RomPtr = 0;
         public ulong RamBankPtr = 0;
         public ulong DisplayPtr = 0;
+        public ulong DisplayBufferPtr = 0;
 
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
@@ -163,10 +165,12 @@ public class Emulator : IDisposable
         public byte Drawing = 0;
 
         public UInt32 Beam_Position = 0;
+        public UInt32 Frame_Count = 0;
         //public ushort Beam_x = 0;
         //public ushort Beam_y = 0;
 
-        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, ulong display, ulong palette)
+        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
+            ulong display, ulong palette, ulong displayBuffer)
         {
             MemoryPtr = memory;
             RomPtr = rom;
@@ -174,6 +178,7 @@ public class Emulator : IDisposable
             VramPtr = vram;
             DisplayPtr = display;
             PalettePtr = palette;
+            DisplayBufferPtr = displayBuffer;
         }
     }
 
@@ -210,6 +215,7 @@ public class Emulator : IDisposable
     private readonly ulong _ram_ptr;
     private readonly ulong _vram_ptr;
     private readonly ulong _display_ptr;
+    private readonly ulong _display_buffer_ptr;
     private readonly ulong _palette_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
@@ -218,6 +224,8 @@ public class Emulator : IDisposable
     private const int VramSize = 0x20000;
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
+    private const int DisplayBufferSize = 800 * 2 * 2 * 5; // Pallette index for two lines * 2 for double buffer * 5 for each layers
+
 
     public unsafe Emulator()
     {
@@ -227,8 +235,9 @@ public class Emulator : IDisposable
         _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
+        _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr);
+        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -275,6 +284,7 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_ram_ptr);
         NativeMemory.Free((void*)_display_ptr);
         NativeMemory.Free((void*)_vram_ptr);
-        NativeMemory.Free((void*)_palette_ptr);
+        NativeMemory.Free((void*)_palette_ptr);        
+        NativeMemory.Free((void*)_display_buffer_ptr);
     }
 }

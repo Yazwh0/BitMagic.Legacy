@@ -3,6 +3,7 @@ using BitMagic.X16Emulator;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
+using System.Diagnostics;
 
 namespace X16E;
 
@@ -15,12 +16,18 @@ internal class EmulatorWindow
 
 
     private static GlObject[]? _layers;
+    private static UInt32 _lastCount;
+    private static long _lastTicks;
+    private static double _speed = 0;
+    private static double _fps = 0;
+    private static Stopwatch _stopwatch = new Stopwatch();
+    private static Emulator _emulator;
 
     private static bool _requireUpdate = false;
 
     public static void Run(Emulator emulator)
     {
-        var _emulator = emulator;
+        _emulator = emulator;
         _window = Window.Create(WindowOptions.Default);
 
         _images = new X16EImage[6];
@@ -39,6 +46,7 @@ internal class EmulatorWindow
         _window.Render += OnRender;
         _window.Closing += OnClose;
 
+        _stopwatch.Start();
         _window.Run();
     }
 
@@ -80,6 +88,27 @@ internal class EmulatorWindow
             i.OnRender(_gl, _shader, true);
         }
         _requireUpdate = false;
+        var thisTicks = _stopwatch.ElapsedMilliseconds;
+        if (thisTicks - _lastTicks > 1000)
+        {
+            var thisCount = _emulator.Vera.Frame_Count;
+
+            if (thisCount == _lastCount) // no frames this second?
+            {
+                _speed = 0;
+                _fps = 0;
+            }
+            else
+            {
+                var tickDelta = thisTicks - _lastTicks;
+                _fps = (thisCount - _lastCount) / (tickDelta / 1000.0);
+                _speed = _fps / 59.523809;
+            }
+            _lastCount = thisCount;
+            _lastTicks = thisTicks;
+        }
+
+        _window.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0}fps]";
     }
 
     private static void OnClose()
