@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests;
 
 [TestClass]
-public class VeraInitialise
+public class Vera_Initialise
 {
 
     [TestMethod]
@@ -310,6 +310,166 @@ public class VeraInitialise
     }
 
     [TestMethod]
+    public async Task Layer0_Config_YShift_W0_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x0;
+        emulator.Vera.Layer0_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W1_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x1;
+        emulator.Vera.Layer0_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(6, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W2_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x2;
+        emulator.Vera.Layer0_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(7, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W3_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x3;
+        emulator.Vera.Layer0_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W0_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x0;
+        emulator.Vera.Layer0_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W1_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x1;
+        emulator.Vera.Layer0_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(6, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W2_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x2;
+        emulator.Vera.Layer0_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(7, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer0_Config_YShift_W3_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer0_MapWidth = 0x3;
+        emulator.Vera.Layer0_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_VShift);
+    }
+
+    [TestMethod]
     public async Task Layer0_Config_Bitmap()
     {
         var emulator = new Emulator();
@@ -522,6 +682,166 @@ public class VeraInitialise
                 emulator);
 
         Assert.AreEqual(0b00110000, emulator.Memory[0x9f34]);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W0_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x0;
+        emulator.Vera.Layer1_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W1_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x1;
+        emulator.Vera.Layer1_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(6, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W2_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x2;
+        emulator.Vera.Layer1_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(7, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W3_H0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x3;
+        emulator.Vera.Layer1_TileHeight = 0x0;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(8, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W0_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x0;
+        emulator.Vera.Layer1_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W1_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x1;
+        emulator.Vera.Layer1_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(6, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W2_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x2;
+        emulator.Vera.Layer1_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(7, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer1_Tile_VShift);
+    }
+
+    [TestMethod]
+    public async Task Layer1_Config_YShift_W3_H1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Layer1_MapWidth = 0x3;
+        emulator.Vera.Layer1_TileHeight = 0x1;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp",
+                emulator);
+
+        Assert.AreEqual(8, emulator.Vera.Layer1_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer1_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer1_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer1_Tile_VShift);
     }
 
     [TestMethod]

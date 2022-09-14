@@ -106,7 +106,27 @@ state struct
 	; Rendering
 	display_position		dword ?
 	frame_count				dword ?
+	buffer_render_position	dword ?
+	buffer_output_position	dword ?
 	display_x				word ?
 	display_y				word ?
+
+	; Layer 0
+	layer0_config			word ?
+	layer0_next_render		word ?
+	layer0_tile_hshift		word ?
+	layer0_tile_vshift		word ?
+	layer0_map_hshift		word ?
+	layer0_map_vshift		word ?
+
+	
+	; Layer 1
+	layer1_config			word ?
+	layer1_next_render		word ?
+	layer1_tile_hshift		word ?
+	layer1_tile_vshift		word ?
+	layer1_map_hshift		word ?
+	layer1_map_vshift		word ?
+	
 state ends
 

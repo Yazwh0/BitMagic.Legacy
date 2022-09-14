@@ -117,6 +117,50 @@ match:
 	mov [rsi+ADDRx_H], dil
 endm
 
+layer0_tileshifts macro
+	; Multipliers
+	; Y tile height
+	lea rax, vera_map_shift_table
+	movzx rbx, byte ptr [rdx].state.layer0_mapWidth
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer0_map_hshift, bx
+
+	movzx rbx, byte ptr [rdx].state.layer0_mapHeight
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer0_map_vshift, bx
+
+	lea rax, vera_tile_shift_table
+	movzx rbx, byte ptr [rdx].state.layer0_tileWidth
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer0_tile_hshift, bx
+
+	movzx rbx, byte ptr [rdx].state.layer0_tileHeight
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer0_tile_vshift, bx
+endm
+
+layer1_tileshifts macro
+	; Multipliers
+	; Y tile height
+	lea rax, vera_map_shift_table
+	movzx rbx, byte ptr [rdx].state.layer1_mapWidth
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer1_map_hshift, bx
+
+	movzx rbx, byte ptr [rdx].state.layer1_mapHeight
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer1_map_vshift, bx
+
+	lea rax, vera_tile_shift_table
+	movzx rbx, byte ptr [rdx].state.layer1_tileWidth
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer1_tile_hshift, bx
+
+	movzx rbx, byte ptr [rdx].state.layer1_tileHeight
+	mov bx, word ptr [rax + rbx * 2]
+	mov word ptr [rdx].state.layer1_tile_vshift, bx
+endm
+
 ; initialise colours etc
 ; rdx points to cpu state
 vera_init proc
@@ -234,6 +278,8 @@ dc_done:
 	or al, bl
 
 	mov byte ptr [rsi+L0_CONFIG], al
+	and al, 00001111b
+	mov word ptr [rdx].state.layer0_config, ax
 
 	; Map Base Address
 	mov eax, dword ptr [rdx].state.layer0_mapAddress
@@ -252,6 +298,8 @@ dc_done:
 	and bl, 00000001b
 	or al, bl
 	mov byte ptr [rsi+L0_TILEBASE], al
+
+	layer0_tileshifts
 
 	; HScroll
 	mov ax, word ptr [rdx].state.layer0_hscroll
@@ -288,6 +336,8 @@ dc_done:
 	or al, bl
 
 	mov byte ptr [rsi+L1_CONFIG], al
+	and al, 00001111b
+	mov word ptr [rdx].state.layer1_config, ax
 
 	; Map Base Address
 	mov eax, dword ptr [rdx].state.layer1_mapAddress
@@ -306,6 +356,8 @@ dc_done:
 	and bl, 00000001b
 	or al, bl
 	mov byte ptr [rsi+L1_TILEBASE], al
+
+	layer1_tileshifts
 
 	; HScroll
 	mov ax, word ptr [rdx].state.layer1_hscroll
@@ -802,6 +854,7 @@ vera_update_9f2c endp
 
 vera_update_l0config proc
 	movzx r13, byte ptr [rsi+rbx]
+	lea rbx, vera_map_shift_table
 
 	mov rax, r13
 	and rax, 00000011b
@@ -817,10 +870,19 @@ vera_update_l0config proc
 	shr rax, 4
 	mov byte ptr [rdx].state.layer0_mapWidth, al
 
+	mov ax, word ptr [rbx + rax * 2]
+	mov word ptr [rdx].state.layer0_map_vshift, ax
+
 	mov rax, r13
 	and rax, 11000000b
 	shr rax, 6
 	mov byte ptr [rdx].state.layer0_mapHeight, al
+
+	mov ax, [rbx + rax * 2]
+	mov word ptr [rdx].state.layer0_map_hshift, ax
+
+	and r13, 00001111b
+	mov word ptr [rdx].state.layer0_config, r13w
 
 	ret
 vera_update_l0config endp
@@ -836,15 +898,22 @@ vera_update_l0mapbase endp
 
 vera_update_l0tilebase proc
 	movzx r13, byte ptr [rsi+rbx]
+	lea rbx, vera_tile_shift_table
 
 	mov rax, r13
 	and rax, 00000001b
 	mov byte ptr [rdx].state.layer0_tileWidth, al
 
+	mov ax, word ptr [rbx + rax * 2]
+	mov word ptr [rdx].state.layer0_tile_vshift, ax
+
 	mov rax, r13
 	and rax, 00000010b
 	shr rax, 1
 	mov byte ptr [rdx].state.layer0_tileHeight, al
+
+	mov ax, word ptr [rbx + rax * 2]
+	mov word ptr [rdx].state.layer0_tile_hshift, ax
 
 	and r13, 11111100b
 	shl r13, 9											; not 11, as we're shifted by 2 bits already
@@ -890,6 +959,7 @@ vera_update_l0vscroll_h endp
 
 vera_update_l1config proc
 	movzx r13, byte ptr [rsi+rbx]
+	lea rbx, vera_map_shift_table
 
 	mov rax, r13
 	and rax, 00000011b
@@ -904,12 +974,20 @@ vera_update_l1config proc
 	and rax, 00110000b
 	shr rax, 4
 	mov byte ptr [rdx].state.layer1_mapWidth, al
+	mov ax, [rbx + rax * 2]
+	mov word ptr [rdx].state.layer1_map_vshift, ax
 
 	mov rax, r13
 	and rax, 11000000b
 	shr rax, 6
 	mov byte ptr [rdx].state.layer1_mapHeight, al
+	
+	mov ax, [rbx + rax * 2]
+	mov word ptr [rdx].state.layer1_map_hshift, ax
 
+	and r13, 00001111b
+	mov word ptr [rdx].state.layer1_config, r13w
+	
 	ret
 vera_update_l1config endp
 
@@ -924,15 +1002,24 @@ vera_update_l1mapbase endp
 
 vera_update_l1tilebase proc
 	movzx r13, byte ptr [rsi+rbx]
+	lea rbx, vera_tile_shift_table
 
 	mov rax, r13
 	and rax, 00000001b
 	mov byte ptr [rdx].state.layer1_tileWidth, al
 
+	mov ax, word ptr [rbx + rax * 2]
+	mov word ptr [rdx].state.layer1_tile_vshift, ax
+
+
 	mov rax, r13
 	and rax, 00000010b
 	shr rax, 1
 	mov byte ptr [rdx].state.layer1_tileHeight, al
+
+	mov ax, word ptr [rbx + rax * 2]
+	mov word ptr [rdx].state.layer1_tile_hshift, ax
+
 
 	and r13, 11111100b
 	shl r13, 9											; not 11, as we're shifted by 2 bits already
@@ -1045,5 +1132,10 @@ vera_registers:
 
 vera_step_table:
 	dw 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 40, 80, 160, 320, 640
+
+vera_tile_shift_table:
+	dw 3, 4
+vera_map_shift_table:
+	dw 5, 6, 7, 8
 
 .code

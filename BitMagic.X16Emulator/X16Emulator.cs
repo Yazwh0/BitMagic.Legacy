@@ -31,9 +31,9 @@ public class Emulator : IDisposable
         public ushort Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
         public ushort Dc_VStart { get => _emulator._state.Dc_VStart; set => _emulator._state.Dc_VStart = value; }
         public ushort Dc_VStop { get => _emulator._state.Dc_VStop; set => _emulator._state.Dc_VStop = value; }
-        public bool SpriteEnable { get => _emulator._state.SpriteEnable != 0; set => _emulator._state.SpriteEnable = (value ? (byte)1 : (byte)0); }
-        public bool Layer0Enable { get => _emulator._state.Layer0Enable != 0; set => _emulator._state.Layer0Enable = (value ? (byte)1 : (byte)0); }
-        public bool Layer1Enable { get => _emulator._state.Layer1Enable != 0; set => _emulator._state.Layer1Enable = (value ? (byte)1 : (byte)0); }
+        public bool SpriteEnable { get => _emulator._state.Sprite_Enable != 0; set => _emulator._state.Sprite_Enable = (value ? (byte)1 : (byte)0); }
+        public bool Layer0Enable { get => _emulator._state.Layer0_Enable != 0; set => _emulator._state.Layer0_Enable = (value ? (byte)1 : (byte)0); }
+        public bool Layer1Enable { get => _emulator._state.Layer1_Enable != 0; set => _emulator._state.Layer1_Enable = (value ? (byte)1 : (byte)0); }
 
         public byte Layer0_MapHeight { get => _emulator._state.Layer0_MapHeight; set => _emulator._state.Layer0_MapHeight = value; }
         public byte Layer0_MapWidth { get => _emulator._state.Layer0_MapWidth; set => _emulator._state.Layer0_MapWidth = value; }
@@ -71,6 +71,18 @@ public class Emulator : IDisposable
         public bool Interrupt_Vsync_Hit { get => _emulator._state.Interrupt_Vsync_Hit != 0; set => _emulator._state.Interrupt_Vsync_Hit = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_SpCol_Hit { get => _emulator._state.Interrupt_SpCol_Hit != 0; set => _emulator._state.Interrupt_SpCol_Hit = (value ? (byte)1 : (byte)0); }
         public UInt32 Frame_Count { get => _emulator._state.Frame_Count; }
+
+        public ushort Layer0_Config { get => _emulator._state.Layer0_Config; }
+        public ushort Layer0_Tile_HShift { get => _emulator._state.Layer0_Tile_HShift; }
+        public ushort Layer0_Tile_VShift { get => _emulator._state.Layer0_Tile_VShift; }
+        public ushort Layer0_Map_HShift { get => _emulator._state.Layer0_Map_HShift; }
+        public ushort Layer0_Map_VShift { get => _emulator._state.Layer0_Map_VShift; }
+
+        public ushort Layer1_Config { get => _emulator._state.Layer1_Config; }
+        public ushort Layer1_Tile_HShift { get => _emulator._state.Layer1_Tile_HShift; }
+        public ushort Layer1_Tile_VShift { get => _emulator._state.Layer1_Tile_VShift; }
+        public ushort Layer1_Map_HShift { get => _emulator._state.Layer1_Map_HShift; }
+        public ushort Layer1_Map_VShift { get => _emulator._state.Layer1_Map_VShift; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -120,9 +132,9 @@ public class Emulator : IDisposable
         public ushort Dc_VStart = 0;
         public ushort Dc_VStop = 640;
 
-        public byte SpriteEnable = 0;
-        public byte Layer0Enable = 0;
-        public byte Layer1Enable = 0;
+        public byte Sprite_Enable = 0;
+        public byte Layer0_Enable = 0;
+        public byte Layer1_Enable = 0;
 
         // 1 byte of padding
 
@@ -138,6 +150,7 @@ public class Emulator : IDisposable
         public byte Layer0_TileHeight = 0;
         public byte Layer0_TileWidth = 0;
 
+        public byte Cpu_Waiting = 0;
         // 2 bytes of padding
 
         // layer 1
@@ -166,8 +179,25 @@ public class Emulator : IDisposable
 
         public UInt32 Beam_Position = 0;
         public UInt32 Frame_Count = 0;
+        public UInt32 Buffer_Render_Position = 0;
+        public UInt32 Buffer_Output_Position = 1024; // so there is 1 line between the render and output
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
+
+
+        public ushort Layer0_Config = 0;
+        public ushort Layer0_next_render = 0;
+        public ushort Layer0_Tile_HShift = 0;
+        public ushort Layer0_Tile_VShift = 0;
+        public ushort Layer0_Map_HShift = 0;
+        public ushort Layer0_Map_VShift = 0;
+
+        public ushort Layer1_Config = 0;
+        public ushort Layer1_next_render = 0;
+        public ushort Layer1_Tile_HShift = 0;
+        public ushort Layer1_Tile_VShift = 0;
+        public ushort Layer1_Map_HShift = 0;
+        public ushort Layer1_Map_VShift = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer)
@@ -224,7 +254,7 @@ public class Emulator : IDisposable
     private const int VramSize = 0x20000;
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
-    private const int DisplayBufferSize = 800 * 2 * 2 * 5; // Pallette index for two lines * 2 for double buffer * 5 for each layers
+    private const int DisplayBufferSize = 1024 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output
 
 
     public unsafe Emulator()

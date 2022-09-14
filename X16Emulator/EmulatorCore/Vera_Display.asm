@@ -24,31 +24,41 @@ include State.asm
 ; rdi  : display
 ; r8   : palette
 ; r9   : output offset
-; r10  : should display
+; r10  : should display table ptr?
 ; r11  : x
 ; r12  : y
 ; r13  : scratch
 ; r14  : scratch
-; r15  : scratch
+; r15  : buffer_render_output
 
 
 
 
-SCREEN_WIDTH	equ 800
-SCREEN_HEIGHT	equ 525
-SCREEN_DOTS		equ SCREEN_WIDTH * SCREEN_HEIGHT
+SCREEN_WIDTH		equ 800
+SCREEN_HEIGHT		equ 525
+SCREEN_DOTS			equ SCREEN_WIDTH * SCREEN_HEIGHT
 
-BACKGROUND		equ 0
-SPRITE_L1		equ SCREEN_DOTS
-LAYER0			equ SCREEN_DOTS*2
-SPRITE_L2		equ SCREEN_DOTS*3
-LAYER1			equ SCREEN_DOTS*4
-SPRITE_L3		equ SCREEN_DOTS*5
+; Screen is RGBA so * 4.
+SCREEN_BUFFER_SIZE	equ SCREEN_DOTS * 4
+BACKGROUND			equ 0
+SPRITE_L1			equ SCREEN_BUFFER_SIZE
+LAYER0				equ SCREEN_BUFFER_SIZE * 2
+SPRITE_L2			equ SCREEN_BUFFER_SIZE * 3
+LAYER1				equ SCREEN_BUFFER_SIZE * 4
+SPRITE_L3			equ SCREEN_BUFFER_SIZE * 5
 
-VISIBLE_WIDTH	equ 640
-VISIBLE_HEIGHT	equ 480
+VISIBLE_WIDTH		equ 640
+VISIBLE_HEIGHT		equ 480
 
-VBLANK			equ 480
+VBLANK				equ 480
+
+; Buffer is colour index. one line being rendered, the other being output
+BUFFER_SIZE			equ 1024 * 2			; use 1024, so we can toggle high bit to switch
+BUFFER_SPRITE_L1	equ 0
+BUFFER_LAYER0		equ BUFFER_SIZE
+BUFFER_SPRITE_L2	equ BUFFER_SIZE * 2
+BUFFER_LAYER1		equ BUFFER_SIZE * 3
+BUFFER_SPRITE_L3	equ BUFFER_SIZE * 4
 
 ;
 ; Render the rest of the display, only gets called on vsync
@@ -90,38 +100,39 @@ change:
 	mov byte ptr [rdx].state.display_carry, al	; save carry
 	shr rcx, 3									; round, rcx now contains the steps
 
-	mov rsi, [rdx].state.vram_ptr
+	mov rsi, [rdx].state.display_buffer_ptr
 	mov rdi, [rdx].state.display_ptr
 	mov r8, [rdx].state.palette_ptr
 	mov r9d, [rdx].state.display_position
 	mov r11w, [rdx].state.display_x
 	mov r12w, [rdx].state.display_y
+	mov r15d, [rdx].state.buffer_output_position
 
 	lea r10, should_display_table
 
 display_loop:
+
 	; check if we're in the visible area as a trivial skip
 	mov al, byte ptr [r10 + r9]
 	test al, al
 	jz display_skip
 
-	movzx rax, [rdx].state.dc_vstart
+	movzx rax, word ptr [rdx].state.dc_vstart
 	cmp r12, rax
 	jl draw_border
 
-	movzx rax, [rdx].state.dc_vstop
-	cmp r12, rax
+	mov ax, word ptr [rdx].state.dc_vstop
+	cmp r12w, ax
 	jg draw_border
 
-	movzx rax, [rdx].state.dc_hstart
-	cmp r11, rax
+	mov ax, word ptr [rdx].state.dc_hstart
+	cmp r11w, ax
 	jl draw_border
 
-	movzx rax, [rdx].state.dc_hstop
-	cmp r11, rax
-	jg draw_border
+	mov ax, word ptr [rdx].state.dc_hstop
+	cmp r11w, ax
+	jle draw_pixel
 
-	jmp draw_pixel
 draw_border:
 	movzx rax, [rdx].state.dc_border
 	mov ebx, dword ptr [r8 + rax * 4]
@@ -134,11 +145,78 @@ draw_pixel:
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
 
+	;
 	; layer 0
+	;
+	mov al, byte ptr [rdx].state.layer0_enable
+	test al, al
+	jz layer0_notenabled
+
+	mov al, [rsi + r15 + BUFFER_LAYER0]			; read the colour index from the buffer
+	mov ebx, dword ptr [r8 + rax * 4]
+	mov [rdi + r9 * 4 + LAYER0], ebx
+	jmp layer0_done
+
+layer0_notenabled:
+	xor rbx, rbx								; if layer is not enabled, write a transparent pixel
+	mov [rdi + r9 * 4 + LAYER0], ebx	
+layer0_done:
+
+	;
+	; layer 1
+	;
+	mov al, byte ptr [rdx].state.layer1_enable
+	test al, al
+	jz layer1_notenabled
+
+	mov al, [rsi + r15 + BUFFER_LAYER1]			; read the colour index from the buffer
+	mov ebx, dword ptr [r8 + rax * 4]
+	mov [rdi + r9 * 4 + LAYER1], ebx
+	jmp layer1_done
+
+layer1_notenabled:
+	xor rbx, rbx								; if layer is not enabled, write a transparent pixel
+	mov [rdi + r9 * 4 + LAYER1], ebx	
+layer1_done:
 
 
 
 draw_complete:
+	; buffer is 1024 wide, but the is display is 800.
+	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
+	add r15, 1
+	mov rax, r15
+	and rax, 011111111111b	; dont consider the top bit
+	cmp rax, SCREEN_WIDTH
+	jne buffer_reset_skip
+	xor r15, 010000000000b	; flip top bit
+	and r15, 010000000000b	; and clear count
+
+buffer_reset_skip:
+	xor r15, 010000000000b ; flip top bit, so rendering can compare
+	;
+	; Render next lines
+	;
+
+	; Layer 0
+	movzx rax, word ptr [rdx].state.layer0_next_render
+	sub rax, 1
+	jnz layer0_render_done
+
+	; use config to jump to the correct renderer.
+	mov ax, word ptr [rdx].state.layer0_config
+	lea rbx, layer0_render_jump
+	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
+
+
+layer0_render_done::
+	mov word ptr [rdx].state.layer0_next_render, ax
+
+
+
+
+	xor r15, 010000000000b ; flip top bit back
+
 	add r11, 1
 	cmp r11, VISIBLE_WIDTH
 	jne display_skip
@@ -223,7 +301,51 @@ create_argb_palette:
 	ret
 vera_initialise_palette endp
 
+;
+; Renderers
+;
+
+;
+; Layer 0
+;
+
+layer0_1bpp_til_x_render proc
+	mov ebx, dword ptr [rdx].state.layer1_mapAddress
+	; rbx is base.
+	; + y / 8/16(tileheight) * mapWidth -- shr 3 or 4 and then shl 6, 7, 8 or 9
+	; + x * 8/16(tilewidth)             -- shl 3, 4
+	; mod mapHeight
+	; * 2
+
+
+	jmp layer0_render_done
+layer0_1bpp_til_x_render endp
+
+
+layer0_notinitialised:
+	mov ax, 1 ; count till next udpate requirement
+	jmp layer0_render_done
+
+layer0_render_jump:
+	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
+	layer0_2bpp_til_x qword layer0_notinitialised
+	layer0_4bpp_til_x qword layer0_notinitialised
+	layer0_8bpp_til_x qword layer0_notinitialised
+	layer0_1bpp_bit_x qword layer0_notinitialised
+	layer0_2bpp_bit_x qword layer0_notinitialised
+	layer0_4bpp_bit_x qword layer0_notinitialised
+	layer0_8bpp_bit_x qword layer0_notinitialised
+	layer0_1bpp_til_t qword layer0_notinitialised
+	layer0_2bpp_til_t qword layer0_notinitialised
+	layer0_4bpp_til_t qword layer0_notinitialised
+	layer0_8bpp_til_t qword layer0_notinitialised
+	layer0_1bpp_bit_t qword layer0_notinitialised
+	layer0_2bpp_bit_t qword layer0_notinitialised
+	layer0_4bpp_bit_t qword layer0_notinitialised
+	layer0_8bpp_bit_t qword layer0_notinitialised
+
 .data
+
 
 vera_default_palette:
 ; display here as xRGB, but written to memory as little endian, so GBxR

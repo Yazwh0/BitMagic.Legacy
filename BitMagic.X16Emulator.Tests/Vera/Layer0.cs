@@ -23,6 +23,11 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
+        Assert.AreEqual(0x03, emulator.Vera.Layer0_Config);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0x03, emulator.Memory[0x9F2d]);
     }
@@ -45,6 +50,11 @@ public class Layer0
         Assert.AreEqual(true, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
+        Assert.AreEqual(0x04, emulator.Vera.Layer0_Config);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0x04, emulator.Memory[0x9F2d]);
     }
@@ -67,6 +77,11 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
+        Assert.AreEqual(0x00, emulator.Vera.Layer0_Config);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0x30, emulator.Memory[0x9F2d]);
     }
@@ -89,6 +104,11 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapHeight);
+        Assert.AreEqual(0x00, emulator.Vera.Layer0_Config);
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0xc0, emulator.Memory[0x9F2d]);
     }
@@ -111,6 +131,11 @@ public class Layer0
         Assert.AreEqual(true, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapHeight);
+        Assert.AreEqual(0x0f, emulator.Vera.Layer0_Config);
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(8, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2d]);
     }
@@ -151,6 +176,10 @@ public class Layer0
         Assert.AreEqual(0x01, emulator.Vera.Layer0_TileWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_TileHeight);
         Assert.AreEqual((UInt32)0x00, emulator.Vera.Layer0_TileAddress);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0x01, emulator.Memory[0x9F2f]);
     }
@@ -172,6 +201,10 @@ public class Layer0
         Assert.AreEqual(0x00, emulator.Vera.Layer0_TileWidth);
         Assert.AreEqual(0x01, emulator.Vera.Layer0_TileHeight);
         Assert.AreEqual((UInt32)0x00, emulator.Vera.Layer0_TileAddress);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
+        Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
+        Assert.AreEqual(4, emulator.Vera.Layer0_Tile_HShift);
+        Assert.AreEqual(3, emulator.Vera.Layer0_Tile_VShift);
 
         Assert.AreEqual(0x02, emulator.Memory[0x9F2f]);
     }
