@@ -174,6 +174,8 @@ vera_init proc
 	; Set to be drawing, as we'll start at 0,0
 	;
 	mov byte ptr [rdx].state.drawing, 1
+	mov word ptr [rdx].state.layer0_next_render, 1
+	mov word ptr [rdx].state.layer1_next_render, 1
 
 	;
 	; DATA0\1

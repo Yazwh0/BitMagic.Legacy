@@ -83,6 +83,7 @@ change:
 	push rbx 
 	push r11
 	push r12
+	push r14
 	push r15
 
 	mov rax, rcx								; keep hold of base ticks
@@ -107,7 +108,7 @@ change:
 	mov r9d, [rdx].state.display_position
 	mov r11w, [rdx].state.display_x
 	mov r12w, [rdx].state.display_y
-	mov r15d, [rdx].state.buffer_output_position
+	mov r15d, [rdx].state.buffer_render_position
 
 	lea r10, should_display_table
 
@@ -142,6 +143,7 @@ draw_border:
 	jmp draw_complete
 
 draw_pixel:
+	mov rsi, [rdx].state.display_buffer_ptr
 	; background
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
@@ -153,8 +155,10 @@ draw_pixel:
 	test al, al
 	jz layer0_notenabled
 
-	mov al, [rsi + r15 + BUFFER_LAYER0]			; read the colour index from the buffer
-	mov ebx, dword ptr [r8 + rax * 4]
+	movzx rax, byte ptr [rsi + r15 + BUFFER_LAYER0]			; read the colour index from the buffer
+	xor rbx, rbx
+	test rax, rax
+	cmovnz ebx, dword ptr [r8 + rax * 4]
 	mov [rdi + r9 * 4 + LAYER0], ebx
 	jmp layer0_done
 
@@ -166,11 +170,11 @@ layer0_done:
 	;
 	; layer 1
 	;
-	mov al, byte ptr [rdx].state.layer1_enable
+	movzx rax, byte ptr [rdx].state.layer1_enable
 	test al, al
 	jz layer1_notenabled
 
-	mov al, [rsi + r15 + BUFFER_LAYER1]			; read the colour index from the buffer
+	movzx rax, byte ptr [rsi + r15 + BUFFER_LAYER1]			; read the colour index from the buffer
 	mov ebx, dword ptr [r8 + rax * 4]
 	mov [rdi + r9 * 4 + LAYER1], ebx
 	jmp layer1_done
@@ -187,14 +191,14 @@ draw_complete:
 	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
 	add r15, 1
 	mov rax, r15
-	and rax, 011111111111b	; dont consider the top bit
-	cmp rax, SCREEN_WIDTH
+	and rax, 001111111111b	; dont consider the top bit
+	cmp rax, VISIBLE_WIDTH
 	jne buffer_reset_skip
 	xor r15, 010000000000b	; flip top bit
 	and r15, 010000000000b	; and clear count
 
 buffer_reset_skip:
-	xor r15, 010000000000b ; flip top bit, so rendering can compare
+	xor r15, 010000000000b ; flip top bit, so rendering happens on the alternatite line
 	;
 	; Render next lines
 	;
@@ -202,11 +206,10 @@ buffer_reset_skip:
 	; Layer 0
 	movzx rax, word ptr [rdx].state.layer0_next_render
 	sub rax, 1
-	mov rax, 1
 	jnz layer0_render_done
 
 	; use config to jump to the correct renderer.
-	mov ax, word ptr [rdx].state.layer0_config
+	movzx rax, word ptr [rdx].state.layer0_config
 	lea rbx, layer0_render_jump
 	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
 
@@ -245,6 +248,7 @@ done:
 	mov word ptr [rdx].state.display_y, r12w
 
 	pop r15
+	pop r14
 	pop r12
 	pop r11
 	pop rbx 
@@ -314,38 +318,132 @@ vera_initialise_palette endp
 ;
 
 layer0_1bpp_til_x_render proc
-	; + y / 8/16(tileheight) * mapWidth -- shr 3 or 4 and then shl 6, 7, 8 or 9
-	; + x * 8/16(tilewidth)             -- shl 3, 4
-	; mod mapHeight
-	; * 2
-	push rcx
-	push rsi
-
-	mov rax, r12										; y
-	mov ecx, dword ptr [rdx].state.layer0_tile_vshift
-	shr rax, cl											; / tile height
-	mov ecx, dword ptr [rdx].state.layer0_map_hshift
-	shl rax, cl											; * map width
-	mov rbx, r11
-	mov ecx, dword ptr [rdx].state.layer0_tile_hshift
-	shr rbx, cl											; / tile width
-	add rax, rbx			
-	shl rax, 1											; * 2
-
-	mov ebx, dword ptr [rdx].state.layer0_mapAddress
+	mov r13d, dword ptr [rdx].state.layer0_mapAddress
+	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 	mov rsi, [rdx].state.vram_ptr
-	add rax, rbx
-	mov rax, [rsi + rax]							; now has tile number
+	; todo: add macro to call
+	call get_tile_definition_mw00_mh00_tw0_th0
+	; ax now contains tile number
 
-	pop rsi
-	pop rcx
+	; get tile data, need to caclualte offset
+	xor rbx, rbx
+	mov bl, ah						; get tile number
+
+	; this to be macrod
+	shl rbx, 3						; * 8 (1bpp @ 8x8)
+
+	push r8
+	mov r8, r12						; get y
+	and r8, 0fh						; mask offset
+	add rbx, r8						; adjust
+	add rbx, r14					; add to tile base address
+
+	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
+	pop r8
+
+	mov al, 1 ; TESTING
+
+	; ebx now contains the tile data
+
+	; r15 is our buffer current position
+	; need to fill the buffer with the colour indexes for each pixel
+	mov rsi, [rdx].state.display_buffer_ptr
+
+	movzx r14, al
+	and rax, 0fh		; al now contains the foreground colour index
+	shr r14, 4
+	and r14, 0fh		; r14b now contains the background colour index
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
+
+
+	; todo: set this to actual tile width
+	mov rax, 8 ; count till next update requirement
 
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
+; macros to find the current tile definition, returns data in ax. 
+; expects:
+; r13: current layer map address
+; r14: current layer tile address
+; rsi: vram
+; r11: x
+; r12: y
+; returns
+; ax  : tile information
+
+get_tile_definition macro map_width, map_height, tile_width, tile_height 
+	mov rax, r12					; y
+	shr rax, tile_height + 3		; / tile height
+	shl rax, tile_width + 3			; * map width
+
+	; constrain map to height
+	if map_height eq 0				
+		and rax, 011111b			; 32
+	endif
+	if map_height eq 1
+		and rax, 0111111b			; 64
+	endif
+	if map_height eq 2
+		and rax, 01111111b			; 128
+	endif
+	if map_height eq 3
+		and rax, 011111111b			; 256
+	endif
+
+	mov rbx, r11					; x
+	shr rbx, map_width + 5			; / tile width
+	add rax, rbx			
+	shl rax, 1						; * 2
+
+	add rax, r13					; vram address
+	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al 4:4)
+
+	ret
+endm
+
 
 mode_notsupported:
-	mov ax, 1 ; count till next udpate requirement
+	mov ax, 8 ; count till next update requirement
 	jmp layer0_render_done
 
 layer0_render_jump:
@@ -366,6 +464,344 @@ layer0_render_jump:
 	layer0_4bpp_bit_t qword mode_notsupported
 	layer0_8bpp_bit_t qword mode_notsupported
 
+	
+get_tile_definition_mw00_mh00_tw0_th0 proc
+	get_tile_definition 0, 0, 0, 0
+get_tile_definition_mw00_mh00_tw0_th0 endp
+
+get_tile_definition_mw00_mh00_tw0_th1 proc
+	get_tile_definition 0, 0, 0, 1
+get_tile_definition_mw00_mh00_tw0_th1 endp
+
+get_tile_definition_mw00_mh00_tw1_th0 proc
+	get_tile_definition 0, 0, 1, 0
+get_tile_definition_mw00_mh00_tw1_th0 endp
+
+get_tile_definition_mw00_mh00_tw1_th1 proc
+	get_tile_definition 0, 0, 1, 1
+get_tile_definition_mw00_mh00_tw1_th1 endp
+
+get_tile_definition_mw00_mh01_tw0_th0 proc
+	get_tile_definition 0, 1, 0, 0
+get_tile_definition_mw00_mh01_tw0_th0 endp
+
+get_tile_definition_mw00_mh01_tw0_th1 proc
+	get_tile_definition 0, 1, 0, 1
+get_tile_definition_mw00_mh01_tw0_th1 endp
+
+get_tile_definition_mw00_mh01_tw1_th0 proc
+	get_tile_definition 0, 1, 1, 0
+get_tile_definition_mw00_mh01_tw1_th0 endp
+
+get_tile_definition_mw00_mh01_tw1_th1 proc
+	get_tile_definition 0, 1, 1, 1
+get_tile_definition_mw00_mh01_tw1_th1 endp
+
+get_tile_definition_mw00_mh10_tw0_th0 proc
+	get_tile_definition 0, 2, 0, 0
+get_tile_definition_mw00_mh10_tw0_th0 endp
+
+get_tile_definition_mw00_mh10_tw0_th1 proc
+	get_tile_definition 0, 2, 0, 1
+get_tile_definition_mw00_mh10_tw0_th1 endp
+
+get_tile_definition_mw00_mh10_tw1_th0 proc
+	get_tile_definition 0, 2, 1, 0
+get_tile_definition_mw00_mh10_tw1_th0 endp
+
+get_tile_definition_mw00_mh10_tw1_th1 proc
+	get_tile_definition 0, 2, 1, 1
+get_tile_definition_mw00_mh10_tw1_th1 endp
+
+get_tile_definition_mw00_mh11_tw0_th0 proc
+	get_tile_definition 0, 3, 0, 0
+get_tile_definition_mw00_mh11_tw0_th0 endp
+
+get_tile_definition_mw00_mh11_tw0_th1 proc
+	get_tile_definition 0, 3, 0, 1
+get_tile_definition_mw00_mh11_tw0_th1 endp
+
+get_tile_definition_mw00_mh11_tw1_th0 proc
+	get_tile_definition 0, 3, 1, 0
+get_tile_definition_mw00_mh11_tw1_th0 endp
+
+get_tile_definition_mw00_mh11_tw1_th1 proc
+	get_tile_definition 0, 3, 1, 1
+get_tile_definition_mw00_mh11_tw1_th1 endp
+
+get_tile_definition_mw01_mh00_tw0_th0 proc
+	get_tile_definition 1, 0, 0, 0
+get_tile_definition_mw01_mh00_tw0_th0 endp
+
+get_tile_definition_mw01_mh00_tw0_th1 proc
+	get_tile_definition 1, 0, 0, 1
+get_tile_definition_mw01_mh00_tw0_th1 endp
+
+get_tile_definition_mw01_mh00_tw1_th0 proc
+	get_tile_definition 1, 0, 1, 0
+get_tile_definition_mw01_mh00_tw1_th0 endp
+
+get_tile_definition_mw01_mh00_tw1_th1 proc
+	get_tile_definition 1, 0, 1, 1
+get_tile_definition_mw01_mh00_tw1_th1 endp
+
+get_tile_definition_mw01_mh01_tw0_th0 proc
+	get_tile_definition 1, 1, 0, 0
+get_tile_definition_mw01_mh01_tw0_th0 endp
+
+get_tile_definition_mw01_mh01_tw0_th1 proc
+	get_tile_definition 1, 1, 0, 1
+get_tile_definition_mw01_mh01_tw0_th1 endp
+
+get_tile_definition_mw01_mh01_tw1_th0 proc
+	get_tile_definition 1, 1, 1, 0
+get_tile_definition_mw01_mh01_tw1_th0 endp
+
+get_tile_definition_mw01_mh01_tw1_th1 proc
+	get_tile_definition 1, 1, 1, 1
+get_tile_definition_mw01_mh01_tw1_th1 endp
+
+get_tile_definition_mw01_mh10_tw0_th0 proc
+	get_tile_definition 1, 2, 0, 0
+get_tile_definition_mw01_mh10_tw0_th0 endp
+
+get_tile_definition_mw01_mh10_tw0_th1 proc
+	get_tile_definition 1, 2, 0, 1
+get_tile_definition_mw01_mh10_tw0_th1 endp
+
+get_tile_definition_mw01_mh10_tw1_th0 proc
+	get_tile_definition 1, 2, 1, 0
+get_tile_definition_mw01_mh10_tw1_th0 endp
+
+get_tile_definition_mw01_mh10_tw1_th1 proc
+	get_tile_definition 1, 2, 1, 1
+get_tile_definition_mw01_mh10_tw1_th1 endp
+
+get_tile_definition_mw01_mh11_tw0_th0 proc
+	get_tile_definition 1, 3, 0, 0
+get_tile_definition_mw01_mh11_tw0_th0 endp
+
+get_tile_definition_mw01_mh11_tw0_th1 proc
+	get_tile_definition 1, 3, 0, 1
+get_tile_definition_mw01_mh11_tw0_th1 endp
+
+get_tile_definition_mw01_mh11_tw1_th0 proc
+	get_tile_definition 1, 3, 1, 0
+get_tile_definition_mw01_mh11_tw1_th0 endp
+
+get_tile_definition_mw01_mh11_tw1_th1 proc
+	get_tile_definition 1, 3, 1, 1
+get_tile_definition_mw01_mh11_tw1_th1 endp
+
+get_tile_definition_mw10_mh00_tw0_th0 proc
+	get_tile_definition 2, 0, 0, 0
+get_tile_definition_mw10_mh00_tw0_th0 endp
+
+get_tile_definition_mw10_mh00_tw0_th1 proc
+	get_tile_definition 2, 0, 0, 1
+get_tile_definition_mw10_mh00_tw0_th1 endp
+
+get_tile_definition_mw10_mh00_tw1_th0 proc
+	get_tile_definition 2, 0, 1, 0
+get_tile_definition_mw10_mh00_tw1_th0 endp
+
+get_tile_definition_mw10_mh00_tw1_th1 proc
+	get_tile_definition 2, 0, 1, 1
+get_tile_definition_mw10_mh00_tw1_th1 endp
+
+get_tile_definition_mw10_mh01_tw0_th0 proc
+	get_tile_definition 2, 1, 0, 0
+get_tile_definition_mw10_mh01_tw0_th0 endp
+
+get_tile_definition_mw10_mh01_tw0_th1 proc
+	get_tile_definition 2, 1, 0, 1
+get_tile_definition_mw10_mh01_tw0_th1 endp
+
+get_tile_definition_mw10_mh01_tw1_th0 proc
+	get_tile_definition 2, 1, 1, 0
+get_tile_definition_mw10_mh01_tw1_th0 endp
+
+get_tile_definition_mw10_mh01_tw1_th1 proc
+	get_tile_definition 2, 1, 1, 1
+get_tile_definition_mw10_mh01_tw1_th1 endp
+
+get_tile_definition_mw10_mh10_tw0_th0 proc
+	get_tile_definition 2, 2, 0, 0
+get_tile_definition_mw10_mh10_tw0_th0 endp
+
+get_tile_definition_mw10_mh10_tw0_th1 proc
+	get_tile_definition 2, 2, 0, 1
+get_tile_definition_mw10_mh10_tw0_th1 endp
+
+get_tile_definition_mw10_mh10_tw1_th0 proc
+	get_tile_definition 2, 2, 1, 0
+get_tile_definition_mw10_mh10_tw1_th0 endp
+
+get_tile_definition_mw10_mh10_tw1_th1 proc
+	get_tile_definition 2, 2, 1, 1
+get_tile_definition_mw10_mh10_tw1_th1 endp
+
+get_tile_definition_mw10_mh11_tw0_th0 proc
+	get_tile_definition 2, 3, 0, 0
+get_tile_definition_mw10_mh11_tw0_th0 endp
+
+get_tile_definition_mw10_mh11_tw0_th1 proc
+	get_tile_definition 2, 3, 0, 1
+get_tile_definition_mw10_mh11_tw0_th1 endp
+
+get_tile_definition_mw10_mh11_tw1_th0 proc
+	get_tile_definition 2, 3, 1, 0
+get_tile_definition_mw10_mh11_tw1_th0 endp
+
+get_tile_definition_mw10_mh11_tw1_th1 proc
+	get_tile_definition 2, 3, 1, 1
+get_tile_definition_mw10_mh11_tw1_th1 endp
+
+get_tile_definition_mw11_mh00_tw0_th0 proc
+	get_tile_definition 3, 0, 0, 0
+get_tile_definition_mw11_mh00_tw0_th0 endp
+
+get_tile_definition_mw11_mh00_tw0_th1 proc
+	get_tile_definition 3, 0, 0, 1
+get_tile_definition_mw11_mh00_tw0_th1 endp
+
+get_tile_definition_mw11_mh00_tw1_th0 proc
+	get_tile_definition 3, 0, 1, 0
+get_tile_definition_mw11_mh00_tw1_th0 endp
+
+get_tile_definition_mw11_mh00_tw1_th1 proc
+	get_tile_definition 3, 0, 1, 1
+get_tile_definition_mw11_mh00_tw1_th1 endp
+
+get_tile_definition_mw11_mh01_tw0_th0 proc
+	get_tile_definition 3, 1, 0, 0
+get_tile_definition_mw11_mh01_tw0_th0 endp
+
+get_tile_definition_mw11_mh01_tw0_th1 proc
+	get_tile_definition 3, 1, 0, 1
+get_tile_definition_mw11_mh01_tw0_th1 endp
+
+get_tile_definition_mw11_mh01_tw1_th0 proc
+	get_tile_definition 3, 1, 1, 0
+get_tile_definition_mw11_mh01_tw1_th0 endp
+
+get_tile_definition_mw11_mh01_tw1_th1 proc
+	get_tile_definition 3, 1, 1, 1
+get_tile_definition_mw11_mh01_tw1_th1 endp
+
+get_tile_definition_mw11_mh10_tw0_th0 proc
+	get_tile_definition 3, 2, 0, 0
+get_tile_definition_mw11_mh10_tw0_th0 endp
+
+get_tile_definition_mw11_mh10_tw0_th1 proc
+	get_tile_definition 3, 2, 0, 1
+get_tile_definition_mw11_mh10_tw0_th1 endp
+
+get_tile_definition_mw11_mh10_tw1_th0 proc
+	get_tile_definition 3, 2, 1, 0
+get_tile_definition_mw11_mh10_tw1_th0 endp
+
+get_tile_definition_mw11_mh10_tw1_th1 proc
+	get_tile_definition 3, 2, 1, 1
+get_tile_definition_mw11_mh10_tw1_th1 endp
+
+get_tile_definition_mw11_mh11_tw0_th0 proc
+	get_tile_definition 3, 3, 0, 0
+get_tile_definition_mw11_mh11_tw0_th0 endp
+
+get_tile_definition_mw11_mh11_tw0_th1 proc
+	get_tile_definition 3, 3, 0, 1
+get_tile_definition_mw11_mh11_tw0_th1 endp
+
+get_tile_definition_mw11_mh11_tw1_th0 proc
+	get_tile_definition 3, 3, 1, 0
+get_tile_definition_mw11_mh11_tw1_th0 endp
+
+get_tile_definition_mw11_mh11_tw1_th1 proc
+	get_tile_definition 3, 3, 1, 1
+get_tile_definition_mw11_mh11_tw1_th1 endp
+
+
+get_tile_definition_jump:
+	mw00_mh00_tw0_th0 qword get_tile_definition_mw00_mh00_tw0_th0
+	mw00_mh00_tw0_th1 qword get_tile_definition_mw00_mh00_tw0_th1
+	mw00_mh00_tw1_th0 qword get_tile_definition_mw00_mh00_tw1_th0
+	mw00_mh00_tw1_th1 qword get_tile_definition_mw00_mh00_tw1_th1
+
+	mw00_mh01_tw0_th0 qword get_tile_definition_mw00_mh01_tw0_th0
+	mw00_mh01_tw0_th1 qword get_tile_definition_mw00_mh01_tw0_th1
+	mw00_mh01_tw1_th0 qword get_tile_definition_mw00_mh01_tw1_th0
+	mw00_mh01_tw1_th1 qword get_tile_definition_mw00_mh01_tw1_th1
+
+	mw00_mh10_tw0_th0 qword get_tile_definition_mw00_mh10_tw0_th0
+	mw00_mh10_tw0_th1 qword get_tile_definition_mw00_mh10_tw0_th1
+	mw00_mh10_tw1_th0 qword get_tile_definition_mw00_mh10_tw1_th0
+	mw00_mh10_tw1_th1 qword get_tile_definition_mw00_mh10_tw1_th1
+
+	mw00_mh11_tw0_th0 qword get_tile_definition_mw00_mh11_tw0_th0
+	mw00_mh11_tw0_th1 qword get_tile_definition_mw00_mh11_tw0_th1
+	mw00_mh11_tw1_th0 qword get_tile_definition_mw00_mh11_tw1_th0
+	mw00_mh11_tw1_th1 qword get_tile_definition_mw00_mh11_tw1_th1
+
+	mw01_mh00_tw0_th0 qword get_tile_definition_mw01_mh00_tw0_th0
+	mw01_mh00_tw0_th1 qword get_tile_definition_mw01_mh00_tw0_th1
+	mw01_mh00_tw1_th0 qword get_tile_definition_mw01_mh00_tw1_th0
+	mw01_mh00_tw1_th1 qword get_tile_definition_mw01_mh00_tw1_th1
+
+	mw01_mh01_tw0_th0 qword get_tile_definition_mw01_mh01_tw0_th0
+	mw01_mh01_tw0_th1 qword get_tile_definition_mw01_mh01_tw0_th1
+	mw01_mh01_tw1_th0 qword get_tile_definition_mw01_mh01_tw1_th0
+	mw01_mh01_tw1_th1 qword get_tile_definition_mw01_mh01_tw1_th1
+
+	mw01_mh10_tw0_th0 qword get_tile_definition_mw01_mh10_tw0_th0
+	mw01_mh10_tw0_th1 qword get_tile_definition_mw01_mh10_tw0_th1
+	mw01_mh10_tw1_th0 qword get_tile_definition_mw01_mh10_tw1_th0
+	mw01_mh10_tw1_th1 qword get_tile_definition_mw01_mh10_tw1_th1
+
+	mw01_mh11_tw0_th0 qword get_tile_definition_mw01_mh11_tw0_th0
+	mw01_mh11_tw0_th1 qword get_tile_definition_mw01_mh11_tw0_th1
+	mw01_mh11_tw1_th0 qword get_tile_definition_mw01_mh11_tw1_th0
+	mw01_mh11_tw1_th1 qword get_tile_definition_mw01_mh11_tw1_th1
+
+	mw10_mh00_tw0_th0 qword get_tile_definition_mw10_mh00_tw0_th0
+	mw10_mh00_tw0_th1 qword get_tile_definition_mw10_mh00_tw0_th1
+	mw10_mh00_tw1_th0 qword get_tile_definition_mw10_mh00_tw1_th0
+	mw10_mh00_tw1_th1 qword get_tile_definition_mw10_mh00_tw1_th1
+
+	mw10_mh01_tw0_th0 qword get_tile_definition_mw10_mh01_tw0_th0
+	mw10_mh01_tw0_th1 qword get_tile_definition_mw10_mh01_tw0_th1
+	mw10_mh01_tw1_th0 qword get_tile_definition_mw10_mh01_tw1_th0
+	mw10_mh01_tw1_th1 qword get_tile_definition_mw10_mh01_tw1_th1
+
+	mw10_mh10_tw0_th0 qword get_tile_definition_mw10_mh10_tw0_th0
+	mw10_mh10_tw0_th1 qword get_tile_definition_mw10_mh10_tw0_th1
+	mw10_mh10_tw1_th0 qword get_tile_definition_mw10_mh10_tw1_th0
+	mw10_mh10_tw1_th1 qword get_tile_definition_mw10_mh10_tw1_th1
+
+	mw10_mh11_tw0_th0 qword get_tile_definition_mw10_mh11_tw0_th0
+	mw10_mh11_tw0_th1 qword get_tile_definition_mw10_mh11_tw0_th1
+	mw10_mh11_tw1_th0 qword get_tile_definition_mw10_mh11_tw1_th0
+	mw10_mh11_tw1_th1 qword get_tile_definition_mw10_mh11_tw1_th1
+
+	mw11_mh00_tw0_th0 qword get_tile_definition_mw11_mh00_tw0_th0
+	mw11_mh00_tw0_th1 qword get_tile_definition_mw11_mh00_tw0_th1
+	mw11_mh00_tw1_th0 qword get_tile_definition_mw11_mh00_tw1_th0
+	mw11_mh00_tw1_th1 qword get_tile_definition_mw11_mh00_tw1_th1
+
+	mw11_mh01_tw0_th0 qword get_tile_definition_mw11_mh01_tw0_th0
+	mw11_mh01_tw0_th1 qword get_tile_definition_mw11_mh01_tw0_th1
+	mw11_mh01_tw1_th0 qword get_tile_definition_mw11_mh01_tw1_th0
+	mw11_mh01_tw1_th1 qword get_tile_definition_mw11_mh01_tw1_th1
+
+	mw11_mh10_tw0_th0 qword get_tile_definition_mw11_mh10_tw0_th0
+	mw11_mh10_tw0_th1 qword get_tile_definition_mw11_mh10_tw0_th1
+	mw11_mh10_tw1_th0 qword get_tile_definition_mw11_mh10_tw1_th0
+	mw11_mh10_tw1_th1 qword get_tile_definition_mw11_mh10_tw1_th1
+
+	mw11_mh11_tw0_th0 qword get_tile_definition_mw11_mh11_tw0_th0
+	mw11_mh11_tw0_th1 qword get_tile_definition_mw11_mh11_tw0_th1
+	mw11_mh11_tw1_th0 qword get_tile_definition_mw11_mh11_tw1_th0
+	mw11_mh11_tw1_th1 qword get_tile_definition_mw11_mh11_tw1_th1
 .data
 
 

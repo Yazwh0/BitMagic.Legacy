@@ -285,6 +285,10 @@ public class Emulator : IDisposable
         var rom_span = new Span<byte>((void*)_rom_ptr, RomSize);
         for (var i = 0; i < RomSize; i++)
             rom_span[i] = 0;
+
+        var buffer_span = new Span<byte>((void*)_display_buffer_ptr, DisplayBufferSize);
+        for (var i = 0; i < DisplayBufferSize; i++)
+            buffer_span[i] = 0;
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
