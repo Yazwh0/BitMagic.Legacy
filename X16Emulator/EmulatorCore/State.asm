@@ -29,14 +29,16 @@ state struct
 	data0_step				qword ?
 	data1_step				qword ?
 
-
 	clock					qword ?
 	vera_clock				qword ?
+
 	register_pc				word ?
 	stackpointer			word ?
+
 	register_a				byte ?
 	register_x				byte ?
 	register_y				byte ?
+
 	flags_decimal			byte ?
 	flags_break				byte ?
 	flags_overflow			byte ?

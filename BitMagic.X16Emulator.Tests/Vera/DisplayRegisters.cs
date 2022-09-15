@@ -65,7 +65,7 @@ public class DisplayRegisters
                 emulator);
 
         Assert.AreEqual(0xff, emulator.Vera.Dc_HScale);
-        Assert.AreEqual(0x00, emulator.Vera.Dc_HStop);
+        Assert.AreEqual(480, emulator.Vera.Dc_HStop);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2a]);
     }
@@ -149,7 +149,7 @@ public class DisplayRegisters
                 emulator);
 
         Assert.AreEqual(0xff, emulator.Vera.Dc_Border);
-        Assert.AreEqual(0x00, emulator.Vera.Dc_VStop);
+        Assert.AreEqual(640, emulator.Vera.Dc_VStop);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2c]);
     }

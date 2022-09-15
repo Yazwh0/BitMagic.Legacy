@@ -83,6 +83,7 @@ change:
 	push rbx 
 	push r11
 	push r12
+	push r15
 
 	mov rax, rcx								; keep hold of base ticks
 	shl rcx, 3
@@ -123,7 +124,7 @@ display_loop:
 
 	mov ax, word ptr [rdx].state.dc_vstop
 	cmp r12w, ax
-	jg draw_border
+	jge draw_border
 
 	mov ax, word ptr [rdx].state.dc_hstart
 	cmp r11w, ax
@@ -131,7 +132,7 @@ display_loop:
 
 	mov ax, word ptr [rdx].state.dc_hstop
 	cmp r11w, ax
-	jle draw_pixel
+	jl draw_pixel
 
 draw_border:
 	movzx rax, [rdx].state.dc_border
@@ -201,6 +202,7 @@ buffer_reset_skip:
 	; Layer 0
 	movzx rax, word ptr [rdx].state.layer0_next_render
 	sub rax, 1
+	mov rax, 1
 	jnz layer0_render_done
 
 	; use config to jump to the correct renderer.
@@ -217,6 +219,7 @@ layer0_render_done::
 
 	xor r15, 010000000000b ; flip top bit back
 
+check_bounds:
 	add r11, 1
 	cmp r11, VISIBLE_WIDTH
 	jne display_skip
@@ -241,6 +244,7 @@ done:
 	mov word ptr [rdx].state.display_x, r11w
 	mov word ptr [rdx].state.display_y, r12w
 
+	pop r15
 	pop r12
 	pop r11
 	pop rbx 
@@ -310,39 +314,57 @@ vera_initialise_palette endp
 ;
 
 layer0_1bpp_til_x_render proc
-	mov ebx, dword ptr [rdx].state.layer1_mapAddress
-	; rbx is base.
 	; + y / 8/16(tileheight) * mapWidth -- shr 3 or 4 and then shl 6, 7, 8 or 9
 	; + x * 8/16(tilewidth)             -- shl 3, 4
 	; mod mapHeight
 	; * 2
+	push rcx
+	push rsi
 
+	mov rax, r12										; y
+	mov ecx, dword ptr [rdx].state.layer0_tile_vshift
+	shr rax, cl											; / tile height
+	mov ecx, dword ptr [rdx].state.layer0_map_hshift
+	shl rax, cl											; * map width
+	mov rbx, r11
+	mov ecx, dword ptr [rdx].state.layer0_tile_hshift
+	shr rbx, cl											; / tile width
+	add rax, rbx			
+	shl rax, 1											; * 2
+
+	mov ebx, dword ptr [rdx].state.layer0_mapAddress
+	mov rsi, [rdx].state.vram_ptr
+	add rax, rbx
+	mov rax, [rsi + rax]							; now has tile number
+
+	pop rsi
+	pop rcx
 
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
 
-layer0_notinitialised:
+mode_notsupported:
 	mov ax, 1 ; count till next udpate requirement
 	jmp layer0_render_done
 
 layer0_render_jump:
 	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
-	layer0_2bpp_til_x qword layer0_notinitialised
-	layer0_4bpp_til_x qword layer0_notinitialised
-	layer0_8bpp_til_x qword layer0_notinitialised
-	layer0_1bpp_bit_x qword layer0_notinitialised
-	layer0_2bpp_bit_x qword layer0_notinitialised
-	layer0_4bpp_bit_x qword layer0_notinitialised
-	layer0_8bpp_bit_x qword layer0_notinitialised
-	layer0_1bpp_til_t qword layer0_notinitialised
-	layer0_2bpp_til_t qword layer0_notinitialised
-	layer0_4bpp_til_t qword layer0_notinitialised
-	layer0_8bpp_til_t qword layer0_notinitialised
-	layer0_1bpp_bit_t qword layer0_notinitialised
-	layer0_2bpp_bit_t qword layer0_notinitialised
-	layer0_4bpp_bit_t qword layer0_notinitialised
-	layer0_8bpp_bit_t qword layer0_notinitialised
+	layer0_2bpp_til_x qword mode_notsupported
+	layer0_4bpp_til_x qword mode_notsupported
+	layer0_8bpp_til_x qword mode_notsupported
+	layer0_1bpp_bit_x qword mode_notsupported
+	layer0_2bpp_bit_x qword mode_notsupported
+	layer0_4bpp_bit_x qword mode_notsupported
+	layer0_8bpp_bit_x qword mode_notsupported
+	layer0_1bpp_til_t qword mode_notsupported
+	layer0_2bpp_til_t qword mode_notsupported
+	layer0_4bpp_til_t qword mode_notsupported
+	layer0_8bpp_til_t qword mode_notsupported
+	layer0_1bpp_bit_t qword mode_notsupported
+	layer0_2bpp_bit_t qword mode_notsupported
+	layer0_4bpp_bit_t qword mode_notsupported
+	layer0_8bpp_bit_t qword mode_notsupported
 
 .data
 

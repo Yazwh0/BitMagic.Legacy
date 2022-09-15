@@ -107,6 +107,7 @@ public class Emulator : IDisposable
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1ff;
+
         public byte A = 0;
         public byte X = 0;
         public byte Y = 0;
@@ -128,9 +129,9 @@ public class Emulator : IDisposable
         public byte Dc_VScale = 0;
         public byte Dc_Border = 0;
         public ushort Dc_HStart = 0;
-        public ushort Dc_HStop = 480;
+        public ushort Dc_HStop = 640;
         public ushort Dc_VStart = 0;
-        public ushort Dc_VStop = 640;
+        public ushort Dc_VStop = 480;
 
         public byte Sprite_Enable = 0;
         public byte Layer0_Enable = 0;

@@ -137,6 +137,9 @@ layer0_tileshifts macro
 	movzx rbx, byte ptr [rdx].state.layer0_tileHeight
 	mov bx, word ptr [rax + rbx * 2]
 	mov word ptr [rdx].state.layer0_tile_vshift, bx
+
+	xor rbx, rbx
+	xor rax, rax
 endm
 
 layer1_tileshifts macro
@@ -159,6 +162,9 @@ layer1_tileshifts macro
 	movzx rbx, byte ptr [rdx].state.layer1_tileHeight
 	mov bx, word ptr [rax + rbx * 2]
 	mov word ptr [rdx].state.layer1_tile_vshift, bx
+
+	xor rbx, rbx
+	xor rax, rax
 endm
 
 ; initialise colours etc

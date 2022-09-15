@@ -147,7 +147,6 @@ asm_func proc state_ptr:QWORD
 	pop rdx
 
 	mov last_cpuclock, 0
-	;movzx rax, word ptr [rdx].state.display_y
 	mov cpu_posy, rax
 
 	call vera_init
