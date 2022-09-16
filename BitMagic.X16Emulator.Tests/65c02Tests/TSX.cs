@@ -33,7 +33,7 @@ public class TSX
     {
         var emulator = new Emulator();
 
-        emulator.StackPointer = 0x12;
+        emulator.StackPointer = 0x112;
         emulator.X = 0x10;
         emulator.Carry = true;
         emulator.Decimal = true;

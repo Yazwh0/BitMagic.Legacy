@@ -262,7 +262,7 @@ next_opcode::
 	mov rcx, [rdx].state.history_pos
 	add rdi, rcx
 	add rcx, 8
-	and rcx, 03ffh
+	and rcx, 01fffh
 	mov [rdx].state.history_pos, rcx
 	mov word ptr [rdi], r11w		; PC
 	mov byte ptr [rdi+2], bl		; Opcode
@@ -272,7 +272,7 @@ next_opcode::
 ;	movzx rcx, word ptr [rsi+rbx+1]	; Get opcode
 ;	mov byte ptr [rdi+3], cx		; Param
 
-	cmp r11w, 0e241h
+	cmp r11w, 0e292h
 	jne debug_skip
 	nop
 	debug_skip:
@@ -507,9 +507,10 @@ endm
 read_indy_rbx_pagepenalty macro
 	local no_overflow
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 
-	adc bl, r10b		; Add Y to the lower address byte
+	add bl, r10b		; Add Y to the lower address byte
 	jnc no_overflow
 	add bh, 1			; Inc higher address byte
 	add r14, 1			; Add clock cycle
@@ -522,6 +523,7 @@ endm
 read_indy_rbx macro check_allvera
 	local no_overflow
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
 	read_banked_rbx check_allvera
@@ -529,6 +531,7 @@ endm
 
 read_indzp_rbx macro check_allvera
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
+	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address at location
 	read_banked_rbx check_allvera
 endm
@@ -584,6 +587,7 @@ lda_body_end macro checkvera, clock, pc
 endm
 
 lda_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	mov r8b, [rsi+rbx]
 	lda_body_end checkvera, clock, pc
 endm
@@ -650,6 +654,7 @@ ldx_body_end macro checkvera, clock, pc
 endm
 
 ldx_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	mov r9b, [rsi+rbx]
 	ldx_body_end checkvera, clock, pc
 endm
@@ -695,6 +700,7 @@ ldy_body_end macro checkvera, clock, pc
 endm
 
 ldy_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	mov r10b, [rsi+rbx]
 	ldy_body_end checkvera, clock, pc
 endm
@@ -731,7 +737,6 @@ xBC_ldy_absx endp
 
 sta_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
 	set_rsi_for_rbx					; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r8b
@@ -896,7 +901,7 @@ x9E_stz_absx endp
 
 inc_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
+;	mov rsi, [rdx].state.memory_ptr
 	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
@@ -914,7 +919,7 @@ endm
 
 dec_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
+;	mov rsi, [rdx].state.memory_ptr
 	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
@@ -1356,6 +1361,7 @@ x76_ror_zpx endp
 ;
 
 and_body_end macro checkvera, clock, pc
+	set_rsi_for_rbx
 	and r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1419,7 +1425,7 @@ x31_and_indy endp
 ;
 
 eor_body_end macro checkvera, clock, pc
-
+	set_rsi_for_rbx
 	xor r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1485,6 +1491,7 @@ x51_eor_indy endp
 ;
 
 ora_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	or r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1559,6 +1566,7 @@ adc_body_end macro checkvera, clock, pc
 endm
 
 adc_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	read_flags_rax
 
 	adc r8b, [rsi+rbx]
@@ -1631,6 +1639,7 @@ sbc_body_end macro checkvera, clock, pc
 endm
 
 sbc_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	read_flags_rax
 
 	cmc
@@ -1705,6 +1714,7 @@ cmp_body_end macro checkvera, clock, pc
 endm
 
 cmp_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	cmp r8b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
@@ -1759,6 +1769,7 @@ xD1_cmp_indy endp
 ;
 
 cmpx_body macro checkvera, clock, pc
+	set_rsi_for_rbx
 	cmp r9b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
@@ -2004,6 +2015,7 @@ endm
 
 bbr_body macro bitnumber
 	read_zp_rbx
+	set_rsi_for_rbx
 	movzx rax, byte ptr[rsi+rbx]
 	bt ax, bitnumber
 	jnc branch
@@ -2140,14 +2152,16 @@ x20_jsr proc
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
 	add rax, 1
 
+	push rsi
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov [rsi+rbx], al					; Put PC Low byte on stack
-	dec bl								; Move stack pointer on
-	mov [rsi+rbx], ah					; Put PC High byte on stack
-	dec bl								; Move stack pointer on (done twice for wrapping)
+	mov rsi, [rdx].state.memory_ptr
+	mov [rsi+rbx], ah					; Put PC Low byte on stack
+	sub rbx, 1							; Move stack pointer on
+	mov [rsi+rbx], al					; Put PC High byte on stack
+	sub rbx, 1							; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
-
+	pop rsi
 	read_abs_rbx 0						; use macro to get destination
 	mov r11w, bx	
 
@@ -2158,10 +2172,11 @@ x20_jsr endp
 
 x60_rts proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
+	mov rsi, [rdx].state.memory_ptr
 	add bl, 1							; Move stack pointer on
-	mov ah, [rsi+rbx]					; Get PC High byte on stack
+	mov al, [rsi+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
-	mov al, [rsi+rbx]					; Get PC Low byte on stack
+	mov ah, [rsi+rbx]					; Get PC Low byte on stack
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
@@ -2180,6 +2195,7 @@ x60_rts endp
 x48_pha proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1	; Decrement stack pointer
+	mov rsi, [rdx].state.memory_ptr
 	mov [rsi+rbx], r8b					; Put A on stack
 	
 	add r14, 3							; Add cycles
@@ -2192,6 +2208,7 @@ x68_pla proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
+	mov rsi, [rdx].state.memory_ptr
 	mov r8b, byte ptr [rsi+rbx] 		; Pull A from the stack
 	test r8b, r8b
 	write_flags_r15_preservecarry
@@ -2203,6 +2220,7 @@ x68_pla endp
 
 xDA_phx proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
+	mov rsi, [rdx].state.memory_ptr
 	mov [rsi+rbx], r9b					; Put X on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2216,6 +2234,7 @@ xFA_plx proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
+	mov rsi, [rdx].state.memory_ptr
 	mov r9b, byte ptr [rsi+rbx] 		; Pull X from the stack
 	test r9b, r9b
 	write_flags_r15_preservecarry
@@ -2227,6 +2246,7 @@ xFA_plx endp
 
 x5A_phy proc	
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
+	mov rsi, [rdx].state.memory_ptr
 	mov [rsi+rbx], r10b					; Put Y on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2239,6 +2259,7 @@ x7A_ply proc
 	add byte ptr [rdx].state.stackpointer ,1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
+	mov rsi, [rdx].state.memory_ptr
 	mov r10b, byte ptr [rsi+rbx] 		; Pull Y from the stack
 	test r10b, r10b
 	write_flags_r15_preservecarry

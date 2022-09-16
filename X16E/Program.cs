@@ -158,14 +158,20 @@ static class Program
                 Console.WriteLine($"Result: {Return}");
                 var history = Emulator.History;
                 var idx = (int)Emulator.HistoryPosition - 1;
-                Console.WriteLine("Last 20 steps:");
+                Console.WriteLine("Last 50 steps:");
 
-                for (var i = 0; i < 20; i++)
+                var toOutput = new List<string>();
+                for (var i = 0; i < 50; i++)
                 {
-                    Console.WriteLine($"${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
-                    if (idx == 0)
+                    toOutput.Add($"${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
+                    if (idx <= 0)
                         idx = 1024;
                     idx--;
+                }
+                toOutput.Reverse();
+                foreach (var l in toOutput)
+                {
+                    Console.WriteLine(l);
                 }
             }
         }

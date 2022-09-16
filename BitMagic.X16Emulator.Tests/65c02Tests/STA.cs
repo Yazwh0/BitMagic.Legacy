@@ -35,6 +35,98 @@ public class STA
     }
 
     [TestMethod]
+    public async Task ZeroPage_RomToZp()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+
+        emulator.RomBank[0x0000] = 0x85;
+        emulator.RomBank[0x0001] = 0x10;
+        emulator.RomBank[0x0002] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x10]);
+        emulator.AssertState(0x44, 0x00, 0x00, 0xc003);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task ZeroPage_RomToZp_RomBank()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+
+        emulator.RomBank[0x0000] = 0x85;
+        emulator.RomBank[0x0001] = 0x01;
+        emulator.RomBank[0x4000 * 2 + 0x0002] = 0xdb; // bank changes under PC
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x02, emulator.Memory[0x01]);
+        emulator.AssertState(0x02, 0x00, 0x00, 0xc003);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task ZeroPage_RomToZp_RamBank()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+
+        emulator.RamBank[0x0000] = 0x85;
+        emulator.RamBank[0x0001] = 0x00;
+        emulator.RamBank[0x2000 * 2 + 0x0002] = 0xdb; // bank changes under PC
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $a000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x02, emulator.Memory[0x00]);
+        emulator.AssertState(0x02, 0x00, 0x00, 0xa003);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task ZeroPage_BRamToZp()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+
+        emulator.RamBank[0x0000] = 0x85;
+        emulator.RamBank[0x0001] = 0x10;
+        emulator.RamBank[0x0002] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $a000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x10]);
+        emulator.AssertState(0x44, 0x00, 0x00, 0xa003);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task ZeroPageX()
     {
         var emulator = new Emulator();
@@ -205,6 +297,31 @@ public class STA
     }
 
     [TestMethod]
+    public async Task AbsoluteX_FromRom()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+        emulator.X = 0x05;
+
+        emulator.RomBank[0x0000] = 0x9d;
+        emulator.RomBank[0x0001] = 0x00;
+        emulator.RomBank[0x0002] = 0x01;
+        emulator.RomBank[0x0003] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x105]);
+        emulator.AssertState(0x44, 0x05, 0x00, 0xc004);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task AbsoluteY()
     {
         var emulator = new Emulator();
@@ -311,6 +428,33 @@ public class STA
         // emulation
         Assert.AreEqual(0x44, emulator.Memory[0x115]);
         emulator.AssertState(0x44, 0x00, 0x10, 0x813);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task IndirectY_FromRom()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+        emulator.Y = 0x10;
+
+        emulator.Memory[0x10] = 0x05;
+        emulator.Memory[0x11] = 0x01;
+
+        emulator.RomBank[0x0000] = 0x91;
+        emulator.RomBank[0x0001] = 0x10;
+        emulator.RomBank[0x0002] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x115]);
+        emulator.AssertState(0x44, 0x00, 0x10, 0xc003);
         emulator.AssertFlags(false, false, false, false);
     }
 

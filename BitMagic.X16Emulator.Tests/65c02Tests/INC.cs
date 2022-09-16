@@ -118,6 +118,54 @@ public class INC
     }
 
     [TestMethod]
+    public async Task Abs_RomToRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0x02;
+
+        emulator.RomBank[0x0000] = 0xee;
+        emulator.RomBank[0x0001] = 0x34;
+        emulator.RomBank[0x0002] = 0x12;
+        emulator.RomBank[0x0003] = 0xdb;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x03, emulator.Memory[0x1234]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0xc004);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_RomToBRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.RamBank[0x0234] = 0x02;
+
+        emulator.RomBank[0x0000] = 0xee;
+        emulator.RomBank[0x0001] = 0x34;
+        emulator.RomBank[0x0002] = 0xa2;
+        emulator.RomBank[0x0003] = 0xdb;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x03, emulator.RamBank[0x0234]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0xc004);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task Abs_PreserveFlags()
     {
         var emulator = new Emulator();

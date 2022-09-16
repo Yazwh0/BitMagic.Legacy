@@ -27,8 +27,8 @@ public class RTS
         Assert.AreEqual(0x20, emulator.Memory[0x810]);
 
         // Stack -- doesn't get cleared
-        Assert.AreEqual(0x12, emulator.Memory[0x1ff]);
-        Assert.AreEqual(0x08, emulator.Memory[0x1fe]);
+        Assert.AreEqual(0x12, emulator.Memory[0x1fe]);
+        Assert.AreEqual(0x08, emulator.Memory[0x1ff]);
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6+6, 0x1ff);

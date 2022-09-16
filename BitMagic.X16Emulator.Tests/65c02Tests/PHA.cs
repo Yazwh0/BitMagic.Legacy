@@ -26,10 +26,33 @@ public class PHA
 
         // compilation
         Assert.AreEqual(0x48, emulator.Memory[0x810]);
+
+        // emulation
+        Assert.AreEqual(0xff, emulator.Memory[0x1fd]);
+        emulator.AssertState(0xff, 0x00, 0x00, 0x812, 3);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Pha_FromRom()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0xff;
+
+        emulator.RomBank[0x0000] = 0x48;
+        emulator.RomBank[0x0001] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
         Assert.AreEqual(0xff, emulator.Memory[0x1fd]);
 
         // emulation
-        emulator.AssertState(0xff, 0x00, 0x00, 0x812, 3);
+        emulator.AssertState(0xff, 0x00, 0x00, 0xc002);
         emulator.AssertFlags(false, false, false, false);
     }
 

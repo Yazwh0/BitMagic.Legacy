@@ -411,7 +411,7 @@ vera_init endp
 ;
 vera_dataupdate_stuctures macro
 	local skip, xx_red
-
+	push rsi
 	cmp rdi, 1fa00h
 	jb skip
 
@@ -463,6 +463,7 @@ xx_red:
 	mov dword ptr [rsi + rax * 2], ecx
 	pop rax
 skip:
+	pop rsi
 endm
 
 ; rbx			address

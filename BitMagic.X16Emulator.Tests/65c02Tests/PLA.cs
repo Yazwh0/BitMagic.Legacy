@@ -35,6 +35,28 @@ public class PLA
     }
 
     [TestMethod]
+    public async Task Pla_FromRom()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1ff] = 0x20;
+        emulator.StackPointer = 0x1fe; // one item on the stack
+
+        emulator.RomBank[0x0000] = 0x68;
+        emulator.RomBank[0x0001] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x20, 0x00, 0x00, 0xc002);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task Pla_PreserveFlags()
     {
         var emulator = new Emulator();

@@ -27,8 +27,8 @@ public class JSR
         Assert.AreEqual(0x20, emulator.Memory[0x810]);
 
         // Stack
-        Assert.AreEqual(0x12, emulator.Memory[0x1ff]);
-        Assert.AreEqual(0x08, emulator.Memory[0x1fe]);
+        Assert.AreEqual(0x12, emulator.Memory[0x1fe]);
+        Assert.AreEqual(0x08, emulator.Memory[0x1ff]);
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x851, 6, 0x1fd);
