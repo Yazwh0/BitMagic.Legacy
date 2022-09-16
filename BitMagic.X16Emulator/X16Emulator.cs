@@ -4,6 +4,19 @@ using BitMagic.Common;
 
 namespace BitMagic.X16Emulator;
 
+[StructLayout(LayoutKind.Sequential)]
+public struct EmulatorHistory
+{
+    public ushort PC;
+    public byte OpCode;
+    public byte ParamL;
+    public byte ParamH;
+    public byte A;
+    public byte X;
+    public byte Y;
+
+}
+
 public class Emulator : IDisposable
 {
     [DllImport(@"..\..\..\..\X16Emulator\EmulatorCore\x64\Debug\EmulatorCore.dll")]
@@ -93,6 +106,7 @@ public class Emulator : IDisposable
         public ulong RamBankPtr = 0;
         public ulong DisplayPtr = 0;
         public ulong DisplayBufferPtr = 0;
+        public ulong HistoryPtr = 0;
 
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
@@ -105,8 +119,10 @@ public class Emulator : IDisposable
         public ulong Clock = 0x00;
         public ulong VeraClock = 0x00;
 
+        public ulong History_Pos = 0x00;
+
         public ushort Pc = 0;
-        public ushort StackPointer = 0x1ff;
+        public ushort StackPointer = 0x1fd; // apparently
 
         public byte A = 0;
         public byte X = 0;
@@ -201,7 +217,7 @@ public class Emulator : IDisposable
         public ushort Layer1_Map_VShift = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
-            ulong display, ulong palette, ulong displayBuffer)
+            ulong display, ulong palette, ulong displayBuffer, ulong history)
         {
             MemoryPtr = memory;
             RomPtr = rom;
@@ -210,6 +226,7 @@ public class Emulator : IDisposable
             DisplayPtr = display;
             PalettePtr = palette;
             DisplayBufferPtr = displayBuffer;
+            HistoryPtr = history;
         }
     }
 
@@ -238,6 +255,7 @@ public class Emulator : IDisposable
     public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
+    public ulong HistoryPosition => _state.History_Pos / 8;
 
     public VeraState Vera => new VeraState(this);
 
@@ -248,6 +266,7 @@ public class Emulator : IDisposable
     private readonly ulong _display_ptr;
     private readonly ulong _display_buffer_ptr;
     private readonly ulong _palette_ptr;
+    private readonly ulong _history_ptr;
 
     private const int RamSize = 0xa000; // only as high as banked ram
     private const int RomSize = 0x4000 * 32;
@@ -256,7 +275,7 @@ public class Emulator : IDisposable
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
     private const int DisplayBufferSize = 1024 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output
-
+    private const int HistorySize = 8 * 1024;
 
     public unsafe Emulator()
     {
@@ -267,8 +286,9 @@ public class Emulator : IDisposable
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
         _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize);
+        _history_ptr = (ulong)NativeMemory.Alloc(HistorySize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr);
+        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr, _history_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -289,6 +309,10 @@ public class Emulator : IDisposable
         var buffer_span = new Span<byte>((void*)_display_buffer_ptr, DisplayBufferSize);
         for (var i = 0; i < DisplayBufferSize; i++)
             buffer_span[i] = 0;
+
+        var history_span = new Span<byte>((void*)_history_ptr, HistorySize);
+        for (var i = 0; i < HistorySize; i++)
+            history_span[i] = 0;
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
@@ -296,7 +320,7 @@ public class Emulator : IDisposable
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
     public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
-
+    public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);
     public EmulatorResult Emulate()
     {
         Thread.CurrentThread.Priority = ThreadPriority.Highest;

@@ -170,12 +170,14 @@ layer0_done:
 	;
 	; layer 1
 	;
-	movzx rax, byte ptr [rdx].state.layer1_enable
+	mov al, byte ptr [rdx].state.layer1_enable
 	test al, al
 	jz layer1_notenabled
 
 	movzx rax, byte ptr [rsi + r15 + BUFFER_LAYER1]			; read the colour index from the buffer
-	mov ebx, dword ptr [r8 + rax * 4]
+	xor rbx, rbx
+	test rax, rax
+	cmovnz ebx, dword ptr [r8 + rax * 4]
 	mov [rdi + r9 * 4 + LAYER1], ebx
 	jmp layer1_done
 
@@ -189,6 +191,8 @@ layer1_done:
 draw_complete:
 	; buffer is 1024 wide, but the is display is 800.
 	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
+	; TODO, this should reset when we change line
+	; need to render a full width line, but only output in the visible area
 	add r15, 1
 	mov rax, r15
 	and rax, 001111111111b	; dont consider the top bit
@@ -203,7 +207,9 @@ buffer_reset_skip:
 	; Render next lines
 	;
 
+	;
 	; Layer 0
+	;
 	movzx rax, word ptr [rdx].state.layer0_next_render
 	sub rax, 1
 	jnz layer0_render_done
@@ -218,6 +224,21 @@ layer0_render_done::
 	mov word ptr [rdx].state.layer0_next_render, ax
 
 
+	;
+	; Layer 1
+	;
+	movzx rax, word ptr [rdx].state.layer1_next_render
+	sub rax, 1
+	jnz layer1_render_done
+
+	; use config to jump to the correct renderer.
+	movzx rax, word ptr [rdx].state.layer1_config
+	lea rbx, layer1_render_jump
+	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
+
+
+layer1_render_done::
+	mov word ptr [rdx].state.layer1_next_render, ax
 
 
 	xor r15, 010000000000b ; flip top bit back
@@ -330,18 +351,18 @@ layer0_1bpp_til_x_render proc
 	mov bl, ah						; get tile number
 
 	; this to be macrod
-	shl rbx, 3						; * 8 (1bpp @ 8x8)
+	shl rbx, 3						; * 8 (1bpp @ 8x8) so now points at base of tile
 
 	push r8
 	mov r8, r12						; get y
-	and r8, 0fh						; mask offset
+	and r8, 07h						; mask offset
 	add rbx, r8						; adjust
 	add rbx, r14					; add to tile base address
 
 	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
 	pop r8
 
-	mov al, 1 ; TESTING
+	mov al, 1 ; TESTING COLOUR
 
 	; ebx now contains the tile data
 
@@ -401,6 +422,95 @@ layer0_1bpp_til_x_render proc
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
+
+;
+; Layer 1
+;
+
+layer1_1bpp_til_x_render proc
+	mov r13d, dword ptr [rdx].state.layer1_mapAddress
+	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+	mov rsi, [rdx].state.vram_ptr
+	; todo: add macro to call
+	call get_tile_definition_mw00_mh00_tw0_th0
+	; ax now contains tile number
+
+	; get tile data, need to caclualte offset
+	xor rbx, rbx
+	mov bl, ah						; get tile number
+
+	; this to be macrod
+	shl rbx, 3						; * 8 (1bpp @ 8x8) so now points at base of tile
+
+	push r8
+	mov r8, r12						; get y
+	and r8, 07h						; mask offset
+	add rbx, r8						; adjust
+	add rbx, r14					; add to tile base address
+
+	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
+	pop r8
+
+	mov al, 1 ; TESTING COLOUR
+
+	; ebx now contains the tile data
+
+	; r15 is our buffer current position
+	; need to fill the buffer with the colour indexes for each pixel
+	mov rsi, [rdx].state.display_buffer_ptr
+
+	movzx r14, al
+	and rax, 0fh		; al now contains the foreground colour index
+	shr r14, 4
+	and r14, 0fh		; r14b now contains the background colour index
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
+
+
+	; todo: set this to actual tile width
+	mov rax, 8 ; count till next update requirement
+
+	jmp layer1_render_done
+layer1_1bpp_til_x_render endp
+
 ; macros to find the current tile definition, returns data in ax. 
 ; expects:
 ; r13: current layer map address
@@ -442,27 +552,49 @@ get_tile_definition macro map_width, map_height, tile_width, tile_height
 endm
 
 
-mode_notsupported:
+mode_layer0_notsupported:
 	mov ax, 8 ; count till next update requirement
 	jmp layer0_render_done
 
+mode_layer1_notsupported:
+	mov ax, 8 ; count till next update requirement
+	jmp layer1_render_done
+
 layer0_render_jump:
 	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
-	layer0_2bpp_til_x qword mode_notsupported
-	layer0_4bpp_til_x qword mode_notsupported
-	layer0_8bpp_til_x qword mode_notsupported
-	layer0_1bpp_bit_x qword mode_notsupported
-	layer0_2bpp_bit_x qword mode_notsupported
-	layer0_4bpp_bit_x qword mode_notsupported
-	layer0_8bpp_bit_x qword mode_notsupported
-	layer0_1bpp_til_t qword mode_notsupported
-	layer0_2bpp_til_t qword mode_notsupported
-	layer0_4bpp_til_t qword mode_notsupported
-	layer0_8bpp_til_t qword mode_notsupported
-	layer0_1bpp_bit_t qword mode_notsupported
-	layer0_2bpp_bit_t qword mode_notsupported
-	layer0_4bpp_bit_t qword mode_notsupported
-	layer0_8bpp_bit_t qword mode_notsupported
+	layer0_2bpp_til_x qword mode_layer0_notsupported
+	layer0_4bpp_til_x qword mode_layer0_notsupported
+	layer0_8bpp_til_x qword mode_layer0_notsupported
+	layer0_1bpp_bit_x qword mode_layer0_notsupported
+	layer0_2bpp_bit_x qword mode_layer0_notsupported
+	layer0_4bpp_bit_x qword mode_layer0_notsupported
+	layer0_8bpp_bit_x qword mode_layer0_notsupported
+	layer0_1bpp_til_t qword mode_layer0_notsupported
+	layer0_2bpp_til_t qword mode_layer0_notsupported
+	layer0_4bpp_til_t qword mode_layer0_notsupported
+	layer0_8bpp_til_t qword mode_layer0_notsupported
+	layer0_1bpp_bit_t qword mode_layer0_notsupported
+	layer0_2bpp_bit_t qword mode_layer0_notsupported
+	layer0_4bpp_bit_t qword mode_layer0_notsupported
+	layer0_8bpp_bit_t qword mode_layer0_notsupported
+
+layer1_render_jump:
+	layer1_1bpp_til_x qword layer1_1bpp_til_x_render
+	layer1_2bpp_til_x qword mode_layer1_notsupported
+	layer1_4bpp_til_x qword mode_layer1_notsupported
+	layer1_8bpp_til_x qword mode_layer1_notsupported
+	layer1_1bpp_bit_x qword mode_layer1_notsupported
+	layer1_2bpp_bit_x qword mode_layer1_notsupported
+	layer1_4bpp_bit_x qword mode_layer1_notsupported
+	layer1_8bpp_bit_x qword mode_layer1_notsupported
+	layer1_1bpp_til_t qword mode_layer1_notsupported
+	layer1_2bpp_til_t qword mode_layer1_notsupported
+	layer1_4bpp_til_t qword mode_layer1_notsupported
+	layer1_8bpp_til_t qword mode_layer1_notsupported
+	layer1_1bpp_bit_t qword mode_layer1_notsupported
+	layer1_2bpp_bit_t qword mode_layer1_notsupported
+	layer1_4bpp_bit_t qword mode_layer1_notsupported
+	layer1_8bpp_bit_t qword mode_layer1_notsupported
 
 	
 get_tile_definition_mw00_mh00_tw0_th0 proc

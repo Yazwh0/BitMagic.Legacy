@@ -45,6 +45,46 @@ public class Interrupt_Vsync
     }
 
     [TestMethod]
+    public async Task Hit_BankChange()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = false;
+
+        emulator.RomBank[0x4000 + 0x3ffe] = 0x00;
+        emulator.RomBank[0x4000 + 0x3fff] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810            
+                lda #01            
+                sta IEN
+                sta $01 ; change bank
+                ldy #$ff
+        .y_loop:
+                ldx #$ff
+        .x_loop:
+                dex
+                bne x_loop
+                dey
+                bne y_loop                
+
+                stp
+                .org $900
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(Pc: 0x901);
+        Assert.AreEqual(true, emulator.Vera.Interrupt_Vsync_Hit);
+        Assert.AreEqual(false, emulator.Vera.Interrupt_Line_Hit);
+        Assert.AreEqual(false, emulator.Vera.Interrupt_SpCol_Hit);
+        Assert.AreEqual(0x01, emulator.Memory[0x9F27]);
+        Assert.IsTrue(emulator.Vera.Beam_X <= 31);      // not 0 as the interrupt has to process + stp
+        Assert.AreEqual(480, emulator.Vera.Beam_Y);     // will be on line 480
+    }
+
+    [TestMethod]
     public async Task Hit_Reset()
     {
         var emulator = new Emulator();

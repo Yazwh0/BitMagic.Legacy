@@ -26,7 +26,7 @@ public class PHX
 
         // compilation
         Assert.AreEqual(0xda, emulator.Memory[0x810]);
-        Assert.AreEqual(0xff, emulator.Memory[0x1ff]);
+        Assert.AreEqual(0xff, emulator.Memory[0x1fd]);
 
         // emulation
         emulator.AssertState(0x00, 0xff, 0x00, 0x812, 3);
@@ -42,8 +42,9 @@ public class PHX
 
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
-                .org $810
+                .org $810                
                 ldx #$ff
+                txs
             .loop:
                 phx
                 dex

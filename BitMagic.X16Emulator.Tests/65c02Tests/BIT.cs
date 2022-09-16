@@ -207,6 +207,31 @@ public class BIT
         emulator.AssertFlags(false, false, false, true, true, true);
     }
 
+
+    [TestMethod]
+    public async Task Abs_FromRom()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+        emulator.Memory[0x1234] = 0x01;
+        emulator.RomBank[0x0000] = 0x2c;
+        emulator.RomBank[0x0001] = 0x34;
+        emulator.RomBank[0x0002] = 0x12;
+        emulator.RomBank[0x0003] = 0xdb;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000
+                ",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x02, 0x00, 0x00, 0xc004);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
     [TestMethod]
     public async Task AbsX_NoFlags()
     {

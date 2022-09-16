@@ -473,6 +473,8 @@ endm
 vera_dataaccess_body macro doublestep, write_value
 
 	mov rax, [rdx].state.vram_ptr				; get value from vram
+	push rsi
+	mov rsi, [rdx].state.memory_ptr				; we need memory context;
 
 	cmp rbx, DATA0
 	jne step_data1
@@ -510,6 +512,7 @@ vera_dataaccess_body macro doublestep, write_value
 
 	cmp [rdx].state.addrsel, 0
 	je set_data0_address
+	pop rsi
 	ret
 
 set_data0_address:
@@ -524,6 +527,7 @@ set_data0_address:
 	mov [rsi+ADDRx_H], dil
 
 	xor r13, r13								; clear r13b, as we use this to detect if we need to call vera
+	pop rsi
 	ret
 
 step_data1:
@@ -560,6 +564,7 @@ step_data1:
 
 	cmp [rdx].state.addrsel, 1
 	je set_data1_address
+	pop rsi
 	ret
 
 set_data1_address:
@@ -573,6 +578,7 @@ set_data1_address:
 	or dil, al
 	mov [rsi+ADDRx_H], dil
 
+	pop rsi
 	ret
 endm
 

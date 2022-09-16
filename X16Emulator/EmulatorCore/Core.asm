@@ -107,6 +107,87 @@ no_negative:
 
 endm
 
+;
+; Assumes rsi is in main memory context
+;
+set_rsi_for_rbx macro
+	local done, banked_ram
+
+	mov rsi, [rdx].state.memory_ptr
+	cmp rbx, 0a000h
+	jl done
+
+	cmp rbx, 0c000h
+	jl banked_ram
+
+	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; * 0x4000
+	mov rdi, [rdx].state.rom_ptr
+	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
+	jmp done
+
+banked_ram:
+
+	; banked ram
+	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
+	sal rax, 13							; * 0x2000
+	mov rdi, [rdx].state.rambank_ptr
+	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
+done:
+endm
+
+; 
+; rsi must start pointing to ram
+; Modify rsi to the correct start address when we add rbx
+;
+; Banked ram starts at 0xa000 (+0x2000)
+; Banked rom starts at 0xc000 (+0x4000)
+;
+read_banked_rbx macro check_allvera
+	local done, banked_ram, check_vera, vera_skip
+
+	mov rsi, [rdx].state.memory_ptr
+	cmp rbx, 0a000h
+	jl check_vera
+
+	cmp rbx, 0c000h
+	jl banked_ram
+
+	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; * 0x4000
+	mov rdi, [rdx].state.rom_ptr
+	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
+	jmp done
+
+banked_ram:
+
+	; banked ram
+	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
+	sal rax, 13							; * 0x2000
+	mov rdi, [rdx].state.rambank_ptr
+	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
+	jmp done
+
+check_vera:
+	if check_allvera eq 1
+		xor r13, r13
+		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
+		cmp rax, 21h						; check how far we want
+		ja vera_skip
+		mov r13, rax						; set r13 to the address in vera + 1.
+		vera_skip:
+	else
+		lea rax, [rbx-09f23h]				; get value to check
+		cmp rax, 1
+		setbe r13b							; store if we need to let vera know data has changed
+	endif
+
+done:
+
+endm
+
 store_registers macro
 	push rbx
 	push rbp
@@ -164,15 +245,42 @@ main_loop::
 	jne handle_interrupt
 
 	test rcx, rcx
-	jnz cpu_is_waiting					; if we're waiting, dont process next opcode
+	jnz cpu_is_waiting				; if we're waiting, dont process next opcode
 
 next_opcode::
+	mov rbx, r11
+	set_rsi_for_rbx
 
-	movzx rax, byte ptr [rsi+r11]	; Get opcode
+	movzx rbx, byte ptr [rsi+rbx]	; Get opcode
+
+	;
+	; STORE DEBUG INFO
+	;
+	; PC Opcode+2bytes, A, X, Y
+	;
+	mov rdi, [rdx].state.history_ptr
+	mov rcx, [rdx].state.history_pos
+	add rdi, rcx
+	add rcx, 8
+	and rcx, 03ffh
+	mov [rdx].state.history_pos, rcx
+	mov word ptr [rdi], r11w		; PC
+	mov byte ptr [rdi+2], bl		; Opcode
+	mov byte ptr [rdi+5], r8b		; A
+	mov byte ptr [rdi+6], r9b		; X
+	mov byte ptr [rdi+7], r10b		; Y
+;	movzx rcx, word ptr [rsi+rbx+1]	; Get opcode
+;	mov byte ptr [rdi+3], cx		; Param
+
+	cmp r11w, 0e241h
+	jne debug_skip
+	nop
+	debug_skip:
+
+
 	add r11w, 1						; PC+1
-	lea rbx, opcode_00				; start of jump table
-
-	jmp qword ptr [rbx + rax*8]		; jump to opcode
+	lea rax, opcode_00				; start of jump table
+	jmp qword ptr [rax + rbx*8]		; jump to opcode
 
 cpu_is_waiting:
 	add r14, 1
@@ -201,6 +309,7 @@ check_line_type:
 	jg main_loop
 	je vsync
 line_check:
+	mov rsi, [rdx].state.memory_ptr
 	; check for line IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_line
 	test cl, cl
@@ -270,55 +379,7 @@ asm_func ENDP
 ; Side effects macros
 ;
 
-; 
-; rsi must start pointing to ram
-; Modify rsi to the correct start address when we add rbx
-;
-; Banked ram starts at 0xa000 (+0x2000)
-; Banked rom starts at 0xc000 (+0x4000)
-;
-read_banked_rbx macro check_allvera
-	local done, banked_ram, check_vera, vera_skip
 
-	cmp rbx, 0a000h
-	jl check_vera
-
-	cmp rbx, 0c000h
-	jl banked_ram
-
-	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
-	and al, 00011111b					; remove top bits
-	sal rax, 14							; * 0x4000
-	mov rdi, [rdx].state.rom_ptr
-	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
-	jmp done
-
-banked_ram:
-
-	; banked ram
-	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
-	sal rax, 13							; * 0x2000
-	mov rdi, [rdx].state.rambank_ptr
-	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
-	jmp done
-
-check_vera:
-	if check_allvera eq 1
-		xor r13, r13
-		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
-		cmp rax, 21h						; check how far we want
-		ja vera_skip
-		mov r13, rax						; set r13 to the address in vera + 1.
-		vera_skip:
-	else
-		lea rax, [rbx-09f23h]				; get value to check
-		cmp rax, 1
-		setbe r13b							; store if we need to let vera know data has changed
-	endif
-
-done:
-
-endm
 
 ; Expects r13b to be set only if one of the Data registers have been read from.
 step_vera_read macro checkvera
@@ -431,6 +492,16 @@ read_indx_rbx macro check_allvera
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	movzx rbx, word ptr [rsi+rbx]	; Address at location
 	read_banked_rbx check_allvera
+endm
+
+read_ind_rbx macro check_allvera
+	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
+	read_banked_rbx check_allvera	; Get value its pointing at
+	push r11
+	mov r11w, bx					; reads use r11, so save and copy value
+	mov rsi, [rdx].state.memory_ptr
+	read_banked_rbx check_allvera
+	pop r11
 endm
 
 read_indy_rbx_pagepenalty macro
@@ -660,6 +731,8 @@ xBC_ldy_absx endp
 
 sta_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx					; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r8b
 	step_vera_write checkvera
@@ -717,6 +790,8 @@ x92_sta_indzp endp
 
 stx_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r9b
 	step_vera_write checkvera
@@ -749,6 +824,8 @@ x8E_stx_abs endp
 
 sty_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r10b
 	step_vera_write checkvera
@@ -781,7 +858,8 @@ x8C_sty_abs endp
 
 stz_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
 	mov byte ptr [rsi+rbx], 0
 	step_vera_write checkvera
 
@@ -818,6 +896,8 @@ x9E_stz_absx endp
 
 inc_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
 	inc byte ptr [rsi+rbx]
@@ -834,6 +914,8 @@ endm
 
 dec_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
 	dec byte ptr [rsi+rbx]
@@ -2019,7 +2101,8 @@ xFF_bbs7 endp
 ;
 
 x4C_jmp_abs proc
-	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the PC
+	read_abs_rbx 0
+	mov r11w, bx	
 
 	add r14, 3
 	jmp opcode_done
@@ -2027,21 +2110,27 @@ x4C_jmp_abs proc
 x4C_jmp_abs endp
 
 x6C_jmp_ind proc
-	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the clock
-	mov r11w, [rsi+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+	read_abs_rbx 0	; get address to bx
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx				; sets rsi correctly
+
+	mov r11w, word ptr [rsi+rbx] ; Set to PC
 
 	add r14, 5
 	jmp opcode_done
 x6C_jmp_ind endp
 
-x7C_jmp_absx proc
-	mov r11w, [rsi+r11]		; Get 16bit value in memory and set it to the clock
-	add	r11, r9				; Add on X
-	mov r11w, [rsi+r11]		; Get 16bit value at the new memory position, and set the clock to the final value
+x7C_jmp_indx proc
+	read_abs_rbx 0	; get address to bx
+	add bx, r9w		; Add x
+	mov rsi, [rdx].state.memory_ptr
+	set_rsi_for_rbx					; sets rsi correctly
+
+	mov r11w, word ptr [rsi+rbx] ; Set to PC
 
 	add r14, 6
 	jmp opcode_done
-x7C_jmp_absx endp
+x7C_jmp_indx endp
 
 ;
 ; Subroutines
@@ -2059,7 +2148,8 @@ x20_jsr proc
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
-	mov r11w, [rsi+r11]					; Get 16bit value in memory and set it to the PC
+	read_abs_rbx 0						; use macro to get destination
+	mov r11w, bx	
 
 	add r14, 6							; Add cycles
 
@@ -2857,7 +2947,7 @@ opcode_78	qword	x78_sei		 	; $78
 opcode_79	qword	x79_adc_absy 	; $79
 opcode_7A	qword	x7A_ply		 	; $7A
 opcode_7B	qword	noinstruction 	; $7B
-opcode_7C	qword	x7C_jmp_absx 	; $7C
+opcode_7C	qword	x7C_jmp_indx 	; $7C
 opcode_7D	qword	x7D_adc_absx 	; $7D
 opcode_7E	qword	x7E_ror_absx 	; $7E
 opcode_7F	qword	x7F_bbr7	 	; $7F

@@ -112,6 +112,75 @@ public class STX
 
 
     [TestMethod]
+    public async Task Absolute_RomToRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.X = 0x44;
+
+        emulator.RomBank[0x00] = 0x8e;
+        emulator.RomBank[0x01] = 0x00;
+        emulator.RomBank[0x02] = 0x01;
+        emulator.RomBank[0x03] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x100]);
+        emulator.AssertState(0x00, 0x44, 0x00, 0xc004);
+    }
+
+    [TestMethod]
+    public async Task Absolute_BRamToRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.X = 0x44;
+
+        emulator.RamBank[0x00] = 0x8e;
+        emulator.RamBank[0x01] = 0x00;
+        emulator.RamBank[0x02] = 0x01;
+        emulator.RamBank[0x03] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $a000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x100]);
+        emulator.AssertState(0x00, 0x44, 0x00, 0xa004);
+    }
+
+    [TestMethod]
+    public async Task Absolute_RomToBRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.X = 0x44;
+
+        emulator.RomBank[0x00] = 0x8e;
+        emulator.RomBank[0x01] = 0x00;
+        emulator.RomBank[0x02] = 0xa1;
+        emulator.RomBank[0x03] = 0xdb;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                jmp $c000",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.RamBank[0x100]);
+        emulator.AssertState(0x00, 0x44, 0x00, 0xc004);
+    }
+
+    [TestMethod]
     public async Task ReadOnly_Abs()
     {
         var emulator = new Emulator();

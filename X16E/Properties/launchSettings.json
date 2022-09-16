@@ -2,7 +2,7 @@
   "profiles": {
     "X16E": {
       "commandName": "Project",
-      "commandLineArgs": "--rom C:\\Dev\\X16emu\\R40\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
+      "commandLineArgs": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
       "commandLineArgsTest": "--rom D:\\Documents\\Source\\BitMagic\\rom\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
       "nativeDebugging": true
     }

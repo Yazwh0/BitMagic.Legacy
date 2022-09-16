@@ -19,6 +19,7 @@ state struct
 	rambank_ptr				qword ?
 	display_ptr				qword ?
 	display_buffer_ptr		qword ?
+	history_ptr				qword ?
 
 	; Vera
 	vram_ptr				qword ?
@@ -31,6 +32,8 @@ state struct
 
 	clock					qword ?
 	vera_clock				qword ?
+
+	history_pos				qword ?
 
 	register_pc				word ?
 	stackpointer			word ?

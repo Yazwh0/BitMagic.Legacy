@@ -190,6 +190,42 @@ public class LDA
     }
 
     [TestMethod]
+    public async Task Absolute_Rom()
+    {
+        var emulator = new Emulator();
+
+        emulator.RomBank[0x0] = 0x44;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda $c000
+                stp", emulator);
+
+        // emulation
+        emulator.AssertState(0x44, 0x00, 0x00, 0x814, 4);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Absolute_BankedRam()
+    {
+        var emulator = new Emulator();
+
+        emulator.RamBank[0x0] = 0x44;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda $a000
+                stp", emulator);
+
+        // emulation
+        emulator.AssertState(0x44, 0x00, 0x00, 0x814, 4);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task AbsoluteX()
     {
         var emulator = new Emulator();

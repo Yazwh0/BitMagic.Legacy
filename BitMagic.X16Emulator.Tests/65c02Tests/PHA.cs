@@ -26,7 +26,7 @@ public class PHA
 
         // compilation
         Assert.AreEqual(0x48, emulator.Memory[0x810]);
-        Assert.AreEqual(0xff, emulator.Memory[0x1ff]);
+        Assert.AreEqual(0xff, emulator.Memory[0x1fd]);
 
         // emulation
         emulator.AssertState(0xff, 0x00, 0x00, 0x812, 3);
@@ -42,9 +42,11 @@ public class PHA
 
         await X16TestHelper.Emulate(@"                
                 .machine CommanderX16R40
-                .org $810
+                .org $810       
+                ldx #$ff
+                txs         ; set sp to max
                 lda #$ff
-            .loop:
+            .loop:                
                 pha
                 dec
                 bne loop
@@ -56,7 +58,7 @@ public class PHA
             Assert.AreEqual(i - 0x100, emulator.Memory[i]);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, stackPointer: 0x100);
+        emulator.AssertState(0x00, 0xff, 0x00, stackPointer: 0x100);
         emulator.AssertFlags(true, false, false, false);
     }
 }

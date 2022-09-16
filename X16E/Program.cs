@@ -152,6 +152,22 @@ static class Program
                 throw new ArgumentNullException(nameof(Emulator), "Emulator is null");
 
             Return = Emulator.Emulate();
+
+            if (Return != Emulator.EmulatorResult.ExitCondition)
+            {
+                Console.WriteLine($"Result: {Return}");
+                var history = Emulator.History;
+                var idx = (int)Emulator.HistoryPosition - 1;
+                Console.WriteLine("Last 20 steps:");
+
+                for (var i = 0; i < 20; i++)
+                {
+                    Console.WriteLine($"${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
+                    if (idx == 0)
+                        idx = 1024;
+                    idx--;
+                }
+            }
         }
     }
 }

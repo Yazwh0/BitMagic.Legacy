@@ -122,7 +122,7 @@ public class EmulatorTests
                 emulator);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x901, 7, 0x1ff - 3);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x901, 7, 0x1fd - 3);
         emulator.AssertFlags(Interrupt: false);
     }
 
@@ -146,7 +146,7 @@ public class EmulatorTests
                 emulator);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1ff);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1fd);
         emulator.AssertFlags(Interrupt: false);
     }
 
@@ -195,7 +195,7 @@ public class EmulatorTests
                 emulator);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x901, stackPointer: 0x1ff - 3);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x901, stackPointer: 0x1fd - 3);
         emulator.AssertFlags(Interrupt: false);
     }
 
@@ -220,7 +220,7 @@ public class EmulatorTests
                 emulator);
 
         // emulation
-        emulator.AssertState(0x00, 0x00, 0x00, 0x811, stackPointer: 0x1ff);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x811, stackPointer: 0x1fd);
         emulator.AssertFlags(Interrupt: false);
     }
 }
