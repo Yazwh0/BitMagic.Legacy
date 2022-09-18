@@ -259,16 +259,22 @@ public class Emulator : IDisposable
 
     public VeraState Vera => new VeraState(this);
 
+    private const int _rounding = 32; // 32 byte (256bit) allignment required for AVX 256 instructions
+    private const ulong _roundingMask = ~(ulong)_rounding + 1;
+
     private readonly ulong _memory_ptr;
+    private readonly ulong _memory_ptr_rounded;
     private readonly ulong _rom_ptr;
+    private readonly ulong _rom_ptr_rounded;
     private readonly ulong _ram_ptr;
+    private readonly ulong _ram_ptr_rounded;
     private readonly ulong _vram_ptr;
     private readonly ulong _display_ptr;
     private readonly ulong _display_buffer_ptr;
     private readonly ulong _palette_ptr;
     private readonly ulong _history_ptr;
 
-    private const int RamSize = 0xa000; // only as high as banked ram
+    private const int RamSize = 0x10000; 
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
     private const int VramSize = 0x20000;
@@ -277,18 +283,26 @@ public class Emulator : IDisposable
     private const int DisplayBufferSize = 1024 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output
     private const int HistorySize = 8 * 1024;
 
+    private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
+
     public unsafe Emulator()
     {
-        _memory_ptr = (ulong)NativeMemory.Alloc(RamSize);
-        _rom_ptr = (ulong)NativeMemory.Alloc(RomSize);
-        _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize);
+        _memory_ptr = (ulong)NativeMemory.Alloc(RamSize + _rounding);
+        _memory_ptr_rounded = RoundMemoryPtr(_memory_ptr);
+
+        _rom_ptr = (ulong)NativeMemory.Alloc(RomSize + _rounding);
+        _rom_ptr_rounded = RoundMemoryPtr(_rom_ptr);
+
+        _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize + _rounding);
+        _ram_ptr_rounded = RoundMemoryPtr(_ram_ptr);
+
         _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
         _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize);
         _history_ptr = (ulong)NativeMemory.Alloc(HistorySize);
 
-        _state = new CpuState(_memory_ptr, _rom_ptr, _ram_ptr, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr, _history_ptr);
+        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr, _history_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -315,9 +329,9 @@ public class Emulator : IDisposable
             history_span[i] = 0;
     }
 
-    public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr, RamSize);
-    public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr, BankedRamSize);
-    public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr, RomSize);
+    public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr_rounded, RamSize);
+    public unsafe Span<byte> RamBank => new Span<byte>((void*)_ram_ptr_rounded, BankedRamSize);
+    public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr_rounded, RomSize);
     public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
     public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);

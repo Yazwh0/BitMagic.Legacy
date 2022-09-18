@@ -57,5 +57,8 @@
     <Text Include="State.asm">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="Banking.asm">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

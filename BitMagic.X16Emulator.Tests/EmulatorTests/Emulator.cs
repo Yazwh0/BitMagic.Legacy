@@ -223,4 +223,23 @@ public class EmulatorTests
         emulator.AssertState(0x00, 0x00, 0x00, 0x811, stackPointer: 0x1fd);
         emulator.AssertFlags(Interrupt: false);
     }
+
+    [TestMethod]
+    public async Task Memory_Bank_Init()
+    {
+        var emulator = new Emulator();
+
+        emulator.RamBank[0x2000] = 0x02;
+        emulator.RamBank[0x2000 + 0x1fff] = 0x04;
+        emulator.Memory[0x00] = 0x01;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810                
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x02, emulator.Memory[0xa000]);
+        Assert.AreEqual(0x04, emulator.Memory[0xa000 + 0x1fff]);
+    }
 }

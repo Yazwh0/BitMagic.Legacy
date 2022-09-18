@@ -19,6 +19,7 @@ includelib      msvcrtd
 
 include State.asm
 include Vera.asm
+include Banking.asm
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
 
@@ -107,36 +108,6 @@ no_negative:
 
 endm
 
-;
-; Assumes rsi is in main memory context
-;
-set_rsi_for_rbx macro
-	local done, banked_ram
-
-	mov rsi, [rdx].state.memory_ptr
-	cmp rbx, 0a000h
-	jl done
-
-	cmp rbx, 0c000h
-	jl banked_ram
-
-	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
-	and al, 00011111b					; remove top bits
-	sal rax, 14							; * 0x4000
-	mov rdi, [rdx].state.rom_ptr
-	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
-	jmp done
-
-banked_ram:
-
-	; banked ram
-	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
-	sal rax, 13							; * 0x2000
-	mov rdi, [rdx].state.rambank_ptr
-	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
-done:
-endm
-
 ; 
 ; rsi must start pointing to ram
 ; Modify rsi to the correct start address when we add rbx
@@ -146,29 +117,6 @@ endm
 ;
 read_banked_rbx macro check_allvera
 	local done, banked_ram, check_vera, vera_skip
-
-	mov rsi, [rdx].state.memory_ptr
-	cmp rbx, 0a000h
-	jl check_vera
-
-	cmp rbx, 0c000h
-	jl banked_ram
-
-	movzx rax, byte ptr [rsi+1]			; 0x0001 -- get bank
-	and al, 00011111b					; remove top bits
-	sal rax, 14							; * 0x4000
-	mov rdi, [rdx].state.rom_ptr
-	lea rsi, [rdi - 0c000h + rax]		; can now add rbx to get value
-	jmp done
-
-banked_ram:
-
-	; banked ram
-	movzx rax, byte ptr [rsi]			; 0x0000 -- get bank
-	sal rax, 13							; * 0x2000
-	mov rdi, [rdx].state.rambank_ptr
-	lea rsi, [rdi - 0a000h + rax]		; can now add rbx to get value
-	jmp done
 
 check_vera:
 	if check_allvera eq 1
@@ -220,13 +168,28 @@ asm_func proc state_ptr:QWORD
 	push rdx
 
 	; see if lahf is supported. if not return -1.
+	; LAHF
 	mov eax, 80000001h
 	cpuid
 	test ecx,1           ; Is bit 0 (the "LAHF-SAHF" bit) set?
 	je not_supported     ; no, LAHF is not supported
 
+	; AVX
+	mov eax, 1
+	cpuid
+	and ecx, 018000000h
+	cmp ecx, 018000000h
+	jne not_supported
+
+	mov ecx, 0
+	xgetbv
+	and eax, 06h
+	cmp eax, 06h
+	jne not_supported
+
 	pop rdx
 
+	
 	mov last_cpuclock, 0
 	mov cpu_posy, rax
 
@@ -234,10 +197,14 @@ asm_func proc state_ptr:QWORD
 	
 	read_state_obj
 
-main_loop::
 	mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
 
+	; setup banks
+	call copy_rambank_to_memory
+	call copy_rombank_to_memory
 
+main_loop::
+	;mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
 
 	; check for interrupt
 	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
@@ -249,7 +216,6 @@ main_loop::
 
 next_opcode::
 	mov rbx, r11
-	set_rsi_for_rbx
 
 	movzx rbx, byte ptr [rsi+rbx]	; Get opcode
 
@@ -309,7 +275,7 @@ check_line_type:
 	jg main_loop
 	je vsync
 line_check:
-	mov rsi, [rdx].state.memory_ptr
+	;mov rsi, [rdx].state.memory_ptr
 	; check for line IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_line
 	test cl, cl
@@ -380,8 +346,8 @@ asm_func ENDP
 ;
 
 
-
 ; Expects r13b to be set only if one of the Data registers have been read from.
+; also checks for rom\ram bank switches for writes
 step_vera_read macro checkvera
 	local skip
 if checkvera eq 1
@@ -390,7 +356,25 @@ if checkvera eq 1
 	call vera_afterread
 
 	skip:
-endif
+endif	
+endm
+
+check_bank_switch macro
+	local rambank_change, rombank_change, done
+	cmp rbx, 01h
+	jg done
+	jl rambank_change
+rombank_change:
+	mov al, byte ptr [rsi+1]	
+	and al, 1fh
+	mov byte ptr [rsi+1], al
+	call copy_rombank_to_memory
+
+	jmp done
+rambank_change:
+	call switch_rambank
+
+	done:
 endm
 
 step_vera_readwrite macro checkvera
@@ -402,6 +386,7 @@ if checkvera eq 1
 
 	skip:
 endif
+	check_bank_switch
 endm
 
 step_vera_write macro checkvera
@@ -413,6 +398,7 @@ if checkvera eq 1
 
 	skip:
 endif
+	check_bank_switch
 endm
 
 
@@ -499,7 +485,7 @@ read_ind_rbx macro check_allvera
 	read_banked_rbx check_allvera	; Get value its pointing at
 	push r11
 	mov r11w, bx					; reads use r11, so save and copy value
-	mov rsi, [rdx].state.memory_ptr
+
 	read_banked_rbx check_allvera
 	pop r11
 endm
@@ -507,7 +493,6 @@ endm
 read_indy_rbx_pagepenalty macro
 	local no_overflow
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
-	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 
 	add bl, r10b		; Add Y to the lower address byte
@@ -523,7 +508,6 @@ endm
 read_indy_rbx macro check_allvera
 	local no_overflow
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
-	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
 	read_banked_rbx check_allvera
@@ -531,7 +515,6 @@ endm
 
 read_indzp_rbx macro check_allvera
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
-	set_rsi_for_rbx					; sets rsi correctly
 	movzx rbx, word ptr [rsi+rbx]	; Address at location
 	read_banked_rbx check_allvera
 endm
@@ -587,7 +570,6 @@ lda_body_end macro checkvera, clock, pc
 endm
 
 lda_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	mov r8b, [rsi+rbx]
 	lda_body_end checkvera, clock, pc
 endm
@@ -654,7 +636,6 @@ ldx_body_end macro checkvera, clock, pc
 endm
 
 ldx_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	mov r9b, [rsi+rbx]
 	ldx_body_end checkvera, clock, pc
 endm
@@ -700,7 +681,6 @@ ldy_body_end macro checkvera, clock, pc
 endm
 
 ldy_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	mov r10b, [rsi+rbx]
 	ldy_body_end checkvera, clock, pc
 endm
@@ -737,7 +717,6 @@ xBC_ldy_absx endp
 
 sta_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	set_rsi_for_rbx					; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r8b
 	step_vera_write checkvera
@@ -795,8 +774,6 @@ x92_sta_indzp endp
 
 stx_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r9b
 	step_vera_write checkvera
@@ -829,8 +806,6 @@ x8E_stx_abs endp
 
 sty_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 
 	mov byte ptr [rsi+rbx], r10b
 	step_vera_write checkvera
@@ -863,8 +838,6 @@ x8C_sty_abs endp
 
 stz_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 	mov byte ptr [rsi+rbx], 0
 	step_vera_write checkvera
 
@@ -901,8 +874,6 @@ x9E_stz_absx endp
 
 inc_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-;	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
 	inc byte ptr [rsi+rbx]
@@ -919,8 +890,6 @@ endm
 
 dec_body macro checkvera, checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-;	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 
 	clc
 	dec byte ptr [rsi+rbx]
@@ -1361,7 +1330,6 @@ x76_ror_zpx endp
 ;
 
 and_body_end macro checkvera, clock, pc
-	set_rsi_for_rbx
 	and r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1425,7 +1393,6 @@ x31_and_indy endp
 ;
 
 eor_body_end macro checkvera, clock, pc
-	set_rsi_for_rbx
 	xor r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1491,7 +1458,6 @@ x51_eor_indy endp
 ;
 
 ora_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	or r8b, [rsi+rbx]
 	write_flags_r15_preservecarry
 	step_vera_read checkvera
@@ -1566,7 +1532,6 @@ adc_body_end macro checkvera, clock, pc
 endm
 
 adc_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	read_flags_rax
 
 	adc r8b, [rsi+rbx]
@@ -1639,7 +1604,6 @@ sbc_body_end macro checkvera, clock, pc
 endm
 
 sbc_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	read_flags_rax
 
 	cmc
@@ -1714,7 +1678,6 @@ cmp_body_end macro checkvera, clock, pc
 endm
 
 cmp_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	cmp r8b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
@@ -1769,7 +1732,6 @@ xD1_cmp_indy endp
 ;
 
 cmpx_body macro checkvera, clock, pc
-	set_rsi_for_rbx
 	cmp r9b, [rsi+rbx]
 	cmp_body_end checkvera, clock, pc
 endm
@@ -2015,7 +1977,6 @@ endm
 
 bbr_body macro bitnumber
 	read_zp_rbx
-	set_rsi_for_rbx
 	movzx rax, byte ptr[rsi+rbx]
 	bt ax, bitnumber
 	jnc branch
@@ -2123,8 +2084,6 @@ x4C_jmp_abs endp
 
 x6C_jmp_ind proc
 	read_abs_rbx 0	; get address to bx
-	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx				; sets rsi correctly
 
 	mov r11w, word ptr [rsi+rbx] ; Set to PC
 
@@ -2135,8 +2094,6 @@ x6C_jmp_ind endp
 x7C_jmp_indx proc
 	read_abs_rbx 0	; get address to bx
 	add bx, r9w		; Add x
-	mov rsi, [rdx].state.memory_ptr
-	set_rsi_for_rbx					; sets rsi correctly
 
 	mov r11w, word ptr [rsi+rbx] ; Set to PC
 
@@ -2152,16 +2109,14 @@ x20_jsr proc
 	mov rax, r11						; Get PC + 1 as the return address (to put address-1 on the stack)
 	add rax, 1
 
-	push rsi
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov rsi, [rdx].state.memory_ptr
+
 	mov [rsi+rbx], ah					; Put PC Low byte on stack
 	sub rbx, 1							; Move stack pointer on
 	mov [rsi+rbx], al					; Put PC High byte on stack
 	sub rbx, 1							; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
-	pop rsi
 	read_abs_rbx 0						; use macro to get destination
 	mov r11w, bx	
 
@@ -2172,7 +2127,7 @@ x20_jsr endp
 
 x60_rts proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov rsi, [rdx].state.memory_ptr
+
 	add bl, 1							; Move stack pointer on
 	mov al, [rsi+rbx]					; Get PC High byte on stack
 	add bl, 1							; Move stack pointer on (done twice for wrapping)
@@ -2195,7 +2150,6 @@ x60_rts endp
 x48_pha proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 	sub byte ptr [rdx].state.stackpointer, 1	; Decrement stack pointer
-	mov rsi, [rdx].state.memory_ptr
 	mov [rsi+rbx], r8b					; Put A on stack
 	
 	add r14, 3							; Add cycles
@@ -2208,7 +2162,6 @@ x68_pla proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
-	mov rsi, [rdx].state.memory_ptr
 	mov r8b, byte ptr [rsi+rbx] 		; Pull A from the stack
 	test r8b, r8b
 	write_flags_r15_preservecarry
@@ -2220,7 +2173,7 @@ x68_pla endp
 
 xDA_phx proc
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov rsi, [rdx].state.memory_ptr
+
 	mov [rsi+rbx], r9b					; Put X on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2234,7 +2187,6 @@ xFA_plx proc
 	add byte ptr [rdx].state.stackpointer, 1	; Increment stack pointer
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
 
-	mov rsi, [rdx].state.memory_ptr
 	mov r9b, byte ptr [rsi+rbx] 		; Pull X from the stack
 	test r9b, r9b
 	write_flags_r15_preservecarry
@@ -2246,7 +2198,7 @@ xFA_plx endp
 
 x5A_phy proc	
 	movzx rbx, word ptr [rdx].state.stackpointer			; Get stack pointer
-	mov rsi, [rdx].state.memory_ptr
+
 	mov [rsi+rbx], r10b					; Put Y on stack
 	dec byte ptr [rdx].state.stackpointer		; Decrement stack pointer
 	
@@ -2759,6 +2711,7 @@ xDB_stp proc
 
 	add r14, 3	; Clock
 	
+	call preserve_current_rambank
 	call vera_render_display
 
 	; return stp was hit.
@@ -2775,6 +2728,7 @@ xDB_stp endp
 noinstruction PROC
 
 	; return error	
+	call preserve_current_rambank
 	write_state_obj
 	mov rax, 01h
 
@@ -2785,53 +2739,7 @@ noinstruction PROC
 	
 noinstruction ENDP
 
-;
-; Side Effects
-;
-
-; rbx holds the address
-; rax the effect number
-handle_write_sideeffect proc
-	push r13
-	lea r13, write_sideeffect_00	; start of jump table 
-
-	jmp qword ptr [r13 + rax*8]		; jump to opcode
-
-	;vmovdqu8 zmm0, zmmword ptr [rsi+rambank_ptr]
-	nop
-
-	ret
-handle_write_sideeffect endp
-
-write_sideeffect_rambank proc
-	pop r13
-	ret
-write_sideeffect_rambank endp
-
-write_sideeffect_rombank proc
-	pop r13
-	ret
-write_sideeffect_rombank endp
-
-
-
 .DATA
-
-;
-; side effect jump tables
-;
-
-;
-; Write
-;
-write_sideeffect_00 qword 0000000000000000h
-write_sideeffect_01 qword write_sideeffect_rambank
-write_sideeffect_02 qword write_sideeffect_rombank
-
-;
-; Read
-;
-
 ;
 ; Variables
 ;
@@ -2839,6 +2747,7 @@ write_sideeffect_02 qword write_sideeffect_rombank
 last_cpuclock qword 0
 cpu_posy qword 0
 
+.code
 ;
 ; Opcode jump table
 ;

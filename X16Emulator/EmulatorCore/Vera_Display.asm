@@ -451,7 +451,7 @@ layer1_1bpp_til_x_render proc
 	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
 	pop r8
 
-	mov al, 1 ; TESTING COLOUR
+	;mov al, 1 ; TESTING COLOUR
 
 	; ebx now contains the tile data
 
