@@ -202,6 +202,30 @@ public class STA
     }
 
     [TestMethod]
+    public async Task Absolute_PreserveFlags ()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x44;
+        emulator.Carry = true;
+        emulator.Zero = true;
+        emulator.Negative = true;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                sta $100
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(0x44, emulator.Memory[0x100]);
+        emulator.AssertState(0x44, 0x00, 0x00, 0x814, 4);
+        emulator.AssertFlags(true, true, true, true);
+    }
+
+    [TestMethod]
     public async Task Absolute_RomToRam()
     {
         var emulator = new Emulator();

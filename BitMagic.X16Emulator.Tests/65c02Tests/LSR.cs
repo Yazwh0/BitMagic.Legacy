@@ -28,6 +28,67 @@ public class LSR
     }
 
     [TestMethod]
+    public async Task A_OverflowPreserve()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b10000010;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x4a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b01000001, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(false, false, true, false);
+    }
+
+    [TestMethod]
+    public async Task A_NegativeReset()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000010;
+        emulator.Negative = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr
+                stp",
+                emulator);
+
+        emulator.AssertState(0x01);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task A_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000000;
+        emulator.Negative = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr
+                stp",
+                emulator);
+
+        emulator.AssertState(0x00);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
+    [TestMethod]
     public async Task A_CarrySet()
     {
         var emulator = new Emulator();
@@ -118,6 +179,60 @@ public class LSR
 
         emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6);
         emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_NegativeReset()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0b00000010;
+        emulator.Negative = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr $1234
+                stp",
+                emulator);
+
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+
+    [TestMethod]
+    public async Task Abs_OverflowPreserve()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0b10000010;
+        emulator.Overflow = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr $1234
+                stp",
+                emulator);
+
+        emulator.AssertFlags(false, false, true, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0b00000000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lsr $1234
+                stp",
+                emulator);
+
+        emulator.AssertFlags(true, false, false, false);
     }
 
     [TestMethod]
@@ -562,7 +677,7 @@ public class LSR
         // emulation
         Assert.AreEqual(0b10000001, emulator.RomBank[0x0000]);
 
-        emulator.AssertFlags(false, true, false, true);
+        emulator.AssertFlags(false, false, false, true);
     }
 
     [TestMethod]
@@ -604,6 +719,6 @@ public class LSR
         // emulation
         Assert.AreEqual(0b10000001, emulator.RomBank[0x0002]);
 
-        emulator.AssertFlags(false, true, false, true);
+        emulator.AssertFlags(false, false, false, true);
     }
 }

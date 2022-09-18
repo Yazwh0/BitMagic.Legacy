@@ -108,17 +108,10 @@ no_negative:
 
 endm
 
-; 
-; rsi must start pointing to ram
-; Modify rsi to the correct start address when we add rbx
-;
-; Banked ram starts at 0xa000 (+0x2000)
-; Banked rom starts at 0xc000 (+0x4000)
-;
+; Check if we have read the vera data registers
 read_banked_rbx macro check_allvera
-	local done, banked_ram, check_vera, vera_skip
+	local done, vera_skip
 
-check_vera:
 	if check_allvera eq 1
 		xor r13, r13
 		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
@@ -188,10 +181,9 @@ asm_func proc state_ptr:QWORD
 	jne not_supported
 
 	pop rdx
-
 	
 	mov last_cpuclock, 0
-	mov cpu_posy, rax
+	mov cpu_posy, 0
 
 	call vera_init
 	
@@ -204,8 +196,6 @@ asm_func proc state_ptr:QWORD
 	call copy_rombank_to_memory
 
 main_loop::
-	;mov rsi, [rdx].state.memory_ptr		; reset rsi so it points to memory
-
 	; check for interrupt
 	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
 	cmp byte ptr [rdx].state.interrupt, 0
@@ -227,18 +217,18 @@ next_opcode::
 	mov rdi, [rdx].state.history_ptr
 	mov rcx, [rdx].state.history_pos
 	add rdi, rcx
+	mov debug_pos, rdi
 	add rcx, 8
 	and rcx, 01fffh
 	mov [rdx].state.history_pos, rcx
 	mov word ptr [rdi], r11w		; PC
 	mov byte ptr [rdi+2], bl		; Opcode
-	mov byte ptr [rdi+5], r8b		; A
-	mov byte ptr [rdi+6], r9b		; X
-	mov byte ptr [rdi+7], r10b		; Y
+	mov al, byte ptr [rsi+1]
+	mov byte ptr [rdi+3], al		; store rom
 ;	movzx rcx, word ptr [rsi+rbx+1]	; Get opcode
 ;	mov byte ptr [rdi+3], cx		; Param
 
-	cmp r11w, 0e292h
+	cmp r11w, 0cc80h
 	jne debug_skip
 	nop
 	debug_skip:
@@ -251,6 +241,11 @@ next_opcode::
 cpu_is_waiting:
 	add r14, 1
 opcode_done::
+	mov rdi, debug_pos
+	mov byte ptr [rdi+5], r8b		; A
+	mov byte ptr [rdi+6], r9b		; X
+	mov byte ptr [rdi+7], r10b		; Y
+
 	; check for line irq
 	mov rax, r14
 	and rax, 0ffffffffffffff00h		; mask off lower bytes
@@ -360,14 +355,20 @@ endif
 endm
 
 check_bank_switch macro
-	local rambank_change, rombank_change, done
+	local rambank_change, rombank_change, done, skip
+	cmp rbx, 025bh
+	;jne skip
+	;int 3
+	;skip:
 	cmp rbx, 01h
 	jg done
 	jl rambank_change
 rombank_change:
-	mov al, byte ptr [rsi+1]	
+	movzx rax, byte ptr [rsi+1]	
 	and al, 1fh
 	mov byte ptr [rsi+1], al
+	cmp al, 1
+
 	call copy_rombank_to_memory
 
 	jmp done
@@ -482,7 +483,7 @@ endm
 
 read_ind_rbx macro check_allvera
 	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
-	read_banked_rbx check_allvera	; Get value its pointing at
+	;read_banked_rbx check_allvera	; Get value its pointing at
 	push r11
 	mov r11w, bx					; reads use r11, so save and copy value
 
@@ -1121,10 +1122,10 @@ x16_asl_zpx endp
 
 lsr_body macro checkreadonly, clock, pc
 	skipwrite_ifreadonly checkreadonly
-	read_flags_rax
 
-
-	sar byte ptr [rsi+rbx],1	; shift
+	movzx r12, byte ptr [rsi+rbx]
+	shr r12b,1	; shift
+	mov byte ptr [rsi+rbx], r12b
 
 	write_flags_r15	
 
@@ -1135,11 +1136,8 @@ lsr_body macro checkreadonly, clock, pc
 
 if checkreadonly eq 1
 skip:
-	read_flags_rax
-
-
 	movzx r12, byte ptr [rsi+rbx]
-	sar r12b,1					; shift
+	shr r12b,1					; shift
 
 	write_flags_r15	
 
@@ -1151,8 +1149,8 @@ endif
 endm
 
 x4A_lsr_a proc
-	read_flags_rax
-	sar r8b,1		; shift
+	shr r8b,1		; shift
+
 	write_flags_r15
 
 	add r14, 2		; Clock
@@ -2746,6 +2744,7 @@ noinstruction ENDP
 
 last_cpuclock qword 0
 cpu_posy qword 0
+debug_pos qword 0
 
 .code
 ;

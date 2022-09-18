@@ -161,9 +161,9 @@ static class Program
                 Console.WriteLine("Last 50 steps:");
 
                 var toOutput = new List<string>();
-                for (var i = 0; i < 50; i++)
+                for (var i = 0; i < 100; i++)
                 {
-                    toOutput.Add($"${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
+                    toOutput.Add($"R:${history[idx].ParamL:X2} ${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
                     if (idx <= 0)
                         idx = 1024;
                     idx--;
@@ -173,6 +173,17 @@ static class Program
                 {
                     Console.WriteLine(l);
                 }
+            }
+
+            Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
+            for (var i = 0; i < 256; i += 16) {
+                Console.Write($"{i:X4}: ");
+                for (var j = 0; j < 16; j++) {
+                    Console.Write($"{Emulator.Memory[i + j]:X2} ");
+                    if (j == 7)
+                        Console.Write(" ");
+                }
+                Console.WriteLine();
             }
         }
     }
