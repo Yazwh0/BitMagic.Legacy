@@ -64,6 +64,13 @@ BUFFER_SPRITE_L3	equ BUFFER_SIZE * 4
 ; Render the rest of the display, only gets called on vsync
 ;
 vera_render_display proc
+	; update display
+	mov byte ptr cl, [rdx].state.headless
+	test cl, cl
+	jz not_headless
+	ret
+not_headless:
+
 	push rax
 	mov rax, [rdx].state.vera_clock
 	mov [rdx].state.vera_clock, r14				; store vera clock
@@ -432,19 +439,20 @@ layer1_1bpp_til_x_render proc
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 	mov rsi, [rdx].state.vram_ptr
 	; todo: add macro to call
-	call get_tile_definition_mw00_mh00_tw0_th0
+	call get_tile_definition_mw10_mh01_tw0_th0
 	; ax now contains tile number
 
 	; get tile data, need to caclualte offset
 	xor rbx, rbx
-	mov bl, ah						; get tile number
+	mov bl, al						; get tile number
 
 	; this to be macrod
-	shl rbx, 3						; * 8 (1bpp @ 8x8) so now points at base of tile
+	;shl rbx, 3						; * 8 (1bpp @ 8x8) so now points at base of tile
 
 	push r8
 	mov r8, r12						; get y
 	and r8, 07h						; mask offset
+	shl rbx, 3						; rbx is now the address
 	add rbx, r8						; adjust
 	add rbx, r14					; add to tile base address
 
@@ -459,10 +467,12 @@ layer1_1bpp_til_x_render proc
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	movzx r14, al
-	and rax, 0fh		; al now contains the foreground colour index
-	shr r14, 4
-	and r14, 0fh		; r14b now contains the background colour index
+	mov r14, rax
+	shr r14, 12
+	;and r14, 0fh		; r14b now contains the background colour index
+
+	and rax, 0f00h		; al now contains the foreground colour index
+	shr rax, 8
 
 	mov r13, r14		; use r13b to write to the buffer
 	bt ebx, 7
@@ -524,25 +534,26 @@ layer1_1bpp_til_x_render endp
 get_tile_definition macro map_width, map_height, tile_width, tile_height 
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
-	shl rax, tile_width + 3			; * map width
+	shl rax, map_width + 5			; * tile width
+
+	mov rbx, r11					; x
+	shr rbx, tile_width + 3			; / tile width
+	add rax, rbx			
 
 	; constrain map to height
 	if map_height eq 0				
-		and rax, 011111b			; 32
+		;and rax, 011111b			; 32
 	endif
 	if map_height eq 1
-		and rax, 0111111b			; 64
+		;and rax, 0111111b			; 64
 	endif
 	if map_height eq 2
-		and rax, 01111111b			; 128
+		;and rax, 01111111b			; 128
 	endif
 	if map_height eq 3
-		and rax, 011111111b			; 256
+		;and rax, 011111111b			; 256
 	endif
 
-	mov rbx, r11					; x
-	shr rbx, map_width + 5			; / tile width
-	add rax, rbx			
 	shl rax, 1						; * 2
 
 	add rax, r13					; vram address

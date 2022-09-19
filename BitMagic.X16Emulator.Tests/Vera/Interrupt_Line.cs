@@ -47,6 +47,71 @@ public class Interrupt_Line
     }
 
     [TestMethod]
+    public async Task Hit_Wai()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = false;
+
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sei
+                lda #100             ; line 100
+                sta IRQLINE_L
+                lda #02
+                sta IEN
+                wai            
+
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(false, emulator.Vera.Interrupt_Vsync_Hit);
+        Assert.AreEqual(true, emulator.Vera.Interrupt_Line_Hit);
+        Assert.AreEqual(false, emulator.Vera.Interrupt_SpCol_Hit);
+        Assert.AreEqual(0x02, emulator.Memory[0x9F27]);
+        Assert.IsTrue(emulator.Vera.Beam_X <= 31); // can vary, but should be close to the start
+        Assert.AreEqual(100, emulator.Vera.Beam_Y);
+    }
+
+    [TestMethod]
+    public async Task Hit_Wai_Twice()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = false;
+
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sei
+                lda #100             ; line 100
+                sta IRQLINE_L
+                lda #02
+                sta IEN
+                wai            
+                sta ISR
+                wai
+                stp",
+                emulator);
+
+        // emulation
+        Assert.AreEqual(false, emulator.Vera.Interrupt_Vsync_Hit);
+        Assert.AreEqual(true, emulator.Vera.Interrupt_Line_Hit);
+        Assert.AreEqual(false, emulator.Vera.Interrupt_SpCol_Hit);
+        Assert.AreEqual(0x02, emulator.Memory[0x9F27]);
+        Assert.IsTrue(emulator.Vera.Beam_X <= 31); // can vary, but should be close to the start
+        Assert.AreEqual(100, emulator.Vera.Beam_Y);
+    }
+
+    [TestMethod]
     public async Task Hit_Line0()
     {
         var emulator = new Emulator();

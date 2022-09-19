@@ -20,7 +20,7 @@ public class WAI
                 .machine CommanderX16R40
                 .org $810
                 lda #01
-                sta IEN
+                sta IEN 
                 wai            
                 stp
 

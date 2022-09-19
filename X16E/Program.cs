@@ -52,7 +52,7 @@ static class Program
             {
                 Console.WriteLine($"Loading '{options.PrgFilename}'.");
                 var prgData = await File.ReadAllBytesAsync(options.PrgFilename);
-                int destAddress = (prgData[1]) << 8 + prgData[0];
+                int destAddress = (prgData[1] << 8) + prgData[0];
                 for (var i = 2; i < prgData.Length; i++)
                 {
                     emulator.Memory[destAddress++] = prgData[i];

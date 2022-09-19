@@ -233,7 +233,6 @@ next_opcode::
 	nop
 	debug_skip:
 
-
 	add r11w, 1						; PC+1
 	lea rax, opcode_00				; start of jump table
 	jmp qword ptr [rax + rbx*8]		; jump to opcode
@@ -290,7 +289,6 @@ line_check:
 
 	jmp main_loop
 vsync:	
-	; update display
 	call vera_render_display
 
 	; Check if the cpu has gotten too high. if so then reset it.

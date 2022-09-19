@@ -153,7 +153,7 @@ public class Emulator : IDisposable
         public byte Layer0_Enable = 0;
         public byte Layer1_Enable = 0;
 
-        // 1 byte of padding
+        public byte Display_Carry = 0;
 
         // layer 0
         public UInt32 Layer0_MapAddress = 0;
@@ -168,7 +168,7 @@ public class Emulator : IDisposable
         public byte Layer0_TileWidth = 0;
 
         public byte Cpu_Waiting = 0;
-        // 2 bytes of padding
+        public byte Headless = 0;
 
         // layer 1
         public UInt32 Layer1_MapAddress = 0;
@@ -257,6 +257,7 @@ public class Emulator : IDisposable
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
     public ulong HistoryPosition => _state.History_Pos / 8;
 
+    public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
     public VeraState Vera => new VeraState(this);
 
     private const int _rounding = 32; // 32 byte (256bit) allignment required for AVX 256 instructions

@@ -68,7 +68,6 @@ state struct
 	layer1_enable			byte ?
 
 	display_carry			byte ?
-	;_padding				byte ?
 
 	layer0_mapAddress		dword ?
 	layer0_tileAddress		dword ?
@@ -82,9 +81,7 @@ state struct
 	layer0_tileWidth		byte ?
 
 	cpu_waiting				byte ?
-;	_padding1				byte ?
-	_padding2				byte ?
-
+	headless				byte ?
 
 	layer1_mapAddress		dword ?
 	layer1_tileAddress		dword ?
