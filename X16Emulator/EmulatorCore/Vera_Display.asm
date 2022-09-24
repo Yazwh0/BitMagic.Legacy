@@ -24,7 +24,7 @@ include State.asm
 ; rdi  : display
 ; r8   : palette
 ; r9   : output offset
-; r10  : should display table ptr?
+; r10  : scratch
 ; r11  : x
 ; r12  : y
 ; r13  : scratch
@@ -118,11 +118,10 @@ change:
 	mov r12w, [rdx].state.display_y
 	mov r15d, [rdx].state.buffer_render_position
 
-	lea r10, should_display_table
-
 display_loop:
 
 	; check if we're in the visible area as a trivial skip
+	lea r10, should_display_table
 	mov al, byte ptr [r10 + r9]
 	test al, al
 	jz display_skip
@@ -547,21 +546,30 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width
 	add rax, r13					; vram address
 	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al 4:4)
 
+	; ---------------------------------------------------------------
+	; Maybe needs to be moved
 	xor rbx, rbx
 	mov bl, al						; get tile number
 
-	; this to be macrod
+	; find dword in memory that is being rendered
+	mov r10, r12					; get y
 
-	push r8
-	mov r8, r12						; get y
-	and r8, 07h						; mask offset
+	; TODO:
+	; this is contingent on the bpp, need to pass this in, or move back out
+	if tile_height eq 0
+		and r10, 07h				; mask offset
+	endif
+	if tile_height eq 1
+		and r10, 0fh				; mask offset
+	endif
+
+	; TODO:
+	; this is contingent on the bpp, need to pass this in, or move back out
 	shl rbx, 3						; rbx is now the address
-	add rbx, r8						; adjust
+	add rbx, r10					; adjust
 	add rbx, r14					; add to tile base address
-									; todo constrain to map
 
 	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
-	pop r8
 	ret
 endm
 
