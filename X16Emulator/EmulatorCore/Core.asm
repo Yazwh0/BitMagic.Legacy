@@ -108,26 +108,6 @@ no_negative:
 
 endm
 
-; Check if we have read the vera data registers
-read_banked_rbx macro check_allvera
-	local done, vera_skip
-
-	if check_allvera eq 1
-		xor r13, r13
-		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
-		cmp rax, 21h						; check how far we want
-		ja vera_skip
-		mov r13, rax						; set r13 to the address in vera + 1.
-		vera_skip:
-	else
-		lea rax, [rbx-09f23h]				; get value to check
-		cmp rax, 1
-		setbe r13b							; store if we need to let vera know data has changed
-	endif
-
-done:
-
-endm
 
 store_registers macro
 	push rbx
@@ -338,20 +318,6 @@ asm_func ENDP
 ; Side effects macros
 ;
 
-
-; Expects r13b to be set only if one of the Data registers have been read from.
-; also checks for rom\ram bank switches for writes
-step_vera_read macro checkvera
-	local skip
-if checkvera eq 1
-	test r13b, r13b
-	jz skip
-	call vera_afterread
-
-	skip:
-endif	
-endm
-
 check_bank_switch macro
 	local rambank_change, rombank_change, done, skip
 	cmp rbx, 025bh
@@ -374,6 +340,40 @@ rambank_change:
 	call switch_rambank
 
 	done:
+endm
+
+; Check if we have read the vera data registers
+check_vera_access macro check_allvera
+	local done, vera_skip
+
+	if check_allvera eq 1
+		xor r13, r13
+		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
+		cmp rax, 21h						; check how far we want
+		ja vera_skip
+		mov r13, rax						; set r13 to the address in vera + 1.
+		vera_skip:
+	else
+		lea rax, [rbx-09f23h]				; get value to check
+		cmp rax, 1
+		setbe r13b							; store if we need to let vera know data has changed
+	endif
+
+done:
+
+endm
+
+; Expects r13b to be set only if one of the Data registers have been read from.
+; also checks for rom\ram bank switches for writes
+step_vera_read macro checkvera
+	local skip
+if checkvera eq 1
+	test r13b, r13b
+	jz skip
+	call vera_afterread
+
+	skip:
+endif	
 endm
 
 step_vera_readwrite macro checkvera
@@ -400,24 +400,28 @@ endif
 	check_bank_switch
 endm
 
-
-
 ; -----------------------------
-; Read Only Memory
+; Read Only Memory / Vera Update
 ; -----------------------------
+; PC should be correct, generally opcode timing -1
 
-skipwrite_ifreadonly macro checkreadonly
+pre_write_check macro checkreadonly
+	local no_vera_change
 if checkreadonly eq 1
 	cmp rbx, readonly_memory
 	jg skip
+	; check vera write
+	test r13, r13
+	jz no_vera_change
+	; if vera changes, then update the display first
+	call vera_render_display
+no_vera_change:
 endif
 endm
 
 ; -----------------------------
 ; Read Memory
 ; -----------------------------
-; Put value into al
-; and increment PC.
 
 read_zp_rbx macro
 	movzx rbx, byte ptr [rsi+r11]	; Get 8bit value in memory.
@@ -435,13 +439,13 @@ endm
 
 read_abs_rbx macro check_allvera
 	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 read_absx_rbx macro check_allvera
 	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bx, r9w			; Add X
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 read_absx_rbx_pagepenalty macro
@@ -452,13 +456,13 @@ read_absx_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
-	read_banked_rbx 0
+	check_vera_access 0
 endm
 
 read_absy_rbx macro check_allvera
 	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
 	add bx, r10w		; Add Y
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 read_absy_rbx_pagepenalty macro
@@ -469,23 +473,23 @@ read_absy_rbx_pagepenalty macro
 	add bh, 1			; Add high bit
 	add r14, 1			; Add cycle penatly
 no_overflow:
-	read_banked_rbx 0
+	check_vera_access 0
 endm
 
 read_indx_rbx macro check_allvera
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
 	add bl, r9b			; Add on X. Byte operation so it wraps.
 	movzx rbx, word ptr [rsi+rbx]	; Address at location
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 read_ind_rbx macro check_allvera
 	movzx rbx, word ptr [rsi+r11]	; Get 16bit value in memory.
-	;read_banked_rbx check_allvera	; Get value its pointing at
+	;check_vera_access check_allvera	; Get value its pointing at
 	push r11
 	mov r11w, bx					; reads use r11, so save and copy value
 
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 	pop r11
 endm
 
@@ -501,7 +505,7 @@ read_indy_rbx_pagepenalty macro
 	clc
 
 no_overflow:
-	read_banked_rbx 0
+	check_vera_access 0
 endm
 
 read_indy_rbx macro check_allvera
@@ -509,13 +513,13 @@ read_indy_rbx macro check_allvera
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
 	movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
 	add bl, r10b		; Add Y to the lower address byte
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 read_indzp_rbx macro check_allvera
 	movzx rbx, byte ptr [rsi+r11]	; Address in ZP
 	movzx rbx, word ptr [rsi+rbx]	; Address at location
-	read_banked_rbx check_allvera
+	check_vera_access check_allvera
 endm
 
 ; -----------------------------
@@ -715,7 +719,7 @@ xBC_ldy_absx endp
 ; -----------------------------
 
 sta_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r8b
 	step_vera_write checkvera
@@ -772,7 +776,7 @@ x92_sta_indzp endp
 ;
 
 stx_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r9b
 	step_vera_write checkvera
@@ -804,7 +808,7 @@ x8E_stx_abs endp
 ;
 
 sty_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r10b
 	step_vera_write checkvera
@@ -836,7 +840,7 @@ x8C_sty_abs endp
 ;
 
 stz_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 	mov byte ptr [rsi+rbx], 0
 	step_vera_write checkvera
 
@@ -872,7 +876,7 @@ x9E_stz_absx endp
 ;
 
 inc_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	clc
 	inc byte ptr [rsi+rbx]
@@ -888,7 +892,7 @@ skip:
 endm
 
 dec_body macro checkvera, checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	clc
 	dec byte ptr [rsi+rbx]
@@ -1056,7 +1060,7 @@ x98_tya endp
 ;
 
 asl_body macro checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	read_flags_rax
 	sal byte ptr [rsi+rbx],1		; shift
@@ -1119,7 +1123,7 @@ x16_asl_zpx endp
 ;
 
 lsr_body macro checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	movzx r12, byte ptr [rsi+rbx]
 	shr r12b,1	; shift
@@ -1181,7 +1185,7 @@ x56_lsr_zpx endp
 ;
 
 rol_body macro checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	mov rdi, r15					; save registers
 	and rdi, 0100h					; mask carry
@@ -1250,7 +1254,7 @@ x36_rol_zpx endp
 ;
 
 ror_body macro checkreadonly, clock, pc
-	skipwrite_ifreadonly checkreadonly
+	pre_write_check checkreadonly
 
 	mov rdi, r15					; save registers
 	and rdi, 0100h					; mask carry
@@ -2477,7 +2481,7 @@ x34_bit_zpx endp
 
 x1C_trb_abs proc
 	read_abs_rbx 0
-	skipwrite_ifreadonly 1
+	pre_write_check 1
 
 	mov rax, r8
 	not al
@@ -2538,7 +2542,7 @@ x14_trb_zp endp
 
 x0C_tsb_abs proc
 	read_abs_rbx 0
-	skipwrite_ifreadonly 1
+	pre_write_check 1
 
 	or byte ptr [rsi+rbx], r8b
 	jz set_zero
