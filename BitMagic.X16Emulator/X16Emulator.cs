@@ -121,8 +121,8 @@ public class Emulator : IDisposable
 
         public ulong History_Pos = 0x00;
 
-        public UInt32 Dc_HScale = 0;
-        public UInt32 Dc_VScale = 0;
+        public UInt32 Dc_HScale = 0x00010000;
+        public UInt32 Dc_VScale = 0x00010000;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently

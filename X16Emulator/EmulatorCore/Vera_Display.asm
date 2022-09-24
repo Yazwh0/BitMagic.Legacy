@@ -218,6 +218,10 @@ draw_complete:
 
 buffer_reset_skip:
 	xor r15, 010000000000b ; flip top bit, so rendering happens on the alternatite line
+
+	; set r12 to scaled y
+	mov r12d, dword ptr [rdx].state.scale_y
+	shr r12, 16			; adjust to actual value
 	;
 	; Render next lines
 	;
@@ -256,13 +260,20 @@ layer1_render_done::
 	mov word ptr [rdx].state.layer1_next_render, ax
 
 
+;:- end of rendering, no label needed
 	xor r15, 010000000000b ; flip top bit back
 
-;check_bounds:
 	add r11, 1
 	cmp r11, VISIBLE_WIDTH
 	jne display_skip
 	xor r11, r11
+
+	; add scaled y
+	mov r12d, dword ptr [rdx].state.scale_y
+	mov eax, [rdx].state.dc_vscale
+	add r12, rax
+	mov [rdx].state.scale_y, r12d
+
 	movzx r12, [rdx].state.display_y			; inc r12, and leave it it as y for the start of loop
 	add r12, 1
 
@@ -274,6 +285,7 @@ display_skip:
 	xor r9, r9
 	xor r11, r11
 	xor r12, r12
+	mov [rdx].state.scale_y, r12d				; reset scaled value 
 
 no_reset:
 	mov word ptr [rdx].state.display_y, r12w
