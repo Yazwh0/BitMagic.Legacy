@@ -37,8 +37,8 @@ public class Emulator : IDisposable
         public int Data1_Step { get => (int)_emulator._state.Data1_Step; set => _emulator._state.Data1_Step = (ulong)value; }
         public bool AddrSel { get => _emulator._state.AddrSel != 0; set => _emulator._state.AddrSel = (value ? (byte)1 : (byte)0); }
         public bool DcSel { get => _emulator._state.DcSel != 0; set => _emulator._state.DcSel = (value ? (byte)1 : (byte)0); }
-        public byte Dc_HScale { get => _emulator._state.Dc_HScale; set => _emulator._state.Dc_HScale = value; }
-        public byte Dc_VScale { get => _emulator._state.Dc_VScale; set => _emulator._state.Dc_VScale = value; }
+        public UInt32 Dc_HScale { get => _emulator._state.Dc_HScale; set => _emulator._state.Dc_HScale = value; }
+        public UInt32 Dc_VScale { get => _emulator._state.Dc_VScale; set => _emulator._state.Dc_VScale = value; }
         public byte Dc_Border { get => _emulator._state.Dc_Border; set => _emulator._state.Dc_Border = value; }
         public ushort Dc_HStart { get => _emulator._state.Dc_HStart; set => _emulator._state.Dc_HStart = value; }
         public ushort Dc_HStop { get => _emulator._state.Dc_HStop; set => _emulator._state.Dc_HStop = value; }
@@ -121,6 +121,9 @@ public class Emulator : IDisposable
 
         public ulong History_Pos = 0x00;
 
+        public UInt32 Dc_HScale = 0;
+        public UInt32 Dc_VScale = 0;
+
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
 
@@ -140,10 +143,10 @@ public class Emulator : IDisposable
 
         public byte AddrSel = 0;
         public byte DcSel = 0;
-
-        public byte Dc_HScale = 0;
-        public byte Dc_VScale = 0;
         public byte Dc_Border = 0;
+
+        public ushort Spacer = 0; // unused
+
         public ushort Dc_HStart = 0;
         public ushort Dc_HStop = 640;
         public ushort Dc_VStart = 0;
@@ -198,6 +201,8 @@ public class Emulator : IDisposable
         public UInt32 Frame_Count = 0;
         public UInt32 Buffer_Render_Position = 0;
         public UInt32 Buffer_Output_Position = 1024; // so there is 1 line between the render and output
+        public UInt32 Scale_x = 0;
+        public UInt32 Scale_y = 0;
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
 

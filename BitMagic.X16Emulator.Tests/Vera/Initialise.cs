@@ -162,8 +162,8 @@ public class Vera_Initialise
         var emulator = new Emulator();
 
         emulator.Vera.DcSel = false;
-        emulator.Vera.Dc_HScale = 0x01; // not real values
-        emulator.Vera.Dc_VScale = 0x02;
+        emulator.Vera.Dc_HScale = 0x010000; // 1:1
+        emulator.Vera.Dc_VScale = 0x010000;
         emulator.Vera.Dc_Border = 0x03;
         emulator.Vera.Dc_HStart = 0x04;
         emulator.Vera.Dc_HStop = 0x05;
@@ -177,8 +177,8 @@ public class Vera_Initialise
                 emulator);
 
         Assert.AreEqual(0x00, emulator.Memory[0x9F29]);
-        Assert.AreEqual(0x01, emulator.Memory[0x9F2A]);
-        Assert.AreEqual(0x02, emulator.Memory[0x9F2B]);
+        Assert.AreEqual(0x80, emulator.Memory[0x9F2A]);
+        Assert.AreEqual(0x80, emulator.Memory[0x9F2B]);
         Assert.AreEqual(0x03, emulator.Memory[0x9F2C]);
     }
 
@@ -188,8 +188,8 @@ public class Vera_Initialise
         var emulator = new Emulator();
 
         emulator.Vera.DcSel = true;
-        emulator.Vera.Dc_HScale = 0x01; // not real values
-        emulator.Vera.Dc_VScale = 0x02;
+        emulator.Vera.Dc_HScale = 0x010000; // not real values
+        emulator.Vera.Dc_VScale = 0x010000;
         emulator.Vera.Dc_Border = 0x03;
         emulator.Vera.Dc_HStart = 0x44;
         emulator.Vera.Dc_HStop = 0x55;

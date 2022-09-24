@@ -43,29 +43,7 @@ public class DisplayRegisters
                 stp",
                 emulator);
 
-        Assert.AreEqual(0x00, emulator.Vera.Dc_HScale);
         Assert.AreEqual(0x3fc, emulator.Vera.Dc_HStop);
-
-        Assert.AreEqual(0xff, emulator.Memory[0x9F2a]);
-    }
-
-    [TestMethod]
-    public async Task DC_HScale()
-    {
-        var emulator = new Emulator();
-
-        emulator.Vera.DcSel = false;
-        emulator.A = 0xff;
-
-        await X16TestHelper.Emulate(@"
-                .machine CommanderX16R40
-                .org $810
-                sta DC_HSCALE   
-                stp",
-                emulator);
-
-        Assert.AreEqual(0xff, emulator.Vera.Dc_HScale);
-        Assert.AreEqual(640, emulator.Vera.Dc_HStop);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2a]);
     }
@@ -85,29 +63,7 @@ public class DisplayRegisters
                 stp",
                 emulator);
 
-        Assert.AreEqual(0x00, emulator.Vera.Dc_VScale);
         Assert.AreEqual(0x1fe, emulator.Vera.Dc_VStart);
-
-        Assert.AreEqual(0xff, emulator.Memory[0x9F2b]);
-    }
-
-    [TestMethod]
-    public async Task DC_VScale()
-    {
-        var emulator = new Emulator();
-
-        emulator.Vera.DcSel = false;
-        emulator.A = 0xff;
-
-        await X16TestHelper.Emulate(@"
-                .machine CommanderX16R40
-                .org $810
-                sta DC_VSCALE
-                stp",
-                emulator);
-
-        Assert.AreEqual(0xff, emulator.Vera.Dc_VScale);
-        Assert.AreEqual(0x00, emulator.Vera.Dc_VStart);
 
         Assert.AreEqual(0xff, emulator.Memory[0x9F2b]);
     }

@@ -176,6 +176,7 @@ vera_init proc
 	mov byte ptr [rdx].state.drawing, 1
 	mov word ptr [rdx].state.layer0_next_render, 1
 	mov word ptr [rdx].state.layer1_next_render, 1
+	;mov dword ptr [rdx].state.buffer_render_position, 010000000000b
 
 	;
 	; DATA0\1
@@ -232,10 +233,12 @@ addr_done:
 	or rax, rbx
 	mov byte ptr [rsi+DC_VIDEO], al
 
-	mov al, byte ptr [rdx].state.dc_hscale
+	mov eax, dword ptr [rdx].state.dc_hscale
+	shr rax, 9
 	mov byte ptr [rsi+DC_HSCALE], al
 
-	mov al, byte ptr [rdx].state.dc_vscale
+	mov eax, dword ptr [rdx].state.dc_vscale
+	shr rax, 9
 	mov byte ptr [rsi+DC_VSCALE], al
 
 	mov al, byte ptr [rdx].state.dc_border
@@ -843,7 +846,9 @@ vera_update_9f2a proc
 	movzx r13, byte ptr [rsi+rbx]
 	cmp byte ptr [rdx].state.dcsel, 0
 	jnz dcsel_set
-	mov byte ptr [rdx].state.dc_hscale, r13b
+
+	shl r13, 9
+	mov dword ptr [rdx].state.dc_hscale, r13d
 	ret
 dcsel_set:
 	shl r13, 2
@@ -855,7 +860,8 @@ vera_update_9f2b proc
 	movzx r13, byte ptr [rsi+rbx]
 	cmp byte ptr [rdx].state.dcsel, 0
 	jnz dcsel_set
-	mov byte ptr [rdx].state.dc_vscale, r13b
+	shl r13, 9
+	mov dword ptr [rdx].state.dc_vscale, r13d
 	ret
 dcsel_set:
 	shl r13, 1

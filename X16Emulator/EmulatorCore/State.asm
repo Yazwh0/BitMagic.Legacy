@@ -35,6 +35,9 @@ state struct
 
 	history_pos				qword ?
 
+	dc_hscale				dword ?
+	dc_vscale				dword ?
+
 	register_pc				word ?
 	stackpointer			word ?
 
@@ -55,9 +58,10 @@ state struct
 	; Vera
 	addrsel					byte ?
 	dcsel					byte ?
-	dc_hscale				byte ?
-	dc_vscale				byte ?
 	dc_border				byte ?
+
+	spacer					word ? ; unused
+
 	dc_hstart				word ?
 	dc_hstop				word ?
 	dc_vstart				word ?
@@ -110,6 +114,8 @@ state struct
 	frame_count				dword ?
 	buffer_render_position	dword ?
 	buffer_output_position	dword ?
+	scale_x					dword ?
+	scale_y					dword ?
 	display_x				word ?
 	display_y				word ?
 

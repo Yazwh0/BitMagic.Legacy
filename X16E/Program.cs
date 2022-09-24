@@ -69,6 +69,7 @@ static class Program
         {
             if (File.Exists(options.CodeFilename))
             {
+                Console.WriteLine($"Compiling '{options.CodeFilename}'.");
                 var code = await File.ReadAllTextAsync(options.CodeFilename);
                 var compiler = new Compiler(code);
                 try
