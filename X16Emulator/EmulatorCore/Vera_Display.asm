@@ -20,16 +20,16 @@ include State.asm
 ; rbx  : scratch
 ; rcx  : loop target
 ; rdx  : state object 
-; rsi  : vram
+; rsi  : memory context (changable)
 ; rdi  : display
 ; r8   : palette
 ; r9   : output offset
 ; r10  : scratch
 ; r11  : x
-; r12  : y
+; r12  : scratch
 ; r13  : scratch
 ; r14  : scratch
-; r15  : buffer_render_output
+; r15  : buffer render output position for rendering in\out of buffer
 
 
 
@@ -115,10 +115,13 @@ change:
 	mov r8, [rdx].state.palette_ptr
 	mov r9d, [rdx].state.display_position
 	mov r11w, [rdx].state.display_x
-	mov r12w, [rdx].state.display_y
 	mov r15d, [rdx].state.buffer_render_position
 
+	; this also gets set at the end of the display loop
+	movzx r12, word ptr [rdx].state.display_y
+
 display_loop:
+	; needs actual x, y coordinates
 
 	; check if we're in the visible area as a trivial skip
 	lea r10, should_display_table
@@ -126,6 +129,7 @@ display_loop:
 	test al, al
 	jz display_skip
 
+	; r12 gets set at the end of the display loop
 	movzx rax, word ptr [rdx].state.dc_vstart
 	cmp r12, rax
 	jl draw_border
@@ -150,7 +154,11 @@ draw_border:
 	jmp draw_complete
 
 draw_pixel:
+	; TODO: Change buffer render position (r15) to be scaled.
+	; but needs to also be stepped on so the filler can work at the same point
+
 	mov rsi, [rdx].state.display_buffer_ptr
+
 	; background
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
@@ -250,11 +258,12 @@ layer1_render_done::
 
 	xor r15, 010000000000b ; flip top bit back
 
-check_bounds:
+;check_bounds:
 	add r11, 1
 	cmp r11, VISIBLE_WIDTH
 	jne display_skip
 	xor r11, r11
+	movzx r12, [rdx].state.display_y			; inc r12, and leave it it as y for the start of loop
 	add r12, 1
 
 
@@ -267,13 +276,13 @@ display_skip:
 	xor r12, r12
 
 no_reset:
+	mov word ptr [rdx].state.display_y, r12w
 	dec rcx
 	jnz display_loop
 
 done:
 	mov dword ptr [rdx].state.display_position, r9d
 	mov word ptr [rdx].state.display_x, r11w
-	mov word ptr [rdx].state.display_y, r12w
 
 	pop r15
 	pop r14
