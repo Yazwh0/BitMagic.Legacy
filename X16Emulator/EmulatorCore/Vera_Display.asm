@@ -37,6 +37,7 @@ include State.asm
 SCREEN_WIDTH		equ 800
 SCREEN_HEIGHT		equ 525
 SCREEN_DOTS			equ SCREEN_WIDTH * SCREEN_HEIGHT
+RENDER_RESET		equ SCREEN_DOTS - 800
 
 ; Screen is RGBA so * 4.
 SCREEN_BUFFER_SIZE	equ SCREEN_DOTS * 4
@@ -59,6 +60,23 @@ BUFFER_LAYER0		equ BUFFER_SIZE
 BUFFER_SPRITE_L2	equ BUFFER_SIZE * 2
 BUFFER_LAYER1		equ BUFFER_SIZE * 3
 BUFFER_SPRITE_L3	equ BUFFER_SIZE * 4
+
+move_buffer_on macro
+	local buffer_reset_skip
+	; buffer is 1024 wide, but the is display is 800.
+	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
+	; TODO, this should reset when we change line
+	; need to render a full width line, but only output in the visible area
+	add r15, 1
+	mov rax, r15
+	and rax, 001111111111b	; dont consider the top bit
+	cmp rax, VISIBLE_WIDTH
+	jne buffer_reset_skip
+	xor r15, 010000000000b	; flip top bit
+	and r15, 010000000000b	; and clear count
+
+buffer_reset_skip:
+endm
 
 ;
 ; Render the rest of the display, only gets called on vsync
@@ -121,13 +139,25 @@ change:
 	movzx r12, word ptr [rdx].state.display_y
 
 display_loop:
+	;
+	; BORDER and VISIBLE CHECK
+	;
 	; needs actual x, y coordinates
+
+	movzx r12, word ptr [rdx].state.display_y
+	movzx r11, word ptr [rdx].state.display_x
+
 
 	; check if we're in the visible area as a trivial skip
 	lea r10, should_display_table
-	mov al, byte ptr [r10 + r9]
-	test al, al
-	jz display_skip
+	movzx rax, byte ptr [r10 + r9]
+	test rax, rax
+	jz render_complete
+
+	cmp rax, 2
+	jg do_render
+
+	push rax
 
 	; r12 gets set at the end of the display loop
 	movzx rax, word ptr [rdx].state.dc_vstart
@@ -151,11 +181,21 @@ draw_border:
 	mov ebx, dword ptr [r8 + rax * 4]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
 
-	jmp draw_complete
+	jmp draw_end
 
+;
+; VIDEO Output
+;
+; Needs scaled x, buffer position (r15)
+;
+; Todo: USE SCALED X
+;
 draw_pixel:
-	; TODO: Change buffer render position (r15) to be scaled.
-	; but needs to also be stepped on so the filler can work at the same point
+
+	mov r12d, dword ptr [rdx].state.scale_y
+	shr r12, 16
+	;mov r11d, dword ptr [rdx].state.scale_x
+	;shr r11, 16
 
 	mov rsi, [rdx].state.display_buffer_ptr
 
@@ -201,27 +241,28 @@ layer1_notenabled:
 	mov [rdi + r9 * 4 + LAYER1], ebx	
 layer1_done:
 
+;
+;	Display complete.
+;
+draw_end:
+	pop rax
+	cmp rax, 2
+	jl render_complete_visible
 
-
-draw_complete:
-	; buffer is 1024 wide, but the is display is 800.
-	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
-	; TODO, this should reset when we change line
-	; need to render a full width line, but only output in the visible area
-	add r15, 1
-	mov rax, r15
-	and rax, 001111111111b	; dont consider the top bit
-	cmp rax, VISIBLE_WIDTH
-	jne buffer_reset_skip
-	xor r15, 010000000000b	; flip top bit
-	and r15, 010000000000b	; and clear count
-
-buffer_reset_skip:
+;
+; RENDERING TO BUFFER
+;
+; Needs act x, scaled y + 1 line from VIDEO
+;
+do_render:
 	xor r15, 010000000000b ; flip top bit, so rendering happens on the alternatite line
 
-	; set r12 to scaled y
+	movzx r11, word ptr [rdx].state.display_x
+
+	; set r12 to scaled y and add a line
 	mov r12d, dword ptr [rdx].state.scale_y
-	shr r12, 16			; adjust to actual value
+	shr r12, 16							; adjust to actual value
+
 	;
 	; Render next lines
 	;
@@ -238,10 +279,8 @@ buffer_reset_skip:
 	lea rbx, layer0_render_jump
 	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
 
-
 layer0_render_done::
 	mov word ptr [rdx].state.layer0_next_render, ax
-
 
 	;
 	; Layer 1
@@ -255,46 +294,77 @@ layer0_render_done::
 	lea rbx, layer1_render_jump
 	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
 
-
 layer1_render_done::
 	mov word ptr [rdx].state.layer1_next_render, ax
 
-
-;:- end of rendering, no label needed
+; ------------------------------------------------
+; end of rendering
+; ------------------------------------------------
 	xor r15, 010000000000b ; flip top bit back
 
+; todo, scaled y should only be moved if rendering to the buffer, and so should have a seperate clear
+render_complete_visible:	; arrives here if the video wrote data
+	move_buffer_on
+
+	movzx r11, word ptr [rdx].state.display_x
 	add r11, 1
 	cmp r11, VISIBLE_WIDTH
-	jne display_skip
-	xor r11, r11
+	jne not_next_line
 
-	; add scaled y
+	; next line
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+	mov word ptr [rdx].state.scale_x, r11w		; zero
+
+	; Add 1 to act y
+	movzx r12, word ptr [rdx].state.display_y
+	add r12, 1
+	mov word ptr [rdx].state.display_y, r12w
+
+	; Add line to scaled y
 	mov r12d, dword ptr [rdx].state.scale_y
 	mov eax, [rdx].state.dc_vscale
 	add r12, rax
-	mov [rdx].state.scale_y, r12d
+	mov [rdx].state.scale_y, r12d		
 
-	movzx r12, [rdx].state.display_y			; inc r12, and leave it it as y for the start of loop
-	add r12, 1
+	jmp render_complete
+
+not_next_line:
+	mov word ptr [rdx].state.display_x, r11w
+
+	; step step onto scaled x
+	mov r11d, dword ptr [rdx].state.scale_x
+	mov eax, [rdx].state.dc_hscale
+	add r11, rax
+	mov [rdx].state.scale_x, r11d
 
 
-display_skip:
+; --------------------------------------------------------------------------
+render_complete:			; arrives here if we're outside the visible area
 	add r9, 1
 	cmp r9, SCREEN_DOTS
-	jne no_reset
+	jne not_end_of_screen
+
 	xor r9, r9
 	xor r11, r11
 	xor r12, r12
-	mov [rdx].state.scale_y, r12d				; reset scaled value 
-
-no_reset:
+	mov word ptr [rdx].state.display_x, r11w
 	mov word ptr [rdx].state.display_y, r12w
+	jmp no_scale_reset
+
+not_end_of_screen:
+	cmp r9, RENDER_RESET
+	jne no_scale_reset
+	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
+	xor r15, r15										; reset buffer pointer
+
+no_scale_reset:
 	dec rcx
 	jnz display_loop
 
 done:
 	mov dword ptr [rdx].state.display_position, r9d
-	mov word ptr [rdx].state.display_x, r11w
+	;mov word ptr [rdx].state.display_x, r11w
 
 	pop r15
 	pop r14
@@ -309,6 +379,7 @@ done:
 	pop rsi
 	pop rax
 	ret
+
 vera_render_display endp
 
 
@@ -396,7 +467,7 @@ layer0_1bpp_til_x_render proc
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
-	get_tile_definition_layer1
+	get_tile_definition_layer0
 	; ax now contains tile number
 	; ebx now contains tile data
 
@@ -1002,18 +1073,40 @@ dw 0408h, 050ah, 060ch, 070fh, 0212h, 0434h, 0646h, 0868h, 0a8ah, 0c9ch, 0fbeh, 
 dw 0c6bh, 0f7dh, 0201h, 0413h, 0615h, 0826h, 0a28h, 0c3ah, 0f3ch, 0201h, 0403h, 0604h, 0806h, 0a08h, 0c09h, 0f0bh
 
 should_display_table:
-REPT 480
+; 0 - dont render
+; 1 - pull from buffer
+; 2 - normal
+; 3 - render to buffer
+REPT 479
 	REPT 640
-		db 1
+		db 2
 	ENDM
-	REPT 800-640
+	REPT 160
 		db 0
 	ENDM
 ENDM
-REPT 525-480
+
+; last visible line, dont render to the buffer
+REPT 640
+	db 1
+ENDM
+REPT 160
+	db 0
+ENDM
+; 480 lines done, end of visible area
+
+REPT 44
 	REPT 800
 		db 0
 	ENDM
+ENDM
+
+; last line, render to the buffer
+REPT 640
+	db 3
+ENDM
+REPT 160
+	db 0
 ENDM
 
 .code

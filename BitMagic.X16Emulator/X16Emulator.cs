@@ -197,10 +197,10 @@ public class Emulator : IDisposable
 
         public byte Drawing = 0;
 
-        public UInt32 Beam_Position = 0;
+        public UInt32 Beam_Position = 800*480; // in vsync, so not renderingpain
         public UInt32 Frame_Count = 0;
         public UInt32 Buffer_Render_Position = 0;
-        public UInt32 Buffer_Output_Position = 1024; // so there is 1 line between the render and output
+        public UInt32 Buffer_Output_Position = 0; // so there is 1 line between the render and output
         public UInt32 Scale_x = 0;
         public UInt32 Scale_y = 0;
         public ushort Beam_x = 0;
