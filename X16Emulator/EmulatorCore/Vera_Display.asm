@@ -194,8 +194,10 @@ draw_pixel:
 
 	mov r12d, dword ptr [rdx].state.scale_y
 	shr r12, 16
-	;mov r11d, dword ptr [rdx].state.scale_x
-	;shr r11, 16
+	mov r11d, dword ptr [rdx].state.scale_x
+	shr r11, 16
+
+	; *** todo change r11 to index into the buffer ***
 
 	mov rsi, [rdx].state.display_buffer_ptr
 

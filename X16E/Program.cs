@@ -22,6 +22,9 @@ static class Program
 
         [Option('c', "code", Required = false, HelpText = "Code file to compile. Result will be loaded at 0x801.")]
         public string CodeFilename { get; set; } = "";
+
+        [Option('w', "write", Required = false, HelpText = "Write the result of the compilation.")]
+        public bool WritePrg { get; set; } = false;
     }
 
     static async Task<int> Main(string[] args)
@@ -40,13 +43,19 @@ static class Program
             return 1;
         }
 
-        if (!string.IsNullOrWhiteSpace(options.PrgFilename) && !string.IsNullOrWhiteSpace(options.CodeFilename))
+        if (options.WritePrg && string.IsNullOrWhiteSpace(options.CodeFilename))
         {
-            Console.WriteLine("Cannot have both a prg file and code file set.");
+            Console.WriteLine("Cannot have write the result of compilation if no codefile is set.");
             return 1;
         }
 
-        if (!string.IsNullOrWhiteSpace(options.PrgFilename))
+        if (!string.IsNullOrWhiteSpace(options.PrgFilename) && !string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
+        {
+            Console.WriteLine("Cannot have both a prg file and code file set when not outputing the result of compilation");
+            return 1;
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.PrgFilename) && !string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
         {
             if (File.Exists(options.PrgFilename))
             {
@@ -92,6 +101,12 @@ static class Program
                     for (var i = 2; i < prg.Length; i++)
                     {
                         emulator.Memory[destAddress++] = prg[i];
+                    }
+
+                    if (options.WritePrg)
+                    {
+                        Console.WriteLine($"Writing to '{options.PrgFilename}'.");
+                        await File.WriteAllBytesAsync(options.PrgFilename, prg);
                     }
                 }
                 catch (Exception e)
