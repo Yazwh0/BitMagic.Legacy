@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using BitMagic.X16Emulator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace BitMagic.X16Emulator.Tests
 {
@@ -101,6 +103,53 @@ namespace BitMagic.X16Emulator.Tests
             Assert.AreEqual(InterruptDisable, emulator.InterruptDisable, "Interrupt Disable flag doesn't match");
             Assert.AreEqual(Decimal, emulator.Decimal, "Decimal flag doesn't match");
             Assert.AreEqual(Interrupt, emulator.Interrupt, "Interrupt doesn't match");
+        }
+
+        public static void SaveDisplay(this Emulator emulator, string filename)
+        {
+            using var image = new Image<Rgba32>(800, 640 * 6);
+
+            var pixels = emulator.Display;
+
+            var i = 0;
+            for (var l = 0; l < 6; l++)
+            {
+                for (var y = 0; y < 525; y++)
+                {
+                    for (var x = 0; x < 800; x++)
+                    {
+                        var pixel = pixels[i++];
+                        image[x, y + l * 525] = new Rgba32 { R = pixel.R, G = pixel.G, B = pixel.B, A = pixel.A };
+                    }
+                }
+            }
+
+            using var fs = new FileStream(filename, FileMode.Create);
+            image.SaveAsPng(fs);
+            fs.Flush();
+            fs.Close();
+        }
+
+        public static void CompareImage(this Emulator emulator, string filename)
+        {
+            using var image = Image.Load(filename).CloneAs<Rgba32>();
+
+            var pixels = emulator.Display;
+
+            var i = 0;
+            for (var l = 0; l < 6; l++)
+            {
+                for (var y = 0; y < 525; y++)
+                {
+                    for (var x = 0; x < 800; x++)
+                    {
+                        var actual = pixels[i++];
+                        var expectedOriginal = image[x, y + l * 525];
+                        var expected = new Common.PixelRgba { R = expectedOriginal.R, G = expectedOriginal.G, B = expectedOriginal.B, A = expectedOriginal.A };
+                        Assert.AreEqual(expected, actual, $"At {x},{y} on layer {l}.");
+                    }
+                }
+            }
         }
     }
 }
