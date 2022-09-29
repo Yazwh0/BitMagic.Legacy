@@ -4,7 +4,8 @@
       "commandName": "Project",
       "commandLineArgs1": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
       "commandLineArgs2": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg D:\\Documents\\Source\\BitMagicTestProject\\test.prg",
-      "commandLineArgs": "--rom D:\\Documents\\Source\\BitMagic\\rom\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
+      "commandLineArgs3": "--rom D:\\Documents\\Source\\BitMagic\\rom\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
+      "commandLineArgs": "--rom C:\\Dev\\x16_hardware_tester.rom --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
       "nativeDebugging": true
     }
   }

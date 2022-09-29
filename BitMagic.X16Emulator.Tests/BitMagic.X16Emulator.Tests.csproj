@@ -30,24 +30,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Vera\Images\background_area.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Vera\Images\background_colour.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Vera\Images\background_hstart.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Vera\Images\background_hstop.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Vera\Images\background_vstart.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Vera\Images\background_vstop.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+		<None Include="Vera\Images\*.png" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
+
 
 </Project>

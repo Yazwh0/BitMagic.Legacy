@@ -612,6 +612,7 @@ layer1_1bpp_til_x_render endp
 ; ebx : tile data
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width
+	local height_px, width_px
 	mov rsi, [rdx].state.vram_ptr
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
@@ -622,18 +623,34 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width
 	add rax, rbx			
 
 	; constrain map to height
+	; this needs to consider map_height and map_width
 	if map_height eq 0				
-		;and rax, 011111b			; 32
+		height_px equ 32
 	endif
 	if map_height eq 1
-		;and rax, 0111111b			; 64
+		height_px equ 64
 	endif
 	if map_height eq 2
-		;and rax, 01111111b			; 128
+		height_px equ 128
 	endif
 	if map_height eq 3
-		;and rax, 011111111b			; 256
+		height_px equ 256
 	endif
+
+	if map_width eq 0				
+		width_px equ 32
+	endif
+	if map_width eq 1
+		width_px equ 64
+	endif
+	if map_width eq 2
+		width_px equ 128
+	endif
+	if map_width eq 3
+		width_px equ 256
+	endif
+
+	and rax, (height_px * width_px) - 1
 
 	shl rax, 1						; * 2
 
