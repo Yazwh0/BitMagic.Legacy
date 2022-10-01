@@ -372,7 +372,6 @@ public class Tiles_1Bpp
         emulator.CompareImage(@"Vera\Images\tile_1bpp_l0_200vscale.png");
     }
 
-
     [TestMethod]
     public async Task Normal_200VScale_Layer1()
     {
@@ -493,5 +492,450 @@ public class Tiles_1Bpp
                 emulator);
 
         emulator.CompareImage(@"Vera\Images\tile_1bpp_l1_200vscale.png");
+    }
+
+
+    [TestMethod]
+    public async Task Normal_192HScale_Layer0()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x03;
+
+        await X16TestHelper.Emulate(@"
+                 .machine CommanderX16R40
+                .org $801
+
+                .byte $0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
+                .org $810
+                    ;jmp ($fffc)
+                    sei
+
+                    lda #02
+                    sta DC_BORDER
+
+                    lda #$a0        ; map is at $14000
+                    sta L0_MAPBASE
+
+                    stz L0_TILEBASE ; 8x8, tiles are at $00000
+
+                    ; Tile definition
+                    lda #$10
+                    sta ADDRx_H
+                    lda #$00
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+    
+                    ; write a tile
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+
+                    ; Tile map details
+                    lda #$11
+                    sta ADDRx_H
+                    lda #$40
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+
+                    ; blank lines
+                    ldx #03         ; 3 blank lines
+                    jsr blank_line
+
+                    jsr test_data   ; 5 lines
+
+                    ; blank lines
+                    ldx #10         ; 10 blank lines
+                    jsr blank_line
+        
+                    jsr test_data   ; 5 lines
+    
+                    ; blank lines
+                    ldx #37         ; 10 blank lines
+                    jsr blank_line
+
+                    ; background colour
+                    lda #$11
+                    sta ADDRx_H
+                    lda #$fa
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+    
+                    lda #$12
+                    sta DATA0
+
+                    lda #$70        
+                    sta L0_CONFIG ; 128x64 tiles
+
+                    lda #$11
+                    sta DC_VIDEO ; enable layer 0
+
+                    ldx #128
+                    stx DC_VSCALE  
+                    ldx #$c0
+                    stx DC_HSCALE
+
+                    lda #136
+                    sta IRQLINE_L
+
+                    lda #02
+                    sta IEN
+
+                    sta CTRL    ; set to 2, so we can change DC_HSTART
+
+                    ldy #02
+
+                .loop:
+                    wai
+                    lda ISR
+                    and #$02
+                    beq loop
+                    sta ISR
+
+                    lda #32
+                    sta DC_HSTART
+
+                    lda #136+56
+                    sta IRQLINE_L
+
+                .second_wait:
+                    wai
+                    lda ISR
+                    and #$02
+                    beq second_wait
+                    sta ISR
+
+                    stz DC_HSTART
+    
+                    lda #136
+                    sta IRQLINE_L
+
+                    dey
+                    beq done
+
+                    jmp loop
+                .done:
+                    stp
+
+                .proc fill_vera
+                .next_char:
+                    stz DATA0   ; tile number
+                    sta DATA0   ; colour
+
+                    dex
+                    bne next_char
+
+                    rts
+                .endproc
+
+                .proc blank_line
+
+                .new_line:
+                    ldy #00
+                .next_char:
+                    stz DATA0
+                    stz DATA0
+                    iny
+                    bne next_char
+                    dex
+                    bne new_line
+                    rts
+                .endproc
+
+                .proc test_data
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50-2         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0+2        ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50-1         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0+1         ; width
+                    jsr fill_vera
+
+                    ; blue tiles
+                    lda #$d5;
+                    ldx #$50            ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0            ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50+1         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0-1         ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50+2        ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0-2         ; width
+                    jsr fill_vera
+
+                    rts
+                .endproc",
+                emulator);
+
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_1bpp_l0_192hscale.png");
+        emulator.CompareImage(@"Vera\Images\tile_1bpp_l0_192hscale.png");
+    }
+
+    [TestMethod]
+    public async Task Normal_192HScale_Layer1()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x03;
+
+        await X16TestHelper.Emulate(@"
+                 .machine CommanderX16R40
+                .org $801
+
+                .byte $0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
+                .org $810
+                    ;jmp ($fffc)
+                    sei
+
+                    lda #02
+                    sta DC_BORDER
+
+                    lda #$a0        ; map is at $14000
+                    sta L1_MAPBASE
+
+                    stz L1_TILEBASE ; 8x8, tiles are at $00000
+
+                    ; Tile definition
+                    lda #$10
+                    sta ADDRx_H
+                    lda #$00
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+    
+                    ; write a tile
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$f0
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+                    lda #$0f
+                    sta DATA0
+
+                    ; Tile map details
+                    lda #$11
+                    sta ADDRx_H
+                    lda #$40
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+
+                    ; blank lines
+                    ldx #03         ; 3 blank lines
+                    jsr blank_line
+
+                    jsr test_data   ; 5 lines
+
+                    ; blank lines
+                    ldx #10         ; 10 blank lines
+                    jsr blank_line
+        
+                    jsr test_data   ; 5 lines
+    
+                    ; blank lines
+                    ldx #37         ; 10 blank lines
+                    jsr blank_line
+
+                    ; background colour
+                    lda #$11
+                    sta ADDRx_H
+                    lda #$fa
+                    sta ADDRx_M
+                    lda #$00
+                    sta ADDRx_L
+    
+                    lda #$12
+                    sta DATA0
+
+                    lda #$70        
+                    sta L1_CONFIG ; 128x64 tiles
+
+                    lda #$21
+                    sta DC_VIDEO ; enable layer 0
+
+                    ldx #128
+                    stx DC_VSCALE  
+                    ldx #$c0
+                    stx DC_HSCALE
+
+                    lda #136
+                    sta IRQLINE_L
+
+                    lda #02
+                    sta IEN
+
+                    sta CTRL    ; set to 2, so we can change DC_HSTART
+
+                    ldy #02
+
+                .loop:
+                    wai
+                    lda ISR
+                    and #$02
+                    beq loop
+                    sta ISR
+
+                    lda #32
+                    sta DC_HSTART
+
+                    lda #136+56
+                    sta IRQLINE_L
+
+                .second_wait:
+                    wai
+                    lda ISR
+                    and #$02
+                    beq second_wait
+                    sta ISR
+
+                    stz DC_HSTART
+    
+                    lda #136
+                    sta IRQLINE_L
+
+                    dey
+                    beq done
+
+                    jmp loop
+                .done:
+                    stp
+
+                .proc fill_vera
+                .next_char:
+                    stz DATA0   ; tile number
+                    sta DATA0   ; colour
+
+                    dex
+                    bne next_char
+
+                    rts
+                .endproc
+
+                .proc blank_line
+
+                .new_line:
+                    ldy #00
+                .next_char:
+                    stz DATA0
+                    stz DATA0
+                    iny
+                    bne next_char
+                    dex
+                    bne new_line
+                    rts
+                .endproc
+
+                .proc test_data
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50-2         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0+2        ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50-1         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0+1         ; width
+                    jsr fill_vera
+
+                    ; blue tiles
+                    lda #$d5;
+                    ldx #$50            ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0            ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50+1         ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0-1         ; width
+                    jsr fill_vera
+    
+                    ; blue tiles
+                    lda #$e6;
+                    ldx #$50+2        ; width
+                    jsr fill_vera
+
+                    ; red tiles
+                    lda #$a2;
+                    ldx #$b0-2         ; width
+                    jsr fill_vera
+
+                    rts
+                .endproc",
+                emulator);
+
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_1bpp_l1_192hscale.png");
+        emulator.CompareImage(@"Vera\Images\tile_1bpp_l1_192hscale.png");
     }
 }
