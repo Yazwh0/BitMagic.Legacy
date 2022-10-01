@@ -54,29 +54,12 @@ VISIBLE_HEIGHT		equ 480
 VBLANK				equ 480
 
 ; Buffer is colour index. one line being rendered, the other being output
-BUFFER_SIZE			equ 1024 * 2			; use 1024, so we can toggle high bit to switch
+BUFFER_SIZE			equ 2048 * 2			; use 2048, so we can toggle high bit to switch, also needs to be wide enough for scaling of $ff
 BUFFER_SPRITE_L1	equ 0
 BUFFER_LAYER0		equ BUFFER_SIZE
 BUFFER_SPRITE_L2	equ BUFFER_SIZE * 2
 BUFFER_LAYER1		equ BUFFER_SIZE * 3
 BUFFER_SPRITE_L3	equ BUFFER_SIZE * 4
-
-move_buffer_on macro
-	local buffer_reset_skip
-	; buffer is 1024 wide, but the is display is 800.
-	; need to ignore the top bit, then test vs 800. If we've hit, flip the top bit and remove the count
-	; TODO, this should reset when we change line
-	; need to render a full width line, but only output in the visible area
-	add r15, 1
-	mov rax, r15
-	and rax, 001111111111b	; dont consider the top bit
-	cmp rax, VISIBLE_WIDTH
-	jne buffer_reset_skip
-	xor r15, 010000000000b	; flip top bit
-	and r15, 010000000000b	; and clear count
-
-buffer_reset_skip:
-endm
 
 ;
 ; Render the rest of the display, only gets called on vsync
@@ -192,18 +175,22 @@ draw_border:
 ;
 draw_pixel:
 
-	mov r12d, dword ptr [rdx].state.scale_y
-	shr r12, 16
-	mov r11d, dword ptr [rdx].state.scale_x
+	;mov r12d, dword ptr [rdx].state.scale_y
+	;shr r12, 16
+	mov r11d, dword ptr [rdx].state.scale_x ; should have high bit set for indexing into the buffer
 	shr r11, 16
-
-	; *** todo change r11 to index into the buffer ***
 
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	; background
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
+
+		
+	cmp r12, 3
+	jne no_debug3
+	mov rax, 1
+	no_debug3:
 
 	;
 	; layer 0
@@ -212,10 +199,10 @@ draw_pixel:
 	test al, al
 	jz layer0_notenabled
 
-	movzx rax, byte ptr [rsi + r15 + BUFFER_LAYER0]			; read the colour index from the buffer
+	movzx rax, byte ptr [rsi + r11 + BUFFER_LAYER0]			; read the colour index from the buffer
 	xor rbx, rbx
 	test rax, rax
-	cmovnz ebx, dword ptr [r8 + rax * 4]
+	cmovnz ebx, dword ptr [r8 + rax * 4]		; get colour from palette
 	mov [rdi + r9 * 4 + LAYER0], ebx
 	jmp layer0_done
 
@@ -231,7 +218,7 @@ layer0_done:
 	test al, al
 	jz layer1_notenabled
 
-	movzx rax, byte ptr [rsi + r15 + BUFFER_LAYER1]			; read the colour index from the buffer
+	movzx rax, byte ptr [rsi + r11 + BUFFER_LAYER1]			; read the colour index from the buffer
 	xor rbx, rbx
 	test rax, rax
 	cmovnz ebx, dword ptr [r8 + rax * 4]
@@ -243,10 +230,17 @@ layer1_notenabled:
 	mov [rdi + r9 * 4 + LAYER1], ebx	
 layer1_done:
 
+	; step x on, and store
+	mov r11d, dword ptr [rdx].state.scale_x
+	mov eax, [rdx].state.dc_hscale
+	add r11, rax
+	mov dword ptr [rdx].state.scale_x, r11d
+
 ;
 ;	Display complete.
 ;
 draw_end:
+
 	pop rax
 	cmp rax, 2
 	jl render_complete_visible
@@ -257,13 +251,23 @@ draw_end:
 ; Needs act x, scaled y + 1 line from VIDEO
 ;
 do_render:
-	xor r15, 010000000000b ; flip top bit, so rendering happens on the alternatite line
-
 	movzx r11, word ptr [rdx].state.display_x
 
 	; set r12 to scaled y and add a line
 	mov r12d, dword ptr [rdx].state.scale_y
 	shr r12, 16							; adjust to actual value
+
+	
+	
+	cmp r12, 3
+	jne no_debug
+	mov rax, 1
+	no_debug:
+
+	cmp r12, 4
+	jne no_debug2
+	mov rax, 1
+	no_debug2:
 
 	;
 	; Render next lines
@@ -302,26 +306,37 @@ layer1_render_done::
 ; ------------------------------------------------
 ; end of rendering
 ; ------------------------------------------------
-	xor r15, 010000000000b ; flip top bit back
-
-; todo, scaled y should only be moved if rendering to the buffer, and so should have a seperate clear
 render_complete_visible:	; arrives here if the video wrote data
-	move_buffer_on
-
-	movzx r11, word ptr [rdx].state.display_x
-	add r11, 1
-	cmp r11, VISIBLE_WIDTH
+	; buffer is 2048 wide, but the is display is 640.
+	; need to ignore the top bit, then test vs 640. If we've hit, flip the top bit and remove the count
+	add r15, 1
+	mov rax, r15
+	and rax, 0011111111111b	; dont consider the top bit
+	cmp rax, VISIBLE_WIDTH
 	jne not_next_line
-
-	; next line
-	xor r11, r11
-	mov word ptr [rdx].state.display_x, r11w	; zero
-	mov word ptr [rdx].state.scale_x, r11w		; zero
-
+	
 	; Add 1 to act y
 	movzx r12, word ptr [rdx].state.display_y
 	add r12, 1
 	mov word ptr [rdx].state.display_y, r12w
+
+	cmp r12, 4
+	jne debug4
+	mov rax, rax
+	debug4:
+
+	; next line, reset counters
+	xor r15, 0100000000000b	; flip top bit
+	and r15, 0100000000000b	; and clear count
+
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+
+	mov r11, r15
+	xor r11, 0100000000000b ; flip top bit back
+	shl r11, 16				; adjust to the fixed point number
+	mov dword ptr [rdx].state.scale_x, r11d		; zero
+
 
 	; Add line to scaled y
 	mov r12d, dword ptr [rdx].state.scale_y
@@ -332,13 +347,13 @@ render_complete_visible:	; arrives here if the video wrote data
 	jmp render_complete
 
 not_next_line:
-	mov word ptr [rdx].state.display_x, r11w
+	mov word ptr [rdx].state.display_x, ax
 
 	; step step onto scaled x
-	mov r11d, dword ptr [rdx].state.scale_x
-	mov eax, [rdx].state.dc_hscale
-	add r11, rax
-	mov [rdx].state.scale_x, r11d
+	;mov r11d, dword ptr [rdx].state.scale_x
+	;mov eax, [rdx].state.dc_hscale
+	;add r11, rax
+	;mov [rdx].state.scale_x, r11d
 
 
 ; --------------------------------------------------------------------------
@@ -367,6 +382,7 @@ no_scale_reset:
 done:
 	mov dword ptr [rdx].state.display_position, r9d
 	;mov word ptr [rdx].state.display_x, r11w
+	mov dword ptr [rdx].state.buffer_render_position, r15d
 
 	pop r15
 	pop r14

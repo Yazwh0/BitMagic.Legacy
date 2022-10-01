@@ -286,7 +286,7 @@ public class Emulator : IDisposable
     private const int VramSize = 0x20000;
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
-    private const int DisplayBufferSize = 1024 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output
+    private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
     private const int HistorySize = 8 * 1024;
 
     private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
