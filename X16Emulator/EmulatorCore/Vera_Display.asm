@@ -186,12 +186,6 @@ draw_pixel:
 	mov ebx, dword ptr [r8]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
 
-		
-	cmp r12, 3
-	jne no_debug3
-	mov rax, 1
-	no_debug3:
-
 	;
 	; layer 0
 	;
@@ -257,18 +251,6 @@ do_render:
 	mov r12d, dword ptr [rdx].state.scale_y
 	shr r12, 16							; adjust to actual value
 
-	
-	
-	cmp r12, 3
-	jne no_debug
-	mov rax, 1
-	no_debug:
-
-	cmp r12, 4
-	jne no_debug2
-	mov rax, 1
-	no_debug2:
-
 	;
 	; Render next lines
 	;
@@ -319,11 +301,6 @@ render_complete_visible:	; arrives here if the video wrote data
 	movzx r12, word ptr [rdx].state.display_y
 	add r12, 1
 	mov word ptr [rdx].state.display_y, r12w
-
-	cmp r12, 4
-	jne debug4
-	mov rax, rax
-	debug4:
 
 	; next line, reset counters
 	xor r15, 0100000000000b	; flip top bit
