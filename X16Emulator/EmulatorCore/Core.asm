@@ -320,7 +320,7 @@ asm_func ENDP
 
 check_bank_switch macro
 	local rambank_change, rombank_change, done, skip
-	cmp rbx, 025bh
+	;cmp rbx, 025bh
 	;jne skip
 	;int 3
 	;skip:
