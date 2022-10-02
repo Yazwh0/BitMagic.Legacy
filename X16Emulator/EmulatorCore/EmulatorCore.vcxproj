@@ -75,13 +75,16 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>EmulatorCode</TargetName>
+    <TargetName>EmulatorCore</TargetName>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>EmulatorCode</TargetName>
+    <TargetName>EmulatorCore</TargetName>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>EmulatorCode</TargetName>
+    <TargetName>EmulatorCore</TargetName>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -177,7 +180,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="Banking.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </Text>
     <None Include="cpp.hint" />
@@ -199,44 +202,44 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Core.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ml64 /c /Zi /Fo$(OutDir)\core.obj core.asm</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\core.obj</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">State.asm, Vera.asm, Vera_Constants.asm, Vera_Display.asm</AdditionalInputs>
+      <Command>ml64 /c /Zi /Fo$(OutDir)\core.obj core.asm</Command>
+      <Outputs>$(OutDir)\core.obj</Outputs>
+      <AdditionalInputs>State.asm, Vera.asm, Vera_Constants.asm, Vera_Display.asm</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Vera_Constants.inc">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /b Core.asm +,,</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_temp.txt</Outputs>
-      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+      <Command>copy /b Core.asm +,,</Command>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
   </ItemGroup>
   <ItemGroup>
     <Text Include="State.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /b Core.asm +,,</Command>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <Command>copy /b Core.asm +,,</Command>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+      <AdditionalInputs>
       </AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_temp.txt</Outputs>
-      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
     <Text Include="Vera.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /b Core.asm +,,</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <Command>copy /b Core.asm +,,</Command>
+      <AdditionalInputs>
       </AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_temp.txt</Outputs>
-      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
     <Text Include="Vera_Display.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /b Core.asm +,,</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_temp.txt</Outputs>
-      <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
+      <Command>copy /b Core.asm +,,</Command>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
