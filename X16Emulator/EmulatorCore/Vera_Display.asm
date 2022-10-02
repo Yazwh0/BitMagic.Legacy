@@ -471,21 +471,12 @@ layer0_1bpp_til_x_render proc
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	mov r14w, word ptr [rdx].state.layer0_config
-	bt r14, 3
-	jc draw_265c
-
 	mov r14, rax
 	shr r14, 12			; r14b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
-	jmp draw_pixels
-draw_265c:
-	xor r14, r14		; no background colour
-	shr rax, 8			; use ah as the idnex
 
-draw_pixels:
 	mov r13, r14		; use r13b to write to the buffer
 	bt ebx, 7
 	cmovc r13, rax
@@ -534,6 +525,67 @@ draw_pixels:
 layer0_1bpp_til_x_render endp
 
 
+layer0_1bpp_til_t_render proc
+	mov r13d, dword ptr [rdx].state.layer0_mapAddress
+	mov r14d, dword ptr [rdx].state.layer0_tileAddress
+
+	get_tile_definition_layer0
+	; ax now contains tile number and colour information
+	; ebx now contains tile data
+
+	; r15 is our buffer current position
+	; need to fill the buffer with the colour indexes for each pixel
+	mov rsi, [rdx].state.display_buffer_ptr
+
+	shr rax, 8			; use ah as the idnex
+
+	xor r13, r13 		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
+
+
+	; todo: set this to actual tile width
+	mov rax, 8 ; count till next update requirement
+
+	jmp layer0_render_done
+layer0_1bpp_til_t_render endp
+
 ;
 ; Layer 1
 ;
@@ -550,21 +602,12 @@ layer1_1bpp_til_x_render proc
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	mov r14w, word ptr [rdx].state.layer1_config
-	bt r14, 3
-	jc draw_265c
-
 	mov r14, rax
 	shr r14, 12			; r14b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
-	jmp draw_pixels
-draw_265c:
-	xor r14, r14		; no background colour
-	shr rax, 8			; use ah as the idnex
 
-draw_pixels:
 	mov r13, r14		; use r13b to write to the buffer
 	bt ebx, 7
 	cmovc r13, rax
@@ -611,6 +654,67 @@ draw_pixels:
 
 	jmp layer1_render_done
 layer1_1bpp_til_x_render endp
+
+layer1_1bpp_til_t_render proc
+	mov r13d, dword ptr [rdx].state.layer1_mapAddress
+	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+	
+	get_tile_definition_layer1
+	; ax now contains tile number
+	; ebx now contains tile data
+
+	; r15 is our buffer current position
+	; need to fill the buffer with the colour indexes for each pixel
+	mov rsi, [rdx].state.display_buffer_ptr
+
+	shr rax, 8			; use ah as the idnex
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
+
+
+	; todo: set this to actual tile width
+	mov rax, 8 ; count till next update requirement
+
+	jmp layer1_render_done
+layer1_1bpp_til_t_render endp
 
 ; macros to find the current tile definition, returns data in ax. 
 ; expects:
@@ -715,7 +819,7 @@ layer0_render_jump:
 	layer0_2bpp_bit_x qword mode_layer0_notsupported
 	layer0_4bpp_bit_x qword mode_layer0_notsupported
 	layer0_8bpp_bit_x qword mode_layer0_notsupported
-	layer0_1bpp_til_t qword layer0_1bpp_til_x_render
+	layer0_1bpp_til_t qword layer0_1bpp_til_t_render
 	layer0_2bpp_til_t qword mode_layer0_notsupported
 	layer0_4bpp_til_t qword mode_layer0_notsupported
 	layer0_8bpp_til_t qword mode_layer0_notsupported
@@ -733,7 +837,7 @@ layer1_render_jump:
 	layer1_2bpp_bit_x qword mode_layer1_notsupported
 	layer1_4bpp_bit_x qword mode_layer1_notsupported
 	layer1_8bpp_bit_x qword mode_layer1_notsupported
-	layer1_1bpp_til_t qword layer1_1bpp_til_x_render
+	layer1_1bpp_til_t qword layer1_1bpp_til_t_render
 	layer1_2bpp_til_t qword mode_layer1_notsupported
 	layer1_4bpp_til_t qword mode_layer1_notsupported
 	layer1_8bpp_til_t qword mode_layer1_notsupported
