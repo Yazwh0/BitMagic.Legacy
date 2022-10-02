@@ -464,19 +464,28 @@ layer0_1bpp_til_x_render proc
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
-	; ax now contains tile number
+	; ax now contains tile number and colour information
 	; ebx now contains tile data
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
+	mov r14w, word ptr [rdx].state.layer0_config
+	bt r14, 3
+	jc draw_265c
+
 	mov r14, rax
 	shr r14, 12			; r14b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
+	jmp draw_pixels
+draw_265c:
+	xor r14, r14		; no background colour
+	shr rax, 8			; use ah as the idnex
 
+draw_pixels:
 	mov r13, r14		; use r13b to write to the buffer
 	bt ebx, 7
 	cmovc r13, rax
@@ -541,12 +550,21 @@ layer1_1bpp_til_x_render proc
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
+	mov r14w, word ptr [rdx].state.layer1_config
+	bt r14, 3
+	jc draw_265c
+
 	mov r14, rax
 	shr r14, 12			; r14b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
+	jmp draw_pixels
+draw_265c:
+	xor r14, r14		; no background colour
+	shr rax, 8			; use ah as the idnex
 
+draw_pixels:
 	mov r13, r14		; use r13b to write to the buffer
 	bt ebx, 7
 	cmovc r13, rax
@@ -652,7 +670,6 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al 4:4)
 
 	; ---------------------------------------------------------------
-	; Maybe needs to be moved
 	xor rbx, rbx
 	mov bl, al						; get tile number
 
@@ -698,7 +715,7 @@ layer0_render_jump:
 	layer0_2bpp_bit_x qword mode_layer0_notsupported
 	layer0_4bpp_bit_x qword mode_layer0_notsupported
 	layer0_8bpp_bit_x qword mode_layer0_notsupported
-	layer0_1bpp_til_t qword mode_layer0_notsupported
+	layer0_1bpp_til_t qword layer0_1bpp_til_x_render
 	layer0_2bpp_til_t qword mode_layer0_notsupported
 	layer0_4bpp_til_t qword mode_layer0_notsupported
 	layer0_8bpp_til_t qword mode_layer0_notsupported
@@ -716,7 +733,7 @@ layer1_render_jump:
 	layer1_2bpp_bit_x qword mode_layer1_notsupported
 	layer1_4bpp_bit_x qword mode_layer1_notsupported
 	layer1_8bpp_bit_x qword mode_layer1_notsupported
-	layer1_1bpp_til_t qword mode_layer1_notsupported
+	layer1_1bpp_til_t qword layer1_1bpp_til_x_render
 	layer1_2bpp_til_t qword mode_layer1_notsupported
 	layer1_4bpp_til_t qword mode_layer1_notsupported
 	layer1_8bpp_til_t qword mode_layer1_notsupported
@@ -1279,23 +1296,7 @@ get_tile_definition_jump:
 ;endm
 
 
-;foo macro value
-;	foo_&value& proc
-;		ret
-;	foo_&value& endp
-;endm
 
-;ix = 0
-;rept 2
-;	foo_&ix& proc
-;		mov rax, ix
-;		ret
-;	foo_&ix& endp;
-;	ix = ix + 1
-;endm
-
-;call foo_0
-;call foo_1
 
 
 .data
