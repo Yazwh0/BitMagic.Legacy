@@ -728,7 +728,7 @@ layer1_1bpp_til_t_render endp
 ; ebx : tile data
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
-	local height_px, width_px
+	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask
 	mov rsi, [rdx].state.vram_ptr
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
@@ -741,57 +741,96 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	; constrain map to height
 	; this needs to consider map_height and map_width
 	if map_height eq 0				
-		height_px equ 32
+		m_height_px equ 32
 	endif
 	if map_height eq 1
-		height_px equ 64
+		m_height_px equ 64
 	endif
 	if map_height eq 2
-		height_px equ 128
+		m_height_px equ 128
 	endif
 	if map_height eq 3
-		height_px equ 256
+		m_height_px equ 256
 	endif
 
 	if map_width eq 0				
-		width_px equ 32
+		m_width_px equ 32
 	endif
 	if map_width eq 1
-		width_px equ 64
+		m_width_px equ 64
 	endif
 	if map_width eq 2
-		width_px equ 128
+		m_width_px equ 128
 	endif
 	if map_width eq 3
-		width_px equ 256
+		m_width_px equ 256
 	endif
 
-	and rax, (height_px * width_px) - 1
+	and rax, (m_height_px * m_width_px) - 1
 
 	shl rax, 1						; * 2
 
 	add rax, r13					; vram address
-	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al 4:4)
+	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al)
 
 	; ---------------------------------------------------------------
+	if tile_height eq 0
+		t_height_px equ 8
+	endif
+	if tile_height eq 1
+		t_height_px equ 16
+	endif
+	if tile_width eq 0
+		t_width_px equ 8
+	endif
+	if tile_width eq 1
+		t_width_px equ 16
+	endif
+	if colour_depth eq 0
+		t_colour_size equ 8
+	endif
+	if colour_depth eq 1
+		t_colour_size equ 4
+	endif
+	if colour_depth eq 2
+		t_colour_size equ 2
+	endif
+	if colour_depth eq 3
+		t_colour_size equ 1
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 8
+		t_size_shift equ 3
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 16
+		t_size_shift equ 4
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 32
+		t_size_shift equ 5
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 64
+		t_size_shift equ 6
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 128
+		t_size_shift equ 7
+	endif
+	if t_height_px * t_width_px / t_colour_size eq 256
+		t_size_shift equ 8
+	endif
+	t_tile_mask equ t_height_px * t_width_px / t_colour_size - 1
+
 	xor rbx, rbx
 	mov bl, al						; get tile number
 
 	; find dword in memory that is being rendered
 	mov r10, r12					; get y
 
-	; TODO:
-	; this is contingent on the bpp, need to pass this in, or move back out
-	if tile_height eq 0
-		and r10, 07h				; mask offset
-	endif
-	if tile_height eq 1
-		and r10, 0fh				; mask offset
-	endif
+	and r10, t_tile_mask				; mask offset
 
 	; TODO:
 	; this is contingent on the bpp, need to pass this in, or move back out
-	shl rbx, 3						; rbx is now the address
+
+
+	shl rbx, t_size_shift			; rbx is now the address
 	add rbx, r10					; adjust
 	add rbx, r14					; add to tile base address
 
