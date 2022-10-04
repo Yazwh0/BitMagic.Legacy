@@ -841,4 +841,58 @@ public class LDA_Data0
         Assert.AreEqual(0x0d, emulator.Memory[0x9F21]);
         Assert.AreEqual(0xf8, emulator.Memory[0x9F22]);
     }
+
+    [TestMethod]
+    public async Task Abs_Data0_Step_Wrap()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 1;
+        emulator.Vera.Data0_Address = 0x1ffff;
+        emulator.Vera.Vram[0x00000] = 0xff;
+        emulator.Vera.Vram[0x1ffff] = 0xee;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x00000, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x10, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Abs_Data0_Step_Minus_Wrap()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = -1;
+        emulator.Vera.Data0_Address = 0x00000;
+        emulator.Vera.Vram[0x00000] = 0xee;
+        emulator.Vera.Vram[0x1ffff] = 0xff;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda DATA0
+                stp",
+                emulator);
+
+        emulator.AssertState(A: 0xee);
+
+        Assert.AreEqual(0x1ffff, emulator.Vera.Data0_Address);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F20]);
+        Assert.AreEqual(0xff, emulator.Memory[0x9F21]);
+        Assert.AreEqual(0x19, emulator.Memory[0x9F22]);
+    }
 }
