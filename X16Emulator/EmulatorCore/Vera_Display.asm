@@ -540,7 +540,52 @@ layer0_1bpp_til_t_render proc
 
 	shr rax, 8			; use ah as the idnex
 
-	xor r13, r13 		; use r13b to write to the buffer
+
+	cmp r10, 8
+	je tile_8_wide
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 15
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 8], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 14
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 9], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 13
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 10], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 12
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 11], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 11
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 12], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 10
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 13], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 9
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 14], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 8
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 15], r13b
+
+
+	xor r13, r13		; use r13b to write to the buffer
 	bt ebx, 7
 	cmovc r13, rax
 	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
@@ -581,8 +626,53 @@ layer0_1bpp_til_t_render proc
 	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
 
 
-	; todo: set this to actual tile width
-	mov rax, 8 ; count till next update requirement
+	mov rax, r10 ; count till next update requirement
+
+	jmp layer0_render_done
+
+tile_8_wide:
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
+
+	mov rax, r10 ; count till next update requirement
 
 	jmp layer0_render_done
 layer0_1bpp_til_t_render endp
