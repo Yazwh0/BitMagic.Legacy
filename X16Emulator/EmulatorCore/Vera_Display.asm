@@ -26,7 +26,7 @@ include State.asm
 ; r9   : output offset
 ; r10  : scratch
 ; r11  : x
-; r12  : scratch
+; r12  : y
 ; r13  : scratch
 ; r14  : scratch
 ; r15  : buffer render output position for rendering in\out of buffer
@@ -466,6 +466,7 @@ layer0_1bpp_til_x_render proc
 	get_tile_definition_layer0
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
+	; r10 is the number of pixels in ebx 
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
@@ -519,7 +520,7 @@ layer0_1bpp_til_x_render proc
 
 
 	; todo: set this to actual tile width
-	mov rax, 8 ; count till next update requirement
+	mov rax, r10 ; count till next update requirement
 
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
@@ -662,12 +663,57 @@ layer1_1bpp_til_t_render proc
 	get_tile_definition_layer1
 	; ax now contains tile number
 	; ebx now contains tile data
+	; r10 number of pixels
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	shr rax, 8			; use ah as the idnex
+	shr rax, 8			; use ah as the index
+
+	cmp r10, 8
+	je tile_8_wide
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 15
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 8], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 14
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 9], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 13
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 10], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 12
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 11], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 11
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 12], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 10
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 13], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 9
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 14], r13b
+
+	mov r13, r14		; use r13b to write to the buffer
+	bt ebx, 8
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 15], r13b
+
 
 	xor r13, r13		; use r13b to write to the buffer
 	bt ebx, 7
@@ -710,8 +756,52 @@ layer1_1bpp_til_t_render proc
 	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
 
 
-	; todo: set this to actual tile width
-	mov rax, 8 ; count till next update requirement
+	mov rax, r10 ; count till next update requirement
+	jmp layer1_render_done
+
+tile_8_wide:
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 7
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 6
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 5
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 4
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 3
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 2
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 1
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
+
+	xor r13, r13		; use r13b to write to the buffer
+	bt ebx, 0
+	cmovc r13, rax
+	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
+
+	mov rax, r10 ; count till next update requirement
 
 	jmp layer1_render_done
 layer1_1bpp_til_t_render endp
@@ -728,7 +818,7 @@ layer1_1bpp_til_t_render endp
 ; ebx : tile data
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
-	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask
+	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift
 	mov rsi, [rdx].state.vram_ptr
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
@@ -782,21 +872,27 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	if tile_width eq 0
 		t_width_px equ 8
+		t_multiplier equ 1
 	endif
 	if tile_width eq 1
 		t_width_px equ 16
+		t_multiplier equ 2
 	endif
 	if colour_depth eq 0
 		t_colour_size equ 8
+;		t_colour_mask equ 0
 	endif
 	if colour_depth eq 1
 		t_colour_size equ 4
+;		t_colour_mask equ 1
 	endif
 	if colour_depth eq 2
 		t_colour_size equ 2
+;		t_colour_mask equ 3
 	endif
 	if colour_depth eq 3
 		t_colour_size equ 1
+;		t_colour_mask equ 7
 	endif
 	if t_height_px * t_width_px / t_colour_size eq 8
 		t_size_shift equ 3
@@ -816,7 +912,8 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	if t_height_px * t_width_px / t_colour_size eq 256
 		t_size_shift equ 8
 	endif
-	t_tile_mask equ t_height_px * t_width_px / t_colour_size - 1
+	t_tile_mask equ t_height_px - 1
+	t_tile_shift equ (t_multiplier - 1) + colour_depth
 
 	xor rbx, rbx
 	mov bl, al						; get tile number
@@ -824,17 +921,15 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	; find dword in memory that is being rendered
 	mov r10, r12					; get y
 
-	and r10, t_tile_mask				; mask offset
-
-	; TODO:
-	; this is contingent on the bpp, need to pass this in, or move back out
-
+	and r10, t_tile_mask			; mask for tile height, so now line within tile
+	shl r10, t_tile_shift			; adjust to width of line to get offset address
 
 	shl rbx, t_size_shift			; rbx is now the address
-	add rbx, r10					; adjust
+	or rbx, r10						; adjust
 	add rbx, r14					; add to tile base address
 
 	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
+	mov r10, t_colour_size * t_multiplier
 	ret
 endm
 
