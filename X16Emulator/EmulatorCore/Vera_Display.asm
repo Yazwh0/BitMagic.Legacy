@@ -95,13 +95,16 @@ change:
 	push r14
 	push r15
 
-	mov rax, rcx								; keep hold of base ticks
-	shl rcx, 3
-	mov rbx, rcx
-	add rcx, rbx								; now * 3
-	add rcx, rbx								
-	add rcx, rax								; now * 3.125
+	;mov rax, rcx								; keep hold of base ticks
 
+	lea rcx, [rcx+rcx*4]						; * 5
+	lea rcx, [rcx+rcx*4]						; * 5 = *25
+
+	;shl rcx, 3
+	;mov rbx, rcx
+	;add rcx, rbx								; now * 3
+	;add rcx, rbx								
+	;add rcx, rax								; now * 3.125
 
 	movzx rax, [rdx].state.display_carry		; Get carry, and add it on
 	add rcx, rax
@@ -109,7 +112,7 @@ change:
 	mov rax, rcx								; Store to trim
 	and al, 111b
 	mov byte ptr [rdx].state.display_carry, al	; save carry
-	shr rcx, 3									; round, rcx now contains the steps
+	shr rcx, 3									; /8 (round), rcx now contains the steps
 
 	mov rsi, [rdx].state.display_buffer_ptr
 	mov rdi, [rdx].state.display_ptr
@@ -456,14 +459,35 @@ get_tile_definition_layer1 macro
 endm
 
 ;
+; Pixel write macros
+;
+
+writepixel_1bpp_t256 macro bitmask, outputoffset
+	mov r13, rbx		; use r13b to write to the buffer
+	and r13, bitmask
+	cmovne r13, rax
+	mov byte ptr [rsi + r15 + outputoffset], r13b
+endm
+
+writepixel_1bpp_normal macro bitmask, outputoffset
+	mov r13, r14		; use r13b to write to the buffer
+	test bx, bitmask
+	cmovne r13, rax
+	mov byte ptr [rsi + r15 + outputoffset], r13b
+endm
+;
 ; Layer 0
 ;
 
 layer0_1bpp_til_x_render proc
+	;push r8
+	;movzx r8, word ptr [rdx].state.layer0_vscroll
+	;movzx r10, word ptr [rdx].state.layer0_hscroll
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
+	;pop r8
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -478,46 +502,14 @@ layer0_1bpp_til_x_render proc
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
 
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
-
+	writepixel_1bpp_normal 080h, BUFFER_LAYER0 + 0
+	writepixel_1bpp_normal 040h, BUFFER_LAYER0 + 1
+	writepixel_1bpp_normal 020h, BUFFER_LAYER0 + 2
+	writepixel_1bpp_normal 010h, BUFFER_LAYER0 + 3
+	writepixel_1bpp_normal 08h, BUFFER_LAYER0 + 4
+	writepixel_1bpp_normal 04h, BUFFER_LAYER0 + 5
+	writepixel_1bpp_normal 02h, BUFFER_LAYER0 + 6
+	writepixel_1bpp_normal 01h, BUFFER_LAYER0 + 7
 
 	; todo: set this to actual tile width
 	mov rax, r10 ; count till next update requirement
@@ -525,12 +517,15 @@ layer0_1bpp_til_x_render proc
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
-
 layer0_1bpp_til_t_render proc
+	;push r8
+	;movzx r8, word ptr [rdx].state.layer0_vscroll
+	;movzx r10, word ptr [rdx].state.layer0_hscroll
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
+	;pop r8
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 
@@ -540,137 +535,28 @@ layer0_1bpp_til_t_render proc
 
 	shr rax, 8			; use ah as the idnex
 
-
 	cmp r10, 8
 	je tile_8_wide
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 15
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 8], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 14
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 9], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 13
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 10], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 12
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 11], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 11
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 12], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 10
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 13], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 9
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 14], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 8
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 15], r13b
-
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
-
-
-	mov rax, r10 ; count till next update requirement
-
-	jmp layer0_render_done
+	
+	writepixel_1bpp_t256 08000h, BUFFER_LAYER0 + 8
+	writepixel_1bpp_t256 04000h, BUFFER_LAYER0 + 9
+	writepixel_1bpp_t256 02000h, BUFFER_LAYER0 + 10
+	writepixel_1bpp_t256 01000h, BUFFER_LAYER0 + 11
+	writepixel_1bpp_t256 0800h, BUFFER_LAYER0 + 12
+	writepixel_1bpp_t256 0400h, BUFFER_LAYER0 + 13
+	writepixel_1bpp_t256 0200h, BUFFER_LAYER0 + 14
+	writepixel_1bpp_t256 0100h, BUFFER_LAYER0 + 15
 
 tile_8_wide:
 
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 0], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 1], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 2], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 3], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 4], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 5], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 6], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER0 + 7], r13b
+	writepixel_1bpp_t256 080h, BUFFER_LAYER0 + 0
+	writepixel_1bpp_t256 040h, BUFFER_LAYER0 + 1
+	writepixel_1bpp_t256 020h, BUFFER_LAYER0 + 2
+	writepixel_1bpp_t256 010h, BUFFER_LAYER0 + 3
+	writepixel_1bpp_t256 08h, BUFFER_LAYER0 + 4
+	writepixel_1bpp_t256 04h, BUFFER_LAYER0 + 5
+	writepixel_1bpp_t256 02h, BUFFER_LAYER0 + 6
+	writepixel_1bpp_t256 01h, BUFFER_LAYER0 + 7
 
 	mov rax, r10 ; count till next update requirement
 
@@ -682,6 +568,8 @@ layer0_1bpp_til_t_render endp
 ;
 
 layer1_1bpp_til_x_render proc
+;	movzx r8, word ptr [rdx].state.layer1_vscroll
+	;movzx r10, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 	
@@ -699,46 +587,14 @@ layer1_1bpp_til_x_render proc
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
 
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
-
+	writepixel_1bpp_normal 080h, BUFFER_LAYER1 + 0
+	writepixel_1bpp_normal 040h, BUFFER_LAYER1 + 1
+	writepixel_1bpp_normal 020h, BUFFER_LAYER1 + 2
+	writepixel_1bpp_normal 010h, BUFFER_LAYER1 + 3
+	writepixel_1bpp_normal 08h, BUFFER_LAYER1 + 4
+	writepixel_1bpp_normal 04h, BUFFER_LAYER1 + 5
+	writepixel_1bpp_normal 02h, BUFFER_LAYER1 + 6
+	writepixel_1bpp_normal 01h, BUFFER_LAYER1 + 7
 
 	; todo: set this to actual tile width
 	mov rax, 8 ; count till next update requirement
@@ -746,11 +602,16 @@ layer1_1bpp_til_x_render proc
 	jmp layer1_render_done
 layer1_1bpp_til_x_render endp
 
+
 layer1_1bpp_til_t_render proc
+	push r12
+	add r12w, word ptr [rdx].state.layer1_vscroll
+	;movzx r10, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 	
 	get_tile_definition_layer1
+	pop r12
 	; ax now contains tile number
 	; ebx now contains tile data
 	; r10 number of pixels
@@ -764,132 +625,25 @@ layer1_1bpp_til_t_render proc
 	cmp r10, 8
 	je tile_8_wide
 
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 15
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 8], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 14
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 9], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 13
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 10], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 12
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 11], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 11
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 12], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 10
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 13], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 9
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 14], r13b
-
-	mov r13, r14		; use r13b to write to the buffer
-	bt ebx, 8
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 15], r13b
-
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
-
-
-	mov rax, r10 ; count till next update requirement
-	jmp layer1_render_done
+	writepixel_1bpp_t256 08000h, BUFFER_LAYER1 + 8
+	writepixel_1bpp_t256 04000h, BUFFER_LAYER1 + 9
+	writepixel_1bpp_t256 02000h, BUFFER_LAYER1 + 10
+	writepixel_1bpp_t256 01000h, BUFFER_LAYER1 + 11
+	writepixel_1bpp_t256 0800h, BUFFER_LAYER1 + 12
+	writepixel_1bpp_t256 0400h, BUFFER_LAYER1 + 13
+	writepixel_1bpp_t256 0200h, BUFFER_LAYER1 + 14
+	writepixel_1bpp_t256 0100h, BUFFER_LAYER1 + 15
 
 tile_8_wide:
 
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 7
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 0], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 6
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 1], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 5
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 2], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 4
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 3], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 3
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 4], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 2
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 5], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 1
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 6], r13b
-
-	xor r13, r13		; use r13b to write to the buffer
-	bt ebx, 0
-	cmovc r13, rax
-	mov byte ptr [rsi + r15 + BUFFER_LAYER1 + 7], r13b
+	writepixel_1bpp_t256 080h, BUFFER_LAYER1 + 0
+	writepixel_1bpp_t256 040h, BUFFER_LAYER1 + 1
+	writepixel_1bpp_t256 020h, BUFFER_LAYER1 + 2
+	writepixel_1bpp_t256 010h, BUFFER_LAYER1 + 3
+	writepixel_1bpp_t256 08h, BUFFER_LAYER1 + 4
+	writepixel_1bpp_t256 04h, BUFFER_LAYER1 + 5
+	writepixel_1bpp_t256 02h, BUFFER_LAYER1 + 6
+	writepixel_1bpp_t256 01h, BUFFER_LAYER1 + 7
 
 	mov rax, r10 ; count till next update requirement
 
@@ -914,6 +668,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	shr rax, tile_height + 3		; / tile height
 	shl rax, map_width + 5			; * tile width
 
+	xor rbx, rbx
 	mov rbx, r11					; x
 	shr rbx, tile_width + 3			; / tile width
 	add rax, rbx			
@@ -970,19 +725,15 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	if colour_depth eq 0
 		t_colour_size equ 8
-;		t_colour_mask equ 0
 	endif
 	if colour_depth eq 1
 		t_colour_size equ 4
-;		t_colour_mask equ 1
 	endif
 	if colour_depth eq 2
 		t_colour_size equ 2
-;		t_colour_mask equ 3
 	endif
 	if colour_depth eq 3
 		t_colour_size equ 1
-;		t_colour_mask equ 7
 	endif
 	if t_height_px * t_width_px / t_colour_size eq 8
 		t_size_shift equ 3

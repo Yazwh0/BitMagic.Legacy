@@ -132,6 +132,8 @@ namespace BitMagic.X16Emulator.Tests
 
         public static void CompareImage(this Emulator emulator, string filename)
         {
+            SaveDisplay(emulator, filename + ".actual.png");
+
             using var image = Image.Load(filename).CloneAs<Rgba32>();
 
             var pixels = emulator.Display;
