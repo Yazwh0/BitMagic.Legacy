@@ -324,6 +324,9 @@ render_complete_visible:	; arrives here if the video wrote data
 	add r12, rax
 	mov [rdx].state.scale_y, r12d		
 
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+
 	jmp render_complete
 
 not_next_line:
@@ -354,6 +357,8 @@ not_end_of_screen:
 	jne no_scale_reset
 	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
 	xor r15, r15										; reset buffer pointer
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
 
 no_scale_reset:
 	dec rcx
@@ -462,32 +467,36 @@ endm
 ; Pixel write macros
 ;
 
-writepixel_1bpp_t256 macro bitmask, outputoffset
+writepixel_1bpp_t256 macro bitmask, outputoffset, pixeloffset, width
+pixel_&pixeloffset&_&width&:
 	mov r13, rbx		; use r13b to write to the buffer
 	and r13, bitmask
 	cmovne r13, rax
 	mov byte ptr [rsi + r15 + outputoffset], r13b
+	add rsi, 1
 endm
 
-writepixel_1bpp_normal macro bitmask, outputoffset
-	mov r13, r14		; use r13b to write to the buffer
-	test bx, bitmask
+writepixel_1bpp_normal macro bitmask, outputoffset, pixeloffset, width
+pixel_&pixeloffset&_&width&:
+	mov r13, r11		; use r13b to write to the buffer
+	test ebx, bitmask
 	cmovne r13, rax
 	mov byte ptr [rsi + r15 + outputoffset], r13b
+	add rsi, 1
 endm
 ;
 ; Layer 0
 ;
 
 layer0_1bpp_til_x_render proc
-	;push r8
-	;movzx r8, word ptr [rdx].state.layer0_vscroll
-	;movzx r10, word ptr [rdx].state.layer0_hscroll
+	push r12
+	push r11
+	add r12w, word ptr [rdx].state.layer0_vscroll
+	add r11w, word ptr [rdx].state.layer0_hscroll
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
-	;pop r8
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -496,36 +505,107 @@ layer0_1bpp_til_x_render proc
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	mov r14, rax
-	shr r14, 12			; r14b now contains the background colour index
+	mov r11, rax
+	shr r11, 12			; r11b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
 
-	writepixel_1bpp_normal 080h, BUFFER_LAYER0 + 0
-	writepixel_1bpp_normal 040h, BUFFER_LAYER0 + 1
-	writepixel_1bpp_normal 020h, BUFFER_LAYER0 + 2
-	writepixel_1bpp_normal 010h, BUFFER_LAYER0 + 3
-	writepixel_1bpp_normal 08h, BUFFER_LAYER0 + 4
-	writepixel_1bpp_normal 04h, BUFFER_LAYER0 + 5
-	writepixel_1bpp_normal 02h, BUFFER_LAYER0 + 6
-	writepixel_1bpp_normal 01h, BUFFER_LAYER0 + 7
+	cmp r13, 16
+	je pixel_16
 
-	; todo: set this to actual tile width
+pixel_8:
+	lea r13, pixel_jump_8
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_8:
+	qword pixel_0_8
+	qword pixel_1_8
+	qword pixel_2_8
+	qword pixel_3_8
+	qword pixel_4_8
+	qword pixel_5_8
+	qword pixel_6_8
+	qword pixel_7_8
+	
+	writepixel_1bpp_normal 080h, BUFFER_LAYER0, 0, 8
+	writepixel_1bpp_normal 040h, BUFFER_LAYER0, 1, 8
+	writepixel_1bpp_normal 020h, BUFFER_LAYER0, 2, 8
+	writepixel_1bpp_normal 010h, BUFFER_LAYER0, 3, 8
+	writepixel_1bpp_normal 08h, BUFFER_LAYER0, 4, 8
+	writepixel_1bpp_normal 04h, BUFFER_LAYER0, 5, 8
+	writepixel_1bpp_normal 02h, BUFFER_LAYER0, 6, 8
+	writepixel_1bpp_normal 01h, BUFFER_LAYER0, 7, 8
+
+
 	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+	
+	pop r11
+	pop r12
+
+	jmp layer0_render_done
+
+pixel_16:
+	lea r13, pixel_jump_16
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_16:
+	qword pixel_0_16
+	qword pixel_1_16
+	qword pixel_2_16
+	qword pixel_3_16
+	qword pixel_4_16
+	qword pixel_5_16
+	qword pixel_6_16
+	qword pixel_7_16
+	qword pixel_8_16
+	qword pixel_9_16
+	qword pixel_10_16
+	qword pixel_11_16
+	qword pixel_12_16
+	qword pixel_13_16
+	qword pixel_14_16
+	qword pixel_15_16
+	
+	writepixel_1bpp_normal 080h, BUFFER_LAYER0, 0, 16
+	writepixel_1bpp_normal 040h, BUFFER_LAYER0, 1, 16
+	writepixel_1bpp_normal 020h, BUFFER_LAYER0, 2, 16
+	writepixel_1bpp_normal 010h, BUFFER_LAYER0, 3, 16
+	writepixel_1bpp_normal 08h, BUFFER_LAYER0, 4, 16
+	writepixel_1bpp_normal 04h, BUFFER_LAYER0, 5, 16
+	writepixel_1bpp_normal 02h, BUFFER_LAYER0, 6, 16
+	writepixel_1bpp_normal 01h, BUFFER_LAYER0, 7, 16
+
+	writepixel_1bpp_normal 08000h, BUFFER_LAYER0, 8, 16
+	writepixel_1bpp_normal 04000h, BUFFER_LAYER0, 9, 16
+	writepixel_1bpp_normal 02000h, BUFFER_LAYER0, 10, 16
+	writepixel_1bpp_normal 01000h, BUFFER_LAYER0, 11, 16
+	writepixel_1bpp_normal 0800h, BUFFER_LAYER0, 12, 16
+	writepixel_1bpp_normal 0400h, BUFFER_LAYER0, 13, 16
+	writepixel_1bpp_normal 0200h, BUFFER_LAYER0, 14, 16
+	writepixel_1bpp_normal 0100h, BUFFER_LAYER0, 15, 16
+
+	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+	
+	pop r11
+	pop r12
 
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
 layer0_1bpp_til_t_render proc
-	;push r8
-	;movzx r8, word ptr [rdx].state.layer0_vscroll
-	;movzx r10, word ptr [rdx].state.layer0_hscroll
+	push r12
+	push r11
+	add r12w, word ptr [rdx].state.layer0_vscroll
+	add r11w, word ptr [rdx].state.layer0_hscroll
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
-	;pop r8
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 
@@ -534,31 +614,88 @@ layer0_1bpp_til_t_render proc
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	shr rax, 8			; use ah as the idnex
-
-	cmp r10, 8
-	je tile_8_wide
 	
-	writepixel_1bpp_t256 08000h, BUFFER_LAYER0 + 8
-	writepixel_1bpp_t256 04000h, BUFFER_LAYER0 + 9
-	writepixel_1bpp_t256 02000h, BUFFER_LAYER0 + 10
-	writepixel_1bpp_t256 01000h, BUFFER_LAYER0 + 11
-	writepixel_1bpp_t256 0800h, BUFFER_LAYER0 + 12
-	writepixel_1bpp_t256 0400h, BUFFER_LAYER0 + 13
-	writepixel_1bpp_t256 0200h, BUFFER_LAYER0 + 14
-	writepixel_1bpp_t256 0100h, BUFFER_LAYER0 + 15
+	cmp r13, 16
+	je pixel_16
 
-tile_8_wide:
+pixel_8:
+	lea r13, pixel_jump_8
+	jmp qword ptr [r13 + r10 * 8]
 
-	writepixel_1bpp_t256 080h, BUFFER_LAYER0 + 0
-	writepixel_1bpp_t256 040h, BUFFER_LAYER0 + 1
-	writepixel_1bpp_t256 020h, BUFFER_LAYER0 + 2
-	writepixel_1bpp_t256 010h, BUFFER_LAYER0 + 3
-	writepixel_1bpp_t256 08h, BUFFER_LAYER0 + 4
-	writepixel_1bpp_t256 04h, BUFFER_LAYER0 + 5
-	writepixel_1bpp_t256 02h, BUFFER_LAYER0 + 6
-	writepixel_1bpp_t256 01h, BUFFER_LAYER0 + 7
+pixel_jump_8:
+	qword pixel_0_8
+	qword pixel_1_8
+	qword pixel_2_8
+	qword pixel_3_8
+	qword pixel_4_8
+	qword pixel_5_8
+	qword pixel_6_8
+	qword pixel_7_8
+	
+	writepixel_1bpp_t256 080h, BUFFER_LAYER0, 0, 8
+	writepixel_1bpp_t256 040h, BUFFER_LAYER0, 1, 8
+	writepixel_1bpp_t256 020h, BUFFER_LAYER0, 2, 8
+	writepixel_1bpp_t256 010h, BUFFER_LAYER0, 3, 8
+	writepixel_1bpp_t256 08h, BUFFER_LAYER0, 4, 8
+	writepixel_1bpp_t256 04h, BUFFER_LAYER0, 5, 8
+	writepixel_1bpp_t256 02h, BUFFER_LAYER0, 6, 8
+	writepixel_1bpp_t256 01h, BUFFER_LAYER0, 7, 8
 
 	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+
+	pop r11
+	pop r12
+
+	jmp layer0_render_done
+
+pixel_16:
+	lea r13, pixel_jump_16
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_16:
+	qword pixel_0_16
+	qword pixel_1_16
+	qword pixel_2_16
+	qword pixel_3_16
+	qword pixel_4_16
+	qword pixel_5_16
+	qword pixel_6_16
+	qword pixel_7_16
+	qword pixel_8_16
+	qword pixel_9_16
+	qword pixel_10_16
+	qword pixel_11_16
+	qword pixel_12_16
+	qword pixel_13_16
+	qword pixel_14_16
+	qword pixel_15_16
+	
+	writepixel_1bpp_t256 080h, BUFFER_LAYER0, 0, 16
+	writepixel_1bpp_t256 040h, BUFFER_LAYER0, 1, 16
+	writepixel_1bpp_t256 020h, BUFFER_LAYER0, 2, 16
+	writepixel_1bpp_t256 010h, BUFFER_LAYER0, 3, 16
+	writepixel_1bpp_t256 08h, BUFFER_LAYER0, 4, 16
+	writepixel_1bpp_t256 04h, BUFFER_LAYER0, 5, 16
+	writepixel_1bpp_t256 02h, BUFFER_LAYER0, 6, 16
+	writepixel_1bpp_t256 01h, BUFFER_LAYER0, 7, 16
+
+	writepixel_1bpp_t256 08000h, BUFFER_LAYER0, 8, 16
+	writepixel_1bpp_t256 04000h, BUFFER_LAYER0, 9, 16
+	writepixel_1bpp_t256 02000h, BUFFER_LAYER0, 10, 16
+	writepixel_1bpp_t256 01000h, BUFFER_LAYER0, 11, 16
+	writepixel_1bpp_t256 0800h, BUFFER_LAYER0, 12, 16
+	writepixel_1bpp_t256 0400h, BUFFER_LAYER0, 13, 16
+	writepixel_1bpp_t256 0200h, BUFFER_LAYER0, 14, 16
+	writepixel_1bpp_t256 0100h, BUFFER_LAYER0, 15, 16
+
+	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+
+	pop r11
+	pop r12
 
 	jmp layer0_render_done
 layer0_1bpp_til_t_render endp
@@ -568,36 +705,109 @@ layer0_1bpp_til_t_render endp
 ;
 
 layer1_1bpp_til_x_render proc
-;	movzx r8, word ptr [rdx].state.layer1_vscroll
-	;movzx r10, word ptr [rdx].state.layer1_hscroll
+	push r12
+	push r11
+	add r12w, word ptr [rdx].state.layer1_vscroll
+	add r11w, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
-	
+		
 	get_tile_definition_layer1
 	; ax now contains tile number
 	; ebx now contains tile data
+	; r10 is the number of pixels in ebx 
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
-	mov r14, rax
-	shr r14, 12			; r14b now contains the background colour index
+	mov r11, rax
+	shr r11, 12			; r11b now contains the background colour index
 
 	and rax, 0f00h		; al now contains the foreground colour index
 	shr rax, 8
 
-	writepixel_1bpp_normal 080h, BUFFER_LAYER1 + 0
-	writepixel_1bpp_normal 040h, BUFFER_LAYER1 + 1
-	writepixel_1bpp_normal 020h, BUFFER_LAYER1 + 2
-	writepixel_1bpp_normal 010h, BUFFER_LAYER1 + 3
-	writepixel_1bpp_normal 08h, BUFFER_LAYER1 + 4
-	writepixel_1bpp_normal 04h, BUFFER_LAYER1 + 5
-	writepixel_1bpp_normal 02h, BUFFER_LAYER1 + 6
-	writepixel_1bpp_normal 01h, BUFFER_LAYER1 + 7
+	cmp r13, 16
+	je pixel_16
 
-	; todo: set this to actual tile width
-	mov rax, 8 ; count till next update requirement
+pixel_8:
+	lea r13, pixel_jump_8
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_8:
+	qword pixel_0_8
+	qword pixel_1_8
+	qword pixel_2_8
+	qword pixel_3_8
+	qword pixel_4_8
+	qword pixel_5_8
+	qword pixel_6_8
+	qword pixel_7_8
+
+	writepixel_1bpp_normal 080h, BUFFER_LAYER1, 0, 8
+	writepixel_1bpp_normal 040h, BUFFER_LAYER1, 1, 8
+	writepixel_1bpp_normal 020h, BUFFER_LAYER1, 2, 8
+	writepixel_1bpp_normal 010h, BUFFER_LAYER1, 3, 8
+	writepixel_1bpp_normal 08h, BUFFER_LAYER1, 4, 8
+	writepixel_1bpp_normal 04h, BUFFER_LAYER1, 5, 8
+	writepixel_1bpp_normal 02h, BUFFER_LAYER1, 6, 8
+	writepixel_1bpp_normal 01h, BUFFER_LAYER1, 7, 8
+
+	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+
+	pop r11
+	pop r12
+
+	jmp layer1_render_done
+
+pixel_16:
+	lea r13, pixel_jump_16
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_16:
+	qword pixel_0_16
+	qword pixel_1_16
+	qword pixel_2_16
+	qword pixel_3_16
+	qword pixel_4_16
+	qword pixel_5_16
+	qword pixel_6_16
+	qword pixel_7_16
+	qword pixel_8_16
+	qword pixel_9_16
+	qword pixel_10_16
+	qword pixel_11_16
+	qword pixel_12_16
+	qword pixel_13_16
+	qword pixel_14_16
+	qword pixel_15_16
+
+	writepixel_1bpp_normal 080h, BUFFER_LAYER1, 0, 16
+	writepixel_1bpp_normal 040h, BUFFER_LAYER1, 1, 16
+	writepixel_1bpp_normal 020h, BUFFER_LAYER1, 2, 16
+	writepixel_1bpp_normal 010h, BUFFER_LAYER1, 3, 16
+	writepixel_1bpp_normal 08h, BUFFER_LAYER1, 4, 16
+	writepixel_1bpp_normal 04h, BUFFER_LAYER1, 5, 16
+	writepixel_1bpp_normal 02h, BUFFER_LAYER1, 6, 16
+	writepixel_1bpp_normal 01h, BUFFER_LAYER1, 7, 16
+
+	writepixel_1bpp_normal 08000h, BUFFER_LAYER1, 8, 16
+	writepixel_1bpp_normal 04000h, BUFFER_LAYER1, 9, 16
+	writepixel_1bpp_normal 02000h, BUFFER_LAYER1, 10, 16
+	writepixel_1bpp_normal 01000h, BUFFER_LAYER1, 11, 16
+	writepixel_1bpp_normal 0800h, BUFFER_LAYER1, 12, 16
+	writepixel_1bpp_normal 0400h, BUFFER_LAYER1, 13, 16
+	writepixel_1bpp_normal 0200h, BUFFER_LAYER1, 14, 16
+	writepixel_1bpp_normal 0100h, BUFFER_LAYER1, 15, 16
+
+	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+
+	pop r11
+	pop r12
 
 	jmp layer1_render_done
 layer1_1bpp_til_x_render endp
@@ -605,16 +815,17 @@ layer1_1bpp_til_x_render endp
 
 layer1_1bpp_til_t_render proc
 	push r12
+	push r11
 	add r12w, word ptr [rdx].state.layer1_vscroll
-	;movzx r10, word ptr [rdx].state.layer1_hscroll
+	add r11w, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
-	
+		
 	get_tile_definition_layer1
-	pop r12
 	; ax now contains tile number
 	; ebx now contains tile data
 	; r10 number of pixels
+	; r14 is the mask to xor r10 on to get number of pixels
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
@@ -622,30 +833,87 @@ layer1_1bpp_til_t_render proc
 
 	shr rax, 8			; use ah as the index
 
-	cmp r10, 8
-	je tile_8_wide
+	cmp r13, 16
+	je pixel_16
+	
+pixel_8:
+	lea r13, pixel_jump_8
+	jmp qword ptr [r13 + r10 * 8]
 
-	writepixel_1bpp_t256 08000h, BUFFER_LAYER1 + 8
-	writepixel_1bpp_t256 04000h, BUFFER_LAYER1 + 9
-	writepixel_1bpp_t256 02000h, BUFFER_LAYER1 + 10
-	writepixel_1bpp_t256 01000h, BUFFER_LAYER1 + 11
-	writepixel_1bpp_t256 0800h, BUFFER_LAYER1 + 12
-	writepixel_1bpp_t256 0400h, BUFFER_LAYER1 + 13
-	writepixel_1bpp_t256 0200h, BUFFER_LAYER1 + 14
-	writepixel_1bpp_t256 0100h, BUFFER_LAYER1 + 15
+pixel_jump_8:
+	qword pixel_0_8
+	qword pixel_1_8
+	qword pixel_2_8
+	qword pixel_3_8
+	qword pixel_4_8
+	qword pixel_5_8
+	qword pixel_6_8
+	qword pixel_7_8
 
-tile_8_wide:
-
-	writepixel_1bpp_t256 080h, BUFFER_LAYER1 + 0
-	writepixel_1bpp_t256 040h, BUFFER_LAYER1 + 1
-	writepixel_1bpp_t256 020h, BUFFER_LAYER1 + 2
-	writepixel_1bpp_t256 010h, BUFFER_LAYER1 + 3
-	writepixel_1bpp_t256 08h, BUFFER_LAYER1 + 4
-	writepixel_1bpp_t256 04h, BUFFER_LAYER1 + 5
-	writepixel_1bpp_t256 02h, BUFFER_LAYER1 + 6
-	writepixel_1bpp_t256 01h, BUFFER_LAYER1 + 7
+	writepixel_1bpp_t256 080h, BUFFER_LAYER1, 0, 8
+	writepixel_1bpp_t256 040h, BUFFER_LAYER1, 1, 8
+	writepixel_1bpp_t256 020h, BUFFER_LAYER1, 2, 8
+	writepixel_1bpp_t256 010h, BUFFER_LAYER1, 3, 8
+	writepixel_1bpp_t256 08h, BUFFER_LAYER1, 4, 8
+	writepixel_1bpp_t256 04h, BUFFER_LAYER1, 5, 8
+	writepixel_1bpp_t256 02h, BUFFER_LAYER1, 6, 8
+	writepixel_1bpp_t256 01h, BUFFER_LAYER1, 7, 8
 
 	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+	
+	pop r11
+	pop r12
+
+	jmp layer1_render_done
+
+pixel_16:
+	lea r13, pixel_jump_16
+	jmp qword ptr [r13 + r10 * 8]
+
+pixel_jump_16:
+	qword pixel_0_16
+	qword pixel_1_16
+	qword pixel_2_16
+	qword pixel_3_16
+	qword pixel_4_16
+	qword pixel_5_16
+	qword pixel_6_16
+	qword pixel_7_16
+	qword pixel_8_16
+	qword pixel_9_16
+	qword pixel_10_16
+	qword pixel_11_16
+	qword pixel_12_16
+	qword pixel_13_16
+	qword pixel_14_16
+	qword pixel_15_16
+
+	writepixel_1bpp_t256 080h, BUFFER_LAYER1, 0, 16
+	writepixel_1bpp_t256 040h, BUFFER_LAYER1, 1, 16
+	writepixel_1bpp_t256 020h, BUFFER_LAYER1, 2, 16
+	writepixel_1bpp_t256 010h, BUFFER_LAYER1, 3, 16
+	writepixel_1bpp_t256 08h, BUFFER_LAYER1, 4, 16
+	writepixel_1bpp_t256 04h, BUFFER_LAYER1, 5, 16
+	writepixel_1bpp_t256 02h, BUFFER_LAYER1, 6, 16
+	writepixel_1bpp_t256 01h, BUFFER_LAYER1, 7, 16
+
+	writepixel_1bpp_t256 08000h, BUFFER_LAYER1, 8, 16
+	writepixel_1bpp_t256 04000h, BUFFER_LAYER1, 9, 16
+	writepixel_1bpp_t256 02000h, BUFFER_LAYER1, 10, 16
+	writepixel_1bpp_t256 01000h, BUFFER_LAYER1, 11, 16
+	writepixel_1bpp_t256 0800h, BUFFER_LAYER1, 12, 16
+	writepixel_1bpp_t256 0400h, BUFFER_LAYER1, 13, 16
+	writepixel_1bpp_t256 0200h, BUFFER_LAYER1, 14, 16
+	writepixel_1bpp_t256 0100h, BUFFER_LAYER1, 15, 16
+
+	mov rax, r10 ; count till next update requirement
+	xor rax, r14
+	add rax, 1
+	
+	pop r11
+	pop r12
 
 	jmp layer1_render_done
 layer1_1bpp_til_t_render endp
@@ -660,9 +928,12 @@ layer1_1bpp_til_t_render endp
 ; returns
 ; ax  : tile information
 ; ebx : tile data
+; r10 : x position through tile
+; r13 : width
+; r14 : x mask
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
-	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift
+	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask
 	mov rsi, [rdx].state.vram_ptr
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
@@ -724,7 +995,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 		t_multiplier equ 2
 	endif
 	if colour_depth eq 0
-		t_colour_size equ 8
+		t_colour_size equ 8		
 	endif
 	if colour_depth eq 1
 		t_colour_size equ 4
@@ -755,6 +1026,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	t_tile_mask equ t_height_px - 1
 	t_tile_shift equ (t_multiplier - 1) + colour_depth
+	t_tile_x_mask equ (t_colour_size * t_multiplier) - 1
 
 	xor rbx, rbx
 	mov bl, al						; get tile number
@@ -770,7 +1042,13 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	add rbx, r14					; add to tile base address
 
 	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
-	mov r10, t_colour_size * t_multiplier
+	mov r13, t_colour_size * t_multiplier
+
+	; find offset of current x
+	mov r10, r11
+	mov r14, t_tile_x_mask
+	and r10, r14
+
 	ret
 endm
 
