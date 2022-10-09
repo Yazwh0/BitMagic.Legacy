@@ -481,7 +481,7 @@ include Vera_Display_Tiles_2bpp.asm
 ; r14 : x mask
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
-	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask
+	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask, t_height_invert_mask
 	mov rsi, [rdx].state.vram_ptr
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
@@ -530,9 +530,11 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	; ---------------------------------------------------------------
 	if tile_height eq 0
 		t_height_px equ 8
+		t_height_invert_mask equ 0111b
 	endif
 	if tile_height eq 1
 		t_height_px equ 16
+		t_height_invert_mask equ 01111b
 	endif
 	if tile_width eq 0
 		t_width_px equ 8
@@ -574,28 +576,44 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	t_tile_mask equ t_height_px - 1
 	t_tile_shift equ (t_multiplier - 1) + colour_depth
-	t_tile_x_mask equ (t_colour_size * t_multiplier) - 1
+	t_tile_x_mask equ t_width_px-1;(t_colour_size * t_multiplier) - 1
 
 	xor rbx, rbx
-	mov bl, al						; get tile number
+
+	if colour_depth eq 0
+	mov bl, al								; get tile number
+	else
+	mov bx, ax
+	and bx, 01111111111b					; mask off tile index
+	endif
 
 	; find dword in memory that is being rendered
-	mov r10, r12					; get y
 
-	and r10, t_tile_mask			; mask for tile height, so now line within tile
-	shl r10, t_tile_shift			; adjust to width of line to get offset address
+	; r10 is y, need to convert it to where the line starts in memory
+	if colour_depth ne 0
+	test eax, 800h							; check if flipped
+	jz no_v_flip
+	xor r12, t_height_invert_mask			; inverts the y position
+	no_v_flip:
+	endif
+	and r12, t_tile_mask					; mask for tile height, so now line within tile
+	shl r12, t_tile_shift					; adjust to width of line to get offset address
 
-	shl rbx, t_size_shift			; rbx is now the address
-	or rbx, r10						; adjust
-	add rbx, r14					; add to tile base address
+	shl rbx, t_size_shift					; rbx is now the address
+	or rbx, r12								; adjust
+	add rbx, r14							; add to tile base address
 
-	mov ebx, dword ptr [rsi + rbx]	; set ebx 32bits worth of values
-	mov r13, t_colour_size * t_multiplier
+	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
+	mov r13, t_colour_size * t_multiplier	; return width
+
+	; currently returns 32bit from tile data location
+	; doesn't handle multiple dwords per tile
+	; or h_flip.
 
 	; find offset of current x
 	mov r10, r11
 	mov r14, t_tile_x_mask
-	and r10, r14
+	and r10, r14							; return pixels
 
 	ret
 endm
