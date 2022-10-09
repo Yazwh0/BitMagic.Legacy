@@ -206,7 +206,7 @@
       <FileType>Document</FileType>
       <Command>ml64 /c /Zi /Fo$(OutDir)\core.obj core.asm</Command>
       <Outputs>$(OutDir)\core.obj</Outputs>
-      <AdditionalInputs>State.asm, Vera.asm, Vera_Constants.asm, Vera_Display.asm</AdditionalInputs>
+      <AdditionalInputs>State.asm, Vera.asm, Vera_Constants.asm, Vera_Display.asm, Vera_Display_Tiles_1bpp.asm, Vera_Display_Tiles_2bpp.asm</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +236,18 @@
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
     <Text Include="Vera_Display.asm">
+      <FileType>Document</FileType>
+      <Command>copy /b Core.asm +,,</Command>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
+    </Text>
+    <Text Include="Vera_Display_Tiles_1bpp.asm">
+      <FileType>Document</FileType>
+      <Command>copy /b Core.asm +,,</Command>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
+    </Text>
+    <Text Include="Vera_Display_Tiles_2bpp.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
