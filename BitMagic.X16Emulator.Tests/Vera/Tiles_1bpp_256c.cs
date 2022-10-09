@@ -919,7 +919,6 @@ public class Tiles_1Bpp_265C
         emulator.CompareImage(@"Vera\Images\tile_1bpp_l1_16x8_256c_normal.png");
     }
 
-
     [TestMethod]
     public async Task Normal_16x16_Layer0()
     {

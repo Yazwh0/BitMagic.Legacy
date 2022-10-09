@@ -613,7 +613,7 @@ mode_layer1_notsupported endp
 
 layer0_render_jump:
 	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
-	layer0_2bpp_til_x qword mode_layer0_notsupported
+	layer0_2bpp_til_x qword layer0_2bpp_til_x_render
 	layer0_4bpp_til_x qword mode_layer0_notsupported
 	layer0_8bpp_til_x qword mode_layer0_notsupported
 	layer0_1bpp_bit_x qword mode_layer0_notsupported
