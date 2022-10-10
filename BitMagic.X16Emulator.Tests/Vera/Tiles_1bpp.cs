@@ -10,8 +10,6 @@ public class Tiles_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.A = 0x03;
-
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -132,8 +130,6 @@ public class Tiles_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.A = 0x03;
-
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -253,8 +249,6 @@ public class Tiles_1Bpp
     public async Task Normal_200VScale_Layer0()
     {
         var emulator = new Emulator();
-
-        emulator.A = 0x03;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -377,8 +371,6 @@ public class Tiles_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.A = 0x03;
-
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -499,8 +491,6 @@ public class Tiles_1Bpp
     public async Task Normal_192HScale_Layer0()
     {
         var emulator = new Emulator();
-
-        emulator.A = 0x03;
 
         await X16TestHelper.Emulate(@"
                  .machine CommanderX16R40
@@ -721,8 +711,6 @@ public class Tiles_1Bpp
     public async Task Normal_192HScale_Layer1()
     {
         var emulator = new Emulator();
-
-        emulator.A = 0x03;
 
         await X16TestHelper.Emulate(@"
                  .machine CommanderX16R40

@@ -649,7 +649,7 @@ layer0_render_jump:
 
 layer1_render_jump:
 	layer1_1bpp_til_x qword layer1_1bpp_til_x_render
-	layer1_2bpp_til_x qword mode_layer1_notsupported
+	layer1_2bpp_til_x qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_x qword mode_layer1_notsupported
 	layer1_8bpp_til_x qword mode_layer1_notsupported
 	layer1_1bpp_bit_x qword mode_layer1_notsupported
