@@ -181,24 +181,25 @@ pixel_jump_16_f:
 	qword pixel_13_17
 	qword pixel_14_17
 	qword pixel_15_17
+	
+	writepixel_2bpp_normal 003000000h, 08+16, BUFFER_LAYER0, 0, 17
+	writepixel_2bpp_normal 00c000000h, 10+16, BUFFER_LAYER0, 1, 17
+	writepixel_2bpp_normal 030000000h, 12+16, BUFFER_LAYER0, 2, 17
+	writepixel_2bpp_normal 0c0000000h, 14+16, BUFFER_LAYER0, 3, 17
+	writepixel_2bpp_normal 000030000h, 00+16 ,BUFFER_LAYER0, 4, 17
+	writepixel_2bpp_normal 0000c0000h, 02+16, BUFFER_LAYER0, 5, 17
+	writepixel_2bpp_normal 000300000h, 04+16, BUFFER_LAYER0, 6, 17
+	writepixel_2bpp_normal 000c00000h, 06+16, BUFFER_LAYER0, 7, 17
 
-	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER0, 0, 17
-	writepixel_2bpp_normal 03000h, 12, BUFFER_LAYER0, 1, 17
-	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER0, 2, 17
-	writepixel_2bpp_normal 0c000h, 14, BUFFER_LAYER0, 3, 17
-	writepixel_2bpp_normal 00003h, 00 ,BUFFER_LAYER0, 4, 17
-	writepixel_2bpp_normal 0000ch, 02, BUFFER_LAYER0, 5, 17
-	writepixel_2bpp_normal 00030h, 04, BUFFER_LAYER0, 6, 17
-	writepixel_2bpp_normal 000c0h, 06, BUFFER_LAYER0, 7, 17
+	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER0, 8, 17
+	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER0, 9, 17
+	writepixel_2bpp_normal 03000h, 12, BUFFER_LAYER0, 10, 17
+	writepixel_2bpp_normal 0c000h, 14, BUFFER_LAYER0, 11, 17
+	writepixel_2bpp_normal 00003h, 00 ,BUFFER_LAYER0, 12, 17
+	writepixel_2bpp_normal 0000ch, 02, BUFFER_LAYER0, 13, 17
+	writepixel_2bpp_normal 00030h, 04, BUFFER_LAYER0, 14, 17
+	writepixel_2bpp_normal 000c0h, 06, BUFFER_LAYER0, 15, 17
 
-	writepixel_2bpp_normal 003000000h, 08+16, BUFFER_LAYER0, 8, 17
-	writepixel_2bpp_normal 00c000000h, 10+16, BUFFER_LAYER0, 9, 17
-	writepixel_2bpp_normal 030000000h, 12+16, BUFFER_LAYER0, 10, 17
-	writepixel_2bpp_normal 0c0000000h, 14+16, BUFFER_LAYER0, 11, 17
-	writepixel_2bpp_normal 000030000h, 00+16 ,BUFFER_LAYER0, 12, 17
-	writepixel_2bpp_normal 0000c0000h, 02+16, BUFFER_LAYER0, 13, 17
-	writepixel_2bpp_normal 000300000h, 04+16, BUFFER_LAYER0, 14, 17
-	writepixel_2bpp_normal 000c00000h, 06+16, BUFFER_LAYER0, 15, 17
 
 	mov rax, r10 ; count till next update requirement
 	xor rax, r14
@@ -379,23 +380,23 @@ pixel_jump_16_f:
 	qword pixel_14_17
 	qword pixel_15_17
 
-	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER1, 0, 17
-	writepixel_2bpp_normal 03000h, 12, BUFFER_LAYER1, 1, 17
-	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER1, 2, 17
-	writepixel_2bpp_normal 0c000h, 14, BUFFER_LAYER1, 3, 17
-	writepixel_2bpp_normal 00003h, 00 ,BUFFER_LAYER1, 4, 17
-	writepixel_2bpp_normal 0000ch, 02, BUFFER_LAYER1, 5, 17
-	writepixel_2bpp_normal 00030h, 04, BUFFER_LAYER1, 6, 17
-	writepixel_2bpp_normal 000c0h, 06, BUFFER_LAYER1, 7, 17
+	writepixel_2bpp_normal 003000000h, 08+16, BUFFER_LAYER1, 0, 17
+	writepixel_2bpp_normal 00c000000h, 10+16, BUFFER_LAYER1, 1, 17
+	writepixel_2bpp_normal 030000000h, 12+16, BUFFER_LAYER1, 2, 17
+	writepixel_2bpp_normal 0c0000000h, 14+16, BUFFER_LAYER1, 3, 17
+	writepixel_2bpp_normal 000030000h, 00+16 ,BUFFER_LAYER1, 4, 17
+	writepixel_2bpp_normal 0000c0000h, 02+16, BUFFER_LAYER1, 5, 17
+	writepixel_2bpp_normal 000300000h, 04+16, BUFFER_LAYER1, 6, 17
+	writepixel_2bpp_normal 000c00000h, 06+16, BUFFER_LAYER1, 7, 17
 
-	writepixel_2bpp_normal 003000000h, 08+16, BUFFER_LAYER1, 8, 17
-	writepixel_2bpp_normal 00c000000h, 10+16, BUFFER_LAYER1, 9, 17
-	writepixel_2bpp_normal 030000000h, 12+16, BUFFER_LAYER1, 10, 17
-	writepixel_2bpp_normal 0c0000000h, 14+16, BUFFER_LAYER1, 11, 17
-	writepixel_2bpp_normal 000030000h, 00+16 ,BUFFER_LAYER1, 12, 17
-	writepixel_2bpp_normal 0000c0000h, 02+16, BUFFER_LAYER1, 13, 17
-	writepixel_2bpp_normal 000300000h, 04+16, BUFFER_LAYER1, 14, 17
-	writepixel_2bpp_normal 000c00000h, 06+16, BUFFER_LAYER1, 15, 17
+	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER1, 8, 17
+	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER1, 9, 17
+	writepixel_2bpp_normal 03000h, 12, BUFFER_LAYER1, 10, 17
+	writepixel_2bpp_normal 0c000h, 14, BUFFER_LAYER1, 11, 17
+	writepixel_2bpp_normal 00003h, 00 ,BUFFER_LAYER1, 12, 17
+	writepixel_2bpp_normal 0000ch, 02, BUFFER_LAYER1, 13, 17
+	writepixel_2bpp_normal 00030h, 04, BUFFER_LAYER1, 14, 17
+	writepixel_2bpp_normal 000c0h, 06, BUFFER_LAYER1, 15, 17
 
 	mov rax, r10 ; count till next update requirement
 	xor rax, r14
