@@ -604,7 +604,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	add rbx, r14							; add to tile base address
 
 	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
-	mov r13, t_colour_size * t_multiplier	; return width
+	mov r13, t_width_px						; return width
 
 	; currently returns 32bit from tile data location
 	; doesn't handle multiple dwords per tile
