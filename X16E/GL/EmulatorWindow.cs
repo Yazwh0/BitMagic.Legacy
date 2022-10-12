@@ -108,7 +108,7 @@ internal class EmulatorWindow
             _lastTicks = thisTicks;
         }
 
-        _window.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps]";
+        _window.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps \\ {_speed * 8.0:0}Mhz]";
     }
 
     private static void OnClose()
