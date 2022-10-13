@@ -62,7 +62,6 @@ pixel_jump_8:
 	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER0, 6, 8
 	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER0, 7, 8
 
-
 	mov rax, r10 ; count till next update requirement
 	xor rax, r14 ; tile mask to invert
 	add rax, 1
@@ -259,7 +258,6 @@ pixel_jump_8:
 	writepixel_2bpp_normal 03000h, 12, BUFFER_LAYER1, 5, 8
 	writepixel_2bpp_normal 00c00h, 10, BUFFER_LAYER1, 6, 8
 	writepixel_2bpp_normal 00300h, 08, BUFFER_LAYER1, 7, 8
-
 
 	mov rax, r10 ; count till next update requirement
 	xor rax, r14 ; tile mask to invert

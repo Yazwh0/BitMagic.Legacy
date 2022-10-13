@@ -483,11 +483,12 @@ include Vera_Display_Tiles_2bpp.asm
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
 	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask, t_height_invert_mask
 	mov rsi, [rdx].state.vram_ptr
+
 	mov rax, r12					; y
 	shr rax, tile_height + 3		; / tile height
-	shl rax, map_width + 5			; * tile width
+	shl rax, map_width + 5			; * map width
 
-	xor rbx, rbx
+	;xor rbx, rbx
 	mov rbx, r11					; x
 	shr rbx, tile_width + 3			; / tile width
 	add rax, rbx			
