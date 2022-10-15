@@ -549,15 +549,19 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	if colour_depth eq 0
 		t_colour_size equ 8		
+		t_tile_x_mask equ t_width_px-1
 	endif
 	if colour_depth eq 1
 		t_colour_size equ 4
+		t_tile_x_mask equ t_width_px-1
 	endif
 	if colour_depth eq 2
 		t_colour_size equ 2
+		t_tile_x_mask equ 8-1		; 4bpp always returns a full dword, so 8 pixels
 	endif
 	if colour_depth eq 3
 		t_colour_size equ 1
+		t_tile_x_mask equ 4-1		; 2bpp always returns a full dword, so 4 pixels
 	endif
 	if t_height_px * t_width_px / t_colour_size eq 8
 		t_size_shift equ 3
@@ -579,7 +583,6 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	t_tile_mask equ t_height_px - 1
 	t_tile_shift equ (t_multiplier - 1) + colour_depth
-	t_tile_x_mask equ t_width_px-1
 
 	xor rbx, rbx
 
@@ -596,21 +599,27 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	; r12 is y, need to convert it to where the line starts in memory
 	if colour_depth ne 0
 
-		test eax, 800h							; check if flipped
-		jz no_v_flip
+		bt eax, 11							; check if flipped
+		jnc no_v_flip
 
 		xor r12, t_height_invert_mask			; inverts the y position
 
-		if tile_width eq 1
-		if colour_depth eq 2
-		xor r11, 01000b							; flip bit to invert, its masked later
-		endif
-		endif
+		no_v_flip:
+		if tile_width eq 1 or colour_depth eq 2
+			bt eax, 10
+			jnc no_h_flip
 
-		if tile_width eq 0
-		endif
+			if tile_width eq 1
+			if colour_depth eq 2
+			xor r11, 01000b							; flip bit to invert, its masked later
+			endif
+			endif
 
-	no_v_flip:
+			if tile_width eq 0
+			endif
+
+		no_h_flip:
+		endif
 	endif
 	and r12, t_tile_mask					; mask for tile height, so now line within tile
 	shl r12, t_tile_shift					; adjust to width of line to get offset address
@@ -625,14 +634,17 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 
 	if tile_width eq 1
 	if colour_depth eq 2					; 4bpp
-	and r11, 01000b							; mask x position
-	shr r11, 1								; adjust to the actual address
-	add rbx, r11
+		and r11, 01000b							; mask x position
+		shr r11, 1								; adjust to the actual address
+		add rbx, r11
 	endif
 	endif
 
 	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
-	mov r13, t_width_px						; return width
+
+	if colour_depth eq 0 or colour_depth eq 1
+		mov r13, t_width_px						; return width -- not needed for 4 or 8 bpp
+	endif
 
 	; now rbx has 32bit from tile data location
 	ret

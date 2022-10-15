@@ -38,9 +38,6 @@ layer0_4bpp_til_x_render proc
 	shr rax, 12		; rax is now pallette offset
 	shl rax, 4		; * 16
 
-	;cmp r13, 16
-	;je pixel_16
-
 	lea r13, pixel_jump_8
 	jmp qword ptr [r13 + r10 * 8]
 
@@ -72,62 +69,10 @@ pixel_jump_8:
 
 	jmp layer0_render_done
 
-pixel_16:
-	lea r13, pixel_jump_16
-	jmp qword ptr [r13 + r10 * 8]
-
-pixel_jump_16:
-	qword pixel_0_16
-	qword pixel_1_16
-	qword pixel_2_16
-	qword pixel_3_16
-	qword pixel_4_16
-	qword pixel_5_16
-	qword pixel_6_16
-	qword pixel_7_16
-	qword pixel_8_16
-	qword pixel_9_16
-	qword pixel_10_16
-	qword pixel_11_16
-	qword pixel_12_16
-	qword pixel_13_16
-	qword pixel_14_16
-	qword pixel_15_16
-
-	writepixel_4bpp_normal 000c0h, 06, BUFFER_LAYER0, 0, 16
-	writepixel_4bpp_normal 00030h, 04, BUFFER_LAYER0, 1, 16
-	writepixel_4bpp_normal 0000ch, 02, BUFFER_LAYER0, 2, 16
-	writepixel_4bpp_normal 00003h, 00 ,BUFFER_LAYER0, 3, 16
-	writepixel_4bpp_normal 0c000h, 14, BUFFER_LAYER0, 4, 16
-	writepixel_4bpp_normal 03000h, 12, BUFFER_LAYER0, 5, 16
-	writepixel_4bpp_normal 00c00h, 10, BUFFER_LAYER0, 6, 16
-	writepixel_4bpp_normal 00300h, 08, BUFFER_LAYER0, 7, 16
-
-	writepixel_4bpp_normal 000c00000h, 06+16, BUFFER_LAYER0, 8, 16
-	writepixel_4bpp_normal 000300000h, 04+16, BUFFER_LAYER0, 9, 16
-	writepixel_4bpp_normal 0000c0000h, 02+16, BUFFER_LAYER0, 10, 16
-	writepixel_4bpp_normal 000030000h, 00+16 ,BUFFER_LAYER0, 11, 16
-	writepixel_4bpp_normal 0c0000000h, 14+16, BUFFER_LAYER0, 12, 16
-	writepixel_4bpp_normal 030000000h, 12+16, BUFFER_LAYER0, 13, 16
-	writepixel_4bpp_normal 00c000000h, 10+16, BUFFER_LAYER0, 14, 16
-	writepixel_4bpp_normal 003000000h, 08+16, BUFFER_LAYER0, 15, 16
-
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
-	
-	pop r11
-	pop r12
-
-	jmp layer0_render_done
-
 ; ----------------------------------------------------------------------------------
 flipped:
 	shr rax, 12		; rax is now pallette offset
 	shl rax, 4		; * 16
-
-	;cmp r13, 16
-	;je pixel_16_f
 
 	lea r13, pixel_jump_8_f
 	jmp qword ptr [r13 + r10 * 8]
@@ -153,56 +98,6 @@ pixel_jump_8_f:
 
 	mov rax, r10 ; count till next update requirement
 	xor rax, r14 ; tile mask to invert
-	add rax, 1
-	
-	pop r11
-	pop r12
-
-	jmp layer0_render_done
-
-pixel_16_f:
-	lea r13, pixel_jump_16_f
-	jmp qword ptr [r13 + r10 * 8]
-
-pixel_jump_16_f:
-	qword pixel_0_17
-	qword pixel_1_17
-	qword pixel_2_17
-	qword pixel_3_17
-	qword pixel_4_17
-	qword pixel_5_17
-	qword pixel_6_17
-	qword pixel_7_17
-	qword pixel_8_17
-	qword pixel_9_17
-	qword pixel_10_17
-	qword pixel_11_17
-	qword pixel_12_17
-	qword pixel_13_17
-	qword pixel_14_17
-	qword pixel_15_17
-	
-	writepixel_4bpp_normal 003000000h, 08+16, BUFFER_LAYER0, 0, 17
-	writepixel_4bpp_normal 00c000000h, 10+16, BUFFER_LAYER0, 1, 17
-	writepixel_4bpp_normal 030000000h, 12+16, BUFFER_LAYER0, 2, 17
-	writepixel_4bpp_normal 0c0000000h, 14+16, BUFFER_LAYER0, 3, 17
-	writepixel_4bpp_normal 000030000h, 00+16 ,BUFFER_LAYER0, 4, 17
-	writepixel_4bpp_normal 0000c0000h, 02+16, BUFFER_LAYER0, 5, 17
-	writepixel_4bpp_normal 000300000h, 04+16, BUFFER_LAYER0, 6, 17
-	writepixel_4bpp_normal 000c00000h, 06+16, BUFFER_LAYER0, 7, 17
-
-	writepixel_4bpp_normal 00300h, 08, BUFFER_LAYER0, 8, 17
-	writepixel_4bpp_normal 00c00h, 10, BUFFER_LAYER0, 9, 17
-	writepixel_4bpp_normal 03000h, 12, BUFFER_LAYER0, 10, 17
-	writepixel_4bpp_normal 0c000h, 14, BUFFER_LAYER0, 11, 17
-	writepixel_4bpp_normal 00003h, 00 ,BUFFER_LAYER0, 12, 17
-	writepixel_4bpp_normal 0000ch, 02, BUFFER_LAYER0, 13, 17
-	writepixel_4bpp_normal 00030h, 04, BUFFER_LAYER0, 14, 17
-	writepixel_4bpp_normal 000c0h, 06, BUFFER_LAYER0, 15, 17
-
-
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
 	add rax, 1
 	
 	pop r11
