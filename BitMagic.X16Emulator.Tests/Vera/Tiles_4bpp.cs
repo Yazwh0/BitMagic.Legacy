@@ -1441,8 +1441,8 @@ public class Tiles_4Bpp
                 ",
                 emulator);
 
-        emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_4bpp_l0_16x16_normal.png");
-        //emulator.CompareImage(@"Vera\Images\tile_4bpp_l0_16x16_normal.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_4bpp_l0_16x16_normal.png");
+        emulator.CompareImage(@"Vera\Images\tile_4bpp_l0_16x16_normal.png");
     }
 
     [TestMethod]
@@ -1674,7 +1674,7 @@ public class Tiles_4Bpp
                 ",
                 emulator);
 
-        emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_4bpp_l0_16x16_shifted.png");
-        //emulator.CompareImage(@"Vera\Images\tile_4bpp_l0_16x16_shifted.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\tile_4bpp_l0_16x16_shifted.png");
+        emulator.CompareImage(@"Vera\Images\tile_4bpp_l0_16x16_shifted.png");
     }
 }
