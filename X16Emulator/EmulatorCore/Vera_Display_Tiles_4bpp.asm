@@ -38,8 +38,8 @@ layer0_4bpp_til_x_render proc
 	shr rax, 12		; rax is now pallette offset
 	shl rax, 4		; * 16
 
-	cmp r13, 16
-	je pixel_16
+	;cmp r13, 16
+	;je pixel_16
 
 	lea r13, pixel_jump_8
 	jmp qword ptr [r13 + r10 * 8]
@@ -126,8 +126,8 @@ flipped:
 	shr rax, 12		; rax is now pallette offset
 	shl rax, 4		; * 16
 
-	cmp r13, 16
-	je pixel_16_f
+	;cmp r13, 16
+	;je pixel_16_f
 
 	lea r13, pixel_jump_8_f
 	jmp qword ptr [r13 + r10 * 8]
