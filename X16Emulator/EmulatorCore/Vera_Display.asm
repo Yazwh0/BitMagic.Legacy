@@ -465,6 +465,8 @@ endm
 
 include Vera_Display_Tiles_1bpp.asm
 include Vera_Display_Tiles_2bpp.asm
+include Vera_Display_Tiles_4bpp.asm
+include Vera_Display_Tiles_8bpp.asm
 
 ; macros to find the current tile definition, returns data in ax. 
 ; expects:
@@ -577,7 +579,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	t_tile_mask equ t_height_px - 1
 	t_tile_shift equ (t_multiplier - 1) + colour_depth
-	t_tile_x_mask equ t_width_px-1;(t_colour_size * t_multiplier) - 1
+	t_tile_x_mask equ t_width_px-1
 
 	xor rbx, rbx
 
@@ -589,33 +591,50 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 
 	; find dword in memory that is being rendered
+	mov r10, r11							; store x for later
 
-	; r10 is y, need to convert it to where the line starts in memory
+	; r12 is y, need to convert it to where the line starts in memory
 	if colour_depth ne 0
-	test eax, 800h							; check if flipped
-	jz no_v_flip
-	xor r12, t_height_invert_mask			; inverts the y position
+
+		test eax, 800h							; check if flipped
+		jz no_v_flip
+
+		xor r12, t_height_invert_mask			; inverts the y position
+
+		if tile_width eq 1
+		if colour_depth eq 2
+		xor r11, 01000b							; flip bit to invert, its masked later
+		endif
+		endif
+
+		if tile_width eq 0
+		endif
+
 	no_v_flip:
 	endif
 	and r12, t_tile_mask					; mask for tile height, so now line within tile
 	shl r12, t_tile_shift					; adjust to width of line to get offset address
 
 	shl rbx, t_size_shift					; rbx is now the address
-	or rbx, r12								; adjust
+	or rbx, r12								; adjust to the line offset
 	add rbx, r14							; add to tile base address
+	
+	; find offset of current x, we saved x into r10 earlier for this
+	mov r14, t_tile_x_mask
+	and r10, r14							; return pixels
+
+	if tile_width eq 1
+	if colour_depth eq 2					; 4bpp
+	and r11, 01000b							; mask x position
+	shr r11, 1								; adjust to the actual address
+	add rbx, r11
+	endif
+	endif
 
 	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
 	mov r13, t_width_px						; return width
 
-	; currently returns 32bit from tile data location
-	; doesn't handle multiple dwords per tile
-	; or h_flip.
-
-	; find offset of current x
-	mov r10, r11
-	mov r14, t_tile_x_mask
-	and r10, r14							; return pixels
-
+	; now rbx has 32bit from tile data location
 	ret
 endm
 
@@ -633,15 +652,15 @@ mode_layer1_notsupported endp
 layer0_render_jump:
 	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
 	layer0_2bpp_til_x qword layer0_2bpp_til_x_render
-	layer0_4bpp_til_x qword mode_layer0_notsupported
+	layer0_4bpp_til_x qword layer0_4bpp_til_x_render
 	layer0_8bpp_til_x qword mode_layer0_notsupported
 	layer0_1bpp_bit_x qword mode_layer0_notsupported
 	layer0_2bpp_bit_x qword mode_layer0_notsupported
 	layer0_4bpp_bit_x qword mode_layer0_notsupported
 	layer0_8bpp_bit_x qword mode_layer0_notsupported
 	layer0_1bpp_til_t qword layer0_1bpp_til_t_render
-	layer0_2bpp_til_t qword mode_layer0_notsupported
-	layer0_4bpp_til_t qword mode_layer0_notsupported
+	layer0_2bpp_til_t qword layer0_2bpp_til_x_render
+	layer0_4bpp_til_t qword layer0_4bpp_til_x_render
 	layer0_8bpp_til_t qword mode_layer0_notsupported
 	layer0_1bpp_bit_t qword mode_layer0_notsupported
 	layer0_2bpp_bit_t qword mode_layer0_notsupported
@@ -658,7 +677,7 @@ layer1_render_jump:
 	layer1_4bpp_bit_x qword mode_layer1_notsupported
 	layer1_8bpp_bit_x qword mode_layer1_notsupported
 	layer1_1bpp_til_t qword layer1_1bpp_til_t_render
-	layer1_2bpp_til_t qword mode_layer1_notsupported
+	layer1_2bpp_til_t qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_t qword mode_layer1_notsupported
 	layer1_8bpp_til_t qword mode_layer1_notsupported
 	layer1_1bpp_bit_t qword mode_layer1_notsupported

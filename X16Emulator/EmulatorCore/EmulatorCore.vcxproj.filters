@@ -66,5 +66,11 @@
     <Text Include="Vera_Display_Tiles_2bpp.asm">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="Vera_Display_Tiles_8bpp.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Display_Tiles_4bpp.asm">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
