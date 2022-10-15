@@ -605,17 +605,20 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 		xor r12, t_height_invert_mask			; inverts the y position
 
 		no_v_flip:
-		if tile_width eq 1 or colour_depth eq 2
+		if tile_width eq 1 or colour_depth eq 2 or colour_depth eq 3
 			bt eax, 10
 			jnc no_h_flip
 
-			if tile_width eq 1
-			if colour_depth eq 2
-			xor r11, 01000b							; flip bit to invert, its masked later
-			endif
+			if tile_width eq 1 and colour_depth eq 2
+				xor r11, 01000b							; flip bit to invert, its masked later
 			endif
 
-			if tile_width eq 0
+			; DOES NOT WORK
+			if tile_width eq 0 and colour_depth eq 3
+				xor r11, 01100b							; flip bit to invert, its masked later
+			endif
+			if tile_width eq 1 and colour_depth eq 3
+				xor r11, 01100b							; flip bit to invert, its masked later
 			endif
 
 		no_h_flip:
@@ -632,12 +635,15 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	mov r14, t_tile_x_mask
 	and r10, r14							; return pixels
 
-	if tile_width eq 1
-	if colour_depth eq 2					; 4bpp
+	if tile_width eq 1 and colour_depth eq 2	; 4bpp
 		and r11, 01000b							; mask x position
-		shr r11, 1								; adjust to the actual address
+		shr r11, 1								; /2 (ratio for 4bpp to memory) adjust to the actual address
 		add rbx, r11
 	endif
+
+	if tile_width eq 0 and colour_depth eq 3
+		and r11, 01100b						; mask x position
+		add rbx, r11
 	endif
 
 	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
@@ -665,7 +671,7 @@ layer0_render_jump:
 	layer0_1bpp_til_x qword layer0_1bpp_til_x_render
 	layer0_2bpp_til_x qword layer0_2bpp_til_x_render
 	layer0_4bpp_til_x qword layer0_4bpp_til_x_render
-	layer0_8bpp_til_x qword mode_layer0_notsupported
+	layer0_8bpp_til_x qword layer0_8bpp_til_x_render
 	layer0_1bpp_bit_x qword mode_layer0_notsupported
 	layer0_2bpp_bit_x qword mode_layer0_notsupported
 	layer0_4bpp_bit_x qword mode_layer0_notsupported
@@ -673,7 +679,7 @@ layer0_render_jump:
 	layer0_1bpp_til_t qword layer0_1bpp_til_t_render
 	layer0_2bpp_til_t qword layer0_2bpp_til_x_render
 	layer0_4bpp_til_t qword layer0_4bpp_til_x_render
-	layer0_8bpp_til_t qword mode_layer0_notsupported
+	layer0_8bpp_til_t qword layer0_8bpp_til_x_render
 	layer0_1bpp_bit_t qword mode_layer0_notsupported
 	layer0_2bpp_bit_t qword mode_layer0_notsupported
 	layer0_4bpp_bit_t qword mode_layer0_notsupported
@@ -682,7 +688,7 @@ layer0_render_jump:
 layer1_render_jump:
 	layer1_1bpp_til_x qword layer1_1bpp_til_x_render
 	layer1_2bpp_til_x qword layer1_2bpp_til_x_render
-	layer1_4bpp_til_x qword mode_layer1_notsupported
+	layer1_4bpp_til_x qword layer1_4bpp_til_x_render
 	layer1_8bpp_til_x qword mode_layer1_notsupported
 	layer1_1bpp_bit_x qword mode_layer1_notsupported
 	layer1_2bpp_bit_x qword mode_layer1_notsupported
@@ -690,7 +696,7 @@ layer1_render_jump:
 	layer1_8bpp_bit_x qword mode_layer1_notsupported
 	layer1_1bpp_til_t qword layer1_1bpp_til_t_render
 	layer1_2bpp_til_t qword layer1_2bpp_til_x_render
-	layer1_4bpp_til_t qword mode_layer1_notsupported
+	layer1_4bpp_til_t qword layer1_4bpp_til_x_render
 	layer1_8bpp_til_t qword mode_layer1_notsupported
 	layer1_1bpp_bit_t qword mode_layer1_notsupported
 	layer1_2bpp_bit_t qword mode_layer1_notsupported
