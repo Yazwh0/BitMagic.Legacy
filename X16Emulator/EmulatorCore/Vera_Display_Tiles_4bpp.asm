@@ -114,7 +114,7 @@ layer1_4bpp_til_x_render proc
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 
-	get_tile_definition_layer0
+	get_tile_definition_layer1
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -158,7 +158,7 @@ pixel_jump_8:
 	pop r11
 	pop r12
 
-	jmp layer0_render_done
+	jmp layer1_render_done
 
 ; ----------------------------------------------------------------------------------
 flipped:
@@ -194,6 +194,6 @@ pixel_jump_8_f:
 	pop r11
 	pop r12
 
-	jmp layer0_render_done
+	jmp layer1_render_done
 
 layer1_4bpp_til_x_render endp
