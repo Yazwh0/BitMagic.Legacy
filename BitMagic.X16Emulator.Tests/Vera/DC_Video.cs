@@ -129,6 +129,8 @@ public class DC_Video
                 lda #$2         ; line interrupts
                 sta IEN
                 wai
+                sta ISR
+                wai
                 lda DC_VIDEO
                 stp",
         emulator);
@@ -153,8 +155,6 @@ public class DC_Video
                 lda #$2         ; line interrupts
                 sta IEN
                 wai
-                sta ISR
-                wai
                 lda DC_VIDEO
                 stp",
         emulator);
@@ -162,7 +162,6 @@ public class DC_Video
         Assert.AreEqual(0b00010001, emulator.Memory[0x9f29]);
         Assert.AreEqual(0b00010001, emulator.A);
     }
-
 
     [TestMethod]
     public async Task CurrentField_Even_2Frames()
