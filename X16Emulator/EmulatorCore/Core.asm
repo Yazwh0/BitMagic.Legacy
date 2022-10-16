@@ -244,13 +244,9 @@ opcode_done::
 	jmp line_check
 
 check_line_type:
-	; set high bit in DC_Video for odd\even line
+	; set high bit in DC_Video for odd\even line, just flip per line.
 	mov cl, byte ptr [rsi+DC_VIDEO]
-	and cl, 7fh
-	mov r12, rbx
-	and r12, 01b
-	shl r12, 7
-	or cl, r12b
+	xor cl, 10000000b
 	mov byte ptr [rsi+DC_VIDEO], cl
 
 	mov cpu_posy, rbx
