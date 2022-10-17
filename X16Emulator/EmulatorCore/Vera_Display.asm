@@ -22,7 +22,7 @@ include State.asm
 ; rdx  : state object 
 ; rsi  : memory context (changable)
 ; rdi  : display
-; r8   : palette
+; r8   : scratch
 ; r9   : output offset
 ; r10  : scratch
 ; r11  : x
@@ -116,7 +116,6 @@ change:
 
 	mov rsi, [rdx].state.display_buffer_ptr
 	mov rdi, [rdx].state.display_ptr
-	mov r8, [rdx].state.palette_ptr
 	mov r9d, [rdx].state.display_position
 	mov r11w, [rdx].state.display_x
 	mov r15d, [rdx].state.buffer_render_position
@@ -177,6 +176,7 @@ draw_border:
 ; Todo: USE SCALED X
 ;
 draw_pixel:
+	mov r8, [rdx].state.palette_ptr
 
 	;mov r12d, dword ptr [rdx].state.scale_y
 	;shr r12, 16

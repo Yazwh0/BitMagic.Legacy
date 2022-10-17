@@ -148,7 +148,7 @@ namespace BitMagic.X16Emulator.Tests
                         var actual = pixels[i++];
                         var expectedOriginal = image[x, y + l * 525];
                         var expected = new Common.PixelRgba { R = expectedOriginal.R, G = expectedOriginal.G, B = expectedOriginal.B, A = expectedOriginal.A };
-                        Assert.AreEqual(expected, actual, $"At {x},{y} on layer {l}.");
+                        Assert.AreEqual(expected, actual, $"At {x},{y} on display layer {l}.");
                     }
                 }
             }

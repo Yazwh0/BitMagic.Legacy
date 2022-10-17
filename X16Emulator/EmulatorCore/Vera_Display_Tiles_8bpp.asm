@@ -6,12 +6,11 @@ local zero_pallette
 	if bitshift ne 0
 	shr r13, bitshift	; shift to value
 	endif
-	test r13, r13
-	je zero_pallette
-	cmp r13, 16
-	jge zero_pallette
-	add r13, rax		; add offset
-zero_pallette:
+	lea r11, [r13-1]	; 0-16 -> -1-15 for pallette check
+	lea r8, [r13 + rax]	; load r8 with the pallette if we apply offset
+	cmp r11, 16			; check if offset is to be applied
+	cmovb r13, r8
+
 	mov byte ptr [rsi + r15 + outputoffset], r13b
 	add rsi, 1
 endm
@@ -25,11 +24,12 @@ layer0_8bpp_til_x_render proc
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
 	get_tile_definition_layer0
-	; ax now contains tile number and colour information
-	; ebx now contains tile data
-	; r10 is the number of pixels in ebx 
+	; ax  : tile information
+	; ebx : tile data
+	; r10 : x position through tile
+	; r13 : width
+	; r14 : x mask
 
-	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
 	mov rsi, [rdx].state.display_buffer_ptr
 
@@ -53,9 +53,8 @@ pixel_jump_8:
 	writepixel_8bpp_normal 000ff0000h, 16 ,BUFFER_LAYER0, 2, 8
 	writepixel_8bpp_normal 0ff000000h, 24, BUFFER_LAYER0, 3, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14 ; tile mask to invert
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
 	pop r11
 	pop r12
@@ -81,9 +80,8 @@ pixel_jump_8_f:
 	writepixel_8bpp_normal 00000ff00h, 08, BUFFER_LAYER0, 2, 9
 	writepixel_8bpp_normal 0000000ffh, 00, BUFFER_LAYER0, 3, 9
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14 ; tile mask to invert
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
 	pop r11
 	pop r12
@@ -129,9 +127,8 @@ pixel_jump_8:
 	writepixel_8bpp_normal 000ff0000h, 16 ,BUFFER_LAYER1, 2, 8
 	writepixel_8bpp_normal 0ff000000h, 24, BUFFER_LAYER1, 3, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14 ; tile mask to invert
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
 	pop r11
 	pop r12
@@ -157,9 +154,8 @@ pixel_jump_8_f:
 	writepixel_8bpp_normal 00000ff00h, 08, BUFFER_LAYER1, 2, 9
 	writepixel_8bpp_normal 0000000ffh, 00, BUFFER_LAYER1, 3, 9
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14 ; tile mask to invert
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
 	pop r11
 	pop r12
