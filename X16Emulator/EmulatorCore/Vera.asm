@@ -117,6 +117,32 @@ match:
 	mov [rsi+ADDRx_H], dil
 endm
 
+set_layer0_jump macro
+	mov rsi, [rdx].state.memory_ptr
+	movzx rax, byte ptr [rsi + L0_CONFIG]
+	and rax, 11110011b
+	movzx rbx, byte ptr [rsi + L0_TILEBASE]
+	and rbx, 011b
+	shl rbx, 2
+	or rax, rbx
+	lea rbx, get_tile_definition_jump
+	mov rax, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer0_jmp, rax
+endm
+
+set_layer1_jump macro
+	mov rsi, [rdx].state.memory_ptr
+	movzx rax, byte ptr [rsi + L1_CONFIG]
+	and rax, 11110011b
+	movzx rbx, byte ptr [rsi + L1_TILEBASE]
+	and rbx, 011b
+	shl rbx, 2
+	or rax, rbx
+	lea rbx, get_tile_definition_jump
+	mov rax, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer1_jmp, rax
+endm
+
 layer0_tileshifts macro
 	; Multipliers
 	; Y tile height
@@ -290,7 +316,11 @@ dc_done:
 
 	mov byte ptr [rsi+L0_CONFIG], al
 	and al, 00001111b
-	mov word ptr [rdx].state.layer0_config, ax
+	lea rbx, layer0_render_jump
+	mov rbx, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer0_rtn, rbx
+
+	;mov word ptr [rdx].state.layer0_config, ax
 
 	; Map Base Address
 	mov eax, dword ptr [rdx].state.layer0_mapAddress
@@ -348,7 +378,10 @@ dc_done:
 
 	mov byte ptr [rsi+L1_CONFIG], al
 	and al, 00001111b
-	mov word ptr [rdx].state.layer1_config, ax
+	lea rbx, layer1_render_jump
+	mov rbx, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer1_rtn, rbx
+	;mov word ptr [rdx].state.layer1_config, ax
 
 	; Map Base Address
 	mov eax, dword ptr [rdx].state.layer1_mapAddress
@@ -401,6 +434,12 @@ dc_done:
 	shr bx, 1
 	or al, bl
 	mov byte ptr [rsi+IEN], al
+
+	; Layer 0 jump
+	set_layer0_jump
+
+	; Layer 1 jump
+	set_layer1_jump
 
 	jmp vera_initialise_palette
 vera_init endp
@@ -915,7 +954,13 @@ vera_update_l0config proc
 	mov word ptr [rdx].state.layer0_map_hshift, ax
 
 	and r13, 00001111b
-	mov word ptr [rdx].state.layer0_config, r13w
+	lea rbx, layer0_render_jump
+	mov rbx, qword ptr [rbx + r13 * 8]
+	mov qword ptr [rdx].state.layer0_rtn, rbx
+
+	;mov word ptr [rdx].state.layer0_config, r13w
+
+	set_layer0_jump
 
 	ret
 vera_update_l0config endp
@@ -951,6 +996,8 @@ vera_update_l0tilebase proc
 	and r13, 11111100b
 	shl r13, 9											; not 11, as we're shifted by 2 bits already
 	mov dword ptr [rdx].state.layer0_tileAddress, r13d
+
+	set_layer0_jump
 
 	ret
 vera_update_l0tilebase endp
@@ -1019,7 +1066,13 @@ vera_update_l1config proc
 	mov word ptr [rdx].state.layer1_map_hshift, ax
 
 	and r13, 00001111b
-	mov word ptr [rdx].state.layer1_config, r13w
+	lea rbx, layer1_render_jump
+	mov rbx, qword ptr [rbx + r13 * 8]
+	mov qword ptr [rdx].state.layer1_rtn, rbx
+
+	;mov word ptr [rdx].state.layer1_config, r13w
+
+	set_layer1_jump
 	
 	ret
 vera_update_l1config endp
@@ -1057,6 +1110,8 @@ vera_update_l1tilebase proc
 	and r13, 11111100b
 	shl r13, 9											; not 11, as we're shifted by 2 bits already
 	mov dword ptr [rdx].state.layer1_tileAddress, r13d
+
+	set_layer1_jump
 
 	ret
 vera_update_l1tilebase endp

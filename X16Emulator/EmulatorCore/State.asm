@@ -35,6 +35,11 @@ state struct
 
 	history_pos				qword ?
 
+	layer0_jmp				qword ?
+	layer0_rtn				qword ?
+	layer1_jmp				qword ?
+	layer1_rtn				qword ?
+
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
@@ -120,7 +125,7 @@ state struct
 	display_y				word ?
 
 	; Layer 0
-	layer0_config			word ?
+	;layer0_config			word ?
 	layer0_next_render		word ?
 	layer0_tile_hshift		word ?
 	layer0_tile_vshift		word ?
@@ -129,7 +134,7 @@ state struct
 
 	
 	; Layer 1
-	layer1_config			word ?
+	;layer1_config			word ?
 	layer1_next_render		word ?
 	layer1_tile_hshift		word ?
 	layer1_tile_vshift		word ?

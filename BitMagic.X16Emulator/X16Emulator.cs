@@ -85,13 +85,13 @@ public class Emulator : IDisposable
         public bool Interrupt_SpCol_Hit { get => _emulator._state.Interrupt_SpCol_Hit != 0; set => _emulator._state.Interrupt_SpCol_Hit = (value ? (byte)1 : (byte)0); }
         public UInt32 Frame_Count { get => _emulator._state.Frame_Count; }
 
-        public ushort Layer0_Config { get => _emulator._state.Layer0_Config; }
+        //public ushort Layer0_Config { get => _emulator._state.Layer0_Config; }
         public ushort Layer0_Tile_HShift { get => _emulator._state.Layer0_Tile_HShift; }
         public ushort Layer0_Tile_VShift { get => _emulator._state.Layer0_Tile_VShift; }
         public ushort Layer0_Map_HShift { get => _emulator._state.Layer0_Map_HShift; }
         public ushort Layer0_Map_VShift { get => _emulator._state.Layer0_Map_VShift; }
 
-        public ushort Layer1_Config { get => _emulator._state.Layer1_Config; }
+        //public ushort Layer1_Config { get => _emulator._state.Layer1_Config; }
         public ushort Layer1_Tile_HShift { get => _emulator._state.Layer1_Tile_HShift; }
         public ushort Layer1_Tile_VShift { get => _emulator._state.Layer1_Tile_VShift; }
         public ushort Layer1_Map_HShift { get => _emulator._state.Layer1_Map_HShift; }
@@ -120,6 +120,11 @@ public class Emulator : IDisposable
         public ulong VeraClock = 0x00;
 
         public ulong History_Pos = 0x00;
+
+        public ulong Layer0_Jmp = 0;
+        public ulong Layer0_Rtn = 0;
+        public ulong Layer1_Jmp = 0;
+        public ulong Layer1_Rtn = 0;
 
         public UInt32 Dc_HScale = 0x00010000;
         public UInt32 Dc_VScale = 0x00010000;
@@ -207,14 +212,14 @@ public class Emulator : IDisposable
         public ushort Beam_y = 0;
 
 
-        public ushort Layer0_Config = 0;
+        //public ushort Layer0_Config = 0;
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
         public ushort Layer0_Tile_VShift = 0;
         public ushort Layer0_Map_HShift = 0;
         public ushort Layer0_Map_VShift = 0;
 
-        public ushort Layer1_Config = 0;
+        //public ushort Layer1_Config = 0;
         public ushort Layer1_next_render = 0;
         public ushort Layer1_Tile_HShift = 0;
         public ushort Layer1_Tile_VShift = 0;

@@ -162,6 +162,7 @@ display_loop:
 	jl draw_pixel
 
 draw_border:
+	mov r8, [rdx].state.palette_ptr
 	movzx rax, [rdx].state.dc_border
 	mov ebx, dword ptr [r8 + rax * 4]
 	mov [rdi + r9 * 4 + BACKGROUND], ebx
@@ -263,14 +264,26 @@ do_render:
 	;
 	movzx rax, word ptr [rdx].state.layer0_next_render
 	sub rax, 1
-	jnz layer0_render_done
+	jnz layer0_skip
 
 	; use config to jump to the correct renderer.
-	movzx rax, word ptr [rdx].state.layer0_config
-	lea rbx, layer0_render_jump
-	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
+	push r12
+	push r11
+	add r12w, word ptr [rdx].state.layer0_vscroll
+	add r11w, word ptr [rdx].state.layer0_hscroll
+	mov r13d, dword ptr [rdx].state.layer0_mapAddress
+	mov r14d, dword ptr [rdx].state.layer0_tileAddress
+
+	mov rax, qword ptr [rdx].state.layer0_rtn
+	push rax	; return address, call the tile fetch and it returns to the correct renderer
+
+	jmp qword ptr [rdx].state.layer0_jmp
 
 layer0_render_done::
+	pop r11
+	pop r12
+layer0_skip:
+
 	mov word ptr [rdx].state.layer0_next_render, ax
 
 	;
@@ -278,14 +291,26 @@ layer0_render_done::
 	;
 	movzx rax, word ptr [rdx].state.layer1_next_render
 	sub rax, 1
-	jnz layer1_render_done
+	jnz layer1_skip
+	
+	push r12
+	push r11
+	add r12w, word ptr [rdx].state.layer1_vscroll
+	add r11w, word ptr [rdx].state.layer1_hscroll
+	mov r13d, dword ptr [rdx].state.layer1_mapAddress
+	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 
 	; use config to jump to the correct renderer.
-	movzx rax, word ptr [rdx].state.layer1_config
-	lea rbx, layer1_render_jump
-	jmp qword ptr [rbx + rax * 8]	; jump to dislpay code
+	mov rax, qword ptr [rdx].state.layer1_rtn
+	push rax	; return address, call the tile fetch and it returns to the correct renderer
+
+	jmp qword ptr [rdx].state.layer1_jmp
 
 layer1_render_done::
+	pop r11
+	pop r12
+layer1_skip:
+
 	mov word ptr [rdx].state.layer1_next_render, ax
 
 ; ------------------------------------------------
@@ -439,7 +464,7 @@ vera_initialise_palette endp
 
 ; Todo, move this jump calc to state so its calculated when the config changes
 
-get_tile_definition_layer0 macro
+xxget_tile_definition_layer0 macro
 	mov rsi, [rdx].state.memory_ptr
 	movzx rax, byte ptr [rsi + L0_CONFIG]
 	and rax, 11110011b
@@ -451,7 +476,7 @@ get_tile_definition_layer0 macro
 	call qword ptr [rbx + rax * 8]
 endm
 
-get_tile_definition_layer1 macro
+xxget_tile_definition_layer1 macro
 	mov rsi, [rdx].state.memory_ptr
 	movzx rax, byte ptr [rsi + L1_CONFIG]
 	and rax, 11110011b

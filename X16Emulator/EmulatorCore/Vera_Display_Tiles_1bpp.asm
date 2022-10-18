@@ -25,14 +25,14 @@ endm
 ;
 
 layer0_1bpp_til_x_render proc
-	push r12
-	push r11
-	add r12w, word ptr [rdx].state.layer0_vscroll
-	add r11w, word ptr [rdx].state.layer0_hscroll
-	mov r13d, dword ptr [rdx].state.layer0_mapAddress
-	mov r14d, dword ptr [rdx].state.layer0_tileAddress
+	;push r12
+	;push r11
+	;add r12w, word ptr [rdx].state.layer0_vscroll
+	;add r11w, word ptr [rdx].state.layer0_hscroll
+	;mov r13d, dword ptr [rdx].state.layer0_mapAddress
+	;mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
-	get_tile_definition_layer0
+	;call qword ptr [rdx].state.layer0_jmp
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -73,12 +73,11 @@ pixel_jump_8:
 	writepixel_1bpp_normal 02h, BUFFER_LAYER0, 6, 8
 	writepixel_1bpp_normal 01h, BUFFER_LAYER0, 7, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer0_render_done
 
@@ -122,25 +121,25 @@ pixel_jump_16:
 	writepixel_1bpp_normal 0200h, BUFFER_LAYER0, 14, 16
 	writepixel_1bpp_normal 0100h, BUFFER_LAYER0, 15, 16
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer0_render_done
 layer0_1bpp_til_x_render endp
 
 layer0_1bpp_til_t_render proc
-	push r12
-	push r11
-	add r12w, word ptr [rdx].state.layer0_vscroll
-	add r11w, word ptr [rdx].state.layer0_hscroll
-	mov r13d, dword ptr [rdx].state.layer0_mapAddress
-	mov r14d, dword ptr [rdx].state.layer0_tileAddress
+	;push r12
+	;push r11
+	;add r12w, word ptr [rdx].state.layer0_vscroll
+	;add r11w, word ptr [rdx].state.layer0_hscroll
+	;mov r13d, dword ptr [rdx].state.layer0_mapAddress
+	;mov r14d, dword ptr [rdx].state.layer0_tileAddress
 
-	get_tile_definition_layer0
+	;call qword ptr [rdx].state.layer0_jmp
+
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 
@@ -176,12 +175,11 @@ pixel_jump_8:
 	writepixel_1bpp_t256 02h, BUFFER_LAYER0, 6, 8
 	writepixel_1bpp_t256 01h, BUFFER_LAYER0, 7, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer0_render_done
 
@@ -225,12 +223,11 @@ pixel_jump_16:
 	writepixel_1bpp_t256 0200h, BUFFER_LAYER0, 14, 16
 	writepixel_1bpp_t256 0100h, BUFFER_LAYER0, 15, 16
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer0_render_done
 layer0_1bpp_til_t_render endp
@@ -240,14 +237,15 @@ layer0_1bpp_til_t_render endp
 ;
 
 layer1_1bpp_til_x_render proc
-	push r12
-	push r11
-	add r12w, word ptr [rdx].state.layer1_vscroll
-	add r11w, word ptr [rdx].state.layer1_hscroll
-	mov r13d, dword ptr [rdx].state.layer1_mapAddress
-	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+	;push r12
+	;push r11
+	;add r12w, word ptr [rdx].state.layer1_vscroll
+	;add r11w, word ptr [rdx].state.layer1_hscroll
+	;mov r13d, dword ptr [rdx].state.layer1_mapAddress
+	;mov r14d, dword ptr [rdx].state.layer1_tileAddress
 		
-	get_tile_definition_layer1
+	;call qword ptr [rdx].state.layer1_jmp
+
 	; ax now contains tile number
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -288,12 +286,11 @@ pixel_jump_8:
 	writepixel_1bpp_normal 02h, BUFFER_LAYER1, 6, 8
 	writepixel_1bpp_normal 01h, BUFFER_LAYER1, 7, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer1_render_done
 
@@ -337,25 +334,24 @@ pixel_jump_16:
 	writepixel_1bpp_normal 0200h, BUFFER_LAYER1, 14, 16
 	writepixel_1bpp_normal 0100h, BUFFER_LAYER1, 15, 16
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer1_render_done
 layer1_1bpp_til_x_render endp
 
 layer1_1bpp_til_t_render proc
-	push r12
-	push r11
-	add r12w, word ptr [rdx].state.layer1_vscroll
-	add r11w, word ptr [rdx].state.layer1_hscroll
-	mov r13d, dword ptr [rdx].state.layer1_mapAddress
-	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+	;push r12
+	;push r11
+	;add r12w, word ptr [rdx].state.layer1_vscroll
+	;add r11w, word ptr [rdx].state.layer1_hscroll
+	;mov r13d, dword ptr [rdx].state.layer1_mapAddress
+	;mov r14d, dword ptr [rdx].state.layer1_tileAddress
 		
-	get_tile_definition_layer1
+	call qword ptr [rdx].state.layer1_jmp
 	; ax now contains tile number
 	; ebx now contains tile data
 	; r10 number of pixels
@@ -393,12 +389,11 @@ pixel_jump_8:
 	writepixel_1bpp_t256 02h, BUFFER_LAYER1, 6, 8
 	writepixel_1bpp_t256 01h, BUFFER_LAYER1, 7, 8
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer1_render_done
 
@@ -442,12 +437,11 @@ pixel_jump_16:
 	writepixel_1bpp_t256 0200h, BUFFER_LAYER1, 14, 16
 	writepixel_1bpp_t256 0100h, BUFFER_LAYER1, 15, 16
 
-	mov rax, r10 ; count till next update requirement
-	xor rax, r14
-	add rax, 1
+	xor r10, r14		; mask value
+	lea rax, [r10+1]	; add 1 to complete count
 	
-	pop r11
-	pop r12
+	;pop r11
+	;pop r12
 
 	jmp layer1_render_done
 layer1_1bpp_til_t_render endp
