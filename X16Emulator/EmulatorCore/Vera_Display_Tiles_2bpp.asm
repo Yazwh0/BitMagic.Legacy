@@ -15,15 +15,6 @@ zero_pallette:
 endm
 
 layer0_2bpp_til_x_render proc
-	;push r12
-	;push r11
-	;add r12w, word ptr [rdx].state.layer0_vscroll
-	;add r11w, word ptr [rdx].state.layer0_hscroll
-	;mov r13d, dword ptr [rdx].state.layer0_mapAddress
-	;mov r14d, dword ptr [rdx].state.layer0_tileAddress
-
-	;call qword ptr [rdx].state.layer0_jmp
-
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -65,9 +56,6 @@ pixel_jump_8:
 
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
-	
-	;pop r11
-	;pop r12
 
 	jmp layer0_render_done
 
@@ -113,9 +101,6 @@ pixel_jump_16:
 
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
-	
-	;pop r11
-	;pop r12
 
 	jmp layer0_render_done
 
@@ -152,9 +137,6 @@ pixel_jump_8_f:
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
 	
-	;pop r11
-	;pop r12
-
 	jmp layer0_render_done
 
 pixel_16_f:
@@ -200,23 +182,11 @@ pixel_jump_16_f:
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
 	
-	;pop r11
-	;pop r12
-
 	jmp layer0_render_done
 
 layer0_2bpp_til_x_render endp
 
 layer1_2bpp_til_x_render proc
-	;push r12
-	;push r11
-	;add r12w, word ptr [rdx].state.layer1_vscroll
-	;add r11w, word ptr [rdx].state.layer1_hscroll
-	;mov r13d, dword ptr [rdx].state.layer1_mapAddress
-	;mov r14d, dword ptr [rdx].state.layer1_tileAddress
-
-	;call qword ptr [rdx].state.layer1_jmp
-
 	; ax now contains tile number and colour information
 	; ebx now contains tile data
 	; r10 is the number of pixels in ebx 
@@ -259,9 +229,6 @@ pixel_jump_8:
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
 	
-	;pop r11
-	;pop r12
-
 	jmp layer1_render_done
 
 pixel_16:
@@ -307,9 +274,6 @@ pixel_jump_16:
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
 	
-	;pop r11
-	;pop r12
-
 	jmp layer1_render_done
 
 ; ----------------------------------------------------------------------------------
@@ -344,9 +308,6 @@ pixel_jump_8_f:
 
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
-	
-	;pop r11
-	;pop r12
 
 	jmp layer1_render_done
 
@@ -393,9 +354,6 @@ pixel_jump_16_f:
 	xor r10, r14		; mask value
 	lea rax, [r10+1]	; add 1 to complete count
 	
-	;pop r11
-	;pop r12
-
 	jmp layer1_render_done
 
 layer1_2bpp_til_x_render endp

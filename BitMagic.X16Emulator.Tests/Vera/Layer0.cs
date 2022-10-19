@@ -23,7 +23,6 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
-        Assert.AreEqual(0x03, emulator.Vera.Layer0_Config);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
         Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
@@ -50,7 +49,6 @@ public class Layer0
         Assert.AreEqual(true, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
-        Assert.AreEqual(0x04, emulator.Vera.Layer0_Config);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
         Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
@@ -77,7 +75,6 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapHeight);
-        Assert.AreEqual(0x00, emulator.Vera.Layer0_Config);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_HShift);
         Assert.AreEqual(8, emulator.Vera.Layer0_Map_VShift);
         Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
@@ -104,7 +101,6 @@ public class Layer0
         Assert.AreEqual(false, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x00, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapHeight);
-        Assert.AreEqual(0x00, emulator.Vera.Layer0_Config);
         Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
         Assert.AreEqual(5, emulator.Vera.Layer0_Map_VShift);
         Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);
@@ -131,7 +127,6 @@ public class Layer0
         Assert.AreEqual(true, emulator.Vera.Layer0_BitMapMode);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapWidth);
         Assert.AreEqual(0x03, emulator.Vera.Layer0_MapHeight);
-        Assert.AreEqual(0x0f, emulator.Vera.Layer0_Config);
         Assert.AreEqual(8, emulator.Vera.Layer0_Map_HShift);
         Assert.AreEqual(8, emulator.Vera.Layer0_Map_VShift);
         Assert.AreEqual(3, emulator.Vera.Layer0_Tile_HShift);

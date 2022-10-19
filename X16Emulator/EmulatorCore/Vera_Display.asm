@@ -132,7 +132,6 @@ display_loop:
 	movzx r12, word ptr [rdx].state.display_y
 	movzx r11, word ptr [rdx].state.display_x
 
-
 	; check if we're in the visible area as a trivial skip
 	lea r10, should_display_table
 	movzx rax, byte ptr [r10 + r9]
@@ -174,13 +173,9 @@ draw_border:
 ;
 ; Needs scaled x, buffer position (r15)
 ;
-; Todo: USE SCALED X
-;
 draw_pixel:
 	mov r8, [rdx].state.palette_ptr
 
-	;mov r12d, dword ptr [rdx].state.scale_y
-	;shr r12, 16
 	mov r11d, dword ptr [rdx].state.scale_x ; should have high bit set for indexing into the buffer
 	shr r11, 16
 
@@ -356,13 +351,6 @@ render_complete_visible:	; arrives here if the video wrote data
 
 not_next_line:
 	mov word ptr [rdx].state.display_x, ax
-
-	; step step onto scaled x
-	;mov r11d, dword ptr [rdx].state.scale_x
-	;mov eax, [rdx].state.dc_hscale
-	;add r11, rax
-	;mov [rdx].state.scale_x, r11d
-
 
 ; --------------------------------------------------------------------------
 render_complete:			; arrives here if we're outside the visible area
@@ -714,7 +702,7 @@ layer1_render_jump:
 	layer1_1bpp_til_x qword layer1_1bpp_til_x_render
 	layer1_2bpp_til_x qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_x qword layer1_4bpp_til_x_render
-	layer1_8bpp_til_x qword mode_layer1_notsupported
+	layer1_8bpp_til_x qword layer1_8bpp_til_x_render
 	layer1_1bpp_bit_x qword mode_layer1_notsupported
 	layer1_2bpp_bit_x qword mode_layer1_notsupported
 	layer1_4bpp_bit_x qword mode_layer1_notsupported
@@ -722,7 +710,7 @@ layer1_render_jump:
 	layer1_1bpp_til_t qword layer1_1bpp_til_t_render
 	layer1_2bpp_til_t qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_t qword layer1_4bpp_til_x_render
-	layer1_8bpp_til_t qword mode_layer1_notsupported
+	layer1_8bpp_til_t qword layer1_8bpp_til_x_render
 	layer1_1bpp_bit_t qword mode_layer1_notsupported
 	layer1_2bpp_bit_t qword mode_layer1_notsupported
 	layer1_4bpp_bit_t qword mode_layer1_notsupported
