@@ -125,13 +125,29 @@ namespace BitMagic.Machines
             {"INTERRUPT_H", 0x0315},
 
             {"ROM_BANK", 0x9F60},
-            {"RAM_BANK", 0x9F61}
+            {"RAM_BANK", 0x9F61},
+
+            { "V_PRB", 0x9f00 },
+            { "V_PRA",  0x9f01 },
+            {"V_DDRB",  0x9f02 },
+            {"V_DDRA",  0x9f03 },
+            {"V_T1_L",  0x9f04 },
+            {"V_T1_H",  0x9f05 },
+            {"V_T1L_L", 0x9f06 },
+            {"V_T1L_H", 0x9f07 },
+            {"V_T2_L", 0x9f08 },
+            {"V_T2_H", 0x9f09 },
+            {"V_SR", 0x9f0a },
+            {"V_ACR", 0x9f0b },
+            {"V_PCR", 0x9f0c },
+            {"V_IFR", 0x9f0d },
+            {"V_IER", 0x9f0e },
+            {"V_ORA", 0x9f0f }
         };
 
         public IReadOnlyDictionary<string, int> Values => _defaults;
 
         // todo: create abstract class or similar.
         public bool TryGetValue(string name, int lineNumber, out int result) => throw new Exception();
-
     }
 }

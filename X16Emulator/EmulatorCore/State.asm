@@ -126,7 +126,6 @@ state struct
 	display_y				word ?
 
 	; Layer 0
-	;layer0_config			word ?
 	layer0_next_render		word ?
 	layer0_tile_hshift		word ?
 	layer0_tile_vshift		word ?
@@ -135,7 +134,6 @@ state struct
 
 	
 	; Layer 1
-	;layer1_config			word ?
 	layer1_next_render		word ?
 	layer1_tile_hshift		word ?
 	layer1_tile_vshift		word ?
@@ -143,11 +141,10 @@ state struct
 	layer1_map_vshift		word ?
 	
 	; VIA 1
-	via_t1counter			word ?
+	via_t1counter_latch		word ?
 	via_t1counter_value		word ?
-	via_t2counter			word ?
+	via_t2counter_latch		word ?
 	via_t2counter_value		word ?
-
 
 	via_timer1_interrupt	byte ?
 	via_timer2_interrupt	byte ?

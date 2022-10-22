@@ -18,7 +18,9 @@ includelib      msvcrtd
 .CODE
 
 include State.asm
+Include Io.asm
 include Vera.asm
+include Via.asm
 include Banking.asm
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
@@ -70,6 +72,8 @@ write_state_obj macro
 	and rax, 1000000000000000b
 	ror rax, 7+8
 	mov byte ptr [rdx].state.flags_negative, al	
+
+	call via_write_state
 endm
 
 read_state_obj macro
@@ -166,6 +170,7 @@ asm_func proc state_ptr:QWORD
 	mov cpu_posy, 0
 
 	call vera_init
+	call via_init
 	
 	read_state_obj
 
@@ -213,11 +218,6 @@ next_opcode::
 ;	movzx rcx, word ptr [rsi+rbx+1]	; Get opcode
 ;	mov byte ptr [rdi+3], cx		; Param
 
-	cmp r11w, 0cc80h
-	jne debug_skip
-	nop
-	debug_skip:
-
 	add r11w, 1						; PC+1
 	lea rax, opcode_00				; start of jump table
 	jmp qword ptr [rax + rbx*8]		; jump to opcode
@@ -230,10 +230,13 @@ opcode_done::
 	mov byte ptr [rdi+6], r9b		; X
 	mov byte ptr [rdi+7], r10b		; Y
 
-	; check for line irq
+	mov rbx, last_cpuclock
+	
+	call via_step	; todo: change to macro call
+
+	; check for line irq (requires rbx to be the last cpu clock)
 	mov rax, r14
 	and rax, 0ffffffffffffff00h		; mask off lower bytes
-	mov rbx, last_cpuclock
 	cmp rax, rbx
 	je main_loop
 
@@ -354,13 +357,11 @@ check_vera_access macro check_allvera
 
 	if check_allvera eq 1
 		xor r13, r13
-		lea rax, [rbx-09f1fh]				; set to bottom of range we're interested in
-		cmp rax, 21h						; check how far we want
-		ja vera_skip
-		mov r13, rax						; set r13 to the address in vera + 1.
-		vera_skip:
+		lea rax, [rbx - (09f00h - 1)]		; set to bottom of range we're interested in
+		cmp rax, 41h						; check upper bound of IO area + 1. Currently via1\2 + vera
+		cmovbe r13, rax						; set r13 to the address in vera + 1.
 	else
-		lea rax, [rbx-09f23h]				; get value to check
+		lea rax, [rbx - 09f23h]				; get value to check
 		cmp rax, 1
 		setbe r13b							; store if we need to let vera know data has changed
 	endif
@@ -382,7 +383,7 @@ if checkvera eq 1
 endif	
 endm
 
-step_vera_readwrite macro checkvera
+step_io_readwrite macro checkvera
 	local skip
 if checkvera eq 1
 	test r13b, r13b
@@ -394,12 +395,12 @@ endif
 	check_bank_switch
 endm
 
-step_vera_write macro checkvera
+step_io_write macro checkvera
 	local skip
 if checkvera eq 1
 	test r13b, r13b
 	jz skip
-	call vera_afterwrite
+	call io_afterwrite
 
 	skip:
 endif
@@ -417,11 +418,12 @@ if checkreadonly eq 1
 	cmp rbx, readonly_memory
 	jg skip
 	; check vera write
-	test r13, r13
-	jz no_vera_change
+	cmp r13, 21
+	jl no_vera_change
 	; if vera changes, then update the display first
 	call vera_render_display
 no_vera_change:
+	mov r12b, byte ptr [rsi+rbx]	 ; store old value
 endif
 endm
 
@@ -728,7 +730,7 @@ sta_body macro checkvera, checkreadonly, clock, pc
 	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r8b
-	step_vera_write checkvera
+	step_io_write checkvera
 
 skip:
 	add r14, clock
@@ -785,7 +787,7 @@ stx_body macro checkvera, checkreadonly, clock, pc
 	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r9b
-	step_vera_write checkvera
+	step_io_write checkvera
 	
 skip:
 	add r14, clock
@@ -817,7 +819,7 @@ sty_body macro checkvera, checkreadonly, clock, pc
 	pre_write_check checkreadonly
 
 	mov byte ptr [rsi+rbx], r10b
-	step_vera_write checkvera
+	step_io_write checkvera
 	
 skip:
 	add r14, clock
@@ -848,7 +850,7 @@ x8C_sty_abs endp
 stz_body macro checkvera, checkreadonly, clock, pc
 	pre_write_check checkreadonly
 	mov byte ptr [rsi+rbx], 0
-	step_vera_write checkvera
+	step_io_write checkvera
 
 skip:
 	add r14, clock
@@ -888,7 +890,7 @@ inc_body macro checkvera, checkreadonly, clock, pc
 	inc byte ptr [rsi+rbx]
 
 	write_flags_r15_preservecarry
-	step_vera_readwrite checkvera
+	step_io_readwrite checkvera
 
 skip:
 	add r14, clock
@@ -903,7 +905,7 @@ dec_body macro checkvera, checkreadonly, clock, pc
 	clc
 	dec byte ptr [rsi+rbx]
 	write_flags_r15_preservecarry
-	step_vera_readwrite checkvera
+	step_io_readwrite checkvera
 
 skip:
 	add r14, clock
@@ -2532,7 +2534,7 @@ x1C_trb_abs proc
 	and byte ptr [rsi+rbx], al
 	jz set_zero
 	
-	step_vera_readwrite 1
+	step_io_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2544,7 +2546,7 @@ skip:
 	and al, byte ptr [rsi+rbx]
 	jz set_zero
 	
-	step_vera_readwrite 1
+	step_io_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2591,7 +2593,7 @@ x0C_tsb_abs proc
 	or byte ptr [rsi+rbx], r8b
 	jz set_zero
 	
-	step_vera_readwrite 1
+	step_io_readwrite 1
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
@@ -2601,7 +2603,7 @@ skip:
 	or al, byte ptr [rsi+rbx]
 	jz set_zero
 	
-	step_vera_readwrite 1
+	step_io_readwrite 1
 	add r14, 5
 	add r11w, 1
 	jmp opcode_done

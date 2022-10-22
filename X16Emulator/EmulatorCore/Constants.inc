@@ -13,6 +13,25 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
+; -- VIA1 ---------------
+V_PRB			equ 9f00h
+V_PRA			equ 9f01h
+V_DDRB			equ 9f02h
+V_DDRA			equ 9f03h
+V_T1_L			equ 9f04h
+V_T1_H			equ 9f05h
+V_T1L_L			equ 9f06h
+V_T1L_H			equ 9f07h
+V_T2_L			equ 9f08h
+V_T2_H			equ 9f09h
+V_SR			equ 9f0ah
+V_ACR			equ 9f0bh
+V_PCR			equ 9f0ch
+V_IFR			equ 9f0dh
+V_IER			equ 9f0eh
+V_ORA			equ 9f0fh
+
+; -- VERA ---------------
 ADDRx_L			equ 9F20h
 ADDRx_M			equ 9F21h
 ADDRx_H			equ 9F22h

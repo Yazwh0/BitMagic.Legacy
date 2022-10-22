@@ -98,6 +98,20 @@ public class Emulator : IDisposable
         public ushort Layer1_Map_VShift { get => _emulator._state.Layer1_Map_VShift; }
     }
 
+    public class ViaState
+    {
+        private readonly Emulator _emulator;
+        public ViaState(Emulator emulator)
+        {
+            _emulator = emulator;
+        }
+
+        public ushort Timer1_Latch { get => _emulator._state.Via_Timer1_Latch; set => _emulator._state.Via_Timer1_Latch = value; }
+        public ushort Timer1_Counter { get => _emulator._state.Via_Timer1_Counter; set => _emulator._state.Via_Timer1_Counter = value; }
+        public ushort Timer2_Latch { get => _emulator._state.Via_Timer2_Latch; set => _emulator._state.Via_Timer2_Latch = value; }
+        public ushort Timer2_Counter { get => _emulator._state.Via_Timer2_Counter; set => _emulator._state.Via_Timer2_Counter = value; }    
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct CpuState
     {
@@ -212,20 +226,22 @@ public class Emulator : IDisposable
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
 
-
-        //public ushort Layer0_Config = 0;
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
         public ushort Layer0_Tile_VShift = 0;
         public ushort Layer0_Map_HShift = 0;
         public ushort Layer0_Map_VShift = 0;
 
-        //public ushort Layer1_Config = 0;
         public ushort Layer1_next_render = 0;
         public ushort Layer1_Tile_HShift = 0;
         public ushort Layer1_Tile_VShift = 0;
         public ushort Layer1_Map_HShift = 0;
         public ushort Layer1_Map_VShift = 0;
+
+        public ushort Via_Timer1_Latch = 0;
+        public ushort Via_Timer1_Counter = 0;
+        public ushort Via_Timer2_Latch = 0;
+        public ushort Via_Timer2_Counter = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer, ulong history)
@@ -271,6 +287,7 @@ public class Emulator : IDisposable
 
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
     public VeraState Vera => new VeraState(this);
+    public ViaState Via => new ViaState(this);
 
     private const int _rounding = 32; // 32 byte (256bit) allignment required for AVX 256 instructions
     private const ulong _roundingMask = ~(ulong)_rounding + 1;

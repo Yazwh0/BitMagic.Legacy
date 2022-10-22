@@ -18,7 +18,6 @@
 ; VERA
 ; ----------------------------------------------------
 
-
 ; Cpu emulation:
 ; rax  : scratch
 ; rbx  : scratch
@@ -35,9 +34,7 @@
 ; r14  : Clock Ticks
 ; r15  : Flags
 
-; xmmm0 : Vera Clock Rounding
-
-include vera_constants.inc
+include Constants.inc
 include State.asm
 include Vera_Display.asm
 
@@ -626,11 +623,11 @@ set_data1_address:
 endm
 
 ;
-; Vera side effect macros
+; VERA side effect macros
 ;
 
 vera_afterwrite_check macro
-	lea rax, vera_registers_write
+	lea rax, io_registers_write
 	call qword ptr [rax + r13 * 8]
 endm
 
@@ -644,12 +641,6 @@ vera_afterreadwrite proc
 	dec r13
 	vera_dataaccess_body 1, 1
 vera_afterreadwrite endp
-
-vera_afterwrite proc
-	dec r13
-	lea rax, vera_registers_write
-	jmp qword ptr [rax + r13 * 8]
-vera_afterwrite endp
 
 ;
 ; Update procs for vera registers
@@ -1178,43 +1169,6 @@ construct_isr:
 	mov byte ptr [rsi+rbx], r13b
 	ret
 vera_update_isr endp
-
-
-vera_registers_write:
-	vera_w_9f20 qword vera_update_addrl
-	vera_w_9f21 qword vera_update_addrm
-	vera_w_9f22 qword vera_update_addrh
-	vera_w_9f23 qword vera_update_data
-	vera_w_9f24 qword vera_update_data
-	vera_w_9f25 qword vera_update_ctrl
-	vera_w_9f26 qword vera_update_ien
-	vera_w_9f27 qword vera_update_isr
-	vera_w_9f28 qword vera_update_irqline_l
-	vera_w_9f29 qword vera_update_9f29
-	vera_w_9f2a qword vera_update_9f2a
-	vera_w_9f2b qword vera_update_9f2b
-	vera_w_9f2c qword vera_update_9f2c
-	vera_w_9f2d qword vera_update_l0config
-	vera_w_9f2e qword vera_update_l0mapbase
-	vera_w_9f2f qword vera_update_l0tilebase
-	vera_w_9f30 qword vera_update_l0hscroll_l
-	vera_w_9f31 qword vera_update_l0hscroll_h
-	vera_w_9f32 qword vera_update_l0vscroll_l
-	vera_w_9f33 qword vera_update_l0vscroll_h
-	vera_w_9f34 qword vera_update_l1config
-	vera_w_9f35 qword vera_update_l1mapbase
-	vera_w_9f36 qword vera_update_l1tilebase
-	vera_w_9f37 qword vera_update_l1hscroll_l
-	vera_w_9f38 qword vera_update_l1hscroll_h
-	vera_w_9f39 qword vera_update_l1vscroll_l
-	vera_w_9f3a qword vera_update_l1vscroll_h
-	vera_w_9f3b qword vera_update_notimplemented
-	vera_w_9f3c qword vera_update_notimplemented
-	vera_w_9f3d qword vera_update_notimplemented
-	vera_w_9f3e qword vera_update_notimplemented
-	vera_w_9f3f qword vera_update_notimplemented
-
-;include Vera_Display.asm
 
 .data
 

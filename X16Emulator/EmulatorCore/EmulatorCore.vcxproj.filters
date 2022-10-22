@@ -48,7 +48,7 @@
     <Text Include="Vera_Display.asm">
       <Filter>Source Files</Filter>
     </Text>
-    <Text Include="Vera_Constants.inc">
+    <Text Include="Constants.inc">
       <Filter>Source Files</Filter>
     </Text>
     <Text Include="Vera.asm">
@@ -73,6 +73,9 @@
       <Filter>Source Files</Filter>
     </Text>
     <Text Include="Via.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Io.asm">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>
