@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 
-namespace BitMagic.X16Emulator.Tests;
+namespace BitMagic.X16Emulator.Tests.Core;
 
 [TestClass]
 public class SpeedTest

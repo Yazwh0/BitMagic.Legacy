@@ -94,7 +94,7 @@ namespace BitMagic.X16Emulator.Tests
                 Assert.AreEqual(stackPointer, emulator.StackPointer, $"SP doesn't match: ${emulator.StackPointer:X4}");
         }
 
-        public static void AssertFlags(this Emulator emulator, bool Zero = false, bool Negative = false, bool Overflow = false, bool Carry = false, bool InterruptDisable = false, bool Decimal = false, bool Interrupt = false)
+        public static void AssertFlags(this Emulator emulator, bool Zero = false, bool Negative = false, bool Overflow = false, bool Carry = false, bool InterruptDisable = false, bool Decimal = false, bool Interrupt = false, bool Nmi = false)
         {
             Assert.AreEqual(Zero, emulator.Zero, "Zero flag doesn't match");
             Assert.AreEqual(Negative, emulator.Negative, "Negative flag doesn't match");
@@ -103,6 +103,7 @@ namespace BitMagic.X16Emulator.Tests
             Assert.AreEqual(InterruptDisable, emulator.InterruptDisable, "Interrupt Disable flag doesn't match");
             Assert.AreEqual(Decimal, emulator.Decimal, "Decimal flag doesn't match");
             Assert.AreEqual(Interrupt, emulator.Interrupt, "Interrupt doesn't match");
+            Assert.AreEqual(Nmi, emulator.Nmi, "Nmi doesn't match");
         }
 
         public static void SaveDisplay(this Emulator emulator, string filename)

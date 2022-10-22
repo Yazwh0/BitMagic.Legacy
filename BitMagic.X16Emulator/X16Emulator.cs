@@ -145,12 +145,13 @@ public class Emulator : IDisposable
         public byte InterruptDisable = 0;
 
         public byte Interrupt = 0;
+        public byte Nmi = 0;
 
         public byte AddrSel = 0;
         public byte DcSel = 0;
         public byte Dc_Border = 0;
 
-        public ushort Spacer = 0; // unused
+        public byte Spacer = 0; // unused
 
         public ushort Dc_HStart = 0;
         public ushort Dc_HStop = 640;
@@ -265,6 +266,7 @@ public class Emulator : IDisposable
     public bool Overflow { get => _state.Overflow != 0; set => _state.Overflow = (byte)(value ? 0x01 : 0x00); }
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
+    public bool Nmi { get => _state.Nmi != 0; set => _state.Nmi = (byte)(value ? 0x01 : 0x00); }
     public ulong HistoryPosition => _state.History_Pos / 8;
 
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }

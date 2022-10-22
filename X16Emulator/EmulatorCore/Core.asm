@@ -178,8 +178,13 @@ asm_func proc state_ptr:QWORD
 main_loop::
 	; check for interrupt
 	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
+
+	cmp byte ptr [rdx].state.nmi, 0
+	jne handle_nmi
+
 	cmp byte ptr [rdx].state.interrupt, 0
 	jne handle_interrupt
+
 
 	test rcx, rcx
 	jnz cpu_is_waiting				; if we're waiting, dont process next opcode
@@ -2371,8 +2376,6 @@ handle_interrupt proc
 	mov rdi, [rdx].state.rom_ptr
 	mov r11w, word ptr [rdi + rax + 03ffeh] ; get address at $fffe of current rom
 
-	;mov r11w, [rsi+0fffeh]				; set PC to address at $fffe
-
 	add r14, 7							; Clock 
 
 	jmp next_opcode
@@ -2387,6 +2390,46 @@ cpu_waiting:
 	add r14, 1							; Clock 
 	jmp next_opcode
 handle_interrupt endp
+
+handle_nmi proc
+	mov byte ptr [rdx].state.nmi, 0
+
+	test rcx, rcx						; check if we're waiting
+	jnz cpu_waiting
+
+	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
+
+	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
+	mov [rsi+rbx], al					; Put PC Low byte on stack
+	dec bl								; Move stack pointer on
+	mov [rsi+rbx], ah					; Put PC High byte on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	push bx
+	set_status_register_al
+	pop bx
+
+	mov [rsi+rbx], al					; Put P on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
+
+	movzx rax, byte ptr [rsi+1]						; get rom bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; multiply by 0x4000
+	mov rdi, [rdx].state.rom_ptr
+	mov r11w, word ptr [rdi + rax + 03ffah] ; get address at $fffa of current rom
+
+	add r14, 7							; Clock 
+
+	jmp next_opcode
+	
+cpu_waiting:
+	xor rcx, rcx						; clear waiting
+	mov byte ptr [rdx].state.cpu_waiting, 0
+	add r14, 1							; Clock 
+	jmp next_opcode	
+handle_nmi endp
 
 x40_rti proc
 	get_status_register	1				; set bx to stack pointer

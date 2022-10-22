@@ -72,5 +72,8 @@
     <Text Include="Vera_Display_Tiles_4bpp.asm">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="Via.asm">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

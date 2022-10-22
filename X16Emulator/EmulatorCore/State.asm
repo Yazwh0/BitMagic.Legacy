@@ -59,13 +59,14 @@ state struct
 	flags_interruptDisable	byte ?
 
 	interrupt				byte ?
+	nmi						byte ? ; unused
 
 	; Vera
 	addrsel					byte ?
 	dcsel					byte ?
 	dc_border				byte ?
 
-	spacer					word ? ; unused
+	spacer					byte ? ; unused
 
 	dc_hstart				word ?
 	dc_hstop				word ?
@@ -141,5 +142,26 @@ state struct
 	layer1_map_hshift		word ?
 	layer1_map_vshift		word ?
 	
+	; VIA 1
+	via_t1counter			word ?
+	via_t1counter_value		word ?
+	via_t2counter			word ?
+	via_t2counter_value		word ?
+
+
+	via_timer1_interrupt	byte ?
+	via_timer2_interrupt	byte ?
+	via_cb1_interrupt		byte ?
+	via_cb2_interrupt		byte ?
+	via_shiftregister_interrupt	byte ?
+	vai_ca1_interrupt		byte ?
+	vai_ca2_interrupt		byte ?
+	vai_interrupt_spacing	byte ? ; not used
+
+	via_timer1_contiuous	byte ?
+	via_timer1_pb7			byte ?
+
+
+
 state ends
 
