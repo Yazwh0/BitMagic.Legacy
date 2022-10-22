@@ -146,14 +146,14 @@ state struct
 	via_t2counter_latch		word ?
 	via_t2counter_value		word ?
 
-	via_timer1_interrupt	byte ?
-	via_timer2_interrupt	byte ?
-	via_cb1_interrupt		byte ?
-	via_cb2_interrupt		byte ?
-	via_shiftregister_interrupt	byte ?
-	vai_ca1_interrupt		byte ?
-	vai_ca2_interrupt		byte ?
-	vai_interrupt_spacing	byte ? ; not used
+	via_interrupt_timer1	byte ?
+	via_interrupt_timer2	byte ?
+	via_interrupt_cb1		byte ?
+	via_interrupt_cb2		byte ?
+	via_interrupt_shiftregister	byte ?
+	via_interrupt_ca1		byte ?
+	via_interrupt_ca2		byte ?
+	via_interrupt_spacing	byte ? ; not used
 
 	via_timer1_contiuous	byte ?
 	via_timer1_pb7			byte ?

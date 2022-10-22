@@ -33,6 +33,35 @@ via_init proc
 	mov ax, word ptr [rdx].state.via_t2counter_value
 	mov word ptr [rsi + V_T2_L], ax
 
+	; interrupt
+	movzx rax, [rdx].state.via_interrupt_timer1
+	shl rax, 6	
+
+	movzx rbx, [rdx].state.via_interrupt_timer2
+	shl rbx, 5
+	or rax, rbx
+
+	movzx rbx, [rdx].state.via_interrupt_cb1
+	shl rbx, 4
+	or rax, rbx
+
+	movzx rbx, [rdx].state.via_interrupt_cb2
+	shl rbx, 3
+	or rax, rbx
+
+	movzx rbx, [rdx].state.via_interrupt_shiftregister
+	shl rbx, 2
+	or rax, rbx
+
+	movzx rbx, [rdx].state.via_interrupt_ca1
+	shl rbx, 1
+	or rax, rbx
+
+	movzx rbx, [rdx].state.via_interrupt_ca2
+	or rax, rbx
+
+	mov byte ptr [rsi + V_IER], al
+
 	ret
 via_init endp
 
@@ -98,6 +127,7 @@ via_timer1_latch_h proc
 via_timer1_latch_h endp
 
 via_acl proc
+	ret
 via_acl endp
 
 via_ifr proc
@@ -105,5 +135,93 @@ via_ifr proc
 via_ifr endp
 
 via_ier proc
+	mov r13b, byte ptr [rsi+rbx]		; get value
+	test r13, 10000000b
+	jz unset
+
+	or r12, r13
+	and r12, 7fh
+	mov byte ptr [rsi+rbx], r12b
+
+	; now set flags
+	xor r13, r13
+	test r12, 00000001b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_ca2, r13b
+
+	xor r13, r13
+	test r12, 00000010b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_ca1, r13b
+
+	xor r13, r13
+	test r12, 00000100b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_shiftregister, r13b
+
+	xor r13, r13
+	test r12, 00001000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_cb2, r13b
+
+	xor r13, r13
+	test r12, 00010000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_cb1, r13b
+
+	xor r13, r13
+	test r12, 00100000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_timer2, r13b
+
+	xor r13, r13
+	test r12, 01000000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_timer1, r13b
+
+	ret
+
+unset:
+	xor r13, 0ffh
+	and r12, r13
+	and r12, 7fh
+	mov byte ptr [rsi+rbx], r12b
+
+	; now set flags
+	xor r13, r13
+	test r12, 00000001b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_ca2, r13b
+
+	xor r13, r13
+	test r12, 00000010b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_ca1, r13b
+
+	xor r13, r13
+	test r12, 00000100b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_shiftregister, r13b
+
+	xor r13, r13
+	test r12, 00001000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_cb2, r13b
+
+	xor r13, r13
+	test r12, 00010000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_cb1, r13b
+
+	xor r13, r13
+	test r12, 00100000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_timer2, r13b
+
+	xor r13, r13
+	test r12, 01000000b
+	setnz r13b
+	mov byte ptr [rdx].state.via_interrupt_timer1, r13b
+
 	ret
 via_ier endp

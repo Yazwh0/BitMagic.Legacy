@@ -109,7 +109,15 @@ public class Emulator : IDisposable
         public ushort Timer1_Latch { get => _emulator._state.Via_Timer1_Latch; set => _emulator._state.Via_Timer1_Latch = value; }
         public ushort Timer1_Counter { get => _emulator._state.Via_Timer1_Counter; set => _emulator._state.Via_Timer1_Counter = value; }
         public ushort Timer2_Latch { get => _emulator._state.Via_Timer2_Latch; set => _emulator._state.Via_Timer2_Latch = value; }
-        public ushort Timer2_Counter { get => _emulator._state.Via_Timer2_Counter; set => _emulator._state.Via_Timer2_Counter = value; }    
+        public ushort Timer2_Counter { get => _emulator._state.Via_Timer2_Counter; set => _emulator._state.Via_Timer2_Counter = value; }
+
+        public bool Interrupt_Timer1 { get => _emulator._state.Via_Interrupt_Timer1 != 0; set => _emulator._state.Via_Interrupt_Timer1 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Timer2 { get => _emulator._state.Via_Interrupt_Timer2 != 0; set => _emulator._state.Via_Interrupt_Timer2 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Cb1 { get => _emulator._state.Via_Interrupt_Cb1 != 0; set => _emulator._state.Via_Interrupt_Cb1 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Cb2 { get => _emulator._state.Via_Interrupt_Cb2 != 0; set => _emulator._state.Via_Interrupt_Cb2 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_ShiftRegister { get => _emulator._state.Via_Interrupt_ShiftRegister != 0; set => _emulator._state.Via_Interrupt_ShiftRegister = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Ca1 { get => _emulator._state.Via_Interrupt_Ca1 != 0; set => _emulator._state.Via_Interrupt_Ca1 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Ca2 { get => _emulator._state.Via_Interrupt_Ca2 != 0; set => _emulator._state.Via_Interrupt_Ca2 = (value ? (byte)1 : (byte)0); }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -242,6 +250,15 @@ public class Emulator : IDisposable
         public ushort Via_Timer1_Counter = 0;
         public ushort Via_Timer2_Latch = 0;
         public ushort Via_Timer2_Counter = 0;
+
+        public byte Via_Interrupt_Timer1 = 0;
+        public byte Via_Interrupt_Timer2 = 0;
+        public byte Via_Interrupt_Cb1 = 0;
+        public byte Via_Interrupt_Cb2 = 0;
+        public byte Via_Interrupt_ShiftRegister = 0;
+        public byte Via_Interrupt_Ca1 = 0;
+        public byte Via_Interrupt_Ca2  = 0;
+        public byte Via_Interrupt_spacing = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer, ulong history)
