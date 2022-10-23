@@ -118,6 +118,12 @@ public class Emulator : IDisposable
         public bool Interrupt_ShiftRegister { get => _emulator._state.Via_Interrupt_ShiftRegister != 0; set => _emulator._state.Via_Interrupt_ShiftRegister = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_Ca1 { get => _emulator._state.Via_Interrupt_Ca1 != 0; set => _emulator._state.Via_Interrupt_Ca1 = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_Ca2 { get => _emulator._state.Via_Interrupt_Ca2 != 0; set => _emulator._state.Via_Interrupt_Ca2 = (value ? (byte)1 : (byte)0); }
+
+        public bool Timer1_Continous { get => _emulator._state.Via_Timer1_Continuous != 0; set => _emulator._state.Via_Timer1_Continuous = (value ? (byte)1 : (byte)0); }
+        public bool Timer1_Pb7 { get => _emulator._state.Via_Timer1_Pb7!= 0; set => _emulator._state.Via_Timer1_Pb7 = (value ? (byte)1 : (byte)0); }
+
+        public bool Timer1_Running { get => _emulator._state.Via_Timer1_Running != 0; set => _emulator._state.Via_Timer1_Running = (value ? (byte)1 : (byte)0); }
+
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -138,6 +144,7 @@ public class Emulator : IDisposable
         public ulong Data0_Step = 0;
         public ulong Data1_Step = 0;
 
+        public ulong Clock_Previous = 0x00;
         public ulong Clock = 0x00;
         public ulong VeraClock = 0x00;
 
@@ -168,12 +175,11 @@ public class Emulator : IDisposable
 
         public byte Interrupt = 0;
         public byte Nmi = 0;
+        public byte Nmi_Previous = 0;
 
         public byte AddrSel = 0;
         public byte DcSel = 0;
         public byte Dc_Border = 0;
-
-        public byte Spacer = 0; // unused
 
         public ushort Dc_HStart = 0;
         public ushort Dc_HStop = 640;
@@ -259,6 +265,10 @@ public class Emulator : IDisposable
         public byte Via_Interrupt_Ca1 = 0;
         public byte Via_Interrupt_Ca2  = 0;
         public byte Via_Interrupt_spacing = 0;
+
+        public byte Via_Timer1_Continuous = 0;
+        public byte Via_Timer1_Pb7 = 0;
+        public byte Via_Timer1_Running = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer, ulong history)

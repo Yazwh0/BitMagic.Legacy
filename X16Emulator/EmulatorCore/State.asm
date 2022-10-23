@@ -30,6 +30,7 @@ state struct
 	data0_step				qword ?
 	data1_step				qword ?
 
+	clock_previous			qword ?
 	clock					qword ?
 	vera_clock				qword ?
 
@@ -59,14 +60,13 @@ state struct
 	flags_interruptDisable	byte ?
 
 	interrupt				byte ?
-	nmi						byte ? ; unused
+	nmi						byte ?
+	nmi_previous			byte ?
 
 	; Vera
 	addrsel					byte ?
 	dcsel					byte ?
 	dc_border				byte ?
-
-	spacer					byte ? ; unused
 
 	dc_hstart				word ?
 	dc_hstop				word ?
@@ -157,6 +157,7 @@ state struct
 
 	via_timer1_contiuous	byte ?
 	via_timer1_pb7			byte ?
+	via_timer1_running		byte ?
 
 
 

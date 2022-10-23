@@ -181,11 +181,16 @@ asm_func proc state_ptr:QWORD
 	call copy_rombank_to_memory
 
 main_loop::
-	; check for interrupt
-	movzx rcx, byte ptr [rdx].state.cpu_waiting	; set rcx here, so handle_interrupt knows if we're waiting
+	mov qword ptr [rdx].state.clock_previous, r14	; need prev clock so we know the delta
 
+	; check for interrupt
+	movzx rcx, byte ptr [rdx].state.cpu_waiting		; set rcx here, so handle_interrupt knows if we're waiting
+
+	cmp byte ptr [rdx].state.nmi_previous, 0
+	jne nmi_already_set
 	cmp byte ptr [rdx].state.nmi, 0
 	jne handle_nmi
+nmi_already_set:
 
 	cmp byte ptr [rdx].state.interrupt, 0
 	jne handle_interrupt
@@ -230,13 +235,12 @@ opcode_done::
 	mov byte ptr [rdi+6], r9b		; X
 	mov byte ptr [rdi+7], r10b		; Y
 
-	mov rbx, last_cpuclock
-	
 	call via_step	; todo: change to macro call
 
 	; check for line irq (requires rbx to be the last cpu clock)
 	mov rax, r14
 	and rax, 0ffffffffffffff00h		; mask off lower bytes
+	mov rbx, last_cpuclock
 	cmp rax, rbx
 	je main_loop
 
@@ -2394,7 +2398,8 @@ cpu_waiting:
 handle_interrupt endp
 
 handle_nmi proc
-	mov byte ptr [rdx].state.nmi, 0
+	; nmi only triggers on a change, so need to keep the previous value
+	; only the via can reset it
 
 	test rcx, rcx						; check if we're waiting
 	jnz cpu_waiting
