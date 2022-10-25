@@ -115,7 +115,7 @@ public class Timer1
         var emulator = new Emulator();
         emulator.Via.Timer1_Counter = 0x1234;
         emulator.A = 0xa0;
-        emulator.Memory[0x9f0d] = 0x40;
+        emulator.Memory[0x9f0d] = 0x40;                 // set LFR high
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -129,7 +129,7 @@ public class Timer1
         Assert.AreEqual(0xfc, emulator.Memory[0x9f04]); // timer has moved on by 4 ticks from $a000
         Assert.AreEqual(0x9f, emulator.Memory[0x9f05]);
 
-        Assert.AreEqual(0x00, emulator.Memory[0x9f0d]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9f0d]); // LFR should be clear
 
         Assert.IsTrue(emulator.Via.Timer1_Running);
     }
@@ -156,6 +156,7 @@ public class Timer1
 
         Assert.AreEqual(0b11000000, emulator.Memory[0x9f0d]);
         Assert.IsFalse(emulator.Via.Timer1_Running);
+        Assert.IsTrue(emulator.Clock > 0x1000);
     }
 
     [TestMethod]
@@ -178,7 +179,8 @@ public class Timer1
                 ",
                 emulator);
 
-        Assert.AreEqual(0b11000000, emulator.Memory[0x9f0d]);
+        Assert.AreEqual(0b11000000, emulator.Memory[0x9f0d]); // IFR is set
         Assert.IsTrue(emulator.Via.Timer1_Running);
+        Assert.IsTrue(emulator.Clock > 0x1000);
     }
 }

@@ -35,8 +35,8 @@ io_registers_write:
 	io_9f05 qword via_timer1_counter_h
 	io_9f06 qword via_timer1_latch_l
 	io_9f07 qword via_timer1_latch_h
-	io_9f08 qword io_unsupported
-	io_9f09 qword io_unsupported
+	io_9f08 qword via_timer2_latch_l
+	io_9f09 qword via_timer2_latch_h
 	io_9f0a qword io_unsupported
 	io_9f0b qword via_acl
 	io_9f0c qword io_unsupported

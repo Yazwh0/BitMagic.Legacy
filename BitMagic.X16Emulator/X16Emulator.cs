@@ -121,8 +121,10 @@ public class Emulator : IDisposable
 
         public bool Timer1_Continous { get => _emulator._state.Via_Timer1_Continuous != 0; set => _emulator._state.Via_Timer1_Continuous = (value ? (byte)1 : (byte)0); }
         public bool Timer1_Pb7 { get => _emulator._state.Via_Timer1_Pb7!= 0; set => _emulator._state.Via_Timer1_Pb7 = (value ? (byte)1 : (byte)0); }
-
         public bool Timer1_Running { get => _emulator._state.Via_Timer1_Running != 0; set => _emulator._state.Via_Timer1_Running = (value ? (byte)1 : (byte)0); }
+
+        public bool Timer2_PulseCount { get => _emulator._state.Via_Timer2_PulseCount != 0; set => _emulator._state.Via_Timer2_PulseCount = (value ? (byte)1 : (byte)0); }
+        public bool Timer2_Running { get => _emulator._state.Via_Timer2_Running != 0; set => _emulator._state.Via_Timer2_Running = (value ? (byte)1 : (byte)0); }
 
     }
 
@@ -269,6 +271,10 @@ public class Emulator : IDisposable
         public byte Via_Timer1_Continuous = 0;
         public byte Via_Timer1_Pb7 = 0;
         public byte Via_Timer1_Running = 0;
+
+        public byte Via_Timer2_PulseCount = 0;
+        public byte Via_Timer2_Running = 0;
+
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
             ulong display, ulong palette, ulong displayBuffer, ulong history)

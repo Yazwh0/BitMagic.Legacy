@@ -155,10 +155,12 @@ state struct
 	via_interrupt_ca2		byte ?
 	via_interrupt_spacing	byte ? ; not used
 
-	via_timer1_contiuous	byte ?
+	via_timer1_continuous	byte ?
 	via_timer1_pb7			byte ?
 	via_timer1_running		byte ?
 
+	via_timer2_pulsecount	byte ?
+	via_timer2_running		byte ?
 
 
 state ends

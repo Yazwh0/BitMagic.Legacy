@@ -97,14 +97,13 @@ via_step proc
 	mov r12, r14
 	sub r12, r13						; now has the delta
 
+	;
 	; Timer 1
+	;
 	movzx r13, byte ptr [rdx].state.via_timer1_running
 	cmp r13, 1
 	jne no_timer1_interrupt
 
-	movzx r13, byte ptr [rdx].state.via_interrupt_timer1
-	cmp r13, 1
-	jne no_timer1_interrupt
 
 	movzx rax, word ptr [rsi + V_T1_L]
 	sub ax, r12w
@@ -113,10 +112,14 @@ via_step proc
 	mov ax, word ptr [rsi + V_T1L_L]
 	mov word ptr [rsi + V_T1_L], ax
 
+	movzx r13, byte ptr [rdx].state.via_interrupt_timer1
+	cmp r13, 1
+	jne skip_timer1_set
 	mov cl, 1
+	skip_timer1_set:
 	or rdi, 01000000b
 
-	movzx rax, byte ptr [rdx].state.via_timer1_contiuous
+	movzx rax, byte ptr [rdx].state.via_timer1_continuous
 	test rax, rax
 	jnz timer1_alldone
 
@@ -133,14 +136,42 @@ via_step proc
 
 	timer1_alldone:
 
+	;
 	; Timer 2
+	;
+	movzx r13, byte ptr [rdx].state.via_timer2_pulsecount ; if in pulse mode, we dont dec here
+	test r13, r13
+	jnz timer2_alldone
+	
+
+	movzx r13, byte ptr [rdx].state.via_timer2_running
+	test r13, r13
+	jz no_timer2_interrupt
+
 	mov ax, word ptr [rsi + V_T2_L]
 	sub ax, r12w
+
+	jnc timer2_not_zero
+
+	mov ax, word ptr [rdx].state.via_t2counter_latch
+	mov word ptr [rsi + V_T1_L], ax
+
+	movzx r13, byte ptr [rdx].state.via_interrupt_timer2
+	cmp r13, 1
+	jne skip_timer2_set
+	mov cl, 1
+	skip_timer2_set:
+	or rdi, 00100000b
+	mov byte ptr [rdx].state.via_timer2_running, 0	; clear running flag
+
+	no_timer2_interrupt:
+	movzx rax, word ptr [rsi + V_T2_L]
+	sub ax, r12w
+
+	timer2_not_zero:
 	mov word ptr [rsi + V_T2_L], ax
 
-	; temp disabled timer2
-	;setb al		; carry is set, so we've overflowed
-	;or r12b, al
+	timer2_alldone:
 
 	mov byte ptr [rdx].state.nmi, cl	; set nmi
 
@@ -191,18 +222,39 @@ via_timer1_latch_h proc
 	ret
 via_timer1_latch_h endp
 
+via_timer2_latch_l proc
+	mov r13b, byte ptr [rsi+rbx]
+	mov byte ptr [rdx].state.via_t2counter_latch, r13b	; get value and store
+	mov byte ptr [rsi+rbx], r12b				; counter is not affected
+	ret
+via_timer2_latch_l endp
+
+via_timer2_latch_h proc
+	mov r13b, byte ptr [rsi+rbx]
+	mov byte ptr [rdx].state.via_t2counter_latch+1, r13b	; get value and store
+	mov ax, word ptr [rdx].state.via_t2counter_latch
+	mov word ptr [rsi+V_T2_L], ax							; copy value from latch to counter
+	mov byte ptr [rdx].state.via_timer2_running, 1			; set running flag
+	ret
+via_timer2_latch_h endp
+
 via_acl proc
 	mov r13b, byte ptr [rsi+rbx]
 
 	xor rax, rax
 	test r13b, 01000000b
 	setnz al
-	mov byte ptr [rdx].state.via_timer1_contiuous, al
+	mov byte ptr [rdx].state.via_timer1_continuous, al
 
 	xor rax, rax
 	test r13b, 10000000b
 	setnz al
 	mov byte ptr [rdx].state.via_timer1_pb7, al
+
+	xor rax, rax
+	test r13b, 00100000b
+	setnz al
+	mov byte ptr [rdx].state.via_timer2_pulsecount, al
 
 	ret
 via_acl endp
@@ -210,7 +262,7 @@ via_acl endp
 via_ifr proc
 	movzx r13, byte ptr [rsi+rbx]		; get value written
 	xor r13, 0ffh						; invert
-	and r13, 7fh						; mask of bit 7
+	or r13, 80h							; turn on bit 7, as we preserve this
 	and r12, r13						; and with original value. should clear bits that were written
 
 	mov byte ptr [rsi+rbx], r12b		; write back

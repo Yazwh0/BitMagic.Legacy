@@ -38,4 +38,21 @@ public class Acr
         Assert.AreEqual(0x80, emulator.Memory[0x9f0b]);
         Assert.IsTrue(emulator.Via.Timer1_Pb7);
     }
+
+    [TestMethod]
+    public async Task Acr_Timer2Pulse()
+    {
+        var emulator = new Emulator();
+        emulator.A = 0x20;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta V_ACR
+                stp",
+                emulator);
+
+        Assert.AreEqual(0x20, emulator.Memory[0x9f0b]);
+        Assert.IsTrue(emulator.Via.Timer2_PulseCount);
+    }
 }
