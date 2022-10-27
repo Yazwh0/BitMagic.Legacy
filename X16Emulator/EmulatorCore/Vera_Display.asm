@@ -450,32 +450,6 @@ vera_initialise_palette endp
 ; Renderers
 ;
 
-; Todo, move this jump calc to state so its calculated when the config changes
-
-xxget_tile_definition_layer0 macro
-	mov rsi, [rdx].state.memory_ptr
-	movzx rax, byte ptr [rsi + L0_CONFIG]
-	and rax, 11110011b
-	movzx rbx, byte ptr [rsi + L0_TILEBASE]
-	and rbx, 011b
-	shl rbx, 2
-	or rax, rbx
-	lea rbx, get_tile_definition_jump
-	call qword ptr [rbx + rax * 8]
-endm
-
-xxget_tile_definition_layer1 macro
-	mov rsi, [rdx].state.memory_ptr
-	movzx rax, byte ptr [rsi + L1_CONFIG]
-	and rax, 11110011b
-	movzx rbx, byte ptr [rsi + L1_TILEBASE]
-	and rbx, 011b
-	shl rbx, 2
-	or rax, rbx
-	lea rbx, get_tile_definition_jump
-	call qword ptr [rbx + rax * 8]
-endm
-
 include Vera_Display_Tiles_1bpp.asm
 include Vera_Display_Tiles_2bpp.asm
 include Vera_Display_Tiles_4bpp.asm
@@ -574,7 +548,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 	if colour_depth eq 3
 		t_colour_size equ 1
-		t_tile_x_mask equ 4-1		; 2bpp always returns a full dword, so 4 pixels
+		t_tile_x_mask equ 4-1		; 8bpp always returns a full dword, so 4 pixels
 	endif
 	if t_height_px * t_width_px / t_colour_size eq 8
 		t_size_shift equ 3
@@ -626,12 +600,11 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 				xor r11, 01000b							; flip bit to invert, its masked later
 			endif
 
-			; DOES NOT WORK
 			if tile_width eq 0 and colour_depth eq 3
 				xor r11, 01100b							; flip bit to invert, its masked later
 			endif
 			if tile_width eq 1 and colour_depth eq 3
-				xor r11, 01100b							; flip bit to invert, its masked later
+				xor r11, 011100b							; flip bit to invert, its masked later
 			endif
 
 		no_h_flip:
@@ -656,6 +629,11 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 
 	if tile_width eq 0 and colour_depth eq 3
 		and r11, 01100b						; mask x position
+		add rbx, r11
+	endif
+
+	if tile_width eq 1 and colour_depth eq 3
+		and r11, 011100b						; mask x position
 		add rbx, r11
 	endif
 

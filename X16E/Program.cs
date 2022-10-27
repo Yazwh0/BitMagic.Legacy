@@ -55,7 +55,7 @@ static class Program
             return 1;
         }
 
-        if (!string.IsNullOrWhiteSpace(options.PrgFilename) && !string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
+        if (!string.IsNullOrWhiteSpace(options.PrgFilename) && string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
         {
             if (File.Exists(options.PrgFilename))
             {

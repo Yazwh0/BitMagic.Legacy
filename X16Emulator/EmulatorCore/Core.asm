@@ -200,8 +200,13 @@ nmi_already_set:
 	jnz cpu_is_waiting				; if we're waiting, dont process next opcode
 
 next_opcode::
-	mov rbx, r11
 
+	jmp debug_skip
+	mov r11, 80dh
+	debug_skip:
+	
+	mov rbx, r11
+	
 	movzx rbx, byte ptr [rsi+rbx]	; Get opcode
 
 	;
