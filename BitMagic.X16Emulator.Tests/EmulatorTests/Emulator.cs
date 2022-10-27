@@ -248,7 +248,7 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x901, 7, 0x1fd - 3);
-        emulator.AssertFlags(Interrupt: true, Nmi: false);
+        emulator.AssertFlags(Interrupt: true, Nmi: true);
     }
 
     [TestMethod]
@@ -272,7 +272,7 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x901, 7, 0x1fd - 3);
-        emulator.AssertFlags(Nmi: false);
+        emulator.AssertFlags(Nmi: true); // nmi doesn't get cleared
     }
 
     [TestMethod]
@@ -296,7 +296,7 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1fd);
-        emulator.AssertFlags(Nmi: false);
+        emulator.AssertFlags(Nmi: true);
     }
 
     [TestMethod]
@@ -367,7 +367,7 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x811, stackPointer: 0x1fd);
-        emulator.AssertFlags(Nmi: false);
+        emulator.AssertFlags(Nmi: true);
     }
 
 
