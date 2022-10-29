@@ -157,8 +157,8 @@ public class Emulator : IDisposable
         public ulong Layer1_Jmp = 0;
         public ulong Layer1_Rtn = 0;
 
-        public UInt32 Dc_HScale = 0x00010000;
-        public UInt32 Dc_VScale = 0x00010000;
+        public uint Dc_HScale = 0x00010000;
+        public uint Dc_VScale = 0x00010000;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
@@ -195,8 +195,8 @@ public class Emulator : IDisposable
         public byte Display_Carry = 0;
 
         // layer 0
-        public UInt32 Layer0_MapAddress = 0;
-        public UInt32 Layer0_TileAddress = 0;
+        public uint Layer0_MapAddress = 0;
+        public uint Layer0_TileAddress = 0;
         public ushort Layer0_HScroll = 0;
         public ushort Layer0_VScroll = 0;
         public byte Layer0_MapHeight = 0;
@@ -210,8 +210,8 @@ public class Emulator : IDisposable
         public byte Headless = 0;
 
         // layer 1
-        public UInt32 Layer1_MapAddress = 0;
-        public UInt32 Layer1_TileAddress = 0;
+        public uint Layer1_MapAddress = 0;
+        public uint Layer1_TileAddress = 0;
         public ushort Layer1_HScroll = 0;
         public ushort Layer1_VScroll = 0;
         public byte Layer1_MapHeight = 0;
@@ -233,12 +233,12 @@ public class Emulator : IDisposable
 
         public byte Drawing = 0;
 
-        public UInt32 Beam_Position = 0; // needs to be inline with the cpu clock
-        public UInt32 Frame_Count = 0;
-        public UInt32 Buffer_Render_Position = 0;
-        public UInt32 Buffer_Output_Position = 0; // so there is 1 line between the render and output
-        public UInt32 Scale_x = 0;
-        public UInt32 Scale_y = 0;
+        public uint Beam_Position = 0; // needs to be inline with the cpu clock
+        public uint Frame_Count = 0;
+        public uint Buffer_Render_Position = 0;
+        public uint Buffer_Output_Position = 0; // so there is 1 line between the render and output
+        public uint Scale_x = 0;
+        public uint Scale_y = 0;
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
 
@@ -266,7 +266,6 @@ public class Emulator : IDisposable
         public byte Via_Interrupt_ShiftRegister = 0;
         public byte Via_Interrupt_Ca1 = 0;
         public byte Via_Interrupt_Ca2  = 0;
-        public byte Via_Interrupt_spacing = 0;
 
         public byte Via_Timer1_Continuous = 0;
         public byte Via_Timer1_Pb7 = 0;

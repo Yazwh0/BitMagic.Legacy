@@ -153,7 +153,6 @@ state struct
 	via_interrupt_shiftregister	byte ?
 	via_interrupt_ca1		byte ?
 	via_interrupt_ca2		byte ?
-	via_interrupt_spacing	byte ? ; not used
 
 	via_timer1_continuous	byte ?
 	via_timer1_pb7			byte ?
@@ -161,6 +160,14 @@ state struct
 
 	via_timer2_pulsecount	byte ?
 	via_timer2_running		byte ?
+
+	; I2c
+	i2c_address				word ?  ; 7 bit address of destination
+	i2c_state				byte ?  ; enum of where we are in the message
+	i2c_sending				byte ?	
+	i2c_data				byte ?	; data that is being transmitted
+	i2c_pos					byte ?  ; position in that data
+
 
 
 state ends
