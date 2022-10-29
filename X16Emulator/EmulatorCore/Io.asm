@@ -15,52 +15,215 @@
 
 .code
 
+;
+; r13: address in io space +1
+;
+
 io_afterwrite proc
 	dec r13
 	lea rax, io_registers_write
 	jmp qword ptr [rax + r13 * 8]
 io_afterwrite endp
 
-io_unsupported proc
+io_afterread proc
+	dec r13
+	lea rax, io_registers_read
+	jmp qword ptr [rax + r13 * 8]
+io_afterread endp
+
+io_afterreadwrite proc
+	dec r13
+	lea rax, io_registers_readwrite
+	jmp qword ptr [rax + r13 * 8]
+io_afterreadwrite endp
+
+io_r_readmemory proc
 	ret
-io_unsupported endp
+io_r_readmemory endp
+
+io_rw_readmemory proc
+	ret
+io_rw_readmemory endp
+
+io_w_unsupported proc
+	ret
+io_w_unsupported endp
+
+io_registers_read:
+	io_r_9f00 qword io_r_readmemory
+	io_r_9f01 qword io_r_readmemory
+	io_r_9f02 qword io_r_readmemory
+	io_r_9f03 qword io_r_readmemory
+	io_r_9f04 qword io_r_readmemory
+	io_r_9f05 qword io_r_readmemory
+	io_r_9f06 qword io_r_readmemory
+	io_r_9f07 qword io_r_readmemory
+	io_r_9f08 qword io_r_readmemory
+	io_r_9f09 qword io_r_readmemory
+	io_r_9f0a qword io_r_readmemory
+	io_r_9f0b qword io_r_readmemory
+	io_r_9f0c qword io_r_readmemory
+	io_r_9f0d qword io_r_readmemory
+	io_r_9f0e qword io_r_readmemory
+	io_r_9f0f qword io_r_readmemory
+
+	; Unused
+	io_r_9f10 qword io_r_readmemory
+	io_r_9f11 qword io_r_readmemory
+	io_r_9f12 qword io_r_readmemory
+	io_r_9f13 qword io_r_readmemory
+	io_r_9f14 qword io_r_readmemory
+	io_r_9f15 qword io_r_readmemory
+	io_r_9f16 qword io_r_readmemory
+	io_r_9f17 qword io_r_readmemory
+	io_r_9f18 qword io_r_readmemory
+	io_r_9f19 qword io_r_readmemory
+	io_r_9f1a qword io_r_readmemory
+	io_r_9f1b qword io_r_readmemory
+	io_r_9f1c qword io_r_readmemory
+	io_r_9f1d qword io_r_readmemory
+	io_r_9f1e qword io_r_readmemory
+	io_r_9f1f qword io_r_readmemory
+
+	vera_r_9f20 qword io_r_readmemory
+	vera_r_9f21 qword io_r_readmemory
+	vera_r_9f22 qword io_r_readmemory
+	vera_r_9f23 qword vera_afterread
+	vera_r_9f24 qword vera_afterread
+	vera_r_9f25 qword io_r_readmemory
+	vera_r_9f26 qword io_r_readmemory
+	vera_r_9f27 qword io_r_readmemory
+	vera_r_9f28 qword io_r_readmemory
+	vera_r_9f29 qword io_r_readmemory
+	vera_r_9f2a qword io_r_readmemory
+	vera_r_9f2b qword io_r_readmemory
+	vera_r_9f2c qword io_r_readmemory
+	vera_r_9f2d qword io_r_readmemory
+	vera_r_9f2e qword io_r_readmemory
+	vera_r_9f2f qword io_r_readmemory
+	vera_r_9f30 qword io_r_readmemory
+	vera_r_9f31 qword io_r_readmemory
+	vera_r_9f32 qword io_r_readmemory
+	vera_r_9f33 qword io_r_readmemory
+	vera_r_9f34 qword io_r_readmemory
+	vera_r_9f35 qword io_r_readmemory
+	vera_r_9f36 qword io_r_readmemory
+	vera_r_9f37 qword io_r_readmemory
+	vera_r_9f38 qword io_r_readmemory
+	vera_r_9f39 qword io_r_readmemory
+	vera_r_9f3a qword io_r_readmemory
+	vera_r_9f3b qword io_r_readmemory
+	vera_r_9f3c qword io_r_readmemory
+	vera_r_9f3d qword io_r_readmemory
+	vera_r_9f3e qword io_r_readmemory
+	vera_r_9f3f qword io_r_readmemory
+
+
+io_registers_readwrite:
+	io_rw_9f00 qword io_rw_readmemory
+	io_rw_9f01 qword io_rw_readmemory
+	io_rw_9f02 qword io_rw_readmemory
+	io_rw_9f03 qword io_rw_readmemory
+	io_rw_9f04 qword io_rw_readmemory
+	io_rw_9f05 qword io_rw_readmemory
+	io_rw_9f06 qword io_rw_readmemory
+	io_rw_9f07 qword io_rw_readmemory
+	io_rw_9f08 qword io_rw_readmemory
+	io_rw_9f09 qword io_rw_readmemory
+	io_rw_9f0a qword io_rw_readmemory
+	io_rw_9f0b qword io_rw_readmemory
+	io_rw_9f0c qword io_rw_readmemory
+	io_rw_9f0d qword io_rw_readmemory
+	io_rw_9f0e qword io_rw_readmemory
+	io_rw_9f0f qword io_rw_readmemory
+
+	; Unused
+	io_rw_9f10 qword io_rw_readmemory
+	io_rw_9f11 qword io_rw_readmemory
+	io_rw_9f12 qword io_rw_readmemory
+	io_rw_9f13 qword io_rw_readmemory
+	io_rw_9f14 qword io_rw_readmemory
+	io_rw_9f15 qword io_rw_readmemory
+	io_rw_9f16 qword io_rw_readmemory
+	io_rw_9f17 qword io_rw_readmemory
+	io_rw_9f18 qword io_rw_readmemory
+	io_rw_9f19 qword io_rw_readmemory
+	io_rw_9f1a qword io_rw_readmemory
+	io_rw_9f1b qword io_rw_readmemory
+	io_rw_9f1c qword io_rw_readmemory
+	io_rw_9f1d qword io_rw_readmemory
+	io_rw_9f1e qword io_rw_readmemory
+	io_rw_9f1f qword io_rw_readmemory
+
+	vera_rw_9f20 qword io_rw_readmemory
+	vera_rw_9f21 qword io_rw_readmemory
+	vera_rw_9f22 qword io_rw_readmemory
+	vera_rw_9f23 qword vera_afterreadwrite
+	vera_rw_9f24 qword vera_afterreadwrite
+	vera_rw_9f25 qword io_rw_readmemory
+	vera_rw_9f26 qword io_rw_readmemory
+	vera_rw_9f27 qword io_rw_readmemory
+	vera_rw_9f28 qword io_rw_readmemory
+	vera_rw_9f29 qword io_rw_readmemory
+	vera_rw_9f2a qword io_rw_readmemory
+	vera_rw_9f2b qword io_rw_readmemory
+	vera_rw_9f2c qword io_rw_readmemory
+	vera_rw_9f2d qword io_rw_readmemory
+	vera_rw_9f2e qword io_rw_readmemory
+	vera_rw_9f2f qword io_rw_readmemory
+	vera_rw_9f30 qword io_rw_readmemory
+	vera_rw_9f31 qword io_rw_readmemory
+	vera_rw_9f32 qword io_rw_readmemory
+	vera_rw_9f33 qword io_rw_readmemory
+	vera_rw_9f34 qword io_rw_readmemory
+	vera_rw_9f35 qword io_rw_readmemory
+	vera_rw_9f36 qword io_rw_readmemory
+	vera_rw_9f37 qword io_rw_readmemory
+	vera_rw_9f38 qword io_rw_readmemory
+	vera_rw_9f39 qword io_rw_readmemory
+	vera_rw_9f3a qword io_rw_readmemory
+	vera_rw_9f3b qword io_rw_readmemory
+	vera_rw_9f3c qword io_rw_readmemory
+	vera_rw_9f3d qword io_rw_readmemory
+	vera_rw_9f3e qword io_rw_readmemory
+	vera_rw_9f3f qword io_rw_readmemory
 
 io_registers_write:
 	; VIA1
-	io_9f00 qword io_unsupported
-	io_9f01 qword io_unsupported
-	io_9f02 qword io_unsupported
-	io_9f03 qword io_unsupported
-	io_9f04 qword via_timer1_counter_l
-	io_9f05 qword via_timer1_counter_h
-	io_9f06 qword via_timer1_latch_l
-	io_9f07 qword via_timer1_latch_h
-	io_9f08 qword via_timer2_latch_l
-	io_9f09 qword via_timer2_latch_h
-	io_9f0a qword io_unsupported
-	io_9f0b qword via_acl
-	io_9f0c qword io_unsupported
-	io_9f0d qword via_ifr
-	io_9f0e qword via_ier
-	io_9f0f qword io_unsupported
+	io_w_9f00 qword io_w_unsupported
+	io_w_9f01 qword io_w_unsupported
+	io_w_9f02 qword io_w_unsupported
+	io_w_9f03 qword io_w_unsupported
+	io_w_9f04 qword via_timer1_counter_l
+	io_w_9f05 qword via_timer1_counter_h
+	io_w_9f06 qword via_timer1_latch_l
+	io_w_9f07 qword via_timer1_latch_h
+	io_w_9f08 qword via_timer2_latch_l
+	io_w_9f09 qword via_timer2_latch_h
+	io_w_9f0a qword io_w_unsupported
+	io_w_9f0b qword via_acl
+	io_w_9f0c qword io_w_unsupported
+	io_w_9f0d qword via_ifr
+	io_w_9f0e qword via_ier
+	io_w_9f0f qword io_w_unsupported
 
 	; Unused
-	io_9f10 qword io_unsupported
-	io_9f11 qword io_unsupported
-	io_9f12 qword io_unsupported
-	io_9f13 qword io_unsupported
-	io_9f14 qword io_unsupported
-	io_9f15 qword io_unsupported
-	io_9f16 qword io_unsupported
-	io_9f17 qword io_unsupported
-	io_9f18 qword io_unsupported
-	io_9f19 qword io_unsupported
-	io_9f1a qword io_unsupported
-	io_9f1b qword io_unsupported
-	io_9f1c qword io_unsupported
-	io_9f1d qword io_unsupported
-	io_9f1e qword io_unsupported
-	io_9f1f qword io_unsupported
+	io_w_9f10 qword io_w_unsupported
+	io_w_9f11 qword io_w_unsupported
+	io_w_9f12 qword io_w_unsupported
+	io_w_9f13 qword io_w_unsupported
+	io_w_9f14 qword io_w_unsupported
+	io_w_9f15 qword io_w_unsupported
+	io_w_9f16 qword io_w_unsupported
+	io_w_9f17 qword io_w_unsupported
+	io_w_9f18 qword io_w_unsupported
+	io_w_9f19 qword io_w_unsupported
+	io_w_9f1a qword io_w_unsupported
+	io_w_9f1b qword io_w_unsupported
+	io_w_9f1c qword io_w_unsupported
+	io_w_9f1d qword io_w_unsupported
+	io_w_9f1e qword io_w_unsupported
+	io_w_9f1f qword io_w_unsupported
 
 	vera_w_9f20 qword vera_update_addrl
 	vera_w_9f21 qword vera_update_addrm

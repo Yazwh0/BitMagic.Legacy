@@ -623,22 +623,17 @@ set_data1_address:
 endm
 
 ;
-; VERA side effect macros
+; VERA post read side effect macros
 ;
 
-vera_afterwrite_check macro
-	lea rax, io_registers_write
-	call qword ptr [rax + r13 * 8]
-endm
-
 vera_afterread proc
-	dec r13
+	;dec r13
 	vera_dataaccess_body 0, 0
 vera_afterread endp
 
 ; eg inc, asl
 vera_afterreadwrite proc
-	dec r13
+	;dec r13
 	vera_dataaccess_body 1, 1
 vera_afterreadwrite endp
 

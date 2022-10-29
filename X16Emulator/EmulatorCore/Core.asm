@@ -364,16 +364,16 @@ endm
 check_vera_access macro check_allvera
 	local done, vera_skip
 
-	if check_allvera eq 1
+	;if check_allvera eq 1
 		xor r13, r13
 		lea rax, [rbx - (09f00h - 1)]		; set to bottom of range we're interested in
 		cmp rax, 41h						; check upper bound of IO area + 1. Currently via1\2 + vera
 		cmovbe r13, rax						; set r13 to the address in vera + 1.
-	else
-		lea rax, [rbx - 09f23h]				; get value to check
-		cmp rax, 1
-		setbe r13b							; store if we need to let vera know data has changed
-	endif
+	;else
+	;	lea rax, [rbx - 09f23h]				; get value to check
+	;	cmp rax, 1
+	;	setbe r13b							; store if we need to let vera know data has changed
+	;endif
 
 done:
 
@@ -386,7 +386,8 @@ step_vera_read macro checkvera
 if checkvera eq 1
 	test r13b, r13b
 	jz skip
-	call vera_afterread
+;	call vera_afterread
+	call io_afterread
 
 	skip:
 endif	
@@ -397,7 +398,8 @@ step_io_readwrite macro checkvera
 if checkvera eq 1
 	test r13b, r13b
 	jz skip
-	call vera_afterreadwrite
+;	call vera_afterreadwrite
+	call io_afterreadwrite
 
 	skip:
 endif
