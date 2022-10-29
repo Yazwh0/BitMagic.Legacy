@@ -124,6 +124,32 @@ public class EmulatorTests
     }
 
     [TestMethod]
+    public async Task Interrupt_ClearDecimal()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = true;
+        emulator.Decimal = true;
+
+        // set interrupt vector to $900
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp
+                .org $900
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x901, 7, 0x1fd - 3);
+        emulator.AssertFlags(Interrupt: false, Decimal: false);
+    }
+
+
+    [TestMethod]
     public async Task Interrupt_SetAndReturn()
     {
         var emulator = new Emulator();
@@ -145,6 +171,31 @@ public class EmulatorTests
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1fd);
         emulator.AssertFlags(Interrupt: false);
+    }
+
+    [TestMethod]
+    public async Task Interrupt_SetAndReturn_Decimal()
+    {
+        var emulator = new Emulator();
+
+        emulator.Interrupt = true;
+        emulator.Decimal = true;
+
+        // set interrupt vector to $900
+        emulator.RomBank[0x3ffe] = 0x00;
+        emulator.RomBank[0x3fff] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                stp
+                .org $900
+                rti",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x811, 7 + 6, 0x1fd);
+        emulator.AssertFlags(Interrupt: false, Decimal: true);
     }
 
     [TestMethod]
@@ -342,7 +393,7 @@ public class EmulatorTests
 
         // emulation
         emulator.AssertState(0x00, 0x00, 0x00, 0x901, stackPointer: 0x1fd - 3);
-        emulator.AssertFlags(Nmi: false);
+        emulator.AssertFlags(Nmi: true);
     }
 
     [TestMethod]

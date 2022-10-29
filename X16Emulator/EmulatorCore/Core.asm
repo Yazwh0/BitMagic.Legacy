@@ -2380,6 +2380,7 @@ handle_interrupt proc
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
+	mov byte ptr [rdx].state.flags_decimal, 0	; clear decimal flag
 
 	movzx rax, byte ptr [rsi+1]						; get rom bank
 	and al, 00011111b					; remove top bits
