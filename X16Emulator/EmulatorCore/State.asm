@@ -167,7 +167,7 @@ state struct
 	i2c_sending				byte ?	
 	i2c_data				byte ?	; data that is being transmitted
 	i2c_pos					byte ?  ; position in that data
-
+	i2c_laststate			byte ?  ; clock and data on the previous obs
 
 
 state ends

@@ -362,3 +362,8 @@ unset:
 
 	ret
 via_ier endp
+
+via_pra proc
+	mov r13b, byte ptr [rsi+rbx]
+	ret
+via_pra endp

@@ -2567,6 +2567,7 @@ skip:
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
+	step_io_readwrite 1
 	
 
 	add r14, 6
@@ -2624,7 +2625,8 @@ skip:
 set_zero:
 	;        NZ A P C
 	or r15w, 0100000000000000b
-	
+	step_io_readwrite 1
+
 	add r14, 6
 	add r11w, 2
 	jmp opcode_done
