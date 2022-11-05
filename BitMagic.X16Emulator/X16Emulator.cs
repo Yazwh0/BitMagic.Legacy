@@ -245,7 +245,7 @@ public class Emulator : IDisposable
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
         public byte DisplayDirty = 2;           // always draw the first render
-        public byte Spacer = 0;
+        public byte RenderReady = 0;            // used to signal to GL to redaw
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
@@ -317,6 +317,8 @@ public class Emulator : IDisposable
     public ulong HistoryPosition => _state.History_Pos / 8;
 
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
+    public bool RenderReady { get => _state.RenderReady != 0; set => _state.RenderReady = (byte)(value ? 0x01 : 0x00); }
+
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);
 

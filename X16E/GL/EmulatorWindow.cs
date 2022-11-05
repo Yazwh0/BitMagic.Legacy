@@ -50,10 +50,10 @@ internal class EmulatorWindow
         _window.Run();
     }
 
-    public static void SetRequireUpdate()
-    {
-        _requireUpdate = true;
-    }
+    //public static void SetRequireUpdate()
+    //{
+    //    _requireUpdate = _emulator.RenderReady;
+    //}
 
     private static unsafe void OnLoad()
     {
@@ -85,7 +85,7 @@ internal class EmulatorWindow
 
         foreach (var i in _layers)
         {
-            i.OnRender(_gl, _shader, true);
+            i.OnRender(_gl, _shader, _emulator.RenderReady);
         }
         _requireUpdate = false;
         var thisTicks = _stopwatch.ElapsedMilliseconds;
@@ -109,6 +109,8 @@ internal class EmulatorWindow
         }
 
         _window!.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps \\ {_speed * 8.0:0}Mhz]";
+        _emulator.RenderReady = false;
+
     }
 
     private static void OnClose()

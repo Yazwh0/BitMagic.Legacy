@@ -126,7 +126,7 @@ state struct
 	display_y				word ?
 
 	display_dirty			byte ?
-	rendering_spacer		byte ?
+	render_ready			byte ?
 
 	; Layer 0
 	layer0_next_render		word ?

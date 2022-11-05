@@ -300,9 +300,10 @@ vsync:
 
 	mov byte ptr [rdx].state.display_dirty, al
 
-	lea rax, vera_render_done
-	push rax
-	jmp vera_render_display	; pushed return address above
+	call vera_render_display
+
+	mov [rdx].state.render_ready, 1						; signal that we need to redraw the UI
+	jmp vera_render_done
 
 	no_render_required:
 	mov byte ptr [rdx].state.display_dirty, 0
