@@ -125,6 +125,9 @@ state struct
 	display_x				word ?
 	display_y				word ?
 
+	display_dirty			byte ?
+	rendering_spacer		byte ?
+
 	; Layer 0
 	layer0_next_render		word ?
 	layer0_tile_hshift		word ?

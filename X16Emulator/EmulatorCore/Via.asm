@@ -302,10 +302,15 @@ via_prb endp
 ; Data Direction Register 0: input, 1: output.
 via_dra proc
 	mov r13b, byte ptr [rsi+rbx]
-	xor r13b, 0ffh						; invert
 
-	mov r12b, byte ptr [rdx].state.via_register_a_outvalue
-	or r12b, r13b						; set bits high that are output
+	mov al, byte ptr [rdx].state.via_register_a_outvalue
+	and al, r13b											; mask off output bits
+
+	xor r13b, 0ffh											; invert
+
+	mov r12b, byte ptr [rdx].state.via_register_a_invalue
+	and r12b, r13b											; mask off input bits
+	or r12b, al												; combine
 	mov byte ptr [rsi+V_PRA], r12b
 	mov byte ptr [rsi+V_ORA], r12b
 
@@ -316,6 +321,14 @@ via_dra endp
 via_pra proc
 	mov r13b, byte ptr [rsi+rbx]
 	mov byte ptr [rdx].state.via_register_a_outvalue, r13b	; store new value
+	
+	; I2C input bits follow output
+	;mov r12, r13
+	;and r12, 03h
+	;mov al, byte ptr [rdx].state.via_register_a_invalue
+	;and rax, 0fch
+	;or rax, r12
+	;mov byte ptr [rdx].state.via_register_a_invalue, al
 
 	mov dil, byte ptr [rsi+V_DDRA]							
 	and r13, rdi											; mask off bytes. 

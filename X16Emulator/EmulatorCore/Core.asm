@@ -293,7 +293,21 @@ line_check:
 
 	jmp main_loop
 vsync:	
-	call vera_render_display
+	; only draw the screen if there is an update!
+	movzx rax, byte ptr [rdx].state.display_dirty
+	sub rax, 1
+	js no_render_required
+
+	mov byte ptr [rdx].state.display_dirty, al
+
+	lea rax, vera_render_done
+	push rax
+	jmp vera_render_display	; pushed return address above
+
+	no_render_required:
+	mov byte ptr [rdx].state.display_dirty, 0
+
+	vera_render_done:
 
 	; Check if the cpu has gotten too high. if so then reset it.
 	mov rax, 08000000000000000h
@@ -434,6 +448,7 @@ if checkreadonly eq 1
 	cmp r13, 21
 	jl no_vera_change
 	; if vera changes, then update the display first
+	mov byte ptr [rdx].state.display_dirty, 2 ; always draw two frames
 	call vera_render_display
 no_vera_change:
 	mov r12b, byte ptr [rsi+rbx]	 ; store old value

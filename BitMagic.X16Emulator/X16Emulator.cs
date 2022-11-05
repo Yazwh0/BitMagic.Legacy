@@ -244,6 +244,8 @@ public class Emulator : IDisposable
         public uint Scale_y = 0;
         public ushort Beam_x = 0;
         public ushort Beam_y = 0;
+        public byte DisplayDirty = 2;           // always draw the first render
+        public byte Spacer = 0;
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;

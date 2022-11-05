@@ -121,20 +121,20 @@ io_registers_read:
 
 io_registers_readwrite:
 	io_rw_9f00 qword via_prb
-	io_rw_9f01 qword io_rw_readmemory
+	io_rw_9f01 qword via_pra
 	io_rw_9f02 qword io_rw_readmemory
-	io_rw_9f03 qword io_rw_readmemory
-	io_rw_9f04 qword via_timer1_counter_l_read
-	io_rw_9f05 qword io_rw_readmemory
-	io_rw_9f06 qword io_rw_readmemory
-	io_rw_9f07 qword io_rw_readmemory
-	io_rw_9f08 qword io_rw_readmemory
-	io_rw_9f09 qword io_rw_readmemory
+	io_rw_9f03 qword via_dra
+	io_rw_9f04 qword via_timer1_counter_l
+	io_rw_9f05 qword via_timer1_counter_h
+	io_rw_9f06 qword via_timer1_latch_l
+	io_rw_9f07 qword via_timer1_latch_h
+	io_rw_9f08 qword via_timer2_latch_l
+	io_rw_9f09 qword via_timer2_latch_h
 	io_rw_9f0a qword io_rw_readmemory
-	io_rw_9f0b qword io_rw_readmemory
+	io_rw_9f0b qword via_acl
 	io_rw_9f0c qword io_rw_readmemory
-	io_rw_9f0d qword io_rw_readmemory
-	io_rw_9f0e qword io_rw_readmemory
+	io_rw_9f0d qword via_ifr
+	io_rw_9f0e qword via_ier
 	io_rw_9f0f qword via_pra
 
 	; Unused
