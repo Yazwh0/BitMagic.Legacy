@@ -200,14 +200,16 @@ nmi_already_set:
 	jnz cpu_is_waiting				; if we're waiting, dont process next opcode
 
 next_opcode::
-
-	jmp debug_skip
-	mov r11, 80dh
-	debug_skip:
 	
 	mov rbx, r11
 	
 	movzx rbx, byte ptr [rsi+rbx]	; Get opcode
+
+	;cmp r11, 0E38Dh
+	;jne debug_skip
+	;mov rbx, 0dbh
+	;debug_skip:
+
 
 	;
 	; STORE DEBUG INFO
@@ -281,9 +283,9 @@ line_check:
 	cmp cx, bx
 	jne main_loop
 
-	mov cl, byte ptr [rdx].state.interrupt_line_hit
-	test cl, cl
-	jnz main_loop
+	;mov cl, byte ptr [rdx].state.interrupt_line_hit
+	;test cl, cl
+	;jnz main_loop
 
 	or byte ptr [rsi+ISR], 2							; set bit in memory
 	mov byte ptr [rdx].state.interrupt_line_hit, 1		; record that its been hit
@@ -309,9 +311,9 @@ no_cpu_reset:
 	test cl, cl
 	jz main_loop
 
-	mov cl, byte ptr [rdx].state.interrupt_vsync_hit
-	test cl, cl
-	jnz main_loop
+	;mov cl, byte ptr [rdx].state.interrupt_vsync_hit
+	;test cl, cl
+	;jnz main_loop
 
 	; set vsync
 	or byte ptr [rsi+ISR], 1
@@ -2360,7 +2362,7 @@ endm
 
 ; important: rcx is if the cpu waiting, so dont clobber this register.
 handle_interrupt proc
-	mov byte ptr [rdx].state.interrupt, 0
+	;mov byte ptr [rdx].state.interrupt, 0
 
 	movzx rax, byte ptr [rdx].state.flags_interruptDisable
 	test rax, rax
@@ -2377,12 +2379,14 @@ handle_interrupt proc
 	push bx
 	set_status_register_al
 	pop bx
+	and al, 11101111b					; dont set B
 
 	mov [rsi+rbx], al					; Put P on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 	mov byte ptr [rdx].state.flags_decimal, 0	; clear decimal flag
+	mov byte ptr [rdx].state.flags_interruptDisable, 1 ; set interrupt Disable to true, gets reverted at the rti
 
 	movzx rax, byte ptr [rsi+1]						; get rom bank
 	and al, 00011111b					; remove top bits
@@ -2406,11 +2410,7 @@ cpu_waiting:
 handle_interrupt endp
 
 handle_nmi proc
-	; nmi only triggers on a change, so need to keep the previous value
-	; only the via can reset it
-
-	test rcx, rcx						; check if we're waiting
-	jnz cpu_waiting
+	mov byte ptr [rdx].state.cpu_waiting, 0	; always clear waiting, but still jump to the vector
 
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
@@ -2423,13 +2423,15 @@ handle_nmi proc
 	push bx
 	set_status_register_al
 	pop bx
+	and al, 11101111b					; dont set B
 
 	mov [rsi+rbx], al					; Put P on stack
 	dec bl								; Move stack pointer on (done twice for wrapping)
 
 	mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
+	mov byte ptr [rdx].state.flags_interruptDisable, 1 ; set interrupt Disable to true, gets reverted at the rti
 
-	movzx rax, byte ptr [rsi+1]						; get rom bank
+	movzx rax, byte ptr [rsi+1]			; get rom bank
 	and al, 00011111b					; remove top bits
 	sal rax, 14							; multiply by 0x4000
 	mov rdi, [rdx].state.rom_ptr
@@ -2438,12 +2440,7 @@ handle_nmi proc
 	add r14, 7							; Clock 
 
 	jmp next_opcode
-	
-cpu_waiting:
-	xor rcx, rcx						; clear waiting
-	mov byte ptr [rdx].state.cpu_waiting, 0
-	add r14, 1							; Clock 
-	jmp next_opcode	
+
 handle_nmi endp
 
 x40_rti proc
@@ -2635,7 +2632,6 @@ x0C_tsb_abs endp
 x04_tsb_zp proc
 	read_zp_rbx
 
-
 	or byte ptr [rsi+rbx], r8b
 
 	jz set_zero
@@ -2765,6 +2761,45 @@ xCB_wai proc
 xCB_wai endp
 
 ;
+; BRK - NOT YET TESTED
+;
+
+x00_brk proc
+	; copy of the nmi code
+	jmp noinstruction
+
+	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
+
+	movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
+	mov [rsi+rbx], al					; Put PC Low byte on stack
+	dec bl								; Move stack pointer on
+	mov [rsi+rbx], ah					; Put PC High byte on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	push bx
+	set_status_register_al
+	pop bx								; no need to change as brk is set here.
+
+	mov [rsi+rbx], al					; Put P on stack
+	dec bl								; Move stack pointer on (done twice for wrapping)
+
+	mov byte ptr [rdx].state.flags_decimal, 0		; disable decimal flag
+	mov byte ptr [rdx].state.stackpointer, bl		; Store stack pointer
+	mov byte ptr [rdx].state.flags_interruptDisable, 1 ; set interrupt Disable to true, gets reverted at the rti
+
+	movzx rax, byte ptr [rsi+1]						; get rom bank
+	and al, 00011111b					; remove top bits
+	sal rax, 14							; multiply by 0x4000
+	mov rdi, [rdx].state.rom_ptr
+	mov r11w, word ptr [rdi + rax + 03ffah] ; get address at $fffa of current rom
+
+	add r14, 7							; Clock 
+
+	jmp next_opcode
+
+x00_brk endp
+
+;
 ; Exit
 ;
 
@@ -2815,7 +2850,7 @@ debug_pos qword 0
 ;
 ; all opcodes, in order of value starting with 0x00
 ; should have 76 free when done!
-opcode_00	qword	noinstruction 	; $00
+opcode_00	qword	x00_brk 		; $00
 opcode_01	qword	x01_ora_indx 	; $01
 opcode_02	qword	noinstruction 	; $02
 opcode_03	qword	noinstruction 	; $03

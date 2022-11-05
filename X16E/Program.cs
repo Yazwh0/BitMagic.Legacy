@@ -177,7 +177,7 @@ static class Program
                 Console.WriteLine("Last 50 steps:");
 
                 var toOutput = new List<string>();
-                for (var i = 0; i < 100; i++)
+                for (var i = 0; i < 1000; i++)
                 {
                     toOutput.Add($"R:${history[idx].ParamL:X2} ${history[idx].PC:X4} - ${history[idx].OpCode:X2} - A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
                     if (idx <= 0)

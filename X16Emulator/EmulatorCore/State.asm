@@ -146,13 +146,16 @@ state struct
 	via_t2counter_latch		word ?
 	via_t2counter_value		word ?
 
-	via_interrupt_timer1	byte ?
-	via_interrupt_timer2	byte ?
-	via_interrupt_cb1		byte ?
-	via_interrupt_cb2		byte ?
-	via_interrupt_shiftregister	byte ?
-	via_interrupt_ca1		byte ?
-	via_interrupt_ca2		byte ?
+	via_register_a_outvalue	byte ?
+	via_register_a_invalue	byte ?
+	; we just use whats in memory now
+	;via_interrupt_timer1	byte ?
+	;via_interrupt_timer2	byte ?
+	;via_interrupt_cb1		byte ?
+	;via_interrupt_cb2		byte ?
+	;via_interrupt_shiftregister	byte ?
+	;via_interrupt_ca1		byte ?
+	;via_interrupt_ca2		byte ?
 
 	via_timer1_continuous	byte ?
 	via_timer1_pb7			byte ?
@@ -162,12 +165,12 @@ state struct
 	via_timer2_running		byte ?
 
 	; I2c
-	i2c_address				word ?  ; 7 bit address of destination
-	i2c_state				byte ?  ; enum of where we are in the message
-	i2c_sending				byte ?	
-	i2c_data				byte ?	; data that is being transmitted
-	i2c_pos					byte ?  ; position in that data
-	i2c_laststate			byte ?  ; clock and data on the previous obs
+	;i2c_address				word ?  ; 7 bit address of destination
+	;i2c_state				byte ?  ; enum of where we are in the message
+	;i2c_sending				byte ?	
+	;i2c_data				byte ?	; data that is being transmitted
+	;i2c_pos					byte ?  ; position in that data
+	;i2c_laststate			byte ?  ; clock and data on the previous obs
 
 
 state ends

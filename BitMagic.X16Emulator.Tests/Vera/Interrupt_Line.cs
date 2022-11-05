@@ -222,7 +222,11 @@ public class Interrupt_Line
 
                 stp
                 .org $900
-                inc $03 ; dont clear ISR, so will only hit once
+                inc $03 
+                lda #02
+                sta ISR
+                stz IEN
+                
                 rti",
                 emulator);
 

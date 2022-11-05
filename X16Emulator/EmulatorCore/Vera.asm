@@ -826,6 +826,19 @@ vera_update_ien proc
 	setc al
 	mov byte ptr [rdx].state.interrupt_linenum + 1, al
 
+	mov r13b, byte ptr [rdx].state.interrupt_spcol_hit
+	shl r13, 1
+	or r13b, byte ptr [rdx].state.interrupt_line_hit
+	shl r13, 1
+	or r13b, byte ptr [rdx].state.interrupt_vsync_hit
+
+	xor rax, rax
+	mov bl, byte ptr [rsi+IEN]
+	and r13b, bl
+	setnz al
+
+	mov byte ptr [rdx].state.interrupt, al
+
 	ret
 vera_update_ien endp
 
@@ -1162,6 +1175,15 @@ construct_isr:
 	shl r13, 1
 	or r13b, byte ptr [rdx].state.interrupt_vsync_hit
 	mov byte ptr [rsi+rbx], r13b
+
+	xor rax, rax
+	mov bl, byte ptr [rsi+IEN]
+	and r13b, bl
+
+	setnz al
+
+	mov byte ptr [rdx].state.interrupt, al
+
 	ret
 vera_update_isr endp
 

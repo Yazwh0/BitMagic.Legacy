@@ -31,7 +31,7 @@ public class WAI
         // emulation
         Assert.IsTrue(emulator.Clock > 0x1000);         // we're waiting for an interrupt, so this will take some time
         emulator.AssertState(0x01, 0x00, 0x00, 0x901);
-        emulator.AssertFlags(false, false, false, false, false) ;
+        emulator.AssertFlags(false, false, false, false, true, Interrupt: true);
     }
 
     [TestMethod]
@@ -60,6 +60,6 @@ public class WAI
         // emulation
         Assert.IsTrue(emulator.Clock > 0x1000);         // we're waiting for an interrupt, so this will take some time
         emulator.AssertState(0x01, 0x00, 0x00, 0x817);
-        emulator.AssertFlags(false, false, false, false, true);
+        emulator.AssertFlags(false, false, false, false, true, Interrupt: true);
     }
 }

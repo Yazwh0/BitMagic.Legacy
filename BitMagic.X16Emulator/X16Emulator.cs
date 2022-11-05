@@ -96,6 +96,7 @@ public class Emulator : IDisposable
         public ushort Layer1_Tile_VShift { get => _emulator._state.Layer1_Tile_VShift; }
         public ushort Layer1_Map_HShift { get => _emulator._state.Layer1_Map_HShift; }
         public ushort Layer1_Map_VShift { get => _emulator._state.Layer1_Map_VShift; }
+
     }
 
     public class ViaState
@@ -111,13 +112,13 @@ public class Emulator : IDisposable
         public ushort Timer2_Latch { get => _emulator._state.Via_Timer2_Latch; set => _emulator._state.Via_Timer2_Latch = value; }
         public ushort Timer2_Counter { get => _emulator._state.Via_Timer2_Counter; set => _emulator._state.Via_Timer2_Counter = value; }
 
-        public bool Interrupt_Timer1 { get => _emulator._state.Via_Interrupt_Timer1 != 0; set => _emulator._state.Via_Interrupt_Timer1 = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_Timer2 { get => _emulator._state.Via_Interrupt_Timer2 != 0; set => _emulator._state.Via_Interrupt_Timer2 = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_Cb1 { get => _emulator._state.Via_Interrupt_Cb1 != 0; set => _emulator._state.Via_Interrupt_Cb1 = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_Cb2 { get => _emulator._state.Via_Interrupt_Cb2 != 0; set => _emulator._state.Via_Interrupt_Cb2 = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_ShiftRegister { get => _emulator._state.Via_Interrupt_ShiftRegister != 0; set => _emulator._state.Via_Interrupt_ShiftRegister = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_Ca1 { get => _emulator._state.Via_Interrupt_Ca1 != 0; set => _emulator._state.Via_Interrupt_Ca1 = (value ? (byte)1 : (byte)0); }
-        public bool Interrupt_Ca2 { get => _emulator._state.Via_Interrupt_Ca2 != 0; set => _emulator._state.Via_Interrupt_Ca2 = (value ? (byte)1 : (byte)0); }
+        public bool Interrupt_Timer1 { get => (_emulator.Memory[0x9f0e] & 0b01000000) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b01000000 : (byte)0); }
+        public bool Interrupt_Timer2 { get => (_emulator.Memory[0x9f0e] & 0b00100000) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b00100000 : (byte)0); }
+        public bool Interrupt_Cb1 { get => (_emulator.Memory[0x9f0e] & 0b00010000) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b00010000 : (byte)0); }
+        public bool Interrupt_Cb2 { get => (_emulator.Memory[0x9f0e] & 0b00001000) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b00001000 : (byte)0); }
+        public bool Interrupt_ShiftRegister { get => (_emulator.Memory[0x9f0e] & 0b0000100) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b0000100 : (byte)0); }
+        public bool Interrupt_Ca1 { get => (_emulator.Memory[0x9f0e] & 0b0000010) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b0000010 : (byte)0); }
+        public bool Interrupt_Ca2 { get => (_emulator.Memory[0x9f0e] & 0b0000001) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b0000001 : (byte)0); }
 
         public bool Timer1_Continous { get => _emulator._state.Via_Timer1_Continuous != 0; set => _emulator._state.Via_Timer1_Continuous = (value ? (byte)1 : (byte)0); }
         public bool Timer1_Pb7 { get => _emulator._state.Via_Timer1_Pb7!= 0; set => _emulator._state.Via_Timer1_Pb7 = (value ? (byte)1 : (byte)0); }
@@ -125,6 +126,8 @@ public class Emulator : IDisposable
 
         public bool Timer2_PulseCount { get => _emulator._state.Via_Timer2_PulseCount != 0; set => _emulator._state.Via_Timer2_PulseCount = (value ? (byte)1 : (byte)0); }
         public bool Timer2_Running { get => _emulator._state.Via_Timer2_Running != 0; set => _emulator._state.Via_Timer2_Running = (value ? (byte)1 : (byte)0); }
+        public byte Register_A_OutValue { get => _emulator._state.Via_Register_A_OutValue; set => _emulator._state.Via_Register_A_OutValue = value; }
+        public byte Register_A_InValue { get => _emulator._state.Via_Register_A_InValue; set => _emulator._state.Via_Register_A_InValue = value; }
 
     }
 
@@ -259,14 +262,8 @@ public class Emulator : IDisposable
         public ushort Via_Timer2_Latch = 0;
         public ushort Via_Timer2_Counter = 0;
 
-        public byte Via_Interrupt_Timer1 = 0;
-        public byte Via_Interrupt_Timer2 = 0;
-        public byte Via_Interrupt_Cb1 = 0;
-        public byte Via_Interrupt_Cb2 = 0;
-        public byte Via_Interrupt_ShiftRegister = 0;
-        public byte Via_Interrupt_Ca1 = 0;
-        public byte Via_Interrupt_Ca2  = 0;
-
+        public byte Via_Register_A_OutValue = 0;
+        public byte Via_Register_A_InValue = 0xff; // default is all high
         public byte Via_Timer1_Continuous = 0;
         public byte Via_Timer1_Pb7 = 0;
         public byte Via_Timer1_Running = 0;

@@ -33,34 +33,20 @@ via_init proc
 	mov ax, word ptr [rdx].state.via_t2counter_value
 	mov word ptr [rsi + V_T2_L], ax
 
-	; interrupt
-	movzx rax, [rdx].state.via_interrupt_timer1
-	shl rax, 6	
-
-	movzx rbx, [rdx].state.via_interrupt_timer2
-	shl rbx, 5
-	or rax, rbx
-
-	movzx rbx, [rdx].state.via_interrupt_cb1
-	shl rbx, 4
-	or rax, rbx
-
-	movzx rbx, [rdx].state.via_interrupt_cb2
-	shl rbx, 3
-	or rax, rbx
-
-	movzx rbx, [rdx].state.via_interrupt_shiftregister
-	shl rbx, 2
-	or rax, rbx
-
-	movzx rbx, [rdx].state.via_interrupt_ca1
-	shl rbx, 1
-	or rax, rbx
-
-	movzx rbx, [rdx].state.via_interrupt_ca2
-	or rax, rbx
-
+	mov al, byte ptr [rsi + V_IER]
+	or al, 080h
 	mov byte ptr [rsi + V_IER], al
+	
+	mov al, byte ptr [rsi + V_IFR]
+	mov bl, al
+	or bl, 080h
+	test al, al
+	cmovne rax, rbx
+	mov byte ptr [rsi + V_IFR], al
+
+	mov al, byte ptr [rdx].state.via_register_a_outvalue
+	mov byte ptr [rsi + V_PRA], al
+	mov byte ptr [rsi + V_ORA], al
 
 	ret
 via_init endp
@@ -77,6 +63,8 @@ via_write_state proc
 	
 	mov ax, word ptr [rsi + V_T2_L]
 	mov word ptr [rdx].state.via_t2counter_value, ax
+
+	; dont get register in\out value, as its not stored in memory	
 
 	ret
 via_write_state endp
@@ -112,11 +100,6 @@ via_step proc
 	mov ax, word ptr [rsi + V_T1L_L]
 	mov word ptr [rsi + V_T1_L], ax
 
-	movzx r13, byte ptr [rdx].state.via_interrupt_timer1
-	cmp r13, 1
-	jne skip_timer1_set
-	mov cl, 1
-	skip_timer1_set:
 	or rdi, 01000000b
 
 	movzx rax, byte ptr [rdx].state.via_timer1_continuous
@@ -156,12 +139,8 @@ via_step proc
 	mov ax, word ptr [rdx].state.via_t2counter_latch
 	mov word ptr [rsi + V_T1_L], ax
 
-	movzx r13, byte ptr [rdx].state.via_interrupt_timer2
-	cmp r13, 1
-	jne skip_timer2_set
-	mov cl, 1
-	skip_timer2_set:
 	or rdi, 00100000b
+
 	mov byte ptr [rdx].state.via_timer2_running, 0	; clear running flag
 
 	no_timer2_interrupt:
@@ -173,10 +152,15 @@ via_step proc
 
 	timer2_alldone:
 
+	mov cl, byte ptr[rsi + V_IER]
+	and cl, 7fh
+	and cl, dil
+	setnz cl							; change to 1 if non zero
 	mov byte ptr [rdx].state.nmi, cl	; set nmi
 
+	and dil, 7fh		; mask of irq bits
 	mov rax, 80h
-	test rcx, rcx
+;	test rcx, rcx
 	cmovz rax, rbx
 	or dil, al
 
@@ -194,16 +178,25 @@ via_timer1_counter_l proc
 	ret
 via_timer1_counter_l endp
 
+; reading T1C_L resets t1 interrupt flag
+via_timer1_counter_l_read proc
+	mov al, byte ptr [rsi+V_IFR]
+	and al, 00111111b
+	mov bl, al
+	or bl, 80h
+	test al, al
+	cmovne rax, rbx
+
+	mov byte ptr [rsi+V_IFR], al
+	ret
+via_timer1_counter_l_read endp
+
 via_timer1_counter_h proc
 	mov r13b, byte ptr [rsi+rbx]		; copy value to latch
 	mov byte ptr [rsi+V_T1L_H], r13b
 
 	mov r13w, word ptr [rsi+V_T1L_L]	; on high byte set, restart counter from latch
 	mov word ptr [rsi+V_T1_L], r13w	
-
-	mov r13b, byte ptr [rsi+V_IFR]		; set timer 1 bit on IFR
-	and r13b, 10111111b
-	mov byte ptr [rsi+V_IFR], r13b
 
 	mov byte ptr [rdx].state.via_timer1_running, 1	; mark as running
 	ret
@@ -214,9 +207,13 @@ via_timer1_latch_l proc
 via_timer1_latch_l endp
 
 via_timer1_latch_h proc	
-	; does not copy the value, but does set the IFR flag
+	; does not copy the value, but does set the IFR flag	
 	mov r13b, byte ptr [rsi+V_IFR]		; set timer 1 bit on IFR
-	and r13b, 10111111b
+	and r13b, 00111111b
+	mov bl, r13b
+	or bl, 80h
+	test r13b, r13b
+	cmovne r13, rbx
 	mov byte ptr [rsi+V_IFR], r13b
 
 	ret
@@ -261,9 +258,12 @@ via_acl endp
 
 via_ifr proc
 	movzx r13, byte ptr [rsi+rbx]		; get value written
+	xor rdi, rdi
 	xor r13, 0ffh						; invert
-	or r13, 80h							; turn on bit 7, as we preserve this
+	mov rax, 80h						; turn on bit 7, as we mask this on if there is a value
 	and r12, r13						; and with original value. should clear bits that were written
+	cmovne rdi, rax						; set high bit if the and results in value
+	or r12, rdi							; set high bit
 
 	mov byte ptr [rsi+rbx], r12b		; write back
 	ret
@@ -279,42 +279,6 @@ via_ier proc
 	or r12, 80h		; bit 7 is always set
 	mov byte ptr [rsi+rbx], r12b
 
-	; now set flags
-	xor r13, r13
-	test r12, 00000001b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_ca2, r13b
-
-	xor r13, r13
-	test r12, 00000010b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_ca1, r13b
-
-	xor r13, r13
-	test r12, 00000100b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_shiftregister, r13b
-
-	xor r13, r13
-	test r12, 00001000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_cb2, r13b
-
-	xor r13, r13
-	test r12, 00010000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_cb1, r13b
-
-	xor r13, r13
-	test r12, 00100000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_timer2, r13b
-
-	xor r13, r13
-	test r12, 01000000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_timer1, r13b
-
 	ret
 
 unset:
@@ -324,46 +288,46 @@ unset:
 	or r12, 80h		; bit 7 is always set
 	mov byte ptr [rsi+rbx], r12b
 
-	; now set flags
-	xor r13, r13
-	test r12, 00000001b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_ca2, r13b
-
-	xor r13, r13
-	test r12, 00000010b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_ca1, r13b
-
-	xor r13, r13
-	test r12, 00000100b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_shiftregister, r13b
-
-	xor r13, r13
-	test r12, 00001000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_cb2, r13b
-
-	xor r13, r13
-	test r12, 00010000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_cb1, r13b
-
-	xor r13, r13
-	test r12, 00100000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_timer2, r13b
-
-	xor r13, r13
-	test r12, 01000000b
-	setnz r13b
-	mov byte ptr [rdx].state.via_interrupt_timer1, r13b
-
 	ret
 via_ier endp
 
+; Serial Bus
+via_prb proc
+	mov r13b, byte ptr [rsi+rbx]
+	mov byte ptr [rsi+rbx], 080h ; we dont support the serial bus yet, so this is a good default state, and lets the kernal proceed
+	ret
+via_prb endp
+
+; I2C
+; Data Direction Register 0: input, 1: output.
+via_dra proc
+	mov r13b, byte ptr [rsi+rbx]
+	xor r13b, 0ffh						; invert
+
+	mov r12b, byte ptr [rdx].state.via_register_a_outvalue
+	or r12b, r13b						; set bits high that are output
+	mov byte ptr [rsi+V_PRA], r12b
+	mov byte ptr [rsi+V_ORA], r12b
+
+	ret
+via_dra endp
+
+; writes to the registers are stored, but only show in memory depending on DRA (Data Direction Register)
 via_pra proc
 	mov r13b, byte ptr [rsi+rbx]
+	mov byte ptr [rdx].state.via_register_a_outvalue, r13b	; store new value
+
+	mov dil, byte ptr [rsi+V_DDRA]							
+	and r13, rdi											; mask off bytes. 
+
+	xor dil, 0ffh											; invert mask
+
+	mov al, byte ptr [rdx].state.via_register_a_invalue		; get value in
+	and rax, rdi
+
+	or r13, rax												; merge two values and store
+	mov byte ptr [rsi+rbx], r13b
+	mov byte ptr [rsi+V_ORA], r13b
+
 	ret
 via_pra endp

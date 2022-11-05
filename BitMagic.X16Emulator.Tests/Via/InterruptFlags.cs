@@ -18,7 +18,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Timer1);
-        Assert.AreEqual(0x040, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0xc0, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -34,7 +34,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Timer2);
-        Assert.AreEqual(0x20, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0xa0, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Cb1);
-        Assert.AreEqual(0x10, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0x90, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Cb2);
-        Assert.AreEqual(0x08, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0x88, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_ShiftRegister);
-        Assert.AreEqual(0x04, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0x84, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Ca1);
-        Assert.AreEqual(0x02, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0x82, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class InerruptFlags
                 emulator);
 
         Assert.IsTrue(emulator.Via.Interrupt_Ca2);
-        Assert.AreEqual(0x01, emulator.Memory[0x9f0e]);
+        Assert.AreEqual(0x81, emulator.Memory[0x9f0e]);
     }
 
     [TestMethod]

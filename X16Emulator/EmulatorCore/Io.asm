@@ -54,7 +54,7 @@ io_registers_read:
 	io_r_9f01 qword io_r_readmemory
 	io_r_9f02 qword io_r_readmemory
 	io_r_9f03 qword io_r_readmemory
-	io_r_9f04 qword io_r_readmemory
+	io_r_9f04 qword via_timer1_counter_l_read
 	io_r_9f05 qword io_r_readmemory
 	io_r_9f06 qword io_r_readmemory
 	io_r_9f07 qword io_r_readmemory
@@ -120,11 +120,11 @@ io_registers_read:
 
 
 io_registers_readwrite:
-	io_rw_9f00 qword io_rw_readmemory
-	io_rw_9f01 qword via_pra
+	io_rw_9f00 qword via_prb
+	io_rw_9f01 qword io_rw_readmemory
 	io_rw_9f02 qword io_rw_readmemory
 	io_rw_9f03 qword io_rw_readmemory
-	io_rw_9f04 qword io_rw_readmemory
+	io_rw_9f04 qword via_timer1_counter_l_read
 	io_rw_9f05 qword io_rw_readmemory
 	io_rw_9f06 qword io_rw_readmemory
 	io_rw_9f07 qword io_rw_readmemory
@@ -190,10 +190,10 @@ io_registers_readwrite:
 
 io_registers_write:
 	; VIA1
-	io_w_9f00 qword io_w_unsupported
+	io_w_9f00 qword via_prb
 	io_w_9f01 qword via_pra
 	io_w_9f02 qword io_w_unsupported
-	io_w_9f03 qword io_w_unsupported
+	io_w_9f03 qword via_dra
 	io_w_9f04 qword via_timer1_counter_l
 	io_w_9f05 qword via_timer1_counter_h
 	io_w_9f06 qword via_timer1_latch_l

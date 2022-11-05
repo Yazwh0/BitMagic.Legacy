@@ -113,16 +113,21 @@ public class Timer2
         emulator.Via.Interrupt_Timer2 = true;
         emulator.A = 0x10;
 
+        emulator.RomBank[0x3ffa] = 0x00;
+        emulator.RomBank[0x3ffb] = 0x09;
+
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
-                sei
                 sta V_T2_H
                 wai
+                stp
+                .org $900
                 stp
                 ",
                 emulator);
 
+        emulator.AssertState(Pc: 0x901);
         Assert.AreEqual(0b10100000, emulator.Memory[0x9f0d]);
         Assert.IsTrue(emulator.Clock > 0x1000);
         Assert.IsFalse(emulator.Via.Timer2_Running);

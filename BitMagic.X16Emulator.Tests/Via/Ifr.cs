@@ -53,7 +53,7 @@ public class Ifr
                 stp",
                 emulator);
 
-        Assert.AreEqual(0x7e, emulator.Memory[0x9f0d]);
+        Assert.AreEqual(0xfe, emulator.Memory[0x9f0d]);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class Ifr
                 stp",
                 emulator);
 
-        Assert.AreEqual(0x7f, emulator.Memory[0x9f0d]);
+        Assert.AreEqual(0xff, emulator.Memory[0x9f0d]);
     }
 
     [TestMethod]
