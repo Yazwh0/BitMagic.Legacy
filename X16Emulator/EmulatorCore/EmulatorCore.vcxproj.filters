@@ -16,9 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
-    <None Include="I2c.asm">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -79,6 +76,21 @@
       <Filter>Source Files</Filter>
     </Text>
     <Text Include="Io.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="I2c.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Display_Bitmap_1bpp.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Display_Bitmap_2bpp.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Display_Bitmap_4bpp.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Vera_Display_Bitmap_8bpp.asm">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>

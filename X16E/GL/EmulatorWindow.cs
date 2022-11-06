@@ -88,6 +88,7 @@ internal class EmulatorWindow
             i.OnRender(_gl, _shader, _emulator.RenderReady);
         }
         _requireUpdate = false;
+        _emulator.RenderReady = false;
         var thisTicks = _stopwatch.ElapsedMilliseconds;
         if (thisTicks - _lastTicks > 1000)
         {
@@ -109,7 +110,6 @@ internal class EmulatorWindow
         }
 
         _window!.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps \\ {_speed * 8.0:0}Mhz]";
-        _emulator.RenderReady = false;
 
     }
 

@@ -115,7 +115,14 @@ match:
 endm
 
 set_layer0_jump macro
+	local done, bitmap
+
 	mov rsi, [rdx].state.memory_ptr
+
+	movzx rax, [rdx].state.layer0_bitmapMode
+	test rax, rax
+	jnz bitmap
+
 	movzx rax, byte ptr [rsi + L0_CONFIG]
 	and rax, 11110011b
 	movzx rbx, byte ptr [rsi + L0_TILEBASE]
@@ -125,10 +132,32 @@ set_layer0_jump macro
 	lea rbx, get_tile_definition_jump
 	mov rax, qword ptr [rbx + rax * 8]
 	mov qword ptr [rdx].state.layer0_jmp, rax
+	jmp done
+
+bitmap:
+	movzx rax, byte ptr [rsi + L0_CONFIG]
+	and rax, 011b
+	shl rax, 1
+	movzx rbx, byte ptr [rsi + L0_TILEBASE]
+	and rbx, 01b
+	or rax, rbx
+
+	lea rbx, get_bitmap_definition_jump
+	mov rax, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer0_jmp, rax
+
+done:
 endm
 
 set_layer1_jump macro
+	local done, bitmap
+
 	mov rsi, [rdx].state.memory_ptr
+
+	movzx rax, [rdx].state.layer1_bitmapMode
+	test rax, rax
+	jnz bitmap
+
 	movzx rax, byte ptr [rsi + L1_CONFIG]
 	and rax, 11110011b
 	movzx rbx, byte ptr [rsi + L1_TILEBASE]
@@ -138,6 +167,21 @@ set_layer1_jump macro
 	lea rbx, get_tile_definition_jump
 	mov rax, qword ptr [rbx + rax * 8]
 	mov qword ptr [rdx].state.layer1_jmp, rax
+	jmp done
+
+bitmap:
+	movzx rax, byte ptr [rsi + L1_CONFIG]
+	and rax, 011b
+	shl rax, 1
+	movzx rbx, byte ptr [rsi + L1_TILEBASE]
+	and rbx, 01b
+	or rax, rbx
+
+	lea rbx, get_bitmap_definition_jump
+	mov rax, qword ptr [rbx + rax * 8]
+	mov qword ptr [rdx].state.layer1_jmp, rax
+
+done:
 endm
 
 layer0_tileshifts macro
