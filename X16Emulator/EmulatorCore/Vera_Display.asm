@@ -305,12 +305,27 @@ layer0_skip:
 	
 	push r12
 	push r11
+	
+	movzx rax, byte ptr [rdx].state.layer0_bitmapMode
+	test rax, rax
+	jnz bitmap_mode_l1
+
+	; use config to jump to the correct renderer.
+
 	add r12w, word ptr [rdx].state.layer1_vscroll
 	add r11w, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
 
-	; use config to jump to the correct renderer.
+	mov rax, qword ptr [rdx].state.layer1_rtn
+	push rax	; return address, call the tile fetch and it returns to the correct renderer
+
+	jmp qword ptr [rdx].state.layer1_jmp
+
+bitmap_mode_l1:
+		
+	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+
 	mov rax, qword ptr [rdx].state.layer1_rtn
 	push rax	; return address, call the tile fetch and it returns to the correct renderer
 
@@ -742,7 +757,7 @@ layer1_render_jump:
 	layer1_2bpp_til_x qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_x qword layer1_4bpp_til_x_render
 	layer1_8bpp_til_x qword layer1_8bpp_til_x_render
-	layer1_1bpp_bit_x qword mode_layer1_notsupported
+	layer1_1bpp_bit_x qword layer1_1bpp_bmp_render
 	layer1_2bpp_bit_x qword mode_layer1_notsupported
 	layer1_4bpp_bit_x qword mode_layer1_notsupported
 	layer1_8bpp_bit_x qword mode_layer1_notsupported
@@ -750,7 +765,7 @@ layer1_render_jump:
 	layer1_2bpp_til_t qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_t qword layer1_4bpp_til_x_render
 	layer1_8bpp_til_t qword layer1_8bpp_til_x_render
-	layer1_1bpp_bit_t qword mode_layer1_notsupported
+	layer1_1bpp_bit_t qword layer1_1bpp_bmp_render
 	layer1_2bpp_bit_t qword mode_layer1_notsupported
 	layer1_4bpp_bit_t qword mode_layer1_notsupported
 	layer1_8bpp_bit_t qword mode_layer1_notsupported
