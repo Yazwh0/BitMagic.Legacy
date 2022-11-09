@@ -62,6 +62,11 @@ layer0_1bpp_bmp_render endp
 layer1_1bpp_bmp_render proc
 	; ebx contains the pixel data - 32bits worth
 	; r15 is the buffer position
+	mov rsi, [rdx].state.memory_ptr
+	movzx r11, byte ptr [rsi + L0_HSCROLL_H]		; get offset
+	shl r11, 4
+	add r11, 1
+
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	writepixel_1bpp_bitmap 07, BUFFER_LAYER1	
