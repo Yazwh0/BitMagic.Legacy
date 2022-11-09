@@ -2,13 +2,19 @@
 writepixel_1bpp_bitmap macro pixeloutput, outputoffset
 	xor r13, r13
 	shr ebx, 1
-	setc r13b
+	cmovc r13, r11
+
 	mov byte ptr [rsi + r15 + pixeloutput + outputoffset], r13b
 endm
 
 layer0_1bpp_bmp_render proc
 	; ebx contains the pixel data - 32bits worth
 	; r15 is the buffer position
+	mov rsi, [rdx].state.memory_ptr
+	movzx r11, byte ptr [rsi + L0_HSCROLL_H]		; get offset
+	shl r11, 4
+	add r11, 1
+
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	writepixel_1bpp_bitmap 07, BUFFER_LAYER0	
@@ -48,6 +54,7 @@ layer0_1bpp_bmp_render proc
 	writepixel_1bpp_bitmap 24, BUFFER_LAYER0
 
 	mov rax, 32
+
 	jmp layer0_render_done
 
 layer0_1bpp_bmp_render endp

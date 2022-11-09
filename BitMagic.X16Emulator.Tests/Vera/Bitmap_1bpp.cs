@@ -966,7 +966,6 @@ public class Bitmap_1Bpp
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_normal.png");
     }
 
-
     [TestMethod]
     public async Task Box_Normal_AddressChange_Layer1()
     {
