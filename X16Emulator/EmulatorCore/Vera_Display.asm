@@ -740,7 +740,7 @@ layer0_render_jump:
 	layer0_4bpp_til_x qword layer0_4bpp_til_x_render
 	layer0_8bpp_til_x qword layer0_8bpp_til_x_render
 	layer0_1bpp_bit_x qword layer0_1bpp_bmp_render
-	layer0_2bpp_bit_x qword mode_layer0_notsupported
+	layer0_2bpp_bit_x qword layer0_2bpp_bmp_render
 	layer0_4bpp_bit_x qword mode_layer0_notsupported
 	layer0_8bpp_bit_x qword mode_layer0_notsupported
 	layer0_1bpp_til_t qword layer0_1bpp_til_t_render
@@ -748,7 +748,7 @@ layer0_render_jump:
 	layer0_4bpp_til_t qword layer0_4bpp_til_x_render
 	layer0_8bpp_til_t qword layer0_8bpp_til_x_render
 	layer0_1bpp_bit_t qword layer0_1bpp_bmp_render
-	layer0_2bpp_bit_t qword mode_layer0_notsupported
+	layer0_2bpp_bit_t qword layer0_2bpp_bmp_render
 	layer0_4bpp_bit_t qword mode_layer0_notsupported
 	layer0_8bpp_bit_t qword mode_layer0_notsupported
 

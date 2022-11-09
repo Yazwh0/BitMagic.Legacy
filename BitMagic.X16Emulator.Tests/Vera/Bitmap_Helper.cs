@@ -34,7 +34,7 @@ namespace BitMagic.X16Emulator.Tests.Vera
 
             var counter = 1;
             var colourIndex = new Dictionary<Rgba32, int>();
-            colourIndex.Add(new Rgba32(0, 0, 0, 255), 0);
+            //colourIndex.Add(new Rgba32(0, 0, 0, 255), 0);
 
             var maxColours = depth switch {
                 ColourDepth.Depth_1bpp => 2,
