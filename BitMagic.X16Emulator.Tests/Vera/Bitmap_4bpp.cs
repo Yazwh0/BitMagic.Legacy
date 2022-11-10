@@ -677,7 +677,7 @@ public class Bitmap_4Bpp
                         stx DC_HSCALE
 
                         lda #$07
-                        sta L0_HSCROLL_H
+                        sta L1_HSCROLL_H
 
                         lda #01
                         sta IEN

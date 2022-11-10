@@ -742,7 +742,7 @@ layer0_render_jump:
 	layer0_1bpp_bit_x qword layer0_1bpp_bmp_render
 	layer0_2bpp_bit_x qword layer0_2bpp_bmp_render
 	layer0_4bpp_bit_x qword layer0_4bpp_bmp_render
-	layer0_8bpp_bit_x qword mode_layer0_notsupported
+	layer0_8bpp_bit_x qword layer0_8bpp_bmp_render
 	layer0_1bpp_til_t qword layer0_1bpp_til_t_render
 	layer0_2bpp_til_t qword layer0_2bpp_til_x_render
 	layer0_4bpp_til_t qword layer0_4bpp_til_x_render
@@ -750,7 +750,7 @@ layer0_render_jump:
 	layer0_1bpp_bit_t qword layer0_1bpp_bmp_render
 	layer0_2bpp_bit_t qword layer0_2bpp_bmp_render
 	layer0_4bpp_bit_t qword layer0_4bpp_bmp_render
-	layer0_8bpp_bit_t qword mode_layer0_notsupported
+	layer0_8bpp_bit_t qword layer0_8bpp_bmp_render
 
 layer1_render_jump:
 	layer1_1bpp_til_x qword layer1_1bpp_til_x_render
@@ -760,7 +760,7 @@ layer1_render_jump:
 	layer1_1bpp_bit_x qword layer1_1bpp_bmp_render
 	layer1_2bpp_bit_x qword layer1_2bpp_bmp_render
 	layer1_4bpp_bit_x qword layer1_4bpp_bmp_render
-	layer1_8bpp_bit_x qword mode_layer1_notsupported
+	layer1_8bpp_bit_x qword layer1_8bpp_bmp_render
 	layer1_1bpp_til_t qword layer1_1bpp_til_t_render
 	layer1_2bpp_til_t qword layer1_2bpp_til_x_render
 	layer1_4bpp_til_t qword layer1_4bpp_til_x_render
@@ -768,7 +768,7 @@ layer1_render_jump:
 	layer1_1bpp_bit_t qword layer1_1bpp_bmp_render
 	layer1_2bpp_bit_t qword layer1_2bpp_bmp_render
 	layer1_4bpp_bit_t qword layer1_4bpp_bmp_render
-	layer1_8bpp_bit_t qword mode_layer1_notsupported
+	layer1_8bpp_bit_t qword layer1_8bpp_bmp_render
 
 tile_definition_proc macro _map_height, _map_width, _tile_height, _tile_width, _colour_depth, _tile_definition_count
 tile_definition_&_tile_definition_count& proc
