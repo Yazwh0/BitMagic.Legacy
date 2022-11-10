@@ -3,14 +3,14 @@
 namespace BitMagic.X16Emulator.Tests.Vera.Display;
 
 [TestClass]
-public class Bitmap_2Bpp
+public class Bitmap_4Bpp
 {
     [TestMethod]
     public async Task Image_Normal_Layer0()
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -23,10 +23,10 @@ public class Bitmap_2Bpp
                         lda #$11        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L0_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L0_TILEBASE 
 
                         ; set colour 0
@@ -39,7 +39,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -106,8 +106,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l0_normal.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l0_normal.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l0_normal.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l0_normal.png");
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0x1000);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0x1000);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -128,10 +128,10 @@ public class Bitmap_2Bpp
                         lda #$11        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L0_CONFIG
 
-                        lda #$09        ; 640 wide - starts at $1000
+                        lda #$08        ; 320 wide - starts at $1000
                         sta L0_TILEBASE 
 
                         ; set colour 0
@@ -144,7 +144,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -211,8 +211,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l0_addresschange.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l0_addresschange.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l0_addresschange.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l0_addresschange.png");
     }
 
     [TestMethod]
@@ -220,7 +220,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -233,10 +233,10 @@ public class Bitmap_2Bpp
                         lda #$11        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L0_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L0_TILEBASE 
 
                         ; set colour 0
@@ -249,7 +249,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -319,8 +319,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l0_normal_paletteoffset.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l0_normal_paletteoffset.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l0_normal_paletteoffset.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l0_normal_paletteoffset.png");
     }
 
     [TestMethod]
@@ -328,7 +328,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -341,10 +341,10 @@ public class Bitmap_2Bpp
                         lda #$11        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L0_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L0_TILEBASE 
 
                         ; set colour 0
@@ -424,8 +424,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l0_scaled.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l0_scaled.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l0_scaled.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l0_scaled.png");
     }
 
     [TestMethod]
@@ -433,7 +433,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -446,10 +446,10 @@ public class Bitmap_2Bpp
                         lda #$21        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L1_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L1_TILEBASE 
 
                         ; set colour 0
@@ -462,7 +462,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -529,8 +529,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l1_normal.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l1_normal.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l1_normal.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l1_normal.png");
     }
 
     [TestMethod]
@@ -538,7 +538,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0x1000);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0x1000);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -551,10 +551,10 @@ public class Bitmap_2Bpp
                         lda #$21        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L1_CONFIG
 
-                        lda #$09        ; 640 wide - starts at $1000
+                        lda #$08        ; 320 wide - starts at $1000
                         sta L1_TILEBASE 
 
                         ; set colour 0
@@ -567,7 +567,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -634,8 +634,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l1_addresschange.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l1_addresschange.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l1_addresschange.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l1_addresschange.png");
     }
 
     [TestMethod]
@@ -643,7 +643,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -656,10 +656,10 @@ public class Bitmap_2Bpp
                         lda #$21        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L1_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L1_TILEBASE 
 
                         ; set colour 0
@@ -672,7 +672,7 @@ public class Bitmap_2Bpp
                         lda #$12
                         sta DATA0
 
-                        ldx #128
+                        ldx #64
                         stx DC_VSCALE  
                         stx DC_HSCALE
 
@@ -742,8 +742,8 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l1_normal_paletteoffset.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l1_normal_paletteoffset.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l1_normal_paletteoffset.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l1_normal_paletteoffset.png");
     }
 
     [TestMethod]
@@ -751,7 +751,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_4bpp.png", ImageHelper.ColourDepth.Depth_4bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -764,10 +764,10 @@ public class Bitmap_2Bpp
                         lda #$21        ; enable layer 0
                         sta DC_VIDEO
 
-                        lda #$05        ; bitmap, 2bpp
+                        lda #$06        ; bitmap, 2bpp
                         sta L1_CONFIG
 
-                        lda #$01        ; 640 wide
+                        lda #$00        ; 320 wide
                         sta L1_TILEBASE 
 
                         ; set colour 0
@@ -847,7 +847,7 @@ public class Bitmap_2Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_2bpp_l1_scaled.png");
-        emulator.CompareImage(@"Vera\Images\bitmap_2bpp_l1_scaled.png");
+        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_4bpp_l1_scaled.png");
+        emulator.CompareImage(@"Vera\Images\bitmap_4bpp_l1_scaled.png");
     }
 }
