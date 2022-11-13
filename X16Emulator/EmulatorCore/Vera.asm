@@ -693,15 +693,33 @@ vera_update_data proc
 	vera_dataaccess_body 0, 1
 vera_update_data endp
 
+; Update Data0 if the address changes
+vera_update_data0 macro
+	mov r13d, dword ptr [rdx].state.data0_address
+	mov rdi, [rdx].state.vram_ptr
+	mov r13b, byte ptr [rdi + r13]
+	mov byte ptr [rsi+9f23h], r13b
+endm
+
+; Update Data1 if the address changes
+vera_update_data1 macro
+	mov r13d, dword ptr [rdx].state.data1_address
+	mov rdi, [rdx].state.vram_ptr
+	mov r13b, byte ptr [rdi + r13]
+	mov byte ptr [rsi+9f24h], r13b
+endm
+
 vera_update_addrl proc	
 	mov r13b, byte ptr [rsi+rbx]
 	cmp byte ptr [rdx].state.addrsel, 0
 
 	jnz write_data1
 	mov byte ptr [rdx].state.data0_address, r13b
+	vera_update_data0
 	ret
 write_data1:
 	mov byte ptr [rdx].state.data1_address, r13b
+	vera_update_data1
 	ret
 vera_update_addrl endp
 
@@ -711,9 +729,11 @@ vera_update_addrm proc
 
 	jnz write_data1
 	mov byte ptr [rdx].state.data0_address + 1, r13b
+	vera_update_data0
 	ret
 write_data1:
 	mov byte ptr [rdx].state.data1_address + 1, r13b
+	vera_update_data1
 	ret
 vera_update_addrm endp
 
@@ -744,6 +764,7 @@ vera_update_addrh proc
 	
 no_decr_0:
 	mov qword ptr [rdx].state.data0_step, r12
+	vera_update_data0
 	ret
 
 write_data1:
@@ -766,6 +787,7 @@ write_data1:
 	
 no_decr_1:
 	mov qword ptr [rdx].state.data1_step, r12
+	vera_update_data1
 	ret
 vera_update_addrh endp
 

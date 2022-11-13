@@ -155,33 +155,33 @@ io_registers_readwrite:
 	io_rw_9f1e qword io_rw_readmemory
 	io_rw_9f1f qword io_rw_readmemory
 
-	vera_rw_9f20 qword io_rw_readmemory
-	vera_rw_9f21 qword io_rw_readmemory
-	vera_rw_9f22 qword io_rw_readmemory
+	vera_rw_9f20 qword vera_update_addrl
+	vera_rw_9f21 qword vera_update_addrm
+	vera_rw_9f22 qword vera_update_addrh
 	vera_rw_9f23 qword vera_afterreadwrite
 	vera_rw_9f24 qword vera_afterreadwrite
-	vera_rw_9f25 qword io_rw_readmemory
-	vera_rw_9f26 qword io_rw_readmemory
-	vera_rw_9f27 qword io_rw_readmemory
-	vera_rw_9f28 qword io_rw_readmemory
-	vera_rw_9f29 qword io_rw_readmemory
-	vera_rw_9f2a qword io_rw_readmemory
-	vera_rw_9f2b qword io_rw_readmemory
-	vera_rw_9f2c qword io_rw_readmemory
-	vera_rw_9f2d qword io_rw_readmemory
-	vera_rw_9f2e qword io_rw_readmemory
-	vera_rw_9f2f qword io_rw_readmemory
-	vera_rw_9f30 qword io_rw_readmemory
-	vera_rw_9f31 qword io_rw_readmemory
-	vera_rw_9f32 qword io_rw_readmemory
-	vera_rw_9f33 qword io_rw_readmemory
-	vera_rw_9f34 qword io_rw_readmemory
-	vera_rw_9f35 qword io_rw_readmemory
-	vera_rw_9f36 qword io_rw_readmemory
-	vera_rw_9f37 qword io_rw_readmemory
-	vera_rw_9f38 qword io_rw_readmemory
-	vera_rw_9f39 qword io_rw_readmemory
-	vera_rw_9f3a qword io_rw_readmemory
+	vera_rw_9f25 qword vera_update_ctrl
+	vera_rw_9f26 qword vera_update_ien
+	vera_rw_9f27 qword vera_update_isr
+	vera_rw_9f28 qword vera_update_irqline_l
+	vera_rw_9f29 qword vera_update_9f29
+	vera_rw_9f2a qword vera_update_9f2a
+	vera_rw_9f2b qword vera_update_9f2b
+	vera_rw_9f2c qword vera_update_9f2c
+	vera_rw_9f2d qword vera_update_l0config
+	vera_rw_9f2e qword vera_update_l0mapbase
+	vera_rw_9f2f qword vera_update_l0tilebase
+	vera_rw_9f30 qword vera_update_l0hscroll_l
+	vera_rw_9f31 qword vera_update_l0hscroll_h
+	vera_rw_9f32 qword vera_update_l0vscroll_l
+	vera_rw_9f33 qword vera_update_l0vscroll_h
+	vera_rw_9f34 qword vera_update_l1config
+	vera_rw_9f35 qword vera_update_l1mapbase
+	vera_rw_9f36 qword vera_update_l1tilebase
+	vera_rw_9f37 qword vera_update_l1hscroll_l
+	vera_rw_9f38 qword vera_update_l1hscroll_h
+	vera_rw_9f39 qword vera_update_l1vscroll_l
+	vera_rw_9f3a qword vera_update_l1vscroll_h
 	vera_rw_9f3b qword io_rw_readmemory
 	vera_rw_9f3c qword io_rw_readmemory
 	vera_rw_9f3d qword io_rw_readmemory

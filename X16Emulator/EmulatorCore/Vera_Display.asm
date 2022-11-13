@@ -408,6 +408,8 @@ no_scale_reset:
 	jnz display_loop
 
 done:
+	mov rsi, [rdx].state.vram_ptr
+
 	mov dword ptr [rdx].state.display_position, r9d
 	;mov word ptr [rdx].state.display_x, r11w
 	mov dword ptr [rdx].state.buffer_render_position, r15d
@@ -525,6 +527,7 @@ get_bitmap_definition macro width, colour_depth
 	if colour_depth eq 3
 	endif
 	add r10, r14							; r10 is now in bytes offset, add on base address
+	and r10, 1ffffh							; constrain to vram
 
 	mov ebx, [rsi + r10]
 	ret

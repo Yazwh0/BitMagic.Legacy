@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BitMagic.X16Emulator.Tests;
+namespace BitMagic.X16Emulator.Tests.Vera;
 
 [TestClass]
 public class Data0_Initialise
@@ -536,5 +536,45 @@ public class Data0_Initialise
         Assert.AreEqual(0x00, emulator.Memory[0x9F20]);
         Assert.AreEqual(0x00, emulator.Memory[0x9F21]);
         Assert.AreEqual(0xF8, emulator.Memory[0x9F22]);
+    }
+
+    [TestMethod]
+    public async Task Set_Addr_L()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Address = 0x000000;
+        emulator.Vera.Vram[0x0010] = 0xff;
+        emulator.A = 0x10;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta ADDRx_L
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F24]);
+    }
+
+    [TestMethod]
+    public async Task Set_Addr_M()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Address = 0x000000;
+        emulator.Vera.Vram[0x001000] = 0xff;
+        emulator.A = 0x10;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta ADDRx_M
+                stp",
+                emulator);
+
+        Assert.AreEqual(0xff, emulator.Memory[0x9F23]);
+        Assert.AreEqual(0x00, emulator.Memory[0x9F24]);
     }
 }

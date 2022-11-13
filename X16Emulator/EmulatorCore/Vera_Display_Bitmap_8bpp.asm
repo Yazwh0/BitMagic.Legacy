@@ -14,11 +14,17 @@
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
 writepixel_8bpp_bitmap macro pixeloutput, outputoffset
+	local skip
 	xor r12, r12
-	mov r13, rbx
+	movzx r13, bl
 	cmp r13, 15
 	cmovg r12, r11		; clear offsett if >15
 	add r13, r12		; add offset
+
+	cmp r13b, 12
+	jne skip
+	mov r13b, r13b
+	skip:
 
 	mov byte ptr [rsi + r15 + pixeloutput + outputoffset], r13b
 	shr ebx, 8

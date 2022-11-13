@@ -62,8 +62,9 @@
 				"args": [ 
 					"--razor-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.csasm",
 					"--bmasm-file=${workspaceFolder:DisplayImage}/DisplayImageX16/src/main.bmasm",
-					"--output-file=${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg",
+					"--prg-file=${workspaceFolder:DisplayImage}/DisplayImageX16/test.prg",
 					"--display-output",
+					"--beautify",
 					"razor",
 					"compile"
 				],

@@ -4,7 +4,7 @@ assembly "..\..\Libraries\Vera\bin\Debug\net6.0\Vera.dll";
 using Compression;
 using ImageProcessor;
 using Vera;
-machine CommanderX16R39;
+machine CommanderX16R40;
 
     BM.X16Header(); // byte code to start execution.
 
@@ -15,7 +15,11 @@ machine CommanderX16R39;
 
     Video.Scaling(Resolution.Half); // 320x240
 
-    Video.LayerBitmap(ConfigLayer.Layer0, Depth.Bpp_8, BitmapWidth.Half_320, 0x1000);
+       lda #180
+       sta DC_HSCALE
+       sta DC_VSCALE
+
+    Video.LayerBitmap(ConfigLayer.Layer0, Vera.Depth.Bpp_8, Vera.BitmapWidth.Half_320, 0x1000);
 
     ; in case colour 0 is not black!
     lda #$11
@@ -29,10 +33,10 @@ machine CommanderX16R39;
     ; call decompress
     Inflator.InflateToVram("compressed_data", 0x1000);
 
-    var imageData = ImageAsset.LoadFullImage(@"Assets\bliss.bmp");
+    var imageData = Processor.LoadFullImage(@"Assets\bliss.bmp");
 
     ; copy palette to vera
-    VideoMemory.Copy("palette", 0x1fa00, imageData.X16Colours.Length);
+    VideoMemory.Copy("palette", 0x1fa00, imageData.Colours.Length * 2);
 
     Video.Mode(Layers.Layer0); // turn on layer 0 to show the image.
 
@@ -45,7 +49,7 @@ machine CommanderX16R39;
     VideoMemory.CopyProc(); // copy proc code.
  
     .palette:
-    BM.Bytes(imageData.X16Colours);
+    BM.Bytes(imageData.Colours.SelectMany(c => c.VeraColour));
     
     var compressed = Deflator.Deflate(imageData.Pixels);
     ; Source data is @(imageData.Pixels.Length) bytes.

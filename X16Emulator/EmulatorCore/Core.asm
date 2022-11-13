@@ -296,6 +296,7 @@ vsync:
 	; only draw the screen if there is an update!
 	movzx rax, byte ptr [rdx].state.display_dirty
 	sub rax, 1
+	; comment this out to disable no display update optimisation
 	js no_render_required
 
 	mov byte ptr [rdx].state.display_dirty, al
@@ -1641,6 +1642,7 @@ sbc_body_end macro checkvera, clock, pc
 endm
 
 sbc_body macro checkvera, clock, pc
+	local above_zero, all_done
 	read_flags_rax
 
 	cmc

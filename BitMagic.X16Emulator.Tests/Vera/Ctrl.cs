@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BitMagic.X16Emulator.Tests;
+namespace BitMagic.X16Emulator.Tests.Vera;
 
 [TestClass]
 public class Ctrl

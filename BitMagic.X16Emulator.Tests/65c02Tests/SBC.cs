@@ -70,6 +70,46 @@ public class SBC
     }
 
     [TestMethod]
+    public async Task Imm_NoCarry_FromZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+        emulator.Carry = false;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sbc #$00
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0xff, 0x00, 0x00, 0x813, 2);
+        emulator.AssertFlags(false, true, false, false);
+    }
+
+    [TestMethod]
+    public async Task Imm_Carry_FromZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sbc #$00
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 2);
+        emulator.AssertFlags(true, false, false, true);
+    }
+
+    [TestMethod]
     public async Task Imm_NegativeCarry()
     {
         var emulator = new Emulator();

@@ -76,7 +76,6 @@ BitMagic.AsmTemplate.Template.WriteLiteral($@".pad $100");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".controlSymbolCodeLength:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".pad {1+29+2 + 30}");
 
-
 BitMagic.AsmTemplate.Template.WriteLiteral($@".nBitCode_clearFrom:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".nBitCode_literalCount:");
 BitMagic.AsmTemplate.Template.WriteLiteral($@".pad 32");

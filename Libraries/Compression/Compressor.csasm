@@ -76,7 +76,6 @@ public static partial class Inflator
             .controlSymbolCodeLength:
             .pad @(1+29+2 + 30)
 
-
             .nBitCode_clearFrom:
             .nBitCode_literalCount:
             .pad 32
