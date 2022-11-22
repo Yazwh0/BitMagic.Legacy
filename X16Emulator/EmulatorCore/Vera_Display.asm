@@ -95,16 +95,8 @@ change:
 	push r14
 	push r15
 
-	;mov rax, rcx								; keep hold of base ticks
-
 	lea rcx, [rcx+rcx*4]						; * 5
 	lea rcx, [rcx+rcx*4]						; * 5 = *25
-
-	;shl rcx, 3
-	;mov rbx, rcx
-	;add rcx, rbx								; now * 3
-	;add rcx, rbx								
-	;add rcx, rax								; now * 3.125
 
 	movzx rax, [rdx].state.display_carry		; Get carry, and add it on
 	add rcx, rax
@@ -200,8 +192,8 @@ draw_pixel:
 	jmp layer0_done
 
 layer0_notenabled:
-	xor rbx, rbx								; if layer is not enabled, write a transparent pixel
-	mov [rdi + r9 * 4 + LAYER0], ebx	
+	;xor rbx, rbx								; if layer is not enabled, write a transparent pixel
+	mov dword ptr [rdi + r9 * 4 + LAYER0], 0 ;ebx	
 layer0_done:
 
 	;
@@ -219,8 +211,8 @@ layer0_done:
 	jmp layer1_done
 
 layer1_notenabled:
-	xor rbx, rbx								; if layer is not enabled, write a transparent pixel
-	mov [rdi + r9 * 4 + LAYER1], ebx	
+	;xor rbx, rbx								; if layer is not enabled, write a transparent pixel
+	mov dword ptr [rdi + r9 * 4 + LAYER1], 0;, ebx	
 layer1_done:
 
 	; step x on, and store
@@ -306,7 +298,7 @@ layer0_skip:
 	push r12
 	push r11
 	
-	movzx rax, byte ptr [rdx].state.layer0_bitmapMode
+	movzx rax, byte ptr [rdx].state.layer1_bitmapMode
 	test rax, rax
 	jnz bitmap_mode_l1
 
