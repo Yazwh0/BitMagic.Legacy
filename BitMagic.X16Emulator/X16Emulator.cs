@@ -80,7 +80,7 @@ public class Emulator : IDisposable
         public ushort Beam_Y { get => (ushort)Math.Floor(_emulator._state.Beam_Position / 800.0); }
         public UInt32 Beam_Position { get => _emulator._state.Beam_Position; set => _emulator._state.Beam_Position = value; }
 
-        public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value? (byte)1 : (byte)0); }
+        public bool Interrupt_Line_Hit { get => _emulator._state.Interrupt_Line_Hit != 0; set => _emulator._state.Interrupt_Line_Hit = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_Vsync_Hit { get => _emulator._state.Interrupt_Vsync_Hit != 0; set => _emulator._state.Interrupt_Vsync_Hit = (value ? (byte)1 : (byte)0); }
         public bool Interrupt_SpCol_Hit { get => _emulator._state.Interrupt_SpCol_Hit != 0; set => _emulator._state.Interrupt_SpCol_Hit = (value ? (byte)1 : (byte)0); }
         public UInt32 Frame_Count { get => _emulator._state.Frame_Count; }
@@ -121,7 +121,7 @@ public class Emulator : IDisposable
         public bool Interrupt_Ca2 { get => (_emulator.Memory[0x9f0e] & 0b0000001) != 0; set => _emulator.Memory[0x9f0e] |= (value ? (byte)0b0000001 : (byte)0); }
 
         public bool Timer1_Continous { get => _emulator._state.Via_Timer1_Continuous != 0; set => _emulator._state.Via_Timer1_Continuous = (value ? (byte)1 : (byte)0); }
-        public bool Timer1_Pb7 { get => _emulator._state.Via_Timer1_Pb7!= 0; set => _emulator._state.Via_Timer1_Pb7 = (value ? (byte)1 : (byte)0); }
+        public bool Timer1_Pb7 { get => _emulator._state.Via_Timer1_Pb7 != 0; set => _emulator._state.Via_Timer1_Pb7 = (value ? (byte)1 : (byte)0); }
         public bool Timer1_Running { get => _emulator._state.Via_Timer1_Running != 0; set => _emulator._state.Via_Timer1_Running = (value ? (byte)1 : (byte)0); }
 
         public bool Timer2_PulseCount { get => _emulator._state.Via_Timer2_PulseCount != 0; set => _emulator._state.Via_Timer2_PulseCount = (value ? (byte)1 : (byte)0); }
@@ -162,6 +162,8 @@ public class Emulator : IDisposable
 
         public uint Dc_HScale = 0x00010000;
         public uint Dc_VScale = 0x00010000;
+
+        public uint Brk_Causes_stop = 0;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
@@ -234,6 +236,7 @@ public class Emulator : IDisposable
         public byte Interrupt_Vsync_Hit = 0;
         public byte Interrupt_SpCol_Hit = 0;
 
+        // Rendering data
         public byte Drawing = 0;
 
         public uint Beam_Position = 0; // needs to be inline with the cpu clock
@@ -246,6 +249,10 @@ public class Emulator : IDisposable
         public ushort Beam_y = 0;
         public byte DisplayDirty = 2;           // always draw the first render
         public byte RenderReady = 0;            // used to signal to GL to redaw
+
+        // Sprites
+        public uint Sprite_Wait = 0;
+        public uint Sprite_Position = 0;
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
@@ -274,7 +281,7 @@ public class Emulator : IDisposable
         public byte Via_Timer2_Running = 0;
 
 
-        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram, 
+        public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,
             ulong display, ulong palette, ulong displayBuffer, ulong history)
         {
             MemoryPtr = memory;
@@ -293,6 +300,7 @@ public class Emulator : IDisposable
         ExitCondition,
         UnknownOpCode,
         DebugOpCode,
+        BrkHit,
         Unsupported = -1
     }
 
@@ -319,6 +327,9 @@ public class Emulator : IDisposable
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
     public bool RenderReady { get => _state.RenderReady != 0; set => _state.RenderReady = (byte)(value ? 0x01 : 0x00); }
 
+
+    public bool Brk_Causes_Stop { get => _state.Brk_Causes_stop != 0; set => _state.Brk_Causes_stop = (uint)(value ? 0x01 : 0x00); }
+
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);
 
@@ -337,7 +348,7 @@ public class Emulator : IDisposable
     private readonly ulong _palette_ptr;
     private readonly ulong _history_ptr;
 
-    private const int RamSize = 0x10000; 
+    private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
     private const int BankedRamSize = 0x2000 * 256;
     private const int VramSize = 0x20000;
@@ -420,7 +431,7 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_ram_ptr);
         NativeMemory.Free((void*)_display_ptr);
         NativeMemory.Free((void*)_vram_ptr);
-        NativeMemory.Free((void*)_palette_ptr);        
+        NativeMemory.Free((void*)_palette_ptr);
         NativeMemory.Free((void*)_display_buffer_ptr);
     }
 }

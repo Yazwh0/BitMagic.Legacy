@@ -2784,7 +2784,9 @@ xCB_wai endp
 
 x00_brk proc
 	; copy of the nmi code
-	jmp noinstruction
+	mov eax, dword ptr [rdx].state.brk_causes_stop
+	test eax, eax
+	jnz stop_emulation
 
 	mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
@@ -2814,6 +2816,16 @@ x00_brk proc
 	add r14, 7							; Clock 
 
 	jmp next_opcode
+
+stop_emulation:
+	call preserve_current_rambank
+	write_state_obj
+	mov rax, 03h
+
+	restore_registers
+
+	leave
+	ret
 
 x00_brk endp
 

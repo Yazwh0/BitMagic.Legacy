@@ -15,6 +15,8 @@ public class Brk
         emulator.RomBank[0x3ffa] = 0x00;
         emulator.RomBank[0x3ffb] = 0x09;
 
+        emulator.Brk_Causes_Stop = false;
+
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -22,7 +24,7 @@ public class Brk
                 stp
                 .org $900
                 stp",
-                emulator);
+                emulator, dontChangeEmulatorOptions: true);
 
         // emulation
         emulator.AssertState(Pc: 0x901);
@@ -39,6 +41,8 @@ public class Brk
         emulator.RomBank[0x3ffa] = 0x00;
         emulator.RomBank[0x3ffb] = 0x09;
 
+        emulator.Brk_Causes_Stop = false;
+
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
                 .org $810
@@ -46,10 +50,28 @@ public class Brk
                 stp
                 .org $900
                 rti",
-                emulator);
+                emulator, dontChangeEmulatorOptions: true);
 
         // emulation
         emulator.AssertState(Pc: 0x812);
         emulator.AssertFlags(InterruptDisable: false, Interrupt: false, Nmi: false);
+    }
+
+    [TestMethod]
+    public async Task Brk_Causes_Stop()
+    {
+        var emulator = new Emulator();
+
+        emulator.Nmi = false;
+
+        emulator.RomBank[0x3ffa] = 0x00;
+        emulator.RomBank[0x3ffb] = 0x09;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                brk
+                ",
+                emulator, brkExpected: true);
     }
 }

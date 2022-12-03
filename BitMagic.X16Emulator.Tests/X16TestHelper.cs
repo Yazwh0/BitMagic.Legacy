@@ -13,11 +13,16 @@ namespace BitMagic.X16Emulator.Tests
 {
     internal static class X16TestHelper
     {
-        public static async Task<Emulator> Emulate(string code, Emulator? emulator = null)
+        public static async Task<Emulator> Emulate(string code, Emulator? emulator = null, bool dontChangeEmulatorOptions = false,  bool brkExpected = false)
         {
             var compiler = new Compiler.Compiler(code);
 
             emulator ??= new Emulator();
+
+            if (!dontChangeEmulatorOptions)
+            {
+                emulator.Brk_Causes_Stop = true;
+            }
 
             var compileResult = await compiler.Compile();
 
@@ -67,7 +72,8 @@ namespace BitMagic.X16Emulator.Tests
             Console.WriteLine($"Beam:\t{emulator.Vera.Beam_X}, {emulator.Vera.Beam_Y} ({emulator.Vera.Beam_Position})");
             Console.WriteLine();
 
-            if (emulateResult != Emulator.EmulatorResult.DebugOpCode)
+            if (emulateResult != Emulator.EmulatorResult.DebugOpCode && 
+                (!brkExpected || emulateResult != Emulator.EmulatorResult.BrkHit))
                 Assert.Fail($"Emulate Result is not from a stp. {emulateResult}");
 
             return emulator;

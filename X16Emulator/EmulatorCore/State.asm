@@ -44,6 +44,8 @@ state struct
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
+	brk_causes_stop			dword ?
+
 	register_pc				word ?
 	stackpointer			word ?
 
@@ -127,6 +129,10 @@ state struct
 
 	display_dirty			byte ?
 	render_ready			byte ?
+	
+	; Sprites
+	sprite_wait				dword ?
+	sprite_position			dword ?
 
 	; Layer 0
 	layer0_next_render		word ?
@@ -134,7 +140,6 @@ state struct
 	layer0_tile_vshift		word ?
 	layer0_map_hshift		word ?
 	layer0_map_vshift		word ?
-
 	
 	; Layer 1
 	layer1_next_render		word ?
