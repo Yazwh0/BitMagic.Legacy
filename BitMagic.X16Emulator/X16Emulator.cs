@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Runtime.InteropServices;
 using BitMagic.Common;
 
@@ -250,9 +251,12 @@ public class Emulator : IDisposable
         public byte DisplayDirty = 2;           // always draw the first render
         public byte RenderReady = 0;            // used to signal to GL to redaw
 
+        public ushort _Padding = 0;
+
         // Sprites
-        public uint Sprite_Wait = 0;
-        public uint Sprite_Position = 0;
+        public uint Sprite_Wait = 0;            // delay until sprite rendering continues
+        public uint Sprite_Position = 0;        // which sprite we're considering
+        public uint Vram_Wait = 0;              // vram delay to stall sprite data read
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
@@ -279,6 +283,7 @@ public class Emulator : IDisposable
 
         public byte Via_Timer2_PulseCount = 0;
         public byte Via_Timer2_Running = 0;
+        public byte _Padding2 = 0;
 
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,

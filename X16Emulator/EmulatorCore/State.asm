@@ -130,9 +130,12 @@ state struct
 	display_dirty			byte ?
 	render_ready			byte ?
 	
+	_padding				word ?
+
 	; Sprites
 	sprite_wait				dword ?
 	sprite_position			dword ?
+	vram_wait				dword ?
 
 	; Layer 0
 	layer0_next_render		word ?
@@ -171,6 +174,8 @@ state struct
 
 	via_timer2_pulsecount	byte ?
 	via_timer2_running		byte ?
+
+	_padding2				byte ?
 
 	; I2c
 	;i2c_address				word ?  ; 7 bit address of destination
