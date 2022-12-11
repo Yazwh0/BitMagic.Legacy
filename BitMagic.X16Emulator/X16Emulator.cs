@@ -18,6 +18,20 @@ public struct EmulatorHistory
 
 }
 
+public struct Sprite // 32 bytes
+{
+    public uint Address { get; set; } // actual address in memory
+    public uint PaletteOffset { get; set; }
+    public uint CollisionMask { get; set; }
+    public uint YHeight { get; set; }
+    public uint X { get; set; }
+    public uint Y { get; set; }
+    public uint Mode { get; set; } // mode, height, width, vflip, hflip - used for data fetch proc lookup. Use to set DrawProc
+    public uint Depth { get; set; }
+
+    public override string ToString() => $"Address: {Address:X4} DrawProc: {CollisionMask:X4} X: {X:X4} Y: {Y:X4} YHeight: {YHeight:X4} Mode: {Mode:X4} Depth: {Depth:X2}";
+}
+
 public class Emulator : IDisposable
 {
     [DllImport(@"..\..\..\..\X16Emulator\EmulatorCore\x64\Debug\EmulatorCore.dll")]
@@ -144,6 +158,8 @@ public class Emulator : IDisposable
 
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
+        public ulong SpritePtr = 0;
+        public ulong SpriteCachePtr = 0;
 
         public ulong Data0_Address = 0;
         public ulong Data1_Address = 0;
@@ -257,6 +273,8 @@ public class Emulator : IDisposable
         public uint Sprite_Wait = 0;            // delay until sprite rendering continues
         public uint Sprite_Position = 0;        // which sprite we're considering
         public uint Vram_Wait = 0;              // vram delay to stall sprite data read
+        public uint Sprite_Width = 0;           // count down until fully rendered
+        public uint Sprite_Render_Mode = 0;
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
@@ -287,7 +305,7 @@ public class Emulator : IDisposable
 
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,
-            ulong display, ulong palette, ulong displayBuffer, ulong history)
+            ulong display, ulong palette, ulong sprite, ulong spriteCache, ulong displayBuffer, ulong history)
         {
             MemoryPtr = memory;
             RomPtr = rom;
@@ -295,8 +313,10 @@ public class Emulator : IDisposable
             VramPtr = vram;
             DisplayPtr = display;
             PalettePtr = palette;
+            SpritePtr = sprite;
             DisplayBufferPtr = displayBuffer;
             HistoryPtr = history;
+            SpriteCachePtr = spriteCache;
         }
     }
 
@@ -352,6 +372,8 @@ public class Emulator : IDisposable
     private readonly ulong _display_buffer_ptr;
     private readonly ulong _palette_ptr;
     private readonly ulong _history_ptr;
+    private readonly ulong _sprite_ptr;
+    private readonly ulong _sprite_cache_ptr;
 
     private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
@@ -361,6 +383,8 @@ public class Emulator : IDisposable
     private const int PaletteSize = 256 * 4;
     private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
     private const int HistorySize = 8 * 1024;
+    private readonly int SpriteSize = Marshal.SizeOf(typeof(Sprite)) * 128;
+    private const int SpriteCacheSize = 64 * 64 * 128;
 
     private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
 
@@ -378,10 +402,12 @@ public class Emulator : IDisposable
         _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
+        _sprite_ptr = (ulong)NativeMemory.Alloc((nuint)SpriteSize);
+        _sprite_cache_ptr = (ulong)NativeMemory.Alloc(SpriteCacheSize);
         _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize);
         _history_ptr = (ulong)NativeMemory.Alloc(HistorySize);
 
-        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _display_buffer_ptr, _history_ptr);
+        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _sprite_ptr, _sprite_cache_ptr, _display_buffer_ptr, _history_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -406,6 +432,23 @@ public class Emulator : IDisposable
         var history_span = new Span<byte>((void*)_history_ptr, HistorySize);
         for (var i = 0; i < HistorySize; i++)
             history_span[i] = 0;
+
+        var sprite_span = new Span<Sprite>((void*)_sprite_ptr, SpriteSize);
+        for (var i = 0; i < 128; i++)
+        {
+            sprite_span[i].Address = 0;
+            sprite_span[i].CollisionMask = 0;
+            sprite_span[i].YHeight = 0;
+            sprite_span[i].X = 0;
+            sprite_span[i].Y = 0;
+            sprite_span[i].Mode= 0;
+            sprite_span[i].Depth = 0;
+            sprite_span[i].PaletteOffset = 0;
+        }
+
+        var sprite_cache_span = new Span<byte>((void*)_sprite_cache_ptr, SpriteCacheSize);
+        for (var i = 0; i < SpriteCacheSize; i++)
+            sprite_cache_span[i] = 0;
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr_rounded, RamSize);
@@ -413,6 +456,7 @@ public class Emulator : IDisposable
     public unsafe Span<byte> RomBank => new Span<byte>((void*)_rom_ptr_rounded, RomSize);
     public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
+    public unsafe Span<Sprite> Sprites => new Span<Sprite>((void*)_sprite_ptr, 128);
     public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);
     public EmulatorResult Emulate()
     {
@@ -437,6 +481,7 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_display_ptr);
         NativeMemory.Free((void*)_vram_ptr);
         NativeMemory.Free((void*)_palette_ptr);
+        NativeMemory.Free((void*)_sprite_ptr);
         NativeMemory.Free((void*)_display_buffer_ptr);
     }
 }

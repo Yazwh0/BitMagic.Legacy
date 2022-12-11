@@ -24,6 +24,8 @@ state struct
 	; Vera
 	vram_ptr				qword ?
 	palette_ptr				qword ? 
+	sprite_ptr				qword ?
+	sprite_cache_ptr		qword ?
 
 	data0_address			qword ?
 	data1_address			qword ?
@@ -136,6 +138,8 @@ state struct
 	sprite_wait				dword ?
 	sprite_position			dword ?
 	vram_wait				dword ?
+	sprite_width			dword ?
+	sprite_render_mode		dword ?
 
 	; Layer 0
 	layer0_next_render		word ?

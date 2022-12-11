@@ -93,5 +93,8 @@
     <Text Include="Vera_Display_Bitmap_8bpp.asm">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="Vera_Sprites.asm">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -493,15 +493,15 @@ vera_init endp
 ; Todo, add PSG\Sprite changes if reqd
 ;
 vera_dataupdate_stuctures macro
-	local skip, xx_red
+	local skip, xx_red, sprite_change
 	push rsi
 	cmp rdi, 1fa00h
 	jb skip
 
-	cmp rdi, 1fbffh
-	ja skip
-
 	push rax
+
+	cmp rdi, 1fbffh
+	ja sprite_change
 
 	mov rsi, [rdx].state.palette_ptr
 	mov rax, rdi
@@ -545,6 +545,11 @@ xx_red:
 
 	mov dword ptr [rsi + rax * 2], ecx
 	pop rax
+	jmp skip
+sprite_change:
+	call sprite_update_registers
+	pop rax
+
 skip:
 	pop rsi
 endm

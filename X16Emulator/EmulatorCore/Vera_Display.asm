@@ -330,6 +330,34 @@ layer1_skip:
 
 	mov word ptr [rdx].state.layer1_next_render, ax
 
+	;
+	; Sprites
+	;
+	mov eax, dword ptr [rdx].state.sprite_wait
+	test rax, rax
+	jnz sprite_skip
+
+
+	call sprites_render
+
+	jmp sprites_render_done
+
+sprite_skip:
+	sub rax, 1
+
+sprites_render_done::
+	mov dword ptr [rdx].state.sprite_wait, eax
+
+	;
+	; VRAM Counter
+	;
+	mov eax, dword ptr [rdx].state.vram_wait
+	sub eax, 1
+	js vram_skip
+	mov dword ptr [rdx].state.vram_wait, eax
+vram_skip:
+
+
 ; ------------------------------------------------
 ; end of rendering
 ; ------------------------------------------------
@@ -474,6 +502,7 @@ vera_initialise_palette endp
 ; Renderers
 ;
 
+include Vera_Sprites.asm
 include Vera_Display_Tiles_1bpp.asm
 include Vera_Display_Tiles_2bpp.asm
 include Vera_Display_Tiles_4bpp.asm
