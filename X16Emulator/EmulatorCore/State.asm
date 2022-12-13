@@ -25,7 +25,6 @@ state struct
 	vram_ptr				qword ?
 	palette_ptr				qword ? 
 	sprite_ptr				qword ?
-	sprite_cache_ptr		qword ?
 
 	data0_address			qword ?
 	data1_address			qword ?

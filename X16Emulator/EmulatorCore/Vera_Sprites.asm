@@ -13,7 +13,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
-SPRITE_LEN equ 32
+SPRITE_LEN equ 64
 
 SPRITE_SEARCHING equ 0
 SPRITE_RENDERING equ 1
@@ -23,11 +23,18 @@ sprite struct
 	address dword ?
 	palette_offset dword ?
 	collision_mask dword ?
-	YHeight dword ?
+	widthx dword ? ; width is a keyword apparently
+	height dword ?
 	x dword ?
 	y dword ?
 	mode dword ?	; mode, height, width, vflip, hflip : 7 bits.
 	depth dword ?
+
+	padding_1 dword ?
+	padding_2 qword ?
+	padding_3 qword ?
+	padding_4 qword ?
+
 sprite ends
 
 ; r12 actual line (w/ v_scroll)
@@ -36,30 +43,37 @@ sprites_render proc
 	test rax, rax
 	jz sprites_render_find
 
-	ret
+	mov eax, dword ptr [rdx].state.sprite_position
+	mov ebx, dword ptr [rdx].state.sprite_width
+
+	lea r12, sprite_definition_jump
+	jmp qword ptr [r12 + rax * 8]
+
 sprites_render endp
 
 ; check current sprite to see if its to be rendered
 sprites_render_find proc
 
 	mov eax, dword ptr [rdx].state.sprite_position
-	shl rax, 5	; * 32
+	shl rax, 6	; * 64
 	mov rsi, [rdx].state.sprite_ptr
 
 	; check if sprite is on line
 	mov ebx, dword ptr [rsi + rax].sprite.y
 	cmp rbx, r12
-	jl not_on_line
+	jb not_on_line
 
-	add ebx, dword ptr [rsi + rax].sprite.yheight
+	add ebx, dword ptr [rsi + rax].sprite.height
+	cmp rbx, r12
 	jg not_on_line
 
 	; found a sprite!
 	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_RENDERING 
+	mov dword ptr [rdx].state.sprite_width, 0
 	ret
 	
 not_on_line:
-	shr rax, 5		; / 32, or back to index.
+	shr rax, 6		; / 64, or back to index.
 	add eax, 1
 	cmp eax, 127
 	je all_done
@@ -84,7 +98,7 @@ sprite_update_registers proc
 	mov rax, rdi
 	sub rax, 1fc00h
 	and rax, 001111111000b	; mask off index (128 sprites)
-	shl rax, 5-3			; adust to actual offset
+	shl rax, 6-3			; adust to actual offset
 
 	; set rbx to the index of what was changed
 	mov rbx, rdi
@@ -207,7 +221,7 @@ sprite_byte_7:
 	shr rcx, 6
 	mov rbx, 8
 	shl rbx, cl
-	mov dword ptr [rsi + rax].sprite.yheight, ebx
+	mov dword ptr [rsi + rax].sprite.height, ebx
 	pop rcx
 
 	; store height change for render mode
@@ -225,28 +239,13 @@ exit:
 
 sprite_update_registers endp
 
-; render a sprite to our cached data so rendering is quicker every frame
-; inputs:
-; rax sprite number to update
-;sprite_update_cache proc
-;	mov rdi, [rdx].state.sprite_cache_ptr
-
-;	mov r13, rax
-;	shl r13, 12		; * 64*64
-;	add rdi, r13	; rdi now points to the memory location of the cached sprite image data
-
-;	mov ebx, dword ptr [rsi + rax].sprite.mode
-;	lea r13, sprite_definition_jump
-;	jmp qword ptr [r13 + rbx * 8]
-
-;sprite_update_cache endp
-
-; render a sprite to the sprite image cache
+; render a sprite to the sprite display buffer
 ; expects 
 ; rax : sprite number
-
+; rbx : width so far
 render_sprite macro bpp, height, width, vflip, hflip
 	
+
 
 
 	ret

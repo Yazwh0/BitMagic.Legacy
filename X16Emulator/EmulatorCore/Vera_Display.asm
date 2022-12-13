@@ -338,7 +338,7 @@ layer1_skip:
 	jnz sprite_skip
 
 
-	call sprites_render
+	call sprites_render	
 
 	jmp sprites_render_done
 
@@ -396,6 +396,11 @@ render_complete_visible:	; arrives here if the video wrote data
 
 	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
 	mov word ptr [rdx].state.layer1_next_render, 1
+
+	; reset sprite renderer
+	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_SEARCHING	; start searching
+	mov dword ptr [rdx].state.sprite_position, 0					; from sprite 0
+	mov dword ptr [rdx].state.sprite_width, 0
 
 	jmp render_complete
 

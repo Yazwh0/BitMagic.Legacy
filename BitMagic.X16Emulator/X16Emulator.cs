@@ -18,18 +18,28 @@ public struct EmulatorHistory
 
 }
 
-public struct Sprite // 32 bytes
+public struct Sprite // 64 bytes
 {
-    public uint Address { get; set; } // actual address in memory
-    public uint PaletteOffset { get; set; }
+    public uint Address { get; set; }  // actual address in memory
+    public uint PaletteOffset { get; set; } 
+
     public uint CollisionMask { get; set; }
-    public uint YHeight { get; set; }
-    public uint X { get; set; }
-    public uint Y { get; set; }
+    public uint Width { get; set; }
+    public uint Height { get; set; }
+
+    public uint X { get; set; } 
+    public uint Y { get; set; } 
+
     public uint Mode { get; set; } // mode, height, width, vflip, hflip - used for data fetch proc lookup. Use to set DrawProc
     public uint Depth { get; set; }
 
-    public override string ToString() => $"Address: {Address:X4} DrawProc: {CollisionMask:X4} X: {X:X4} Y: {Y:X4} YHeight: {YHeight:X4} Mode: {Mode:X4} Depth: {Depth:X2}";
+    public uint Padding1 { get; set; } 
+
+    public ulong Padding2 { get; set; }
+    public ulong Padding3 { get; set; }
+    public ulong Padding4 { get; set; }
+
+    public override string ToString() => $"Address: {Address:X4} DrawProc: {CollisionMask:X4} X: {X:X4} Y: {Y:X4} Height: {Height:X2} Width: {Width:X2} Mode: {Mode:X4} Depth: {Depth:X2}";
 }
 
 public class Emulator : IDisposable
@@ -159,7 +169,6 @@ public class Emulator : IDisposable
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
         public ulong SpritePtr = 0;
-        public ulong SpriteCachePtr = 0;
 
         public ulong Data0_Address = 0;
         public ulong Data1_Address = 0;
@@ -305,7 +314,7 @@ public class Emulator : IDisposable
 
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,
-            ulong display, ulong palette, ulong sprite, ulong spriteCache, ulong displayBuffer, ulong history)
+            ulong display, ulong palette, ulong sprite, ulong displayBuffer, ulong history)
         {
             MemoryPtr = memory;
             RomPtr = rom;
@@ -316,7 +325,6 @@ public class Emulator : IDisposable
             SpritePtr = sprite;
             DisplayBufferPtr = displayBuffer;
             HistoryPtr = history;
-            SpriteCachePtr = spriteCache;
         }
     }
 
@@ -370,10 +378,10 @@ public class Emulator : IDisposable
     private readonly ulong _vram_ptr;
     private readonly ulong _display_ptr;
     private readonly ulong _display_buffer_ptr;
+    private readonly ulong _display_buffer_ptr_rounded;
     private readonly ulong _palette_ptr;
     private readonly ulong _history_ptr;
     private readonly ulong _sprite_ptr;
-    private readonly ulong _sprite_cache_ptr;
 
     private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
@@ -383,8 +391,7 @@ public class Emulator : IDisposable
     private const int PaletteSize = 256 * 4;
     private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 5 for each layers - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
     private const int HistorySize = 8 * 1024;
-    private readonly int SpriteSize = Marshal.SizeOf(typeof(Sprite)) * 128;
-    private const int SpriteCacheSize = 64 * 64 * 128;
+    private const int SpriteSize = 64 * 128;
 
     private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
 
@@ -399,15 +406,16 @@ public class Emulator : IDisposable
         _ram_ptr = (ulong)NativeMemory.Alloc(BankedRamSize + _rounding);
         _ram_ptr_rounded = RoundMemoryPtr(_ram_ptr);
 
+        _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize + _rounding);
+        _display_buffer_ptr_rounded = RoundMemoryPtr(_display_buffer_ptr);
+
         _display_ptr = (ulong)NativeMemory.Alloc(DisplaySize);
         _vram_ptr = (ulong)NativeMemory.Alloc(VramSize);
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
-        _sprite_ptr = (ulong)NativeMemory.Alloc((nuint)SpriteSize);
-        _sprite_cache_ptr = (ulong)NativeMemory.Alloc(SpriteCacheSize);
-        _display_buffer_ptr = (ulong)NativeMemory.Alloc(DisplayBufferSize);
+        _sprite_ptr = (ulong)NativeMemory.Alloc(SpriteSize);
         _history_ptr = (ulong)NativeMemory.Alloc(HistorySize);
 
-        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _sprite_ptr, _sprite_cache_ptr, _display_buffer_ptr, _history_ptr);
+        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _sprite_ptr, _display_buffer_ptr_rounded, _history_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -425,7 +433,7 @@ public class Emulator : IDisposable
         for (var i = 0; i < RomSize; i++)
             rom_span[i] = 0;
 
-        var buffer_span = new Span<byte>((void*)_display_buffer_ptr, DisplayBufferSize);
+        var buffer_span = new Span<byte>((void*)_display_buffer_ptr_rounded, DisplayBufferSize);
         for (var i = 0; i < DisplayBufferSize; i++)
             buffer_span[i] = 0;
 
@@ -433,22 +441,9 @@ public class Emulator : IDisposable
         for (var i = 0; i < HistorySize; i++)
             history_span[i] = 0;
 
-        var sprite_span = new Span<Sprite>((void*)_sprite_ptr, SpriteSize);
-        for (var i = 0; i < 128; i++)
-        {
-            sprite_span[i].Address = 0;
-            sprite_span[i].CollisionMask = 0;
-            sprite_span[i].YHeight = 0;
-            sprite_span[i].X = 0;
-            sprite_span[i].Y = 0;
-            sprite_span[i].Mode= 0;
-            sprite_span[i].Depth = 0;
-            sprite_span[i].PaletteOffset = 0;
-        }
-
-        var sprite_cache_span = new Span<byte>((void*)_sprite_cache_ptr, SpriteCacheSize);
-        for (var i = 0; i < SpriteCacheSize; i++)
-            sprite_cache_span[i] = 0;
+        var sprite_span = new Span<byte>((void*)_sprite_ptr, SpriteSize);
+        for (var i = 0; i < SpriteSize; i++)
+            sprite_span[i] = 0;
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr_rounded, RamSize);
@@ -458,6 +453,7 @@ public class Emulator : IDisposable
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
     public unsafe Span<Sprite> Sprites => new Span<Sprite>((void*)_sprite_ptr, 128);
     public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);
+
     public EmulatorResult Emulate()
     {
         Thread.CurrentThread.Priority = ThreadPriority.Highest;
