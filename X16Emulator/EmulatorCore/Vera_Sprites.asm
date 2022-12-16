@@ -45,6 +45,7 @@ sprites_render proc
 
 	mov eax, dword ptr [rdx].state.sprite_position
 	mov ebx, dword ptr [rdx].state.sprite_width
+	mov rsi, qword ptr [rdx].state.display_buffer_ptr
 
 	lea r12, sprite_definition_jump
 	jmp qword ptr [r12 + rax * 8]
@@ -243,6 +244,7 @@ sprite_update_registers endp
 ; expects 
 ; rax : sprite number
 ; rbx : width so far
+; rsi : display buffer
 render_sprite macro bpp, height, width, vflip, hflip
 	
 

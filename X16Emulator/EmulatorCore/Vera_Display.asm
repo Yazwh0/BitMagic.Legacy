@@ -55,11 +55,10 @@ VBLANK				equ 480
 
 ; Buffer is colour index. one line being rendered, the other being output
 BUFFER_SIZE			equ 2048 * 2			; use 2048, so we can toggle high bit to switch, also needs to be wide enough for scaling of $ff
-BUFFER_SPRITE_L1	equ 0
-BUFFER_LAYER0		equ BUFFER_SIZE
-BUFFER_SPRITE_L2	equ BUFFER_SIZE * 2
-BUFFER_LAYER1		equ BUFFER_SIZE * 3
-BUFFER_SPRITE_L3	equ BUFFER_SIZE * 4
+BUFFER_LAYER0		equ 0
+BUFFER_LAYER1		equ BUFFER_SIZE * 1
+BUFFER_SPRITE_VALUE	equ BUFFER_SIZE * 2
+BUFFER_SPRITE_DEPTH	equ BUFFER_SIZE * 3
 
 ;
 ; Render the rest of the display, only gets called on vsync
@@ -336,7 +335,6 @@ layer1_skip:
 	mov eax, dword ptr [rdx].state.sprite_wait
 	test rax, rax
 	jnz sprite_skip
-
 
 	call sprites_render	
 
