@@ -4,8 +4,9 @@
       "commandName": "Project",
       "commandLineArgsx": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg D:\\Documents\\Source\\ceira_effect.PRG",
       "commandLineArgsx3": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
-      "commandLineArgs2": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg D:\\Documents\\Source\\BitMagicTestProject\\test.prg",
-      "commandLineArgs": "--rom c:\\dev\\rom_r42.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
+      "commandLineArgsSpinner": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg D:\\Documents\\Dropbox\\Source\\X16\\Spinner\\spinner.prg",
+      "commandLineArgsX4096": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg D:\\Documents\\Source\\X16Cubed\\X16Cubed\\x4096.prg",
+      "commandLineArgs": "--rom c:\\dev\\rom_r42.bin --code D:\\Documents\\Source\\BitMagic\\X16E\\spritebudget.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
       "commandLineArgspicture": "--rom c:\\dev\\rom_r42.bin --code D:\\Documents\\Source\\BitMagic\\Examples\\DisplayImage\\DisplayImageX16\\src\\main.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
       "commandLineArgs3": "--rom C:\\Dev\\x16_hardware_tester.rom --code D:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
       "nativeDebugging": true

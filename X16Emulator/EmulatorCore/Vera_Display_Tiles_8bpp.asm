@@ -17,9 +17,9 @@ writepixel_8bpp_normal macro bitmask, bitshift, outputoffset, pixeloffset, width
 local zero_pallette
 	pixel_&pixeloffset&_&width&:
 	mov r13, rbx		; use r13b to write to the buffer
-	and r13, bitmask	; mask colour index whic his at the top
+	and r13, bitmask	; mask colour index which is at the top
 	if bitshift ne 0
-	shr r13, bitshift	; shift to value
+		shr r13, bitshift	; shift to value
 	endif
 	lea r11, [r13-1]	; 0-16 -> -1-15 for pallette check
 	lea r8, [r13 + rax]	; load r8 with the pallette if we apply offset

@@ -600,6 +600,7 @@ include Vera_Display_Bitmap_8bpp.asm
 ; r13 : width
 ; r14 : x mask
 get_bitmap_definition macro width, colour_depth
+	add dword ptr [rdx].state.vram_wait, 1
 
 	mov rsi, [rdx].state.vram_ptr
 	
@@ -647,7 +648,7 @@ endm
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
 	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask, t_height_invert_mask
 
-	
+	add dword ptr [rdx].state.vram_wait, 2
 	mov rsi, [rdx].state.vram_ptr
 
 	mov rax, r12					; y

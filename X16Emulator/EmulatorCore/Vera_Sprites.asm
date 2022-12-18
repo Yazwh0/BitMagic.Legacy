@@ -45,15 +45,21 @@ sprites_render proc
 	test rax, rax
 	jz sprites_render_find
 
+
+	mov eax, dword ptr [rdx].state.vram_wait	; cant render anything while waiting on the bus.
+	test eax, eax
+	jnz skip
+
 	mov eax, dword ptr [rdx].state.sprite_position
 	mov ebx, dword ptr [rdx].state.sprite_width
 	mov rsi, qword ptr [rdx].state.display_buffer_ptr
 
+	mov dword ptr [rdx].state.vram_wait, 1		; we know this is zero
+
 	jmp qword ptr [rdx].state.sprite_jmp
 
-	;lea r13, sprite_definition_jump
-	;jmp qword ptr [r13 + rax * 8]
-
+skip:
+	ret
 sprites_render endp
 
 ; check current sprite to see if its to be rendered
@@ -81,7 +87,7 @@ sprites_render_find proc
 
 	add ebx, dword ptr [rsi + rax].sprite.height
 	cmp r12, rbx
-	jg not_on_line
+	jge not_on_line
 
 	; found a sprite!
 	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_RENDERING 
@@ -111,7 +117,6 @@ sprites_render_find proc
 	
 not_on_line:
 	mov dword ptr [rdx].state.sprite_wait, 0
-
 	ret
 
 all_done:
@@ -291,10 +296,8 @@ render_pixel_data macro mask, shift, pixeladd
 	if shift ne 0
 		shr r14, shift
 	endif
-	; todo add palette offset
 
 	; dont write blank pixels
-	;test r14, r14	
 	jz dont_draw
 	
 	; can only write on pixels that are the same depth or lower
@@ -306,6 +309,11 @@ render_pixel_data macro mask, shift, pixeladd
 	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE]
 	test rax, rax
 	jnz dont_draw
+
+	lea rax, [r14 + r10] ; colour if we apply palette shift
+	lea rbx, [r14 - 1]	 ; 0-16 -> -1-15, so we can test on 0-15.
+	cmp rbx, 16
+	cmovb r14, rax
 
 	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE], r14b
 	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH], r8b
@@ -327,6 +335,8 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	; fetch 32bits of data
 	mov rdi, qword ptr [rdx].state.sprite_ptr
 	mov r13d, dword ptr [rdi + rax].sprite.address	; get address
+	mov r10d, dword ptr [rdi + rax].sprite.palette_offset
+	shl r10, 4	; todo: should be stored in this form.
 
 	mov r8d, dword ptr [rdx].state.sprite_depth
 
@@ -359,6 +369,8 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 		shr r12, 1
 	endif
 
+	add r12, r13		; add on vram start
+
 	; set r13 to the output x
 	mov r13d, dword ptr [rdx].state.sprite_x
 	add r13, rbx
@@ -367,6 +379,7 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	mov rdi, qword ptr [rdx].state.vram_ptr
 	mov r12d, dword ptr [rdi + r12]	; get data
 	
+	push rbx
 	if bpp eq 0
 		; display pixels
 		render_pixel_data 0000000f0h, 4,  0
@@ -378,6 +391,7 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 		render_pixel_data 0f0000000h, 28, 6
 		render_pixel_data 00f000000h, 24, 7
 
+		pop rbx
 		add rbx, 8
 		mov dword ptr [rdx].state.sprite_wait, 8
 	endif
@@ -389,6 +403,7 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 		render_pixel_data 000ff0000h, 16, 2
 		render_pixel_data 0ff000000h, 24, 3
 
+		pop rbx
 		add rbx, 4
 		mov dword ptr [rdx].state.sprite_wait, 4
 	endif
