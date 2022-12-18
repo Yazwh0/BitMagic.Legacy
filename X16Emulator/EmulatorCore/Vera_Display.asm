@@ -222,11 +222,50 @@ layer1_done:
 	test al, al
 	jz sprites_not_enabled
 
+	;push r14
+	;push r13
+
 	movzx rax, byte ptr [rsi + r11 + BUFFER_SPRITE_VALUE]	; read the colour index from the buffer
+	movzx r14, byte ptr [rsi + r11 + BUFFER_SPRITE_DEPTH]	; will be 0, 1, 2 or 3. If zero then should be no pixel.
+
 	xor rbx, rbx
 	test rax, rax
 	cmovnz ebx, dword ptr [r8 + rax * 4]
-	mov [rdi + r9 * 4 + SPRITE_L1], ebx
+
+	xor rax, rax
+
+	lea r13, depth_jump_table
+	jmp qword ptr [r13 + r14 * 8]
+
+depth_jump_table:
+	dq depth_0
+	dq depth_1
+	dq depth_2
+	dq depth_3
+
+depth_0:
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L1], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L2], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L3], eax
+	jmp sprite_render_done
+depth_1:
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L1], ebx
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L2], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L3], eax
+	jmp sprite_render_done
+depth_2:
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L1], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L2], ebx
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L3], eax
+	jmp sprite_render_done
+depth_3:
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L1], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L2], eax
+	mov dword ptr [rdi + r9 * 4 + SPRITE_L3], ebx
+
+sprite_render_done:
+	;pop r13
+	;pop r14
 
 sprites_not_enabled:
 
@@ -1686,5 +1725,11 @@ ENDM
 REPT 160
 	db 0
 ENDM
+
+sprite_layers:
+	dword 0
+	dword SPRITE_L1
+	dword SPRITE_L2
+	dword SPRITE_L3
 
 .code

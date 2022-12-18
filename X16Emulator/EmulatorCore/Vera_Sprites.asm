@@ -284,6 +284,7 @@ sprite_update_registers endp
 ; rsi : display buffer
 ; r13 : output x
 render_pixel_data macro mask, shift, pixeladd
+	local dont_draw
 	mov r14, r12
 	and r14, mask
 
@@ -292,7 +293,24 @@ render_pixel_data macro mask, shift, pixeladd
 	endif
 	; todo add palette offset
 
+	; dont write blank pixels
+	;test r14, r14	
+	jz dont_draw
+	
+	; can only write on pixels that are the same depth or lower
+	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH]
+	cmp r8, rax
+	jl dont_draw
+
+	; if there is something written, dont overwrite
+	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE]
+	test rax, rax
+	jnz dont_draw
+
 	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE], r14b
+	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH], r8b
+
+	dont_draw:
 endm
 
 ; render a sprite to the sprite display buffer
@@ -309,6 +327,8 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	; fetch 32bits of data
 	mov rdi, qword ptr [rdx].state.sprite_ptr
 	mov r13d, dword ptr [rdi + rax].sprite.address	; get address
+
+	mov r8d, dword ptr [rdx].state.sprite_depth
 
 	; calculate offset
 	mov r14d, dword ptr [rdx].state.sprite_y	; this shouldn't ever result in a negative position
