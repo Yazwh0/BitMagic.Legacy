@@ -470,6 +470,7 @@ render_complete_visible:	; arrives here if the video wrote data
 	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
 	mov dword ptr [rdx].state.sprite_width, eax
 	mov dword ptr [rdx].state.sprite_wait, eax
+	mov dword ptr [rdx].state.vram_wait, eax
 	; clear sprite buffer
 
 	call clear_sprite_buffer

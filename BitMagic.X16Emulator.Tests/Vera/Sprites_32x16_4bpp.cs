@@ -18,6 +18,15 @@ public class Sprites_32x16_4bpp
         emulator.Sprites[0].X = 10;
         emulator.Sprites[0].Y = 10;
 
+        emulator.Sprites[1].Depth = 1;
+        emulator.Sprites[1].Mode = 0b0011000; // 4bpp 32 x 16
+        emulator.Sprites[1].Width = 32;
+        emulator.Sprites[1].Height = 16;
+        emulator.Sprites[1].X = 20;
+        emulator.Sprites[1].Y = 20;
+        emulator.Sprites[1].PaletteOffset = 1;
+
+
         var index = 0;
         for (var y = 0; y < 32; y++) // 4bpp so halve
         {

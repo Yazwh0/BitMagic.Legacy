@@ -17,7 +17,7 @@
     lda #$01        ; 16 wide
     sta L0_TILEBASE 
 
-    jsr create_sprites
+    ;jsr create_sprites
     jsr init_sprites
 
     ; set colour 0
@@ -145,7 +145,8 @@
     sta ADDRx_H
     lda #$fc
     sta ADDRx_M
-    stz ADDRx_L
+    lda #$00
+    sta ADDRx_L
 
     ldx #128
     ldy #0

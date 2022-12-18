@@ -40,7 +40,7 @@ public struct Sprite // 64 bytes
     public ulong Padding3 { get; set; }
     public ulong Padding4 { get; set; }
 
-    public override string ToString() => $"Address: {Address:X4} DrawProc: {CollisionMask:X4} X: {X:X4} Y: {Y:X4} Height: {Height:X2} Width: {Width:X2} Mode: {Mode:X4} Depth: {Depth:X2}";
+    public override string ToString() => $"Address: ${Address:X4} DrawProc: ${CollisionMask:X4} X: {X} Y: {Y} Height: {Height} Width: {Width} Mode: {Mode:X4} Depth: ${Depth:X2} Palette: ${PaletteOffset:X2}";
 }
 
 public class Emulator : IDisposable
