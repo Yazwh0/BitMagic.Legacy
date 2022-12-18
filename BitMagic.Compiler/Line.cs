@@ -94,7 +94,7 @@ namespace BitMagic.Compiler
                 }
             }
 
-            throw new CannotCompileException(this, $"Cannot compile line {_original}");
+            throw new CannotCompileException(this, $"Cannot compile line '{_original}'");
         }
 
         //private void _evaluator_PreEvaluateVariable(object? sender, VariablePreEvaluationEventArg e)

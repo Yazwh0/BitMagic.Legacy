@@ -59,6 +59,7 @@ BUFFER_LAYER0		equ 0
 BUFFER_LAYER1		equ BUFFER_SIZE * 1
 BUFFER_SPRITE_VALUE	equ BUFFER_SIZE * 2
 BUFFER_SPRITE_DEPTH	equ BUFFER_SIZE * 3
+BUFFER_SPRITE_COL	equ BUFFER_SIZE * 4
 
 ;
 ; Render the rest of the display, only gets called on vsync
@@ -192,7 +193,7 @@ draw_pixel:
 
 layer0_notenabled:
 	;xor rbx, rbx								; if layer is not enabled, write a transparent pixel
-	mov dword ptr [rdi + r9 * 4 + LAYER0], 0 ;ebx	
+	mov dword ptr [rdi + r9 * 4 + LAYER0], 0	
 layer0_done:
 
 	;
@@ -211,9 +212,28 @@ layer0_done:
 
 layer1_notenabled:
 	;xor rbx, rbx								; if layer is not enabled, write a transparent pixel
-	mov dword ptr [rdi + r9 * 4 + LAYER1], 0;, ebx	
+	mov dword ptr [rdi + r9 * 4 + LAYER1], 0
 layer1_done:
+	;
+	; Sprites
+	;
 
+	mov al, byte ptr [rdx].state.sprite_enable
+	test al, al
+	jz sprites_not_enabled
+
+	movzx rax, byte ptr [rsi + r11 + BUFFER_SPRITE_VALUE]	; read the colour index from the buffer
+	xor rbx, rbx
+	test rax, rax
+	cmovnz ebx, dword ptr [r8 + rax * 4]
+	mov [rdi + r9 * 4 + SPRITE_L1], ebx
+
+sprites_not_enabled:
+
+	;
+	; All done
+	;
+	
 	; step x on, and store
 	mov r11d, dword ptr [rdx].state.scale_x
 	mov eax, [rdx].state.dc_hscale
@@ -327,6 +347,7 @@ layer1_render_done::
 	pop r12
 layer1_skip:
 
+
 	mov word ptr [rdx].state.layer1_next_render, ax
 
 	;
@@ -336,15 +357,24 @@ layer1_skip:
 	test rax, rax
 	jnz sprite_skip
 
+	push rdi
+	push r12
+	push r15
+	add r12w, word ptr [rdx].state.layer1_vscroll
+	and r15, 0100000000000b			; set r15\buffer position to be just the offset
 	call sprites_render	
+	pop r15
+	pop r12
+	pop rdi
+
 
 	jmp sprites_render_done
 
 sprite_skip:
 	sub rax, 1
+	mov dword ptr [rdx].state.sprite_wait, eax
 
 sprites_render_done::
-	mov dword ptr [rdx].state.sprite_wait, eax
 
 	;
 	; VRAM Counter
@@ -383,7 +413,7 @@ render_complete_visible:	; arrives here if the video wrote data
 	mov r11, r15
 	xor r11, 0100000000000b ; flip top bit back
 	shl r11, 16				; adjust to the fixed point number
-	mov dword ptr [rdx].state.scale_x, r11d		; zero
+	mov dword ptr [rdx].state.scale_x, r11d
 
 
 	; Add line to scaled y
@@ -396,9 +426,14 @@ render_complete_visible:	; arrives here if the video wrote data
 	mov word ptr [rdx].state.layer1_next_render, 1
 
 	; reset sprite renderer
-	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_SEARCHING	; start searching
-	mov dword ptr [rdx].state.sprite_position, 0					; from sprite 0
-	mov dword ptr [rdx].state.sprite_width, 0
+	xor rax, rax										; SPRITE_SEARCHING is zero
+	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
+	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
+	mov dword ptr [rdx].state.sprite_width, eax
+	mov dword ptr [rdx].state.sprite_wait, eax
+	; clear sprite buffer
+
+	call clear_sprite_buffer
 
 	jmp render_complete
 
@@ -1343,6 +1378,96 @@ get_bitmap_definition_jump:
 	qword bitmap_definition_6
 	qword bitmap_definition_7
 	
+
+clear_sprite_buffer proc
+
+	vpxor ymm0, ymm0, ymm0	; clears ymm0
+	mov rsi, [rdx].state.display_buffer_ptr
+
+	; 01000-0000-0000b
+	bt r15, 11
+	jc high_part
+
+	lea rsi, [rsi + BUFFER_SPRITE_VALUE]
+	jmp clear
+
+high_part:
+	lea rsi, [rsi + BUFFER_SPRITE_VALUE+ BUFFER_SIZE/2]
+
+clear:
+	vmovdqa ymmword ptr [rsi + 000h], ymm0
+	vmovdqa ymmword ptr [rsi + 020h], ymm0
+	vmovdqa ymmword ptr [rsi + 040h], ymm0
+	vmovdqa ymmword ptr [rsi + 060h], ymm0
+	vmovdqa ymmword ptr [rsi + 080h], ymm0
+	vmovdqa ymmword ptr [rsi + 0a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 100h], ymm0
+	vmovdqa ymmword ptr [rsi + 120h], ymm0
+
+	vmovdqa ymmword ptr [rsi + 140h], ymm0
+	vmovdqa ymmword ptr [rsi + 160h], ymm0
+	vmovdqa ymmword ptr [rsi + 180h], ymm0
+	vmovdqa ymmword ptr [rsi + 1a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 200h], ymm0
+	vmovdqa ymmword ptr [rsi + 220h], ymm0
+	vmovdqa ymmword ptr [rsi + 240h], ymm0
+	vmovdqa ymmword ptr [rsi + 260h], ymm0
+
+	add rsi, BUFFER_SIZE
+
+	vmovdqa ymmword ptr [rsi + 000h], ymm0
+	vmovdqa ymmword ptr [rsi + 020h], ymm0
+	vmovdqa ymmword ptr [rsi + 040h], ymm0
+	vmovdqa ymmword ptr [rsi + 060h], ymm0
+	vmovdqa ymmword ptr [rsi + 080h], ymm0
+	vmovdqa ymmword ptr [rsi + 0a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 100h], ymm0
+	vmovdqa ymmword ptr [rsi + 120h], ymm0
+
+	vmovdqa ymmword ptr [rsi + 140h], ymm0
+	vmovdqa ymmword ptr [rsi + 160h], ymm0
+	vmovdqa ymmword ptr [rsi + 180h], ymm0
+	vmovdqa ymmword ptr [rsi + 1a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 200h], ymm0
+	vmovdqa ymmword ptr [rsi + 220h], ymm0
+	vmovdqa ymmword ptr [rsi + 240h], ymm0
+	vmovdqa ymmword ptr [rsi + 260h], ymm0
+	
+	add rsi, BUFFER_SIZE
+
+	vmovdqa ymmword ptr [rsi + 000h], ymm0
+	vmovdqa ymmword ptr [rsi + 020h], ymm0
+	vmovdqa ymmword ptr [rsi + 040h], ymm0
+	vmovdqa ymmword ptr [rsi + 060h], ymm0
+	vmovdqa ymmword ptr [rsi + 080h], ymm0
+	vmovdqa ymmword ptr [rsi + 0a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 0e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 100h], ymm0
+	vmovdqa ymmword ptr [rsi + 120h], ymm0
+
+	vmovdqa ymmword ptr [rsi + 140h], ymm0
+	vmovdqa ymmword ptr [rsi + 160h], ymm0
+	vmovdqa ymmword ptr [rsi + 180h], ymm0
+	vmovdqa ymmword ptr [rsi + 1a0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1c0h], ymm0
+	vmovdqa ymmword ptr [rsi + 1e0h], ymm0
+	vmovdqa ymmword ptr [rsi + 200h], ymm0
+	vmovdqa ymmword ptr [rsi + 220h], ymm0
+	vmovdqa ymmword ptr [rsi + 240h], ymm0
+	vmovdqa ymmword ptr [rsi + 260h], ymm0
+
+	ret
+
+clear_sprite_buffer endp
 
 ;map_height=0
 ;map_width=0

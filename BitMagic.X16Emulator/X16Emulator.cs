@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Formats.Asn1;
 using System.Runtime.InteropServices;
 using BitMagic.Common;
 
@@ -24,7 +25,7 @@ public struct Sprite // 64 bytes
     public uint PaletteOffset { get; set; } 
 
     public uint CollisionMask { get; set; }
-    public uint Width { get; set; }
+    public uint Width { get; set; } 
     public uint Height { get; set; }
 
     public uint X { get; set; } 
@@ -186,6 +187,8 @@ public class Emulator : IDisposable
         public ulong Layer1_Jmp = 0;
         public ulong Layer1_Rtn = 0;
 
+        public ulong Sprite_Jmp = 0;
+
         public uint Dc_HScale = 0x00010000;
         public uint Dc_VScale = 0x00010000;
 
@@ -280,10 +283,14 @@ public class Emulator : IDisposable
 
         // Sprites
         public uint Sprite_Wait = 0;            // delay until sprite rendering continues
-        public uint Sprite_Position = 0;        // which sprite we're considering
+        public uint Sprite_Position = 0xffffffff;       // which sprite we're considering
         public uint Vram_Wait = 0;              // vram delay to stall sprite data read
         public uint Sprite_Width = 0;           // count down until fully rendered
         public uint Sprite_Render_Mode = 0;
+        public uint Sprite_X = 0;               // need to snap x
+        public uint Sprite_Y = 0;               // need to snap y
+        public uint Sprite_Depth = 0;
+        public uint Sprite_CollisionMask = 0;
 
         public ushort Layer0_next_render = 0;
         public ushort Layer0_Tile_HShift = 0;
@@ -389,7 +396,7 @@ public class Emulator : IDisposable
     private const int VramSize = 0x20000;
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
-    private const int DisplayBufferSize = 2048 * 2 * 4; // Pallette index for two lines * 4 for each layers 0, 1, sprite value, sprite depth - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
+    private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 4 for each layers 0, 1, sprite value, sprite depth, sprite collision - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
     private const int HistorySize = 8 * 1024;
     private const int SpriteSize = 64 * 128;
 
@@ -444,6 +451,14 @@ public class Emulator : IDisposable
         var sprite_span = new Span<byte>((void*)_sprite_ptr, SpriteSize);
         for (var i = 0; i < SpriteSize; i++)
             sprite_span[i] = 0;
+
+        // set defaults
+        var sprite_act_span = new Span<Sprite>((void*)_sprite_ptr, 128);
+        for (var i = 0; i < 128; i++)
+        {
+            sprite_act_span[i].Height = 8;
+            sprite_act_span[i].Width = 8;
+        }
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr_rounded, RamSize);

@@ -19,6 +19,8 @@ SPRITE_SEARCHING equ 0
 SPRITE_RENDERING equ 1
 SPRITE_DONE equ 2
 
+SPRITE_COUNT equ 128
+
 sprite struct
 	address dword ?
 	palette_offset dword ?
@@ -47,8 +49,10 @@ sprites_render proc
 	mov ebx, dword ptr [rdx].state.sprite_width
 	mov rsi, qword ptr [rdx].state.display_buffer_ptr
 
-	lea r12, sprite_definition_jump
-	jmp qword ptr [r12 + rax * 8]
+	jmp qword ptr [rdx].state.sprite_jmp
+
+	;lea r13, sprite_definition_jump
+	;jmp qword ptr [r13 + rax * 8]
 
 sprites_render endp
 
@@ -56,34 +60,63 @@ sprites_render endp
 sprites_render_find proc
 
 	mov eax, dword ptr [rdx].state.sprite_position
+
+	add eax, 1
+	cmp eax, SPRITE_COUNT
+	je all_done
+
+	mov dword ptr [rdx].state.sprite_position, eax
+
 	shl rax, 6	; * 64
 	mov rsi, [rdx].state.sprite_ptr
 
+	mov ebx, dword ptr [rsi + rax].sprite.depth	; if zero, the sprite is disabled.
+	test ebx, ebx
+	jz not_on_line
+
 	; check if sprite is on line
 	mov ebx, dword ptr [rsi + rax].sprite.y
-	cmp rbx, r12
+	cmp r12, rbx
 	jb not_on_line
 
 	add ebx, dword ptr [rsi + rax].sprite.height
-	cmp rbx, r12
+	cmp r12, rbx
 	jg not_on_line
 
 	; found a sprite!
 	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_RENDERING 
 	mov dword ptr [rdx].state.sprite_width, 0
+
+	; snap various sprite attributes
+	mov ebx, dword ptr [rsi + rax].sprite.depth	
+	mov dword ptr [rdx].state.sprite_depth, ebx
+
+	mov ebx, dword ptr [rsi + rax].sprite.collision_mask
+	mov dword ptr [rdx].state.sprite_collision_mask, ebx
+	
+	mov ebx, dword ptr [rsi + rax].sprite.x
+	mov dword ptr [rdx].state.sprite_x, ebx
+
+	mov ebx, dword ptr [rsi + rax].sprite.y
+	mov dword ptr [rdx].state.sprite_y, ebx
+
+	mov ebx, dword ptr [rsi + rax].sprite.mode
+	
+	lea rax, sprite_definition_jump
+	mov rax, qword ptr [rax + rbx * 8]
+
+	mov qword ptr [rdx].state.sprite_jmp, rax
+	mov dword ptr [rdx].state.sprite_wait, 0
 	ret
 	
 not_on_line:
-	shr rax, 6		; / 64, or back to index.
-	add eax, 1
-	cmp eax, 127
-	je all_done
-	mov dword ptr [rdx].state.sprite_position, eax
+	mov dword ptr [rdx].state.sprite_wait, 0
 
 	ret
 
 all_done:
-	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_DONE  ; all done
+	mov dword ptr [rdx].state.sprite_render_mode, SPRITE_DONE	; all done
+	mov dword ptr [rdx].state.sprite_wait, 0ffffh				; enough to get to the end of the line
 	ret
 sprites_render_find endp
 
@@ -225,6 +258,15 @@ sprite_byte_7:
 	mov dword ptr [rsi + rax].sprite.height, ebx
 	pop rcx
 
+	push rcx
+	mov rcx, r13
+	and rcx, 110000b
+	shr rcx, 4
+	mov rbx, 8
+	shl rbx, cl
+	mov dword ptr [rsi + rax].sprite.widthx, ebx
+	pop rcx
+
 	; store height change for render mode
 	and r13, 11110000b
 	shr r13, 2
@@ -233,25 +275,120 @@ sprite_byte_7:
 	or rbx, r13
 	mov dword ptr [rsi + rax].sprite.mode, ebx
 
-	ret
-
 exit:
 	ret
 
 sprite_update_registers endp
+
+; r14 : pixel data
+; rsi : display buffer
+; r13 : output x
+render_pixel_data macro mask, shift, pixeladd
+	mov r14, r12
+	and r14, mask
+
+	if shift ne 0
+		shr r14, shift
+	endif
+	; todo add palette offset
+
+	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE], r14b
+endm
 
 ; render a sprite to the sprite display buffer
 ; expects 
 ; rax : sprite number
 ; rbx : width so far
 ; rsi : display buffer
-render_sprite macro bpp, height, width, vflip, hflip
+; r12 : line
+; r15 : buffer offset
+render_sprite macro bpp, inp_height, inp_width, vflip, hflip
+	local sprite_width_px, exit, skip
+	shl rax, 6
+
+	; fetch 32bits of data
+	mov rdi, qword ptr [rdx].state.sprite_ptr
+	mov r13d, dword ptr [rdi + rax].sprite.address	; get address
+
+	; calculate offset
+	mov r14d, dword ptr [rdx].state.sprite_y	; this shouldn't ever result in a negative position
+	sub r12, r14
+
+	; adjust for line
+	; assume we're in 8bpp
+	if inp_width eq 0
+		sprite_width_px equ 8
+		shl r12, 3
+	endif
+	if inp_width eq 1
+		sprite_width_px equ 16
+		shl r12, 4
+	endif
+	if inp_width eq 2
+		sprite_width_px equ 32
+		shl r12, 5
+	endif
+	if inp_width eq 3
+		sprite_width_px equ 64
+		shl r12, 6
+	endif
+	add r12, rbx
+
+	; if we're 4bpp, then adjust
+	if bpp eq 0
+		shr r12, 1
+	endif
+
+	; set r13 to the output x
+	mov r13d, dword ptr [rdx].state.sprite_x
+	add r13, rbx
+	add r13, r15	; add offset in buffer
+
+	mov rdi, qword ptr [rdx].state.vram_ptr
+	mov r12d, dword ptr [rdi + r12]	; get data
 	
+	if bpp eq 0
+		; display pixels
+		render_pixel_data 0000000f0h, 4,  0
+		render_pixel_data 00000000fh, 0,  1
+		render_pixel_data 00000f000h, 12, 2
+		render_pixel_data 000000f00h, 8,  3
+		render_pixel_data 000f00000h, 20, 4
+		render_pixel_data 0000f0000h, 16, 5
+		render_pixel_data 0f0000000h, 28, 6
+		render_pixel_data 00f000000h, 24, 7
 
+		add rbx, 8
+		mov dword ptr [rdx].state.sprite_wait, 8
+	endif
+	if bpp eq 1
+		;int 3
+	; display pixels
+		render_pixel_data 0000000ffh, 0,  0
+		render_pixel_data 00000ff00h, 8,  1
+		render_pixel_data 000ff0000h, 16, 2
+		render_pixel_data 0ff000000h, 24, 3
 
+		add rbx, 4
+		mov dword ptr [rdx].state.sprite_wait, 4
+	endif
+	
+	cmp ebx, sprite_width_px
+	jne exit
 
+sprite_finished:
+	mov dword ptr [rdx].state.sprite_render_mode, 0 ; back to seaching
+	mov dword ptr [rdx].state.sprite_width, 0
+	mov dword ptr [rdx].state.sprite_wait, 0
+	ret
+exit:
+	mov dword ptr [rdx].state.sprite_width, ebx
 	ret
 endm
+
+foo proc
+
+foo endp 
 
 sprite_definition_proc macro _sprite_bpp, _sprite_height, _sprite_width, _vflip, _hflip, _sprite_definition_count
 sprite_definition_&_sprite_definition_count& proc

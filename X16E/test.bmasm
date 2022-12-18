@@ -1,0 +1,256 @@
+﻿.machine CommanderX16R40
+.org $801
+
+.byte $0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
+.org $810
+    
+    ;jmp ($fffc)
+    sei    
+
+
+    lda #$41        ; enable sprites
+    sta DC_VIDEO
+
+    lda #$04        ; bitmap, 1bpp
+    sta L0_CONFIG
+
+    lda #$01        ; 16 wide
+    sta L0_TILEBASE 
+
+    jsr create_sprites
+    jsr init_sprites
+
+    ; set colour 0
+    lda #$01
+    sta ADDRx_H
+    lda #$fa
+    sta ADDRx_M
+    stz ADDRx_L
+
+    lda #$12
+    sta DATA0
+
+    lda #16
+    sta IRQLINE_L
+    lda #02 ; line interrupt
+    sta IEN
+
+.loop:
+
+    wai
+    lda ISR
+    sta ISR
+    and #02
+    beq loop
+
+    lda #$01
+    sta ADDRx_H
+    lda #$fa
+    sta ADDRx_M
+    stz ADDRx_L
+
+    lda #$24
+    sta DATA0
+
+    ; point data at X for sprite 0
+    lda #$01
+    sta ADDRx_H
+    lda #$fc
+    sta ADDRx_M
+    lda #$04
+    sta ADDRx_L
+
+    ldx #$10
+    lda #$ff
+
+.switching:
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+    sta DATA0
+    stz DATA0
+
+    dex
+    beq donex
+    jmp switching
+.donex:
+
+    lda #$01
+    sta ADDRx_H
+    lda #$fa
+    sta ADDRx_M
+    stz ADDRx_L
+
+    lda #$12
+    sta DATA0
+
+    jmp loop
+
+; create 64x64 sprite, at 0x00000
+.proc create_sprites
+    lda #$10
+    sta ADDRx_H
+    stz ADDRx_M
+    stz ADDRx_L
+
+    ldx #1
+    ldy #64
+
+.loop:
+    stx DATA0
+    inx
+    cpx #65
+    bne loop
+
+    dey
+    beq done
+
+    ldx #1
+    jmp loop
+
+.done:
+    rts
+.endproc
+
+; init two sprites
+.proc init_sprites
+    lda #$11
+    sta ADDRx_H
+    lda #$fc
+    sta ADDRx_M
+    stz ADDRx_L
+
+    stz DATA0
+    lda #$80    ; 8bpp
+    sta DATA0
+
+    lda #100
+    sta DATA0   ; x
+    stz DATA0
+
+    stz DATA0   ; y
+    stz DATA0
+
+    lda #$04    ; z depth
+    sta DATA0
+    lda #$f0
+    sta DATA0   ; 64x64
+
+
+    stz DATA0
+    lda #$80    ; 8bpp
+    sta DATA0
+
+    stz DATA0   ; x
+    stz DATA0
+
+    lda #200
+    sta DATA0   ; y
+    stz DATA0
+
+    lda #$04    ; z depth
+    sta DATA0
+    lda #$f0
+    sta DATA0   ; 64x64
+
+    rts
+.endproc

@@ -21,7 +21,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1fe0 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Address = 0x1fe0, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1fe0 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Address = 0x1fe0, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1fe0 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Address = 0x1fe0, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -135,7 +135,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Address = 0x1e000, Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -213,7 +213,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -253,7 +253,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -273,7 +273,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -293,7 +293,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Address = 0x1ffe0 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Address = 0x1ffe0, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
 
@@ -313,7 +313,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x40 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -332,7 +332,7 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x40 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -351,6 +351,6 @@ public class Sprites
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x40 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Mode = 0x40, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 }

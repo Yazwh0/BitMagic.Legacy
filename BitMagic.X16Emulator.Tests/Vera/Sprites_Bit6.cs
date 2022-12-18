@@ -21,7 +21,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x03 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Mode = 0x03, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x03 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Mode = 0x03, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x03 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Mode = 0x03, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x7f }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Mode = 0x7f, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x7f }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Mode = 0x7f, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -119,7 +119,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Mode = 0x7f }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Mode = 0x7f, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Depth = 0x03 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { Depth = 0x03, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -157,7 +157,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Depth = 0x03 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { Depth = 0x03, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -176,7 +176,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { Depth = 0x03 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { Depth = 0x03, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -195,7 +195,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f, Width = 8, Height = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -214,7 +214,7 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f, Width = 8, Height = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -233,6 +233,6 @@ public class Sprites_Bit6
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { CollisionMask = 0x0f, Width = 8, Height = 8 }, emulator.Sprites[127]);
     }
 }

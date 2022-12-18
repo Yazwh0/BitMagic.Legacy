@@ -42,6 +42,8 @@ state struct
 	layer1_jmp				qword ?
 	layer1_rtn				qword ?
 
+	sprite_jmp				qword ?
+
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
@@ -139,6 +141,10 @@ state struct
 	vram_wait				dword ?
 	sprite_width			dword ?
 	sprite_render_mode		dword ?
+	sprite_x				dword ?
+	sprite_y				dword ?
+	sprite_depth			dword ?
+	sprite_collision_mask	dword ?
 
 	; Layer 0
 	layer0_next_render		word ?

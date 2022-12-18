@@ -14,7 +14,6 @@
 **/.vs/*
 **/Compare/*
 *.prg
-test.*
 asmcompare.asm
 output.png
 .ionide/*
@@ -24,3 +23,6 @@ Debugger/**/*
 **/Debug/*
 **/Release/*
 ~*.xlsx
+Testing/*
+test.txt
+test.zip
