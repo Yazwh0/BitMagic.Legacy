@@ -17,7 +17,7 @@
     lda #$01        ; 16 wide
     sta L0_TILEBASE 
 
-    ;jsr create_sprites
+    jsr create_sprites
     jsr init_sprites
 
     ; set colour 0

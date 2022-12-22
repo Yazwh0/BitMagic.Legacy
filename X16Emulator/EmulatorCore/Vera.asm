@@ -547,7 +547,9 @@ xx_red:
 	pop rax
 	jmp skip
 sprite_change:
+	push rbx
 	call sprite_update_registers
+	pop rbx
 	pop rax
 
 skip:

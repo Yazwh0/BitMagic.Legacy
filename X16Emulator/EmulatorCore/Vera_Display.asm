@@ -389,6 +389,8 @@ layer1_skip:
 
 	mov word ptr [rdx].state.layer1_next_render, ax
 
+	
+render_complete_visible:	; arrives here if the video wrote data	
 	;
 	; Sprites
 	;
@@ -425,10 +427,10 @@ sprites_render_done::
 vram_skip:
 
 
-; ------------------------------------------------
-; end of rendering
-; ------------------------------------------------
-render_complete_visible:	; arrives here if the video wrote data
+	; ------------------------------------------------
+	; end of rendering
+	; ------------------------------------------------
+
 	; buffer is 2048 wide, but the is display is 640.
 	; need to ignore the top bit, then test vs 640. If we've hit, flip the top bit and remove the count
 	add r15, 1
