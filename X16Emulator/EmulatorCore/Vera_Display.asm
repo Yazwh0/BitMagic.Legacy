@@ -127,14 +127,284 @@ display_loop:
 	; check if we're in the visible area as a trivial skip
 	lea r10, should_display_table
 	movzx rax, byte ptr [r10 + r9]
-	test rax, rax
-	jz render_complete
 
-	cmp rax, 2
-	jg do_render
+	lea r10, render_procs
+	jmp qword ptr [r10 + rax * 8]
 
-	push rax
+render_procs:
+	qword renderstep_nothing
+	qword renderstep_read_from_buffer
+	qword renderstep_normal
+	qword renderstep_all_to_buffer
+	qword renderstep_sprites_to_buffer
+	qword renderstep_next_line
 
+renders_end::
+	;
+	; VRAM Counter
+	;
+	mov eax, dword ptr [rdx].state.vram_wait
+	sub eax, 1
+	jl vram_skip
+	mov dword ptr [rdx].state.vram_wait, eax
+
+	jmp render_complete
+
+vram_skip:
+
+	jmp render_complete
+
+	; ------------------------------------------------
+	; end of rendering
+	; ------------------------------------------------
+
+	; buffer is 2048 wide, but the is display is 640.
+	; need to ignore the top bit, then test vs 640. If we've hit, flip the top bit and remove the count
+	;add r15, 1
+	mov rax, r15
+	and rax, 0011111111111b	; dont consider the top bit
+	cmp rax, VISIBLE_WIDTH
+	jne not_next_line
+	
+	; Add 1 to act y
+	movzx r12, word ptr [rdx].state.display_y
+	add r12, 1
+	mov word ptr [rdx].state.display_y, r12w
+
+	; next line, reset counters
+	xor r15, 0100000000000b	; flip top bit
+	and r15, 0100000000000b	; and clear count
+
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+
+	mov r11, r15
+	xor r11, 0100000000000b ; flip top bit back
+	shl r11, 16				; adjust to the fixed point number
+	mov dword ptr [rdx].state.scale_x, r11d
+
+
+	; Add line to scaled y
+	mov r12d, dword ptr [rdx].state.scale_y
+	mov eax, [rdx].state.dc_vscale
+	add r12, rax
+	mov [rdx].state.scale_y, r12d		
+
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+
+	; reset sprite renderer
+	xor rax, rax										; SPRITE_SEARCHING is zero
+	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
+	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
+	mov dword ptr [rdx].state.sprite_width, eax
+	mov dword ptr [rdx].state.sprite_wait, eax
+	mov dword ptr [rdx].state.vram_wait, eax
+	; clear sprite buffer
+
+	call clear_sprite_buffer
+
+	jmp render_complete
+
+not_next_line:
+	mov word ptr [rdx].state.display_x, ax
+
+; --------------------------------------------------------------------------
+render_complete::			; arrives here if we're outside the visible area
+	add r9, 1
+	cmp r9, SCREEN_DOTS
+	jne not_end_of_screen
+
+	xor r9, r9
+	xor r11, r11
+	xor r12, r12
+	mov word ptr [rdx].state.display_x, r11w
+	mov word ptr [rdx].state.display_y, r12w
+	jmp no_scale_reset
+
+not_end_of_screen:
+	cmp r9, RENDER_RESET
+	jne no_scale_reset
+	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
+	xor r15, r15										; reset buffer pointer
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+
+no_scale_reset:
+	dec rcx
+	jnz display_loop
+
+done:
+	mov rsi, [rdx].state.vram_ptr
+
+	mov dword ptr [rdx].state.display_position, r9d
+	;mov word ptr [rdx].state.display_x, r11w
+	mov dword ptr [rdx].state.buffer_render_position, r15d
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop rbx 
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rax
+	ret
+
+vera_render_display endp
+
+
+vera_initialise_palette proc	
+	xor rax, rax
+	mov rsi, [rdx].state.palette_ptr
+	lea rcx, vera_default_palette
+
+create_argb_palette:
+	; need to go from xRBG
+	; to xxBBGGRR as its little endian
+	mov r9, 0ff000000h
+	mov word ptr bx, [rcx + rax * 2]
+
+	; Red
+	mov r8, rbx
+	and r8, 0f00h
+	shr r8, 8
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	; Green
+	mov r8, rbx
+	and r8, 000fh
+	shl r8, 16
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	;Blue
+	mov r8, rbx
+	and r8, 00f0h
+	shl r8, 4
+	or r9, r8
+
+	shl r8, 4
+	or r9, r8
+
+	mov dword ptr [rsi + rax * 4], r9d
+
+	add rax, 1
+	cmp rax, 100h
+	jne create_argb_palette
+
+	ret
+vera_initialise_palette endp
+
+;
+; render steps
+;
+renderstep_nothing proc
+	jmp render_complete
+renderstep_nothing endp
+
+renderstep_read_from_buffer proc
+	call render_from_buffer
+	add r15, 1
+
+	mov rax, r15
+	and rax, 0011111111111b	; dont consider the top bit
+	mov word ptr [rdx].state.display_x, ax
+
+	jmp renders_end
+renderstep_read_from_buffer endp
+
+renderstep_normal proc
+	call render_from_buffer
+	call render_layers_to_buffer	
+	call render_sprites_to_buffer
+	add r15, 1
+
+	mov rax, r15
+	and rax, 0011111111111b	; dont consider the top bit
+	mov word ptr [rdx].state.display_x, ax
+
+	jmp renders_end
+renderstep_normal endp
+
+renderstep_all_to_buffer proc
+	call render_layers_to_buffer	
+	call render_sprites_to_buffer
+	add r15, 1
+
+	mov rax, r15
+	and rax, 0011111111111b	; dont consider the top bit
+	mov word ptr [rdx].state.display_x, ax
+	
+	jmp renders_end
+renderstep_all_to_buffer endp
+
+renderstep_sprites_to_buffer proc
+	call render_sprites_to_buffer
+
+
+	jmp renders_end
+renderstep_sprites_to_buffer endp
+
+renderstep_next_line proc	
+	; Add 1 to act y
+	movzx r12, word ptr [rdx].state.display_y
+	add r12, 1
+	mov word ptr [rdx].state.display_y, r12w
+
+	; next line, reset counters
+	xor r15, 0100000000000b	; flip top bit
+	and r15, 0100000000000b	; and clear count
+
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+
+	mov r11, r15
+	xor r11, 0100000000000b ; flip top bit back
+	shl r11, 16				; adjust to the fixed point number
+	mov dword ptr [rdx].state.scale_x, r11d
+
+
+	; Add line to scaled y
+	mov r12d, dword ptr [rdx].state.scale_y
+	mov eax, [rdx].state.dc_vscale
+	add r12, rax
+	mov [rdx].state.scale_y, r12d		
+
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+
+	; reset sprite renderer
+	xor rax, rax										; SPRITE_SEARCHING is zero
+	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
+	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
+	mov dword ptr [rdx].state.sprite_width, eax
+	mov dword ptr [rdx].state.sprite_wait, eax
+	mov dword ptr [rdx].state.vram_wait, eax
+	; clear sprite buffer
+
+	call clear_sprite_buffer
+
+	mov word ptr [rdx].state.display_x, ax
+
+	;cmp r12, 0ffffffffh
+	;jg skippyy
+	;mov r12 ,r12
+	;skippyy:
+
+	jmp render_complete
+renderstep_next_line endp
+
+render_from_buffer proc
 	; r12 gets set at the end of the display loop
 	movzx rax, word ptr [rdx].state.dc_vstart
 	cmp r12, rax
@@ -283,17 +553,15 @@ sprites_not_enabled:
 ;	Display complete.
 ;
 draw_end:
+	ret
+render_from_buffer endp
 
-	pop rax
-	cmp rax, 2
-	jl render_complete_visible
-
+render_layers_to_buffer proc
 ;
 ; RENDERING TO BUFFER
 ;
 ; Needs act x, scaled y + 1 line from VIDEO
 ;
-do_render:
 	movzx r11, word ptr [rdx].state.display_x
 
 	; set r12 to scaled y and add a line
@@ -391,7 +659,11 @@ layer1_skip:
 
 	
 render_complete_visible:	; arrives here if the video wrote data	
-	;
+	ret
+render_layers_to_buffer endp
+
+render_sprites_to_buffer proc
+;
 	; Sprites
 	;
 	mov eax, dword ptr [rdx].state.sprite_wait
@@ -408,175 +680,14 @@ render_complete_visible:	; arrives here if the video wrote data
 	pop r12
 	pop rdi
 
-
-	jmp sprites_render_done
+	ret
 
 sprite_skip:
 	sub rax, 1
 	mov dword ptr [rdx].state.sprite_wait, eax
 
-sprites_render_done::
-
-	;
-	; VRAM Counter
-	;
-	mov eax, dword ptr [rdx].state.vram_wait
-	sub eax, 1
-	js vram_skip
-	mov dword ptr [rdx].state.vram_wait, eax
-vram_skip:
-
-
-	; ------------------------------------------------
-	; end of rendering
-	; ------------------------------------------------
-
-	; buffer is 2048 wide, but the is display is 640.
-	; need to ignore the top bit, then test vs 640. If we've hit, flip the top bit and remove the count
-	add r15, 1
-	mov rax, r15
-	and rax, 0011111111111b	; dont consider the top bit
-	cmp rax, VISIBLE_WIDTH
-	jne not_next_line
-	
-	; Add 1 to act y
-	movzx r12, word ptr [rdx].state.display_y
-	add r12, 1
-	mov word ptr [rdx].state.display_y, r12w
-
-	; next line, reset counters
-	xor r15, 0100000000000b	; flip top bit
-	and r15, 0100000000000b	; and clear count
-
-	xor r11, r11
-	mov word ptr [rdx].state.display_x, r11w	; zero
-
-	mov r11, r15
-	xor r11, 0100000000000b ; flip top bit back
-	shl r11, 16				; adjust to the fixed point number
-	mov dword ptr [rdx].state.scale_x, r11d
-
-
-	; Add line to scaled y
-	mov r12d, dword ptr [rdx].state.scale_y
-	mov eax, [rdx].state.dc_vscale
-	add r12, rax
-	mov [rdx].state.scale_y, r12d		
-
-	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
-	mov word ptr [rdx].state.layer1_next_render, 1
-
-	; reset sprite renderer
-	xor rax, rax										; SPRITE_SEARCHING is zero
-	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
-	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
-	mov dword ptr [rdx].state.sprite_width, eax
-	mov dword ptr [rdx].state.sprite_wait, eax
-	mov dword ptr [rdx].state.vram_wait, eax
-	; clear sprite buffer
-
-	call clear_sprite_buffer
-
-	jmp render_complete
-
-not_next_line:
-	mov word ptr [rdx].state.display_x, ax
-
-; --------------------------------------------------------------------------
-render_complete:			; arrives here if we're outside the visible area
-	add r9, 1
-	cmp r9, SCREEN_DOTS
-	jne not_end_of_screen
-
-	xor r9, r9
-	xor r11, r11
-	xor r12, r12
-	mov word ptr [rdx].state.display_x, r11w
-	mov word ptr [rdx].state.display_y, r12w
-	jmp no_scale_reset
-
-not_end_of_screen:
-	cmp r9, RENDER_RESET
-	jne no_scale_reset
-	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
-	xor r15, r15										; reset buffer pointer
-	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
-	mov word ptr [rdx].state.layer1_next_render, 1
-
-no_scale_reset:
-	dec rcx
-	jnz display_loop
-
-done:
-	mov rsi, [rdx].state.vram_ptr
-
-	mov dword ptr [rdx].state.display_position, r9d
-	;mov word ptr [rdx].state.display_x, r11w
-	mov dword ptr [rdx].state.buffer_render_position, r15d
-
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop r11
-	pop rbx 
-	pop r10
-	pop r9
-	pop r8
-	pop rdi
-	pop rsi
-	pop rax
 	ret
-
-vera_render_display endp
-
-
-vera_initialise_palette proc	
-	xor rax, rax
-	mov rsi, [rdx].state.palette_ptr
-	lea rcx, vera_default_palette
-
-create_argb_palette:
-	; need to go from xRBG
-	; to xxBBGGRR as its little endian
-	mov r9, 0ff000000h
-	mov word ptr bx, [rcx + rax * 2]
-
-	; Red
-	mov r8, rbx
-	and r8, 0f00h
-	shr r8, 8
-	or r9, r8
-
-	shl r8, 4
-	or r9, r8
-
-	; Green
-	mov r8, rbx
-	and r8, 000fh
-	shl r8, 16
-	or r9, r8
-
-	shl r8, 4
-	or r9, r8
-
-	;Blue
-	mov r8, rbx
-	and r8, 00f0h
-	shl r8, 4
-	or r9, r8
-
-	shl r8, 4
-	or r9, r8
-
-	mov dword ptr [rsi + rax * 4], r9d
-
-	add rax, 1
-	cmp rax, 100h
-	jne create_argb_palette
-
-	ret
-vera_initialise_palette endp
+render_sprites_to_buffer endp
 
 ;
 ; Renderers
@@ -1546,8 +1657,6 @@ clear_sprite_buffer endp
 
 
 
-.data
-
 vera_default_palette:
 ; display here as xRGB, but written to memory as little endian, so GBxR
 dw 0000h, 0fffh, 0800h, 0afeh, 0c4ch, 00c5h, 000ah, 0ee7h, 0d85h, 0640h, 0f77h, 0333h, 0777h, 0af6h, 008fh, 0bbbh
@@ -1698,24 +1807,30 @@ should_display_table:
 ; 1 - pull from buffer
 ; 2 - normal
 ; 3 - render to buffer
+; 4 - render sprites to buffer
+; 5 - line reset
+
 REPT 479
 	REPT 640
 		db 2
 	ENDM
-	REPT 160
-		db 0
+	REPT 158
+		db 4
 	ENDM
+	db 0
+	db 5
 ENDM
 
 ; last visible line, dont render to the buffer
 REPT 640
 	db 1
 ENDM
-REPT 160
+REPT 159
 	db 0
 ENDM
-; 480 lines done, end of visible area
+db 5
 
+; 480 lines done, end of visible area
 REPT 44
 	REPT 800
 		db 0
@@ -1726,14 +1841,10 @@ ENDM
 REPT 640
 	db 3
 ENDM
-REPT 160
-	db 0
+REPT 158
+	db 4
 ENDM
-
-sprite_layers:
-	dword 0
-	dword SPRITE_L1
-	dword SPRITE_L2
-	dword SPRITE_L3
+db 0
+db 0 ; reset not needed as this is done by the end of screen check
 
 .code
