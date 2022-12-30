@@ -200,9 +200,9 @@
     <CustomBuild Include="Core.asm">
       <ExcludedFromBuild>false</ExcludedFromBuild>
       <FileType>Document</FileType>
-      <Command>ml64 /c /Zi /Fo$(OutDir)\core.obj core.asm</Command>
-      <Outputs>$(OutDir)\core.obj</Outputs>
-      <AdditionalInputs>State.asm, Vera.asm, Constants.asm, Vera_Display.asm, Vera_Display_Tiles_1bpp.asm, Vera_Display_Tiles_2bpp.asm, Vera_Display_Tiles_4bpp.asm, Vera_Display_Tiles_8bpp.asm, Vera_Display_Bitmap_1bpp.asm, Vera_Display_Bitmap_2bpp.asm, Vera_Display_Bitmap_4bpp.asm, Vera_Display_Bitmap_8bpp.asm, Vera_Sprites.asm, Via.asm, Io.asm, I2c.asm, Banking.asm</AdditionalInputs>
+      <Command>ml64 /c /Zi /Fo$(Platform)\$(Configuration)\core.obj core.asm</Command>
+      <Outputs>$(Platform)\$(Configuration)\core.obj</Outputs>
+      <AdditionalInputs>.\State.asm;.\Vera.asm;.\Constants.inc;.\Vera_Display.asm;.\Vera_Display_Tiles_1bpp.asm;.\Vera_Display_Tiles_2bpp.asm;.\Vera_Display_Tiles_4bpp.asm;.\Vera_Display_Tiles_8bpp.asm;.\Vera_Display_Bitmap_1bpp.asm;.\Vera_Display_Bitmap_2bpp.asm;.\Vera_Display_Bitmap_4bpp.asm;.\Vera_Display_Bitmap_8bpp.asm;.\Vera_Sprites.asm;.\Via.asm;.\Io.asm;.\I2c.asm;.\Banking.asm</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -217,17 +217,12 @@
     <Text Include="State.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
-      <ExcludedFromBuild>false</ExcludedFromBuild>
-      <AdditionalInputs>
-      </AdditionalInputs>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
     <Text Include="Vera.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
-      <AdditionalInputs>
-      </AdditionalInputs>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
     </Text>
