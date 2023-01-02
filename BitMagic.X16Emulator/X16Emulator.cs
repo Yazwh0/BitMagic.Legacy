@@ -16,7 +16,13 @@ public struct EmulatorHistory
     public byte A;
     public byte X;
     public byte Y;
+}
 
+public enum Control : uint
+{
+    Run,
+    Paused,
+    Stop
 }
 
 public struct Sprite // 64 bytes
@@ -198,6 +204,7 @@ public class Emulator : IDisposable
         public uint Dc_VScale = 0x00010000;
 
         public uint Brk_Causes_stop = 0;
+        public uint Control = 0;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
@@ -372,8 +379,9 @@ public class Emulator : IDisposable
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
     public bool RenderReady { get => _state.RenderReady != 0; set => _state.RenderReady = (byte)(value ? 0x01 : 0x00); }
 
-
     public bool Brk_Causes_Stop { get => _state.Brk_Causes_stop != 0; set => _state.Brk_Causes_stop = (uint)(value ? 0x01 : 0x00); }
+
+    public Control Control { get => (Control)_state.Control; set => _state.Control = (uint)value; }
 
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);

@@ -129,7 +129,7 @@
                     wai
                     sta ISR     ; clear interrupt and wait for second frame
                     wai
-
+                    stp
                 .loop:
                     jmp loop
 

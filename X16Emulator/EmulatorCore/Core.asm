@@ -181,6 +181,19 @@ asm_func proc state_ptr:QWORD
 	call copy_rombank_to_memory
 
 main_loop::
+	; check for control
+	mov eax, dword ptr [rdx].state.control
+	cmp eax, 1
+	; 0: run
+	; 1: wait
+	; 2: finished
+	jl cpu_running
+	jg exit_loop
+
+	pause
+	jmp main_loop	; spin while waiting for control
+
+cpu_running:
 	mov qword ptr [rdx].state.clock_previous, r14	; need prev clock so we know the delta
 
 	; check for interrupt
@@ -227,8 +240,6 @@ next_opcode::
 	mov byte ptr [rdi+2], bl		; Opcode
 	mov al, byte ptr [rsi+1]
 	mov byte ptr [rdi+3], al		; store rom
-;	movzx rcx, word ptr [rsi+rbx+1]	; Get opcode
-;	mov byte ptr [rdi+3], cx		; Param
 
 	add r11w, 1						; PC+1
 	lea rax, opcode_00				; start of jump table
@@ -297,7 +308,7 @@ vsync:
 	movzx rax, byte ptr [rdx].state.display_dirty
 	sub rax, 1
 	; comment this out to disable no display update optimisation
-	;js no_render_required
+	js no_render_required
 
 	mov byte ptr [rdx].state.display_dirty, al
 

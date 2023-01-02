@@ -1,9 +1,19 @@
 ﻿using BitMagic.Common;
 using BitMagic.X16Emulator;
+using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using static System.Collections.Specialized.BitVector32;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using Image = SixLabors.ImageSharp.Image;
+using Silk.NET.Core;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace X16E;
 
@@ -47,16 +57,16 @@ internal class EmulatorWindow
         _window.Closing += OnClose;
 
         _stopwatch.Start();
+
         _window.Run();
     }
 
-    //public static void SetRequireUpdate()
-    //{
-    //    _requireUpdate = _emulator.RenderReady;
-    //}
-
     private static unsafe void OnLoad()
     {
+        if (_window == null) throw new Exception("_window not set");
+        if (_images == null) throw new Exception("_images not set");
+
+        _window.SetDefaultIcon();
         _gl = GL.GetApi(_window);
 
         _layers = new GlObject[_images.Length];
@@ -68,6 +78,34 @@ internal class EmulatorWindow
         }
 
         _shader = new Shader(_gl, @"shader.vert", @"shader.frag");
+        _emulator.Control = Control.Run;
+
+        var assembly = Assembly.GetExecutingAssembly();
+        string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("butterfly.jpg"));
+        using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("butterfly.jpg not found"))
+        using (BinaryReader reader = new BinaryReader(stream))
+        {
+            var icon = Image.Load<Rgba32>(reader.ReadBytes((int)stream.Length)) ?? throw new Exception("icon image is null");
+            var silkIcon = new byte[icon.Width * icon.Height * 4];
+
+            var index = 0;
+            for(var y = 0; y < icon.Height; y++)
+            {
+                for(var x = 0; x < icon.Width; x++)
+                {
+                    var pixel = icon[x, y];
+                    silkIcon[index++] = pixel.R;
+                    silkIcon[index++] = pixel.G;
+                    silkIcon[index++] = pixel.B;
+                    silkIcon[index++] = pixel.A;
+                }
+            }
+
+            var rawIcon = new RawImage(icon.Width, icon.Height, new Memory<byte>(silkIcon));
+
+            _window.SetWindowIcon(ref rawIcon);
+        }
+
     }
 
     private static unsafe void OnRender(double deltaTime)
@@ -124,5 +162,6 @@ internal class EmulatorWindow
                 i.Dispose();
             }
         }
+        _emulator.Control = Control.Stop;
     }
 }

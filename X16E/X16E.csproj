@@ -1,36 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<OutputType>Exe</OutputType>
-	<TargetFramework>net6.0</TargetFramework>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>icon\icon.ico</ApplicationIcon>
+    <PackageProjectUrl>https://github.com/Yazwh0/BitMagic</PackageProjectUrl>
+    <PackageIcon>butterfly.jpg</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
-	<None Remove="GL\Shaders\shader.frag" />
-	<None Remove="GL\Shaders\shader.vert" />
+    <None Remove="GL\Shaders\shader.frag" />
+    <None Remove="GL\Shaders\shader.vert" />
+    <None Remove="icon\butterfly.jpg" />
   </ItemGroup>
 
   <ItemGroup>
-	<EmbeddedResource Include="GL\Shaders\shader.frag">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</EmbeddedResource>
-	<EmbeddedResource Include="GL\Shaders\shader.vert">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</EmbeddedResource>
+    <EmbeddedResource Include="icon\icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\BitMagic.Compiler\BitMagic.Compiler.csproj" />
-	<ProjectReference Include="..\BitMagic.X16Emulator\BitMagic.X16Emulator.csproj" />
+  <EmbeddedResource Include="GL\Shaders\shader.frag">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </EmbeddedResource>
+  <EmbeddedResource Include="GL\Shaders\shader.vert">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </EmbeddedResource>
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
-		<PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
-	</ItemGroup>
+  <ItemGroup>
+  <ProjectReference Include="..\BitMagic.Compiler\BitMagic.Compiler.csproj" />
+  <ProjectReference Include="..\BitMagic.X16Emulator\BitMagic.X16Emulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
+    <PackageReference Include="Silk.NET.Windowing" Version="2.10.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="icon\butterfly.jpg">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
 </Project>

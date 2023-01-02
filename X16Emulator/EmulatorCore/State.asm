@@ -52,7 +52,8 @@ state struct
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
-	brk_causes_stop			dword ?
+	brk_causes_stop			dword ?	
+	control					dword ?
 
 	register_pc				word ?
 	stackpointer			word ?

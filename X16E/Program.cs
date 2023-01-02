@@ -39,7 +39,6 @@ static class Program
 
         if (options == null)
         {
-            Console.WriteLine("Args could not be parsed.");
             return 1;
         }
 
@@ -55,6 +54,7 @@ static class Program
             return 1;
         }
 
+        bool useRomStartAddress = true;
         if (!string.IsNullOrWhiteSpace(options.PrgFilename) && string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
         {
             if (File.Exists(options.PrgFilename))
@@ -66,6 +66,7 @@ static class Program
                 {
                     emulator.Memory[destAddress++] = prgData[i];
                 }
+                useRomStartAddress = false;
             }
             else
             {
@@ -108,6 +109,8 @@ static class Program
                         Console.WriteLine($"Writing to '{options.PrgFilename}'.");
                         await File.WriteAllBytesAsync(options.PrgFilename, prg);
                     }
+
+                    useRomStartAddress = false;
                 }
                 catch (Exception e)
                 {
@@ -140,7 +143,12 @@ static class Program
             return 2;
         }
 
-        emulator.Pc = options.StartAddress;
+        if (useRomStartAddress)
+            emulator.Pc = (ushort)((emulator.RomBank[0x3ffd] << 8) + emulator.RomBank[0x3ffc]);
+        else
+            emulator.Pc = options.StartAddress;
+
+        emulator.Control = Control.Paused; // window load start the emulator
 
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);
@@ -152,7 +160,7 @@ static class Program
 
         EmulatorThread.Join();
 
-        Console.WriteLine($"Emulator finished with {EmulatorWork.Return}");
+        Console.WriteLine($"Emulator finished with return '{EmulatorWork.Return}'.");
 
         return 0;
     }
@@ -200,6 +208,13 @@ static class Program
                         Console.Write(" ");
                 }
                 Console.WriteLine();
+            }
+
+            if (Emulator.Control != Control.Stop)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("*** Close emulator window to exit ***");
+                Console.ResetColor();
             }
         }
     }
