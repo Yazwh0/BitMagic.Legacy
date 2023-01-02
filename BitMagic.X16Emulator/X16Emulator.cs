@@ -25,6 +25,12 @@ public enum Control : uint
     Stop
 }
 
+public enum FrameControl : uint
+{
+    Run,
+    Synced
+}
+
 public struct Sprite // 64 bytes
 {
     public uint Address { get; set; }  // actual address in memory
@@ -205,6 +211,7 @@ public class Emulator : IDisposable
 
         public uint Brk_Causes_stop = 0;
         public uint Control = 0;
+        public uint Frame_Control = 0; // just run
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
@@ -331,7 +338,6 @@ public class Emulator : IDisposable
         public byte Via_Timer2_Running = 0;
         public byte _Padding2 = 0;
 
-
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,
             ulong display, ulong palette, ulong sprite, ulong displayBuffer, ulong history)
         {
@@ -382,6 +388,7 @@ public class Emulator : IDisposable
     public bool Brk_Causes_Stop { get => _state.Brk_Causes_stop != 0; set => _state.Brk_Causes_stop = (uint)(value ? 0x01 : 0x00); }
 
     public Control Control { get => (Control)_state.Control; set => _state.Control = (uint)value; }
+    public FrameControl FrameControl { get => (FrameControl)_state.Frame_Control; set => _state.Frame_Control= (uint)value; }
 
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);

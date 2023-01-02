@@ -25,6 +25,9 @@ static class Program
 
         [Option('w', "write", Required = false, HelpText = "Write the result of the compilation.")]
         public bool WritePrg { get; set; } = false;
+
+        [Option("warp", Required = false, HelpText = "Run as fast as possible.")]
+        public bool Warp { get; set; } = false;
     }
 
     static async Task<int> Main(string[] args)
@@ -149,6 +152,11 @@ static class Program
             emulator.Pc = options.StartAddress;
 
         emulator.Control = Control.Paused; // window load start the emulator
+
+        if (options.Warp)
+            emulator.FrameControl = FrameControl.Run;
+        else
+            emulator.FrameControl = FrameControl.Synced;
 
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);

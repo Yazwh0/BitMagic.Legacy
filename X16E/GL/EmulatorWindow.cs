@@ -31,7 +31,7 @@ internal class EmulatorWindow
     private static double _speed = 0;
     private static double _fps = 0;
     private static Stopwatch _stopwatch = new Stopwatch();
-    private static Emulator _emulator;
+    private static Emulator? _emulator;
 
     public static void Run(Emulator emulator)
     {
@@ -76,7 +76,7 @@ internal class EmulatorWindow
         }
 
         _shader = new Shader(_gl, @"shader.vert", @"shader.frag");
-        _emulator.Control = Control.Run;
+        _emulator!.Control = Control.Run;
 
         var assembly = Assembly.GetExecutingAssembly();
         string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("butterfly.jpg"));
@@ -121,12 +121,12 @@ internal class EmulatorWindow
 
         foreach (var i in _layers)
         {
-            i.OnRender(_gl, _shader, _emulator.RenderReady);
+            i.OnRender(_gl, _shader, _emulator!.RenderReady);
         }
 
-        _emulator.RenderReady = false;
+        _emulator!.RenderReady = false;
         var thisTicks = _stopwatch.ElapsedMilliseconds;
-        if (thisTicks - _lastTicks > 1000)
+        if (thisTicks - _lastTicks > 100)
         {
             var thisCount = _emulator.Vera.Frame_Count;
 
@@ -138,15 +138,16 @@ internal class EmulatorWindow
             else
             {
                 var tickDelta = thisTicks - _lastTicks;
-                _fps = (thisCount - _lastCount) / (tickDelta / 1000.0);
+                _fps = (thisCount - _lastCount) / (tickDelta / 100.0) * 10;
                 _speed = _fps / 59.523809;
             }
             _lastCount = thisCount;
             _lastTicks = thisTicks;
+
+            _window!.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps \\ {_speed * 8.0:0}Mhz]";
         }
 
-        _window!.Title = $"BitMagic! X16E [{_speed:0.00%} \\ {_fps:0.0} fps \\ {_speed * 8.0:0}Mhz]";
-
+        _emulator.Control = Control.Run;
     }
 
     private static void OnClose()
@@ -160,6 +161,6 @@ internal class EmulatorWindow
                 i.Dispose();
             }
         }
-        _emulator.Control = Control.Stop;
+        _emulator!.Control = Control.Stop;
     }
 }

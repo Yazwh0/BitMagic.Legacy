@@ -322,6 +322,9 @@ vsync:
 
 	vera_render_done:
 
+	mov eax, dword ptr [rdx].state.frame_control	; 0 for no control, 1 for wait every frame -- same as control
+	or qword ptr [rdx].state.control, rax			; or on, just in case the host app has made a change
+
 	; Check if the cpu has gotten too high. if so then reset it.
 	mov rax, 08000000000000000h
 	test r14, rax

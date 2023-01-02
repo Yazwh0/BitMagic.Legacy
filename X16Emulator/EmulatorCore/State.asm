@@ -54,6 +54,7 @@ state struct
 
 	brk_causes_stop			dword ?	
 	control					dword ?
+	frame_control			dword ?
 
 	register_pc				word ?
 	stackpointer			word ?
