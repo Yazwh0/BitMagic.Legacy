@@ -33,8 +33,6 @@ internal class EmulatorWindow
     private static Stopwatch _stopwatch = new Stopwatch();
     private static Emulator _emulator;
 
-    private static bool _requireUpdate = false;
-
     public static void Run(Emulator emulator)
     {
         _emulator = emulator;
@@ -125,7 +123,7 @@ internal class EmulatorWindow
         {
             i.OnRender(_gl, _shader, _emulator.RenderReady);
         }
-        _requireUpdate = false;
+
         _emulator.RenderReady = false;
         var thisTicks = _stopwatch.ElapsedMilliseconds;
         if (thisTicks - _lastTicks > 1000)
