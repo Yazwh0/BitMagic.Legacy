@@ -36,6 +36,8 @@ layer0_4bpp_til_x_render proc
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
+	mov qword ptr [rdx].state.layer0_cur_tileaddress, r8
+	mov qword ptr [rdx].state.layer0_cur_tiledata, rax
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	test rax, 400h
@@ -112,6 +114,8 @@ layer1_4bpp_til_x_render proc
 
 	; r15 is our buffer current position
 	; need to fill the buffer with the colour indexes for each pixel
+	mov qword ptr [rdx].state.layer1_cur_tileaddress, r8
+	mov qword ptr [rdx].state.layer1_cur_tiledata, rax
 	mov rsi, [rdx].state.display_buffer_ptr
 
 	test rax, 400h

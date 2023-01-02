@@ -130,7 +130,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_box_normal.png");
     }
 
@@ -262,7 +262,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_paletteoffset_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_paletteoffset_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_box_paletteoffset_normal.png");
     }
 
@@ -391,7 +391,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_normal_addresschange.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_normal_addresschange.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_box_normal_addresschange.png");
     }
 
@@ -520,7 +520,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_scaleddown.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_scaleddown.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_box_scaleddown.png");
     }
 
@@ -649,7 +649,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_scaledup.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_box_scaledup.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_box_scaledup.png");
     }
 
@@ -754,7 +754,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_normal.png");
     }
 
@@ -859,7 +859,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_scaledup.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_scaledup.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_scaledup.png");
     }
 
@@ -965,7 +965,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_scaleddown.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l0_scaleddown.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l0_scaleddown.png");
     }
 
@@ -1094,7 +1094,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_normal.png");
     }
 
@@ -1226,7 +1226,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_paletteoffset_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_paletteoffset_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_paletteoffset_normal.png");
     }
 
@@ -1355,7 +1355,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_normal_addresschange.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_normal_addresschange.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_normal_addresschange.png");
     }
 
@@ -1484,7 +1484,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_scaleddown.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_scaleddown.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_scaleddown.png");
     }
 
@@ -1613,7 +1613,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_scaledup.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_box_scaledup.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_box_scaledup.png");
     }
 
@@ -1718,7 +1718,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_normal.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_normal.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_normal.png");
     }
 
@@ -1823,7 +1823,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_scaledup.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_scaledup.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_scaledup.png");
     }
 
@@ -1929,7 +1929,7 @@ public class Bitmap_1Bpp
                     ",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_scaleddown.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\bitmap_1bpp_l1_scaleddown.png");
         emulator.CompareImage(@"Vera\Images\bitmap_1bpp_l1_scaleddown.png");
     }
 }

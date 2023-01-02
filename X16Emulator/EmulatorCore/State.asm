@@ -44,6 +44,11 @@ state struct
 
 	sprite_jmp				qword ?
 
+	layer0_cur_tileaddress	qword ?
+	layer0_cur_tiledata		qword ?
+	layer1_cur_tileaddress	qword ?
+	layer1_cur_tiledata		qword ?
+
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
@@ -146,7 +151,8 @@ state struct
 	sprite_depth			dword ?
 	sprite_collision_mask	dword ?
 
-	; Layer 0
+	
+
 	layer0_next_render		word ?
 	layer0_tile_hshift		word ?
 	layer0_tile_vshift		word ?

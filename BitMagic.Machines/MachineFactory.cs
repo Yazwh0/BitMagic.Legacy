@@ -12,7 +12,8 @@ namespace BitMagic.Machines
         NoMachine,
         CommanderX16R38,
         CommanderX16R39,
-        CommanderX16R40
+        CommanderX16R40,
+        CommanderX16R41
     }
 
     public static class MachineFactory
@@ -29,6 +30,7 @@ namespace BitMagic.Machines
             Machine.CommanderX16R38 => new CommanderX16R38(),
             Machine.CommanderX16R39 => new CommanderX16R39(),
             Machine.CommanderX16R40 => new CommanderX16R39(),
+            Machine.CommanderX16R41 => new CommanderX16R39(),
             _ => null
         };
     }

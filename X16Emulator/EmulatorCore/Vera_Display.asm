@@ -138,104 +138,24 @@ render_procs:
 	qword renderstep_all_to_buffer
 	qword renderstep_sprites_to_buffer
 	qword renderstep_next_line
+	qword renderstep_next_frame
+	qword renderstep_reset_buffer
 
 renders_end::
 	;
 	; VRAM Counter
 	;
+	xor rbx, rbx
 	mov eax, dword ptr [rdx].state.vram_wait
 	sub eax, 1
-	jl vram_skip
+	cmovs rax, rbx
 	mov dword ptr [rdx].state.vram_wait, eax
 
-	jmp render_complete
-
-vram_skip:
-
-	jmp render_complete
-
-	; ------------------------------------------------
-	; end of rendering
-	; ------------------------------------------------
-
-	; buffer is 2048 wide, but the is display is 640.
-	; need to ignore the top bit, then test vs 640. If we've hit, flip the top bit and remove the count
-	;add r15, 1
-	mov rax, r15
-	and rax, 0011111111111b	; dont consider the top bit
-	cmp rax, VISIBLE_WIDTH
-	jne not_next_line
-	
-	; Add 1 to act y
-	movzx r12, word ptr [rdx].state.display_y
-	add r12, 1
-	mov word ptr [rdx].state.display_y, r12w
-
-	; next line, reset counters
-	xor r15, 0100000000000b	; flip top bit
-	and r15, 0100000000000b	; and clear count
-
-	xor r11, r11
-	mov word ptr [rdx].state.display_x, r11w	; zero
-
-	mov r11, r15
-	xor r11, 0100000000000b ; flip top bit back
-	shl r11, 16				; adjust to the fixed point number
-	mov dword ptr [rdx].state.scale_x, r11d
-
-
-	; Add line to scaled y
-	mov r12d, dword ptr [rdx].state.scale_y
-	mov eax, [rdx].state.dc_vscale
-	add r12, rax
-	mov [rdx].state.scale_y, r12d		
-
-	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
-	mov word ptr [rdx].state.layer1_next_render, 1
-
-	; reset sprite renderer
-	xor rax, rax										; SPRITE_SEARCHING is zero
-	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
-	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
-	mov dword ptr [rdx].state.sprite_width, eax
-	mov dword ptr [rdx].state.sprite_wait, eax
-	mov dword ptr [rdx].state.vram_wait, eax
-	; clear sprite buffer
-
-	call clear_sprite_buffer
-
-	jmp render_complete
-
-not_next_line:
-	mov word ptr [rdx].state.display_x, ax
-
-; --------------------------------------------------------------------------
-render_complete::			; arrives here if we're outside the visible area
-	add r9, 1
-	cmp r9, SCREEN_DOTS
-	jne not_end_of_screen
-
-	xor r9, r9
-	xor r11, r11
-	xor r12, r12
-	mov word ptr [rdx].state.display_x, r11w
-	mov word ptr [rdx].state.display_y, r12w
-	jmp no_scale_reset
-
-not_end_of_screen:
-	cmp r9, RENDER_RESET
-	jne no_scale_reset
-	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
-	xor r15, r15										; reset buffer pointer
-	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
-	mov word ptr [rdx].state.layer1_next_render, 1
-
-no_scale_reset:
 	dec rcx
 	jnz display_loop
 
 done:
-	mov rsi, [rdx].state.vram_ptr
+	;mov rsi, [rdx].state.vram_ptr
 
 	mov dword ptr [rdx].state.display_position, r9d
 	;mov word ptr [rdx].state.display_x, r11w
@@ -309,7 +229,8 @@ vera_initialise_palette endp
 ; render steps
 ;
 renderstep_nothing proc
-	jmp render_complete
+	add r9, 1
+	jmp renders_end
 renderstep_nothing endp
 
 renderstep_read_from_buffer proc
@@ -320,6 +241,7 @@ renderstep_read_from_buffer proc
 	and rax, 0011111111111b	; dont consider the top bit
 	mov word ptr [rdx].state.display_x, ax
 
+	add r9, 1
 	jmp renders_end
 renderstep_read_from_buffer endp
 
@@ -333,6 +255,7 @@ renderstep_normal proc
 	and rax, 0011111111111b	; dont consider the top bit
 	mov word ptr [rdx].state.display_x, ax
 
+	add r9, 1
 	jmp renders_end
 renderstep_normal endp
 
@@ -345,6 +268,7 @@ renderstep_all_to_buffer proc
 	and rax, 0011111111111b	; dont consider the top bit
 	mov word ptr [rdx].state.display_x, ax
 	
+	add r9, 1
 	jmp renders_end
 renderstep_all_to_buffer endp
 
@@ -352,6 +276,7 @@ renderstep_sprites_to_buffer proc
 	call render_sprites_to_buffer
 
 
+	add r9, 1
 	jmp renders_end
 renderstep_sprites_to_buffer endp
 
@@ -400,9 +325,32 @@ renderstep_next_line proc
 	;jg skippyy
 	;mov r12 ,r12
 	;skippyy:
+	add r9, 1
 
-	jmp render_complete
+	jmp renders_end
 renderstep_next_line endp
+
+renderstep_next_frame proc
+	xor r9, r9
+	xor r11, r11
+	xor r12, r12
+	mov word ptr [rdx].state.display_x, r11w
+	mov word ptr [rdx].state.display_y, r12w
+
+	jmp renders_end
+renderstep_next_frame endp
+
+renderstep_reset_buffer proc
+	add r9, 1
+
+	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
+	xor r15, r15										; reset buffer pointer
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+
+	jmp renders_end
+renderstep_reset_buffer endp
+
 
 render_from_buffer proc
 	; r12 gets set at the end of the display loop
@@ -592,9 +540,12 @@ render_layers_to_buffer proc
 	add r11w, word ptr [rdx].state.layer0_hscroll
 	mov r13d, dword ptr [rdx].state.layer0_mapAddress
 	mov r14d, dword ptr [rdx].state.layer0_tileAddress
+	mov rbx, qword ptr [rdx].state.layer0_cur_tileaddress
 
 	mov rax, qword ptr [rdx].state.layer0_rtn
 	push rax	; return address, call the tile fetch and it returns to the correct renderer
+
+	mov rax, qword ptr [rdx].state.layer0_cur_tiledata
 
 	jmp qword ptr [rdx].state.layer0_jmp
 
@@ -634,9 +585,12 @@ layer0_skip:
 	add r11w, word ptr [rdx].state.layer1_hscroll
 	mov r13d, dword ptr [rdx].state.layer1_mapAddress
 	mov r14d, dword ptr [rdx].state.layer1_tileAddress
+	mov rbx, qword ptr [rdx].state.layer1_cur_tileaddress
 
 	mov rax, qword ptr [rdx].state.layer1_rtn
 	push rax	; return address, call the tile fetch and it returns to the correct renderer
+
+	mov rax, qword ptr [rdx].state.layer1_cur_tiledata
 
 	jmp qword ptr [rdx].state.layer1_jmp
 
@@ -663,12 +617,12 @@ render_complete_visible:	; arrives here if the video wrote data
 render_layers_to_buffer endp
 
 render_sprites_to_buffer proc
-;
+	;
 	; Sprites
 	;
 	mov eax, dword ptr [rdx].state.sprite_wait
 	test rax, rax
-	jnz sprite_skip
+	jnz sprite_waiting
 
 	push rdi
 	push r12
@@ -682,7 +636,7 @@ render_sprites_to_buffer proc
 
 	ret
 
-sprite_skip:
+sprite_waiting:
 	sub rax, 1
 	mov dword ptr [rdx].state.sprite_wait, eax
 
@@ -748,6 +702,8 @@ endm
 
 ; macro to find the current tile definition, returns data in ax. 
 ; updates:
+; rax: tile information (TODO!!!)
+; rbx: tile location (if -1 then perform location search)
 ; r13: current layer map address
 ; r14: current layer tile address
 ; r11: x
@@ -758,24 +714,11 @@ endm
 ; r10 : x position through tile
 ; r13 : width
 ; r14 : x mask
+; r8 : tile location to be stored and passed back in rbx
 
 get_tile_definition macro map_height, map_width, tile_height, tile_width, colour_depth
-	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask, t_height_invert_mask
+	local m_height_px, m_width_px, t_height_px, t_width_px, t_colour_size, t_size_shift, t_tile_mask, t_multiplier, t_colour_mask, t_tile_shift, t_tile_x_mask, t_height_invert_mask, position_found, has_data
 
-	add dword ptr [rdx].state.vram_wait, 2
-	mov rsi, [rdx].state.vram_ptr
-
-	mov rax, r12					; y
-	shr rax, tile_height + 3		; / tile height
-	shl rax, map_width + 5			; * map width
-
-	;xor rbx, rbx
-	mov rbx, r11					; x
-	shr rbx, tile_width + 3			; / tile width
-	add rax, rbx			
-
-	; constrain map to height
-	; this needs to consider map_height and map_width
 	if map_height eq 0				
 		m_height_px equ 32
 	endif
@@ -802,14 +745,6 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 		m_width_px equ 256
 	endif
 
-	and rax, (m_height_px * m_width_px) - 1
-
-	shl rax, 1						; * 2
-
-	add rax, r13					; vram address
-	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al)
-
-	; ---------------------------------------------------------------
 	if tile_height eq 0
 		t_height_px equ 8
 		t_height_invert_mask equ 0111b
@@ -863,44 +798,48 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	t_tile_mask equ t_height_px - 1
 	t_tile_shift equ (t_multiplier - 1) + colour_depth
 
+	mov rsi, [rdx].state.vram_ptr
+
+	cmp rbx, -1
+	jne has_data
+
+	add dword ptr [rdx].state.vram_wait, 1	; for tile map read
+	; constrain map to height
+	; this needs to consider map_height and map_width
+
+	mov rax, r12					; y
+	shr rax, tile_height + 3		; / tile height
+	shl rax, map_width + 5			; * map width
+
+	;xor rbx, rbx
+	mov rbx, r11					; x
+	shr rbx, tile_width + 3			; / tile width
+	add rax, rbx	
+
+	and rax, (m_height_px * m_width_px) - 1
+
+	shl rax, 1						; * 2
+
+	add rax, r13					; vram address
+	movzx rax, word ptr [rsi + rax]	; now has tile number (ah) and data (al)
+
 	xor rbx, rbx
 
-	if colour_depth eq 0
-	mov bl, al								; get tile number
+	if colour_depth eq 00
+		mov bl, al								; get tile number
 	else
-	mov bx, ax
-	and bx, 01111111111b					; mask off tile index
+		mov bx, ax
+		and bx, 01111111111b					; mask off tile index
 	endif
-
-	; find dword in memory that is being rendered
-	mov r10, r11							; store x for later
 
 	; r12 is y, need to convert it to where the line starts in memory
 	if colour_depth ne 0
-
 		bt eax, 11							; check if flipped
 		jnc no_v_flip
 
 		xor r12, t_height_invert_mask			; inverts the y position
 
 		no_v_flip:
-		if tile_width eq 1 or colour_depth eq 2 or colour_depth eq 3
-			bt eax, 10
-			jnc no_h_flip
-
-			if tile_width eq 1 and colour_depth eq 2
-				xor r11, 01000b							; flip bit to invert, its masked later
-			endif
-
-			if tile_width eq 0 and colour_depth eq 3
-				xor r11, 01100b							; flip bit to invert, its masked later
-			endif
-			if tile_width eq 1 and colour_depth eq 3
-				xor r11, 011100b							; flip bit to invert, its masked later
-			endif
-
-		no_h_flip:
-		endif
 	endif
 	and r12, t_tile_mask					; mask for tile height, so now line within tile
 	shl r12, t_tile_shift					; adjust to width of line to get offset address
@@ -908,10 +847,62 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	shl rbx, t_size_shift					; rbx is now the address
 	or rbx, r12								; adjust to the line offset
 	add rbx, r14							; add to tile base address
-	
-	; find offset of current x, we saved x into r10 earlier for this
+
+	;jmp position_found
+has_data:
+	; inject rbx here
+
+
+position_found:
+	;mov r8, rbx								; store position for later so it can be saved if necessary
+	add dword ptr [rdx].state.vram_wait, 1	; for data read
+
+	mov r8, -1									; no more vram reads for this tile -- gets overwritten later if necessary
+
+	; find dword in memory that is being rendered
+
+	; check if we're part way through a tile, if so store the value for the next render (so vram access is counted) 
+	if tile_width eq 1 and colour_depth eq 2
+		mov r14, r11
+		and r14, 01000b
+		cmovz r8, rbx
+	endif
+	if tile_width eq 0 and colour_depth eq 3
+		mov r14, r11
+		and r14, 0111b
+		cmp r14, 0111b - 3
+		cmovl r8, rbx
+	endif
+	if tile_width eq 1 and colour_depth eq 3
+		mov r14, r11
+		and r14, 01111b
+		cmp r14, 01111b - 3
+		cmovl r8, rbx
+	endif
+
+	; find offset of current x so the render can start from the right position
+	mov r10, r11							
 	mov r14, t_tile_x_mask
-	and r10, r14							; return pixels
+	and r10, r14								; return pixels (offset from boundary)
+
+	if colour_depth ne 0 and colour_depth ne 1
+		if tile_width eq 1 or colour_depth eq 2 or colour_depth eq 3
+			bt eax, 10
+			jnc no_h_flip
+
+			if tile_width eq 1 and colour_depth eq 2
+				xor r11, 01000b							; flip bit to invert, its masked later
+			endif
+			if tile_width eq 0 and colour_depth eq 3
+				xor r11, 01100b							; flip bit to invert, its masked later
+			endif
+			if tile_width eq 1 and colour_depth eq 3
+				xor r11, 011100b						; flip bit to invert, its masked later
+			endif
+
+		no_h_flip:
+		endif
+	endif
 
 	if tile_width eq 1 and colour_depth eq 2	; 4bpp
 		and r11, 01000b							; mask x position
@@ -920,7 +911,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 	endif
 
 	if tile_width eq 0 and colour_depth eq 3
-		and r11, 01100b						; mask x position
+		and r11, 01100b							; mask x position
 		add rbx, r11
 	endif
 
@@ -929,7 +920,7 @@ get_tile_definition macro map_height, map_width, tile_height, tile_width, colour
 		add rbx, r11
 	endif
 
-	mov ebx, dword ptr [rsi + rbx]			; set ebx 32bits worth of values
+	mov ebx, dword ptr [rsi + rbx]				; set ebx 32bits worth of values
 
 	if colour_depth eq 0 or colour_depth eq 1
 		mov r13, t_width_px						; return width -- not needed for 4 or 8 bpp
@@ -1809,6 +1800,8 @@ should_display_table:
 ; 3 - render to buffer
 ; 4 - render sprites to buffer
 ; 5 - line reset
+; 6 - screen reset
+; 7 - scale reset
 
 REPT 479
 	REPT 640
@@ -1831,11 +1824,18 @@ ENDM
 db 5
 
 ; 480 lines done, end of visible area
-REPT 44
+REPT 43
 	REPT 800
 		db 0
 	ENDM
 ENDM
+
+; second to last line
+REPT 799
+	db 0
+ENDM
+db 7	; scale reset
+
 
 ; last line, render to the buffer
 REPT 640
@@ -1845,6 +1845,6 @@ REPT 158
 	db 4
 ENDM
 db 0
-db 0 ; reset not needed as this is done by the end of screen check
+db 6 ; reset not needed as this is done by the end of screen check
 
 .code

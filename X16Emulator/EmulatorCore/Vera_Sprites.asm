@@ -54,7 +54,8 @@ sprites_render proc
 	mov ebx, dword ptr [rdx].state.sprite_width
 	mov rsi, qword ptr [rdx].state.display_buffer_ptr
 
-	mov dword ptr [rdx].state.vram_wait, 1		; we know this is zero
+	; unnecessary as this is dec'd after this call
+	;mov dword ptr [rdx].state.vram_wait, 1		; vram_wait is zero
 
 	jmp qword ptr [rdx].state.sprite_jmp
 
@@ -112,11 +113,11 @@ sprites_render_find proc
 	mov rax, qword ptr [rax + rbx * 8]
 
 	mov qword ptr [rdx].state.sprite_jmp, rax
-	mov dword ptr [rdx].state.sprite_wait, 0
+	mov dword ptr [rdx].state.sprite_wait, 2
 	ret
 	
 not_on_line:
-	mov dword ptr [rdx].state.sprite_wait, 0
+	mov dword ptr [rdx].state.sprite_wait, 1 ; needs checking
 	ret
 
 all_done:
@@ -393,11 +394,10 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 
 		pop rbx
 		add rbx, 8
-		mov dword ptr [rdx].state.sprite_wait, 8
+		mov dword ptr [rdx].state.sprite_wait, 8+1 ; +1 for post vram read cycle
 	endif
 	if bpp eq 1
-		;int 3
-	; display pixels
+		; display pixels
 		render_pixel_data 0000000ffh, 0,  0
 		render_pixel_data 00000ff00h, 8,  1
 		render_pixel_data 000ff0000h, 16, 2
@@ -405,25 +405,20 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 
 		pop rbx
 		add rbx, 4
-		mov dword ptr [rdx].state.sprite_wait, 4
+		mov dword ptr [rdx].state.sprite_wait, 4+1 ; +1 for post vram read cycle
 	endif
-	
+
 	cmp ebx, sprite_width_px
 	jne exit
 
 sprite_finished:
 	mov dword ptr [rdx].state.sprite_render_mode, 0 ; back to seaching
 	mov dword ptr [rdx].state.sprite_width, 0
-	mov dword ptr [rdx].state.sprite_wait, 0
 	ret
 exit:
 	mov dword ptr [rdx].state.sprite_width, ebx
 	ret
 endm
-
-foo proc
-
-foo endp 
 
 sprite_definition_proc macro _sprite_bpp, _sprite_height, _sprite_width, _vflip, _hflip, _sprite_definition_count
 sprite_definition_&_sprite_definition_count& proc

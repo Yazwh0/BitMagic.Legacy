@@ -189,6 +189,11 @@ public class Emulator : IDisposable
 
         public ulong Sprite_Jmp = 0;
 
+        public ulong Layer0_Cur_TileAddress = 0xffffffffffffffff;
+        public ulong Layer0_Cur_TileData = 0;
+        public ulong Layer1_Cur_TileAddress = 0xffffffffffffffff;
+        public ulong Layer1_Cur_TileData = 0;
+
         public uint Dc_HScale = 0x00010000;
         public uint Dc_VScale = 0x00010000;
 

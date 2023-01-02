@@ -50,7 +50,7 @@ public class Sprites_32x16_4bpp
                 stp",
                 emulator);
 
-        emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_4bpp_32x16_depth1.png");
+        emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_4bpp_32x16_depth1.png");
 
         //emulator.CompareImage(@"Vera\Images\sprites_4bpp_32x16_depth1.png");
     }

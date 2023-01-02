@@ -44,7 +44,7 @@ public class Sprites_8x8_8bpp
                 stp",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth1.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth1.png");
 
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_8x8_depth1.png");
     }
@@ -88,7 +88,7 @@ public class Sprites_8x8_8bpp
                 stp",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth2.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth2.png");
 
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_8x8_depth2.png");
     }
@@ -132,7 +132,7 @@ public class Sprites_8x8_8bpp
                 stp",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth3.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_depth3.png");
 
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_8x8_depth3.png");
     }
@@ -181,7 +181,7 @@ public class Sprites_8x8_8bpp
                 stp",
                 emulator);
 
-        //emulator.SaveDisplay(@"D:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_multidepth.png");
+        //emulator.SaveDisplay(@"C:\Documents\Source\BitMagic\BitMagic.X16Emulator.Tests\Vera\Images\sprites_8bpp_8x8_multidepth.png");
 
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_8x8_multidepth.png");
     }
