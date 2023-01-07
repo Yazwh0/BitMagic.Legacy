@@ -308,7 +308,7 @@ vsync:
 	movzx rax, byte ptr [rdx].state.display_dirty
 	sub rax, 1
 	; comment this out to disable no display update optimisation
-	js no_render_required
+	;js no_render_required
 
 	mov byte ptr [rdx].state.display_dirty, al
 
@@ -341,10 +341,6 @@ no_cpu_reset:
 	test cl, cl
 	jz main_loop
 
-	;mov cl, byte ptr [rdx].state.interrupt_vsync_hit
-	;test cl, cl
-	;jnz main_loop
-
 	; set vsync
 	or byte ptr [rsi+ISR], 1
 	mov byte ptr [rdx].state.interrupt_vsync_hit, 1
@@ -352,7 +348,7 @@ no_cpu_reset:
 
 	jmp main_loop
 
-exit_loop: ; how do we get here?
+exit_loop:
 	
 	; return all ok
 	write_state_obj

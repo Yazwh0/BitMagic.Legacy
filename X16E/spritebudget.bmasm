@@ -13,9 +13,11 @@
 
     lda #$04        ; bitmap, 1bpp
     sta L0_CONFIG
+    sta L1_CONFIG
 
-    lda #$01        ; 16 wide
+    lda #$00        ; 8 wide
     sta L0_TILEBASE 
+    sta L1_TILEBASE 
 
     jsr create_sprites
     jsr init_sprites
@@ -48,6 +50,7 @@
     sta IEN
 
 .loop:
+;    jmp loop
     wai
     lda ISR
     sta ISR

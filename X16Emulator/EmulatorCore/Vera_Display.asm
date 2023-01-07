@@ -235,6 +235,7 @@ renderstep_nothing endp
 
 renderstep_read_from_buffer proc
 	call render_from_buffer
+
 	add r15, 1
 
 	mov rax, r15
@@ -246,9 +247,11 @@ renderstep_read_from_buffer proc
 renderstep_read_from_buffer endp
 
 renderstep_normal proc
-	call render_from_buffer
 	call render_layers_to_buffer	
 	call render_sprites_to_buffer
+
+	call render_from_buffer
+
 	add r15, 1
 
 	mov rax, r15
@@ -262,6 +265,13 @@ renderstep_normal endp
 renderstep_all_to_buffer proc
 	call render_layers_to_buffer	
 	call render_sprites_to_buffer
+
+	; add x on, normally done in render_from_buffer
+	mov r11d, dword ptr [rdx].state.scale_x
+	mov eax, [rdx].state.dc_hscale
+	add r11, rax
+	mov dword ptr [rdx].state.scale_x, r11d
+
 	add r15, 1
 
 	mov rax, r15
@@ -293,11 +303,11 @@ renderstep_next_line proc
 	xor r11, r11
 	mov word ptr [rdx].state.display_x, r11w	; zero
 
+	; scale_x needs to have the high bit set as it is used to read out of the buffer
 	mov r11, r15
 	xor r11, 0100000000000b ; flip top bit back
 	shl r11, 16				; adjust to the fixed point number
 	mov dword ptr [rdx].state.scale_x, r11d
-
 
 	; Add line to scaled y
 	mov r12d, dword ptr [rdx].state.scale_y
@@ -307,6 +317,8 @@ renderstep_next_line proc
 
 	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
 	mov word ptr [rdx].state.layer1_next_render, 1
+	mov qword ptr [rdx].state.layer0_cur_tileaddress, -1
+	mov qword ptr [rdx].state.layer1_cur_tileaddress, -1
 
 	; reset sprite renderer
 	xor rax, rax										; SPRITE_SEARCHING is zero
@@ -321,38 +333,106 @@ renderstep_next_line proc
 
 	mov word ptr [rdx].state.display_x, ax
 
-	;cmp r12, 0ffffffffh
-	;jg skippyy
-	;mov r12 ,r12
-	;skippyy:
 	add r9, 1
 
 	jmp renders_end
 renderstep_next_line endp
 
+
+; reset display x and display y.
+; add to scaled y as we're already rendering to the buffer
+; reset scaled x as we're at the end of a line
 renderstep_next_frame proc
-	xor r9, r9
-	xor r11, r11
 	xor r12, r12
-	mov word ptr [rdx].state.display_x, r11w
 	mov word ptr [rdx].state.display_y, r12w
+
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+	
+	; Add line to scaled y
+	mov r12d, dword ptr [rdx].state.scale_y
+	mov eax, [rdx].state.dc_vscale
+	add r12, rax
+	mov [rdx].state.scale_y, r12d		
+
+	; next line, reset counters
+	xor r15, 0100000000000b	; flip top bit
+	and r15, 0100000000000b	; and clear count
+
+	; scale_x needs to have the high bit set as it is used to read out of the buffer
+	mov r11, r15
+	xor r11, 0100000000000b ; flip top bit back
+	shl r11, 16				; adjust to the fixed point number
+	mov dword ptr [rdx].state.scale_x, r11d
+
+	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	mov word ptr [rdx].state.layer1_next_render, 1
+	mov qword ptr [rdx].state.layer0_cur_tileaddress, -1
+	mov qword ptr [rdx].state.layer1_cur_tileaddress, -1
+
+	; reset sprite renderer
+	xor rax, rax										; SPRITE_SEARCHING is zero
+	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
+	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
+	mov dword ptr [rdx].state.sprite_width, eax
+	mov dword ptr [rdx].state.sprite_wait, eax
+	mov dword ptr [rdx].state.vram_wait, eax
+	; clear sprite buffer
+
+	call clear_sprite_buffer
+
+	xor r9, r9
 
 	jmp renders_end
 renderstep_next_frame endp
 
+; reset scale_y as this is whats used to write into the buffer
 renderstep_reset_buffer proc
 	add r9, 1
 
-	mov dword ptr [rdx].state.scale_y, 0				; reset scaled value 
-	xor r15, r15										; reset buffer pointer
-	mov word ptr [rdx].state.layer0_next_render, 1	; next pixel forces a draw
+	; Add 1 to act y
+	movzx r12, word ptr [rdx].state.display_y
+	add r12, 1
+	mov word ptr [rdx].state.display_y, r12w
+
+
+	xor r11, r11
+	mov word ptr [rdx].state.display_x, r11w	; zero
+
+
+	xor r12, r12
+	mov dword ptr [rdx].state.scale_y, r12d				; reset scaled value 
+	;xor r15, r15										; reset buffer pointer
+	mov word ptr [rdx].state.layer0_next_render, 1		; next pixel forces a draw
 	mov word ptr [rdx].state.layer1_next_render, 1
+
+	
+	xor r15, 0100000000000b	; flip top bit
+	and r15, 0100000000000b	; and clear count
+
+	; scale_x needs to have the high bit set as it is used to read out of the buffer
+	mov r11, r15
+	xor r11, 0100000000000b ; flip top bit back
+	shl r11, 16				; adjust to the fixed point number
+	mov dword ptr [rdx].state.scale_x, r11d
+
+	; reset sprite renderer
+	xor rax, rax										; SPRITE_SEARCHING is zero
+	mov dword ptr [rdx].state.sprite_render_mode, eax	; start searching
+	mov dword ptr [rdx].state.sprite_position, -1		; from sprite 0, but 1 gets added straight away, so start at index -1
+	mov dword ptr [rdx].state.sprite_width, eax
+	mov dword ptr [rdx].state.sprite_wait, eax
+	mov dword ptr [rdx].state.vram_wait, eax
+	
+	call clear_sprite_buffer
 
 	jmp renders_end
 renderstep_reset_buffer endp
 
 
 render_from_buffer proc
+	movzx r12, word ptr [rdx].state.display_y
+
 	; r12 gets set at the end of the display loop
 	movzx rax, word ptr [rdx].state.dc_vstart
 	cmp r12, rax
@@ -1821,7 +1901,7 @@ ENDM
 REPT 159
 	db 0
 ENDM
-db 5
+db 0
 
 ; 480 lines done, end of visible area
 REPT 43
@@ -1834,7 +1914,7 @@ ENDM
 REPT 799
 	db 0
 ENDM
-db 7	; scale reset
+db 7	; scale reset + line end
 
 
 ; last line, render to the buffer
@@ -1845,6 +1925,6 @@ REPT 158
 	db 4
 ENDM
 db 0
-db 6 ; reset not needed as this is done by the end of screen check
+db 6
 
 .code
