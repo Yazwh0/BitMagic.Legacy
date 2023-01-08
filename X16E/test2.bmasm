@@ -26,6 +26,12 @@
     lda #$41        ; Sprites
     sta DC_VIDEO       
 
+    stz CTRL
+
+    lda #64
+    sta DC_HSCALE
+    sta DC_VSCALE
+
 .loop:
     jmp loop
 
@@ -112,7 +118,7 @@
     dex
     bne step 
 
-    lda #$04+1 ; hflip
+    lda #$04+3
     sta DATA0   ; depth
 
     stz DATA0   ; height, width, offset

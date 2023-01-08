@@ -591,7 +591,7 @@ render_layers_to_buffer proc
 ;
 	movzx r11, word ptr [rdx].state.display_x
 
-	; set r12 to scaled y and add a line
+	; set r12 to scaled y 
 	mov r12d, dword ptr [rdx].state.scale_y
 	shr r12, 16							; adjust to actual value
 
@@ -706,7 +706,12 @@ render_sprites_to_buffer proc
 	push rdi
 	push r12
 	push r15
-	add r12w, word ptr [rdx].state.layer1_vscroll
+		; set r12 to scaled y 
+	mov r12d, dword ptr [rdx].state.scale_y
+	shr r12, 16							; adjust to actual value
+
+
+	;add r12w, word ptr [rdx].state.layer1_vscroll
 	and r15, 0100000000000b			; set r15\buffer position to be just the offset
 	call sprites_render	
 	pop r15
