@@ -26,6 +26,14 @@
     lda #$41        ; Sprites
     sta DC_VIDEO       
 
+    lda #02
+    sta CTRL
+
+    lda #2
+    sta DC_HSTART
+    lda #1
+    sta DC_VSTART
+
     stz CTRL
 
     lda #64
