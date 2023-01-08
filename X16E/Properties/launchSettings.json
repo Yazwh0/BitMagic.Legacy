@@ -2,15 +2,14 @@
   "profiles": {
     "X16E": {
       "commandName": "Project",
-      "commandLineArgsx": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg C:\\Documents\\Source\\ceira_effect.PRG",
-      "commandLineArgsx3": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
-      "commandLineArgsSpinner": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg C:\\Documents\\Dropbox\\Source\\X16\\Spinner\\spinner.prg",
-      "commandLineArgsX4096": "--rom C:\\Dev\\X16emu\\R41\\rom.bin --prg C:\\Documents\\Source\\X16Cubed\\X16Cubed\\x4096.prg",
+      "commandLineArgsx3": "--rom c:\\dev\\rom_r42.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm",
+      "commandLineArgsSpinner": "--rom c:\\dev\\rom_r42.bin --prg C:\\Documents\\Dropbox\\Source\\X16\\Spinner\\spinner.prg",
+      "commandLineArgs4096": "--rom c:\\dev\\rom_r42.bin --prg C:\\Documents\\Source\\X16Cubed\\X16Cubed\\x4096.prg",
       "commandLineArgsSpriteBudget": "--rom c:\\dev\\rom_r42.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\spritebudget.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg --warp",
       "commandLineArgs": "--rom c:\\dev\\rom_r42.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\test2.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg --warp",
       "commandLineArgsPicture": "--rom c:\\dev\\rom_r42.bin --code C:\\Documents\\Source\\BitMagic\\Examples\\DisplayImage\\DisplayImageX16\\src\\main.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
-      "commandLineArgs3": "--rom C:\\Dev\\x16_hardware_tester.rom --code C:\\Documents\\Source\\BitMagic\\X16E\\test.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
-      "commandLineArgsrom": "--rom c:\\dev\\rom_r42.bin",
+      "commandLineArgsHardwareTester": "--rom C:\\Dev\\x16_hardware_tester.rom",
+      "commandLineArgsRom": "--rom c:\\dev\\rom_r42.bin",
       "nativeDebugging": true
     }
   }

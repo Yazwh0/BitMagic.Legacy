@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests.Vera.Display;
 
 [TestClass]
-public class Sprites_8x8_8bpp
+public class Sprites_Depth
 {
     [TestMethod]
     public async Task Render_Depth1()

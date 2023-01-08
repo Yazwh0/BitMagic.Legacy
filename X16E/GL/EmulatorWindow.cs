@@ -126,7 +126,7 @@ internal class EmulatorWindow
 
         _emulator!.RenderReady = false;
         var thisTicks = _stopwatch.ElapsedMilliseconds;
-        if (thisTicks - _lastTicks > 100)
+        if (thisTicks - _lastTicks > 1000)
         {
             var thisCount = _emulator.Vera.Frame_Count;
 
@@ -138,7 +138,7 @@ internal class EmulatorWindow
             else
             {
                 var tickDelta = thisTicks - _lastTicks;
-                _fps = (thisCount - _lastCount) / (tickDelta / 100.0) * 10;
+                _fps = (thisCount - _lastCount) / (tickDelta / 1000.0);
                 _speed = _fps / 59.523809;
             }
             _lastCount = thisCount;

@@ -433,7 +433,6 @@ renderstep_reset_buffer endp
 render_from_buffer proc
 	movzx r12, word ptr [rdx].state.display_y
 
-	; r12 gets set at the end of the display loop
 	movzx rax, word ptr [rdx].state.dc_vstart
 	cmp r12, rax
 	jl draw_border

@@ -345,6 +345,23 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	mov r14d, dword ptr [rdx].state.sprite_y	; this shouldn't ever result in a negative position
 	sub r12, r14
 
+	if vflip eq 1
+		if inp_height eq 0
+			mov r14, 7
+		endif
+		if inp_height eq 1
+			mov r14, 15
+		endif
+		if inp_height eq 2
+			mov r14, 31
+		endif
+		if inp_height eq 3
+			mov r14, 63
+		endif
+		sub r14, r12
+		mov r12, r14
+	endif
+
 	; adjust for line
 	; assume we're in 8bpp
 	if inp_width eq 0
@@ -363,7 +380,30 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 		sprite_width_px equ 64
 		shl r12, 6
 	endif
-	add r12, rbx
+
+	if hflip eq 0
+		add r12, rbx		; add on position within sprite
+	endif
+
+	if hflip eq 1
+		; rbx is 0, 4, 8, 12, etc... so need to inverse
+		; minus the width -4, -4 as 4 is the size for one read. (4bpp is adjusted later)
+		if inp_width eq 0
+			mov r14, 8-4
+		endif
+		if inp_width eq 1
+			mov r14, 16-4
+		endif
+		if inp_width eq 2
+			mov r14, 32-4
+		endif
+		if inp_width eq 3
+			mov r14, 64-4
+		endif
+		sub r14, rbx
+
+		add r12, r14		; add on position within sprite
+	endif
 
 	; if we're 4bpp, then adjust
 	if bpp eq 0
@@ -375,7 +415,7 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	; set r13 to the output x
 	mov r13d, dword ptr [rdx].state.sprite_x
 	add r13, rbx
-	add r13, r15	; add offset in buffer
+	add r13, r15		; add offset in buffer
 
 	mov rdi, qword ptr [rdx].state.vram_ptr
 	mov r12d, dword ptr [rdi + r12]	; get data
@@ -383,10 +423,10 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	push rbx
 	if bpp eq 0
 		; display pixels
-		render_pixel_data 0000000f0h, 4,  0
-		render_pixel_data 00000000fh, 0,  1
+		render_pixel_data 0000000f0h, 04, 0
+		render_pixel_data 00000000fh, 00, 1
 		render_pixel_data 00000f000h, 12, 2
-		render_pixel_data 000000f00h, 8,  3
+		render_pixel_data 000000f00h, 08, 3
 		render_pixel_data 000f00000h, 20, 4
 		render_pixel_data 0000f0000h, 16, 5
 		render_pixel_data 0f0000000h, 28, 6
@@ -398,10 +438,19 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	endif
 	if bpp eq 1
 		; display pixels
-		render_pixel_data 0000000ffh, 0,  0
-		render_pixel_data 00000ff00h, 8,  1
-		render_pixel_data 000ff0000h, 16, 2
-		render_pixel_data 0ff000000h, 24, 3
+		if hflip eq 0
+			render_pixel_data 0000000ffh, 00, 0
+			render_pixel_data 00000ff00h, 08, 1
+			render_pixel_data 000ff0000h, 16, 2
+			render_pixel_data 0ff000000h, 24, 3
+		endif
+
+		if hflip eq 1
+			render_pixel_data 0ff000000h, 24, 0
+			render_pixel_data 000ff0000h, 16, 1
+			render_pixel_data 00000ff00h, 08, 2
+			render_pixel_data 0000000ffh, 00, 3
+		endif
 
 		pop rbx
 		add rbx, 4
