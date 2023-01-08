@@ -308,7 +308,7 @@ vsync:
 	movzx rax, byte ptr [rdx].state.display_dirty
 	sub rax, 1
 	; comment this out to disable no display update optimisation
-	;js no_render_required
+	js no_render_required
 
 	mov byte ptr [rdx].state.display_dirty, al
 
