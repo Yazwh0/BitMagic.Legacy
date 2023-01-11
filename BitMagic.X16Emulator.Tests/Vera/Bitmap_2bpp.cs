@@ -10,7 +10,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -62,7 +62,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0x1000);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0x1000);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -114,7 +114,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -169,7 +169,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -221,7 +221,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -273,7 +273,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0x1000);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0x1000);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -325,7 +325,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -380,7 +380,7 @@ public class Bitmap_2Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepth.Depth_2bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_2bpp.png", ImageHelper.ColourDepthImage.Depth_2bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40

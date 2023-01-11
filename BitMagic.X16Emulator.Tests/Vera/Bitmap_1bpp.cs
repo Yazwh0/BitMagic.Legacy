@@ -658,7 +658,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -763,7 +763,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -869,7 +869,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -909,59 +909,6 @@ public class Bitmap_1Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -1622,7 +1569,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -1662,59 +1609,6 @@ public class Bitmap_1Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -1727,7 +1621,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -1767,59 +1661,6 @@ public class Bitmap_1Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -1833,7 +1674,7 @@ public class Bitmap_1Bpp
     {
         var emulator = new Emulator();
 
-        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepth.Depth_1bpp, 0);
+        emulator.LoadImage(@"Vera\Images\testimage_1bpp.png", ImageHelper.ColourDepthImage.Depth_1bpp, 0);
 
         await X16TestHelper.Emulate(@$"
                     .machine CommanderX16R40
@@ -1873,59 +1714,6 @@ public class Bitmap_1Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 

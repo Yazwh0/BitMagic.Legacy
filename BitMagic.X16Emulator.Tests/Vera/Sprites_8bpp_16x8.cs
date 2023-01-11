@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests.Vera.Display;
 
 [TestClass]
-public class Sprites_8bbp_16x8
+public class Sprites_8bpp_16x8
 {
     [TestMethod]
     public async Task Normal()
