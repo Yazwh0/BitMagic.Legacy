@@ -988,6 +988,7 @@ public class Sprites_8bbp_16x8
 
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_16x8_vflip.png");
     }
+
     [TestMethod]
     public async Task Normal_HVFLip()
     {

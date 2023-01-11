@@ -50,59 +50,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -155,59 +102,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -263,59 +157,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -368,59 +209,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -473,59 +261,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -578,59 +313,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
@@ -738,59 +420,6 @@ public class Bitmap_4Bpp
                         wai
 
                         stp
-
-                    .proc blankline
-                        ldx #$50
-
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
-
-                    .proc fullline
-                        lda #$7f
-                        sta DATA0
-                        ldx #$4e
-                        lda #$ff
-                    .loop:
-                        sta DATA0
-                        dex
-                        bne loop
-
-                        lda #$fe
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc middleline
-                        lda #$40
-                        sta DATA0
-                        ldx #$4e
-                    .loop:
-                        stz DATA0
-                        dex
-                        bne loop
-
-                        lda #$02
-                        sta DATA0
-
-                        rts
-                    .endproc
-
-                    .proc addnoise
-                        ldx #$50
-
-                    .loop:
-                        stx DATA0
-                        dex
-                        bne loop
-
-                        rts
-                    .endproc
                     ",
                 emulator);
 
