@@ -303,7 +303,7 @@ line_check:
 	mov byte ptr [rdx].state.interrupt, 1				; cpu interrupt
 
 	jmp main_loop
-vsync:	
+vsync:
 	; only draw the screen if there is an update!
 	movzx rax, byte ptr [rdx].state.display_dirty
 	sub rax, 1
@@ -317,11 +317,10 @@ vsync:
 	mov [rdx].state.render_ready, 1						; signal that we need to redraw the UI
 	jmp vera_render_done
 
-	no_render_required:
+no_render_required:
 	mov byte ptr [rdx].state.display_dirty, 0
 
-	vera_render_done:
-
+vera_render_done:
 	mov eax, dword ptr [rdx].state.frame_control	; 0 for no control, 1 for wait every frame -- same as control
 	or qword ptr [rdx].state.control, rax			; or on, just in case the host app has made a change
 
@@ -336,12 +335,40 @@ vsync:
 no_cpu_reset:
 
 	add dword ptr [rdx].state.frame_count, 1
+
+	; check and fire sprite collision IRQ
+	; if IRQ hit, bump display_dirty to ensure a re-render
+
+	movzx rbx, byte ptr [rsi+ISR]
+	and rbx, 0fh
+
+	movzx rcx, byte ptr [rdx].state.interrupt_spcol
+	test cl, cl
+	jz vsync_test
+
+	movzx rcx, byte ptr [rdx].state.frame_sprite_collision
+	test rcx, rcx
+	jz vsync_test
+
+	shl rcx, 4
+	or rcx, 4		; set spcol bit for ISR
+	or rbx, rcx		; or on our new flags into ISR
+
+	mov byte ptr [rsi+ISR], bl
+	mov byte ptr [rdx].state.interrupt_spcol_hit, 1
+	mov byte ptr [rdx].state.interrupt, 1
+	mov byte ptr [rdx].state.display_dirty, 1
+
+vsync_test:
+	mov dword ptr [rdx].state.frame_sprite_collision, 0	; clear mask
+
 	; fire vsync IRQ
 	movzx rcx, byte ptr [rdx].state.interrupt_vsync
 	test cl, cl
 	jz main_loop
 
 	; set vsync
+	; todo: use rbx from above??
 	or byte ptr [rsi+ISR], 1
 	mov byte ptr [rdx].state.interrupt_vsync_hit, 1
 	mov byte ptr [rdx].state.interrupt, 1

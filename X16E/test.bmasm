@@ -4,21 +4,21 @@
 .byte $0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
 .org $810
     
-    jmp ($fffc)
     sei    
 
+    stz CTRL
+    lda #64
+    sta DC_HSCALE 
+    sta DC_VSCALE
 
-    lda #$41        ; enable sprites
+    lda #$11        ; enable bitmap
     sta DC_VIDEO
 
-    lda #$04        ; bitmap, 1bpp
+    lda #$04+3        ; bitmap, 8bpp
     sta L0_CONFIG
 
-    lda #$01        ; 16 wide
-    sta L0_TILEBASE 
-
-    jsr create_sprites
-    jsr init_sprites
+    stz L0_MAPBASE
+    stz L0_TILEBASE
 
     ; set colour 0
     lda #$01
@@ -30,227 +30,61 @@
     lda #$12
     sta DATA0
 
-    lda #16
-    sta IRQLINE_L
-    lda #02 ; line interrupt
-    sta IEN
+    lda #$01
+    sta IEN     ; vsync
 
-.loop:
-
-    wai
     lda ISR
     sta ISR
-    and #02
-    beq loop
 
-    lda #$01
-    sta ADDRx_H
-    lda #$fa
-    sta ADDRx_M
-    stz ADDRx_L
-
-    lda #$24
-    sta DATA0
-
-    ; point data at X for sprite 0
-    lda #$01
-    sta ADDRx_H
-    lda #$fc
-    sta ADDRx_M
-    lda #$04
-    sta ADDRx_L
-
-    ldx #$10
-    lda #$ff
-
-.switching:
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-    sta DATA0
-    stz DATA0
-
-    dex
-    beq donex
-    jmp switching
-.donex:
-
-    lda #$01
-    sta ADDRx_H
-    lda #$fa
-    sta ADDRx_M
-    stz ADDRx_L
-
-    lda #$12
-    sta DATA0
-
-    jmp loop
-
-; create 64x64 sprite, at 0x00000
-.proc create_sprites
     lda #$10
     sta ADDRx_H
     stz ADDRx_M
     stz ADDRx_L
 
-    ldx #1
-    ldy #64
+
+.const addl = $02
+.const addm = $03
+.const addh = $04
+    stz addl
+    stz addm
+    stz addh
 
 .loop:
-    stx DATA0
-    inx
-    cpx #65
+    wai
+    lda ISR
+    sta DATA0
+    sta ISR
+
+    clc
+    lda addl
+    adc #1
+    sta addl
+    lda addm
+    adc #0
+    sta addm
+    lda addh
+    adc #0
+    sta addh
+
+    lda addh
+    cmp #$01
     bne loop
 
-    dey
-    beq done
+    lda addm
+    cmp #$2c
+    bne loop
 
-    ldx #1
-    jmp loop
+    lda addl
+    bne loop
 
-.done:
-    rts
-.endproc
-
-; init two sprites
-.proc init_sprites
-    lda #$11
+    lda #$10
     sta ADDRx_H
-    lda #$fc
-    sta ADDRx_M
+    stz ADDRx_M
     stz ADDRx_L
 
-    stz DATA0
-    lda #$80    ; 8bpp
-    sta DATA0
+    stz addl
+    stz addm
+    stz addh
 
-    lda #100
-    sta DATA0   ; x
-    stz DATA0
-
-    stz DATA0   ; y
-    stz DATA0
-
-    lda #$04    ; z depth
-    sta DATA0
-    lda #$f0
-    sta DATA0   ; 64x64
-
-
-    stz DATA0
-    lda #$80    ; 8bpp
-    sta DATA0
-
-    stz DATA0   ; x
-    stz DATA0
-
-    lda #200
-    sta DATA0   ; y
-    stz DATA0
-
-    lda #$04    ; z depth
-    sta DATA0
-    lda #$f0
-    sta DATA0   ; 64x64
-
-    rts
-.endproc
+    jmp loop
+    

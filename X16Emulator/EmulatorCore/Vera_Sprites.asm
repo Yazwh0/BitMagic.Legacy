@@ -287,10 +287,11 @@ exit:
 sprite_update_registers endp
 
 ; r14 : pixel data
+; rdi : sprite collision_mask
 ; rsi : display buffer
 ; r13 : output x
 render_pixel_data macro mask, shift, pixeladd
-	local dont_draw
+	local dont_draw, no_value, sprite_collision
 	mov r14, r12
 	and r14, mask
 
@@ -304,12 +305,12 @@ render_pixel_data macro mask, shift, pixeladd
 	; can only write on pixels that are the same depth or lower
 	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH]
 	cmp r8, rax
-	jl dont_draw
+	jl sprite_collision
 
 	; if there is something written, dont overwrite
 	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE]
 	test rax, rax
-	jnz dont_draw
+	jnz sprite_collision
 
 	lea rax, [r14 + r10] ; colour if we apply palette shift
 	lea rbx, [r14 - 1]	 ; 0-16 -> -1-15, so we can test on 0-15.
@@ -318,6 +319,20 @@ render_pixel_data macro mask, shift, pixeladd
 
 	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_VALUE], r14b
 	mov byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH], r8b
+
+	sprite_collision:
+	; sprite collision
+	; or on the collision to the line buffer
+	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_COL]
+	mov rbx, rax
+
+	; write the or'd value to the frame buffer
+	or rax, rdi
+	mov byte ptr[rsi + r13 + pixeladd + BUFFER_SPRITE_COL], al
+
+	; to check for a collision that can fire IRQ we and with the sprite's mask and or that onto the frame collision value
+	and rbx, rdi
+	or dword ptr [rdx].state.frame_sprite_collision, ebx
 
 	dont_draw:
 endm
@@ -338,6 +353,7 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	mov r13d, dword ptr [rdi + rax].sprite.address	; get address
 	mov r10d, dword ptr [rdi + rax].sprite.palette_offset
 	shl r10, 4	; todo: should be stored in this form.
+	mov edi, dword ptr [rdi + rax].sprite.collision_mask
 
 	mov r8d, dword ptr [rdx].state.sprite_depth
 
@@ -417,8 +433,10 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	add r13, rbx
 	add r13, r15		; add offset in buffer
 
+	push rdi
 	mov rdi, qword ptr [rdx].state.vram_ptr
 	mov r12d, dword ptr [rdi + r12]	; get data
+	pop rdi
 	
 	push rbx
 	if bpp eq 0

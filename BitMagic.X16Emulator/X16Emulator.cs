@@ -212,6 +212,7 @@ public class Emulator : IDisposable
         public uint Brk_Causes_stop = 0;
         public uint Control = 0;
         public uint Frame_Control = 0; // just run
+        public uint Frame_Sprite_Collision = 0;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently

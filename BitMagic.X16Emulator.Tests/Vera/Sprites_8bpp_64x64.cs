@@ -236,7 +236,6 @@ public class Sprites_8bpp_64x64
         emulator.CompareImage(@"Vera\Images\sprites_8bpp_64x64_vflip.png");
     }
 
-
     [TestMethod]
     public async Task Normal_HVflip()
     {
