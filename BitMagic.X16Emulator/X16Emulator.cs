@@ -178,6 +178,8 @@ public class Emulator : IDisposable
         public ulong DisplayPtr = 0;
         public ulong DisplayBufferPtr = 0;
         public ulong HistoryPtr = 0;
+        public ulong I2cBufferPtr = 0;
+        public ulong SmcKeyboardPtr = 0;
 
         public ulong VramPtr = 0;
         public ulong PalettePtr = 0;
@@ -213,6 +215,20 @@ public class Emulator : IDisposable
         public uint Control = 0;
         public uint Frame_Control = 0; // just run
         public uint Frame_Sprite_Collision = 0;
+
+        public uint I2cPosition = 0;
+        //public uint I2cScancodePosition = 0;
+        public uint I2cPrevious = 0;
+        public uint I2cReadWrite = 0;
+        public uint I2cTransmit = 0;
+        public uint I2cMode = 0;
+        public uint I2cAddress = 0;
+        public uint I2cDataToTransmit = 0;
+
+        public uint SmcOffset = 0;
+        public uint Keyboard_ReadPosition = 0;
+        public uint Keyboard_WritePosition = 0;
+        public uint Keyboard_ReadNoData = 1;
 
         public ushort Pc = 0;
         public ushort StackPointer = 0x1fd; // apparently
@@ -340,7 +356,7 @@ public class Emulator : IDisposable
         public byte _Padding2 = 0;
 
         public unsafe CpuState(ulong memory, ulong rom, ulong ramBank, ulong vram,
-            ulong display, ulong palette, ulong sprite, ulong displayBuffer, ulong history)
+            ulong display, ulong palette, ulong sprite, ulong displayBuffer, ulong history, ulong i2cBuffer, ulong smcKeyboardPtr)
         {
             MemoryPtr = memory;
             RomPtr = rom;
@@ -351,6 +367,8 @@ public class Emulator : IDisposable
             SpritePtr = sprite;
             DisplayBufferPtr = displayBuffer;
             HistoryPtr = history;
+            I2cBufferPtr = i2cBuffer;
+            SmcKeyboardPtr = smcKeyboardPtr;
         }
     }
 
@@ -360,6 +378,7 @@ public class Emulator : IDisposable
         UnknownOpCode,
         DebugOpCode,
         BrkHit,
+        SmcPowerOff,
         Unsupported = -1
     }
 
@@ -394,6 +413,9 @@ public class Emulator : IDisposable
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);
 
+    public uint Keyboard_ReadPosition => _state.Keyboard_ReadPosition;
+    public uint Keyboard_WritePosition { get => _state.Keyboard_WritePosition; set => _state.Keyboard_WritePosition = value; } 
+
     private const int _rounding = 32; // 32 byte (256bit) allignment required for AVX 256 instructions
     private const ulong _roundingMask = ~(ulong)_rounding + 1;
 
@@ -410,6 +432,8 @@ public class Emulator : IDisposable
     private readonly ulong _palette_ptr;
     private readonly ulong _history_ptr;
     private readonly ulong _sprite_ptr;
+    private readonly ulong _i2cBuffer_ptr;
+    private readonly ulong _smcKeyboard_ptr;
 
     private const int RamSize = 0x10000;
     private const int RomSize = 0x4000 * 32;
@@ -420,6 +444,8 @@ public class Emulator : IDisposable
     private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 4 for each layers 0, 1, sprite value, sprite depth, sprite collision - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
     private const int HistorySize = 8 * 1024;
     private const int SpriteSize = 64 * 128;
+    private const int I2cBufferSize = 1024;
+    public const int SmcKeyboardBufferSize = 16;
 
     private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
 
@@ -442,8 +468,10 @@ public class Emulator : IDisposable
         _palette_ptr = (ulong)NativeMemory.Alloc(PaletteSize);
         _sprite_ptr = (ulong)NativeMemory.Alloc(SpriteSize);
         _history_ptr = (ulong)NativeMemory.Alloc(HistorySize);
+        _i2cBuffer_ptr = (ulong)NativeMemory.Alloc(I2cBufferSize);
+        _smcKeyboard_ptr = (ulong)NativeMemory.Alloc(SmcKeyboardBufferSize);
 
-        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _sprite_ptr, _display_buffer_ptr_rounded, _history_ptr);
+        _state = new CpuState(_memory_ptr_rounded, _rom_ptr_rounded, _ram_ptr_rounded, _vram_ptr, _display_ptr, _palette_ptr, _sprite_ptr, _display_buffer_ptr_rounded, _history_ptr, _i2cBuffer_ptr, _smcKeyboard_ptr);
 
         var memory_span = new Span<byte>((void*)_memory_ptr, RamSize);
         for (var i = 0; i < RamSize; i++)
@@ -473,6 +501,14 @@ public class Emulator : IDisposable
         for (var i = 0; i < SpriteSize; i++)
             sprite_span[i] = 0;
 
+        var i2cBuffer_span = new Span<byte>((void*)_i2cBuffer_ptr, I2cBufferSize);
+        for (var i = 0; i < I2cBufferSize; i++)
+            i2cBuffer_span[i] = 0;
+
+        var smcKeyboard_span = new Span<byte>((void*)_smcKeyboard_ptr, SmcKeyboardBufferSize);
+        for (var i = 0; i < SmcKeyboardBufferSize; i++)
+            smcKeyboard_span[i] = 0;
+
         // set defaults
         var sprite_act_span = new Span<Sprite>((void*)_sprite_ptr, 128);
         for (var i = 0; i < 128; i++)
@@ -480,6 +516,8 @@ public class Emulator : IDisposable
             sprite_act_span[i].Height = 8;
             sprite_act_span[i].Width = 8;
         }
+
+        SmcBuffer = new SmcBuffer(this);
     }
 
     public unsafe Span<byte> Memory => new Span<byte>((void*)_memory_ptr_rounded, RamSize);
@@ -489,13 +527,26 @@ public class Emulator : IDisposable
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
     public unsafe Span<Sprite> Sprites => new Span<Sprite>((void*)_sprite_ptr, 128);
     public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);
+    public unsafe Span<byte> KeyboardBuffer => new Span<byte>((void*)_smcKeyboard_ptr, SmcKeyboardBufferSize);
+
+    public SmcBuffer SmcBuffer { get; }
 
     public EmulatorResult Emulate()
     {
+        //var i2c = SmcBuffer;
+        //var i2c_thread = new Thread(_ => i2c.RunI2cCaptuer(ref _state));
+        //i2c_thread.UnsafeStart();
+
+        //SmcBuffer.KeyDown(Silk.NET.Input.Key.B);
+        //SmcBuffer.KeyUp(Silk.NET.Input.Key.B);
+
         Thread.CurrentThread.Priority = ThreadPriority.Highest;
         var r = fnEmulatorCode(ref _state);
         var result = (EmulatorResult)r;
         Thread.CurrentThread.Priority = ThreadPriority.Normal;
+
+        //i2c.Stop();
+
         return result;
     }
 
@@ -515,5 +566,8 @@ public class Emulator : IDisposable
         NativeMemory.Free((void*)_palette_ptr);
         NativeMemory.Free((void*)_sprite_ptr);
         NativeMemory.Free((void*)_display_buffer_ptr);
+        NativeMemory.Free((void*)_history_ptr);
+        NativeMemory.Free((void*)_i2cBuffer_ptr);
+        NativeMemory.Free((void*)_smcKeyboard_ptr);
     }
 }

@@ -158,6 +158,8 @@ static class Program
         else
             emulator.FrameControl = FrameControl.Synced;
 
+        emulator.Brk_Causes_Stop = true;
+
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);
 

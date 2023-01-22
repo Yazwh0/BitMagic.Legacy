@@ -1,0 +1,106 @@
+﻿.machine CommanderX16R41
+.org $801
+
+.byte $0C, $08, $0A, $00, $9E, $20, $32, $30, $36, $34, $00, $00, $00, $00, $00
+.org $810
+
+	sei
+
+	.const read_i2c = $dfcc
+	.const receive_scancode = $cdfd
+
+	lda #$f0
+	cmp #$f0
+	bne stop
+	rol $10
+	bne finished
+	lda #$22
+	sta $11
+	stp
+
+
+.stop:
+	lda #$11
+	sta $11
+	stp
+	stp
+.finished:
+	lda #$ff
+	sta $11
+	stp
+
+
+
+	jsr receive_scancode
+	sta $02
+	stx $03
+	stz $04
+	bcc rskip1
+	lda #01
+	sta $04
+.rskip1:
+
+	jsr receive_scancode
+	sta $12
+	stx $13
+	stz $14
+	bcc rskip2
+	lda #01
+	sta $14
+.rskip2:
+
+	jsr receive_scancode
+	sta $22
+	stx $23
+	stz $24
+	bcc rskip3
+	lda #01
+	sta $24
+.rskip3:
+
+	stp
+
+
+; i2c text
+	ldx #$42
+	ldy #07
+
+	jsr read_i2c
+	
+	sta $02
+	stx $03
+	sty $04
+	stz $05
+	bcc skip1
+	lda #01
+	sta $35
+.skip1:
+
+	jsr read_i2c
+	
+	sta $12
+	stx $13
+	sty $14
+	stz $35
+	bcc skip2
+	lda #01
+	sta $35
+.skip2:
+
+	jsr read_i2c
+	
+	sta $22
+	stx $23
+	sty $24
+	stz $35
+	bcc skip3
+	lda #01
+	sta $35
+.skip3:
+
+	stp
+.stop:
+	jmp stop
+
+
+	

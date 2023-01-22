@@ -13,7 +13,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Image = SixLabors.ImageSharp.Image;
 using Silk.NET.Core;
+using Silk.NET.Input;
 using SixLabors.ImageSharp.PixelFormats;
+using Silk.NET.Core.Attributes;
 
 namespace X16E;
 
@@ -53,16 +55,32 @@ internal class EmulatorWindow
         _window.Load += OnLoad;
         _window.Render += OnRender;
         _window.Closing += OnClose;
-
+        
         _stopwatch.Start();
 
         _window.Run();
+    }
+
+    private static void EmulatorWindow_KeyUp(IKeyboard arg1, Key arg2, int arg3)
+    {
+        Console.WriteLine($"UP   {arg2} - {arg3}");
+        _emulator!.SmcBuffer.KeyUp(arg2);
+    }
+
+    private static void EmulatorWindow_KeyDown(IKeyboard arg1, Key arg2, int arg3)
+    {
+        Console.WriteLine($"DOWN {arg2} - {arg3}");
+        _emulator!.SmcBuffer.KeyDown(arg2);
     }
 
     private static unsafe void OnLoad()
     {
         if (_window == null) throw new Exception("_window not set");
         if (_images == null) throw new Exception("_images not set");
+
+        var input = _window.CreateInput();
+        input.Keyboards[0].KeyUp += EmulatorWindow_KeyUp;
+        input.Keyboards[0].KeyDown += EmulatorWindow_KeyDown;
 
         _window.SetDefaultIcon();
         _gl = GL.GetApi(_window);

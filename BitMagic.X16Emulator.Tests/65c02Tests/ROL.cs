@@ -51,6 +51,52 @@ public class ROL
     }
 
     [TestMethod]
+    public async Task A_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000000;
+        emulator.Carry = false;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                rol
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x2a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b00000000, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task A_NotZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000000;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                rol
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x2a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b00000001, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task A_SetCarry()
     {
         var emulator = new Emulator();
@@ -142,6 +188,29 @@ public class ROL
         Assert.AreEqual(emulator.Memory[0x1234], 0b00000100);
         emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6);
         emulator.AssertFlags(false, false, false, true);
+    }
+
+    [TestMethod]
+    public async Task Abs_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0b00000000;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                rol $1234
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x2e, emulator.Memory[0x810]);
+
+        // emulation
+        Assert.AreEqual(emulator.Memory[0x1234], 0b00000000);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6);
+        emulator.AssertFlags(true, false, false, false);
     }
 
     [TestMethod]
@@ -266,7 +335,56 @@ public class ROL
     }
 
     [TestMethod]
+    public async Task Zp_NotZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x12] = 0b00000000;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                rol $12
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x26, emulator.Memory[0x810]);
+
+        // emulation
+        Assert.AreEqual(emulator.Memory[0x12], 0b00000001);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
     public async Task Zp_CarrySet()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x12] = 0b00000010;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                rol $12
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x26, emulator.Memory[0x810]);
+
+        // emulation
+        Assert.AreEqual(emulator.Memory[0x12], 0b00000101);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 5);
+        emulator.AssertFlags(false, false, false, false);
+    }
+
+
+    [TestMethod]
+    public async Task Zp_CarrySetZero()
     {
         var emulator = new Emulator();
 

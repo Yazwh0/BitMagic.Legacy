@@ -202,7 +202,7 @@
       <FileType>Document</FileType>
       <Command>ml64 /c /Zi /Fo$(Platform)\$(Configuration)\core.obj core.asm</Command>
       <Outputs>$(Platform)\$(Configuration)\core.obj</Outputs>
-      <AdditionalInputs>.\State.asm;.\Vera.asm;.\Constants.inc;.\Vera_Display.asm;.\Vera_Display_Tiles_1bpp.asm;.\Vera_Display_Tiles_2bpp.asm;.\Vera_Display_Tiles_4bpp.asm;.\Vera_Display_Tiles_8bpp.asm;.\Vera_Display_Bitmap_1bpp.asm;.\Vera_Display_Bitmap_2bpp.asm;.\Vera_Display_Bitmap_4bpp.asm;.\Vera_Display_Bitmap_8bpp.asm;.\Vera_Sprites.asm;.\Via.asm;.\Io.asm;.\I2c.asm;.\Banking.asm</AdditionalInputs>
+      <AdditionalInputs>.\State.asm;.\Vera.asm;.\Constants.inc;.\Vera_Display.asm;.\Vera_Display_Tiles_1bpp.asm;.\Vera_Display_Tiles_2bpp.asm;.\Vera_Display_Tiles_4bpp.asm;.\Vera_Display_Tiles_8bpp.asm;.\Vera_Display_Bitmap_1bpp.asm;.\Vera_Display_Bitmap_2bpp.asm;.\Vera_Display_Bitmap_4bpp.asm;.\Vera_Display_Bitmap_8bpp.asm;.\Vera_Sprites.asm;.\Via.asm;.\Io.asm;.\I2c.asm;.\Banking.asm;.\Smc.asm;</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -279,14 +279,14 @@
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
-    </Text>    
+    </Text>
     <Text Include="Vera_Sprites.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
-    </Text> 
-	<Text Include="Via.asm">
+    </Text>
+    <Text Include="Via.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
@@ -303,14 +303,20 @@
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
-    </Text>  
+    </Text>
     <Text Include="Banking.asm">
       <FileType>Document</FileType>
       <Command>copy /b Core.asm +,,</Command>
       <Outputs>_temp.txt</Outputs>
       <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
-    </Text>  
-	</ItemGroup>
+    </Text>
+    <Text Include="Smc.asm">
+      <FileType>Document</FileType>
+      <Command>copy /b Core.asm +,,</Command>
+      <Outputs>_temp.txt</Outputs>
+      <VerifyInputsAndOutputsExist>false</VerifyInputsAndOutputsExist>
+    </Text>	
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

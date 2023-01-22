@@ -20,6 +20,8 @@ state struct
 	display_ptr				qword ?
 	display_buffer_ptr		qword ?
 	history_ptr				qword ?
+	i2c_buffer_ptr			qword ?
+	smc_keyboard_ptr		qword ?
 
 	; Vera
 	vram_ptr				qword ?
@@ -56,6 +58,20 @@ state struct
 	control					dword ?
 	frame_control			dword ?
 	frame_sprite_collision	dword ?
+
+	i2c_position			dword ?
+	;i2c_scancode_position	dword ?
+	i2c_previous			dword ?
+	i2c_readwrite			dword ?
+	i2c_transmit			dword ?
+	i2c_mode				dword ?
+	i2c_address				dword ?
+	i2c_datatotransmit		dword ?
+
+	smc_offset				dword ?
+	smc_keyboard_readposition   dword ?
+	smc_keyboard_writeposition	dword ?
+	smc_keyboard_readnodata	dword ?
 
 	register_pc				word ?
 	stackpointer			word ?

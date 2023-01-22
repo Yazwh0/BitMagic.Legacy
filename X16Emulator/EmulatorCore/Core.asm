@@ -22,6 +22,8 @@ Include Io.asm
 include Vera.asm
 include Via.asm
 include Banking.asm
+include I2c.asm
+include Smc.asm
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
 
@@ -1266,9 +1268,17 @@ rol_body macro checkreadonly, clock, pc
 	and rdi, 0100h					; mask carry
 	ror rdi, 8						; move to lower byte
 
+    ;        NZ A P C
+	mov r12, 0100000000000000b 
+	xor r13, r13
+
 	sal byte ptr [rsi+rbx], 1		; shift
 	write_flags_r15
 	or byte ptr [rsi+rbx], dil		; add carry on
+
+	cmovnz r12, r13
+	and r15, 1011111111111111b		; mask off the zero flag
+	or r15, r12						; add on zero flag if needed
 	
 	add r14, clock					; Clock
 	add r11w, pc					; add on PC
@@ -1296,10 +1306,18 @@ x2A_rol_a proc
 	and rdi, 0100h					; mask carry
 	ror rdi, 8						; move to lower byte
 
+	;        NZ A P C
+	mov r12, 0100000000000000b 
+	xor r13, r13
+
 	sal r8b,1						; shift
 	write_flags_r15
 	or r8b, dil						; add carry on
-
+	
+	cmovnz r12, r13
+	and r15, 1011111111111111b		; mask off the zero flag
+	or r15, r12						; add on zero flag if needed
+	
 	add r14, 2						; Clock
 	jmp opcode_done	
 x2A_rol_a endp

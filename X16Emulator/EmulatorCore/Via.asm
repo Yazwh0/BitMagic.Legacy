@@ -314,14 +314,16 @@ via_dra proc
 	mov byte ptr [rsi+V_PRA], r12b
 	mov byte ptr [rsi+V_ORA], r12b
 
-	ret
+	mov rax, r12
+	jmp i2c_handledata	; this returns properly
 via_dra endp
 
 ; writes to the registers are stored, but only show in memory depending on DRA (Data Direction Register)
 via_pra proc
-	mov r13b, byte ptr [rsi+rbx]
+	movzx r13, byte ptr [rsi+rbx]
+		
 	mov byte ptr [rdx].state.via_register_a_outvalue, r13b	; store new value
-	
+
 	; I2C input bits follow output
 	;mov r12, r13
 	;and r12, 03h
@@ -335,12 +337,14 @@ via_pra proc
 
 	xor dil, 0ffh											; invert mask
 
-	mov al, byte ptr [rdx].state.via_register_a_invalue		; get value in
+	movzx rax, byte ptr [rdx].state.via_register_a_invalue		; get value in
 	and rax, rdi
 
 	or r13, rax												; merge two values and store
 	mov byte ptr [rsi+rbx], r13b
-	mov byte ptr [rsi+V_ORA], r13b
+	mov byte ptr [rsi+V_ORA], r13b	
 
-	ret
+	mov rax, r13
+	jmp i2c_handledata	; this returns properly
+
 via_pra endp
