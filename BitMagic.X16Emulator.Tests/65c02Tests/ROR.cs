@@ -28,6 +28,51 @@ public class ROR
     }
 
     [TestMethod]
+    public async Task A_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000001;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x6a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b00000000, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(true, false, false, true);
+    }
+
+    [TestMethod]
+    public async Task A_NotZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b00000000;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x6a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b10000000, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(false, true, false, false);
+    }
+
+    [TestMethod]
     public async Task A_CarrySet()
     {
         var emulator = new Emulator();
@@ -94,6 +139,30 @@ public class ROR
         Assert.AreEqual(0b00000001, emulator.Memory[0x1234]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6);
         emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_NotZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x1234] = 0b00000000;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror $1234
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x6e, emulator.Memory[0x810]);
+
+        // emulation
+        Assert.AreEqual(0b10000000, emulator.Memory[0x1234]);
+        emulator.AssertState(0x00, 0x00, 0x00, 0x814, 6);
+        emulator.AssertFlags(false, true, false, false);
     }
 
     [TestMethod]
