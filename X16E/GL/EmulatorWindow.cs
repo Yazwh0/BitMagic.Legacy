@@ -63,13 +63,13 @@ internal class EmulatorWindow
 
     private static void EmulatorWindow_KeyUp(IKeyboard arg1, Key arg2, int arg3)
     {
-        Console.WriteLine($"UP   {arg2} - {arg3}");
+        //Console.WriteLine($"UP   {arg2} - {arg3}");
         _emulator!.SmcBuffer.KeyUp(arg2);
     }
 
     private static void EmulatorWindow_KeyDown(IKeyboard arg1, Key arg2, int arg3)
     {
-        Console.WriteLine($"DOWN {arg2} - {arg3}");
+        //Console.WriteLine($"DOWN {arg2} - {arg3}");
         _emulator!.SmcBuffer.KeyDown(arg2);
     }
 

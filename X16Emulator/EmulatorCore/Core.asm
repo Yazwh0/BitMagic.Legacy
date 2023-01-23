@@ -235,13 +235,15 @@ next_opcode::
     mov rcx, [rdx].state.history_pos
     add rdi, rcx
     mov debug_pos, rdi
-    add rcx, 8
-    and rcx, 01fffh
+    add rcx, 16
+    and rcx, (1024*16)-1
     mov [rdx].state.history_pos, rcx
     mov word ptr [rdi], r11w		; PC
     mov byte ptr [rdi+2], bl		; Opcode
     mov al, byte ptr [rsi+1]
     mov byte ptr [rdi+3], al		; store rom
+    mov ax, word ptr [rsi + r11 + 1]
+    mov word ptr [rdi+8], ax        ; parameters
 
     add r11w, 1						; PC+1
     lea rax, opcode_00				; start of jump table

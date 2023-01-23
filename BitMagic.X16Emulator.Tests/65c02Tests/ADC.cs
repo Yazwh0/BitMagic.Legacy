@@ -49,6 +49,26 @@ public class ADC
     }
 
     [TestMethod]
+    public async Task Imm_DoNothing()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x0;
+        emulator.Carry = false;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                adc #0
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 2);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
+    [TestMethod]
     public async Task Imm_ZeroCarry()
     {
         var emulator = new Emulator();
@@ -109,6 +129,27 @@ public class ADC
         // emulation
         emulator.AssertState(0x05, 0x00, 0x00, 0x814, 4);
         emulator.AssertFlags(false, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_DoNothing()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+        emulator.Memory[0x1234] = 0x00;
+        emulator.Carry = false;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                adc $1234
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x814, 4);
+        emulator.AssertFlags(true, false, false, false);
     }
 
     [TestMethod]

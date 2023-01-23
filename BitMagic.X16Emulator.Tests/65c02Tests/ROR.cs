@@ -72,6 +72,30 @@ public class ROR
         emulator.AssertFlags(false, true, false, false);
     }
 
+
+    [TestMethod]
+    public async Task A_NotZero_V()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0b10000000;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                ror
+                stp",
+                emulator);
+
+        // compilation
+        Assert.AreEqual(0x6a, emulator.Memory[0x810]);
+
+        // emulation
+        emulator.AssertState(0b11000000, 0x00, 0x00, 0x812, 2);
+        emulator.AssertFlags(false, true, false, false);
+    }
+
     [TestMethod]
     public async Task A_CarrySet()
     {

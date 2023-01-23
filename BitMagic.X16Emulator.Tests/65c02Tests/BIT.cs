@@ -47,6 +47,25 @@ public class BIT
     }
 
     [TestMethod]
+    public async Task Imm_Zero_PreserveCarry()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x02;
+        emulator.Carry = true;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit #$01
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertFlags(true, false, false, true);
+    }
+
+    [TestMethod]
     public async Task Imm_Negative()
     {
         var emulator = new Emulator();

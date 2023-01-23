@@ -50,7 +50,7 @@ namespace BitMagic.X16Emulator
             if (next != _emulator.Keyboard_ReadPosition) {
                 _emulator.KeyboardBuffer[(int)_emulator.Keyboard_WritePosition] = value;
                 _emulator.Keyboard_WritePosition = next;
-                Console.WriteLine($"Keyboard added ${value:X2}");
+                //Console.WriteLine($"Keyboard added ${value:X2}");
             }
             else
             {

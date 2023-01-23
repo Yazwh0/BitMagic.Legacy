@@ -11,11 +11,15 @@ public struct EmulatorHistory
 {
     public ushort PC;
     public byte OpCode;
-    public byte ParamL;
-    public byte ParamH;
+    public byte RomBank;
+    public byte Unused3;
     public byte A;
     public byte X;
     public byte Y;
+    public ushort Params;
+    public ushort Unused;
+    public ushort Unused1;
+    public ushort Unused2;
 }
 
 public enum Control : uint
@@ -400,7 +404,7 @@ public class Emulator : IDisposable
     public bool Negative { get => _state.Negative != 0; set => _state.Negative = (byte)(value ? 0x01 : 0x00); }
     public bool Interrupt { get => _state.Interrupt != 0; set => _state.Interrupt = (byte)(value ? 0x01 : 0x00); }
     public bool Nmi { get => _state.Nmi != 0; set => _state.Nmi = (byte)(value ? 0x01 : 0x00); }
-    public ulong HistoryPosition => _state.History_Pos / 8;
+    public ulong HistoryPosition => _state.History_Pos / 16;
 
     public bool Headless { get => _state.Headless != 0; set => _state.Headless = (byte)(value ? 0x01 : 0x00); }
     public bool RenderReady { get => _state.RenderReady != 0; set => _state.RenderReady = (byte)(value ? 0x01 : 0x00); }
@@ -442,7 +446,7 @@ public class Emulator : IDisposable
     private const int DisplaySize = 800 * 525 * 4 * 6; // *6 for each layer
     private const int PaletteSize = 256 * 4;
     private const int DisplayBufferSize = 2048 * 2 * 5; // Pallette index for two lines * 4 for each layers 0, 1, sprite value, sprite depth, sprite collision - one line being rendered, one being output, 2048 to provide enough space so scaling of $ff works
-    private const int HistorySize = 8 * 1024;
+    private const int HistorySize = 16 * 1024;
     private const int SpriteSize = 64 * 128;
     private const int I2cBufferSize = 1024;
     public const int SmcKeyboardBufferSize = 16;
@@ -526,7 +530,7 @@ public class Emulator : IDisposable
     public unsafe Span<PixelRgba> Display => new Span<PixelRgba>((void*)_display_ptr, DisplaySize / 4);
     public unsafe Span<PixelRgba> Palette => new Span<PixelRgba>((void*)_palette_ptr, PaletteSize / 4);
     public unsafe Span<Sprite> Sprites => new Span<Sprite>((void*)_sprite_ptr, 128);
-    public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 8);
+    public unsafe Span<EmulatorHistory> History => new Span<EmulatorHistory>((void*)_history_ptr, HistorySize / 16);
     public unsafe Span<byte> KeyboardBuffer => new Span<byte>((void*)_smcKeyboard_ptr, SmcKeyboardBufferSize);
 
     public SmcBuffer SmcBuffer { get; }
