@@ -172,9 +172,8 @@ namespace BitMagic.X16Emulator
 
         private bool _running = true;
 
-        public unsafe void RunI2cCaptuer(ref CpuState state)
+        public unsafe void RunI2cCapture(ref CpuState state)
         {
-            return;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"SDA\tSCL\tmode");
             uint lastPosition = state.I2cPosition;

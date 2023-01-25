@@ -242,6 +242,8 @@ next_opcode::
     mov byte ptr [rdi+2], bl		; Opcode
     mov al, byte ptr [rsi+1]
     mov byte ptr [rdi+3], al		; store rom
+    mov al, byte ptr [rsi+0]
+    mov byte ptr [rdi+4], al		; store ram
     mov ax, word ptr [rsi + r11 + 1]
     mov word ptr [rdi+8], ax        ; parameters
 
@@ -252,10 +254,66 @@ next_opcode::
 cpu_is_waiting:
     add r14, 1
 opcode_done::
+    ;--------------------------- START DEBUG CAPTURE ------------------------
     mov rdi, debug_pos
     mov byte ptr [rdi+5], r8b		; A
     mov byte ptr [rdi+6], r9b		; X
     mov byte ptr [rdi+7], r10b		; Y
+
+    mov	al, 00100000b ; bits that are always set
+
+    ; carry
+    bt r15w, 0 +8
+    jnc no_carry
+    or al, 00000001b
+no_carry:
+    
+    ; zero
+    bt r15w, 6 +8
+    jnc no_zero
+    or al, 00000010b
+no_zero:
+
+    ; negative
+    bt r15w, 7 +8
+    jnc no_negative
+    or al, 10000000b
+no_negative:
+
+    ; interrupt disable
+    movzx rbx, byte ptr [rdx].state.flags_interruptDisable
+    test bl, 1
+    jz no_interrupt
+    or al, 00000100b
+no_interrupt:
+
+    ; overflow
+    movzx rbx, byte ptr [rdx].state.flags_overflow
+    test bl, 1
+    jz no_overflow
+    or al, 01000000b
+no_overflow:
+
+    ; decimal
+    movzx rbx, byte ptr [rdx].state.flags_decimal
+    test bl, 1
+    jz no_decimal
+    or al, 00001000b
+no_decimal:
+
+    ; decimal
+    movzx rbx, byte ptr [rdx].state.flags_break
+    test bl, 1
+    jz no_break
+    or al, 00010000b
+no_break:
+
+    mov byte ptr [rdi+10], al   ; falgs
+
+    mov ax, word ptr [rdx].state.stackpointer
+    mov byte ptr [rdi+11], al       ; SP
+
+    ;--------------------------- END DEBUG CAPTURE ------------------------
 
     call via_step	; todo: change to macro call
 
@@ -2466,10 +2524,12 @@ handle_interrupt proc
     mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
     movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
-    mov [rsi+rbx], al					; Put PC Low byte on stack
-    dec bl								; Move stack pointer on
+
     mov [rsi+rbx], ah					; Put PC High byte on stack
     dec bl								; Move stack pointer on (done twice for wrapping)
+
+    mov [rsi+rbx], al					; Put PC Low byte on stack
+    dec bl								; Move stack pointer on
 
     push bx
     set_status_register_al
@@ -2510,11 +2570,11 @@ handle_nmi proc
     mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
     movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
-    mov [rsi+rbx], al					; Put PC Low byte on stack
-    dec bl								; Move stack pointer on
     mov [rsi+rbx], ah					; Put PC High byte on stack
     dec bl								; Move stack pointer on (done twice for wrapping)
-
+    mov [rsi+rbx], al					; Put PC Low byte on stack
+    dec bl								; Move stack pointer on
+    
     push bx
     set_status_register_al
     pop bx
@@ -2540,10 +2600,10 @@ handle_nmi endp
 
 x40_rti proc
     get_status_register	1				; set bx to stack pointer
-    inc bl							
-    mov ah, [rsi+rbx]					; high PC byte
     inc bl
     mov al, [rsi+rbx]					; low PC byte
+    inc bl							
+    mov ah, [rsi+rbx]					; high PC byte
     mov r11w, ax						; set PC
     mov byte ptr [rdx].state.stackpointer, bl	; Store stack pointer
 
@@ -2868,10 +2928,10 @@ x00_brk proc
     mov rax, r11						; Get PC as the return address (to put address on the stack -- different to JSR)
 
     movzx rbx, word ptr [rdx].state.stackpointer	; Get stack pointer
-    mov [rsi+rbx], al					; Put PC Low byte on stack
-    dec bl								; Move stack pointer on
     mov [rsi+rbx], ah					; Put PC High byte on stack
     dec bl								; Move stack pointer on (done twice for wrapping)
+    mov [rsi+rbx], al					; Put PC Low byte on stack
+    dec bl								; Move stack pointer on
 
     push bx
     set_status_register_al

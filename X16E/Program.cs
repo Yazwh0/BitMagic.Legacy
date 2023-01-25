@@ -2,7 +2,10 @@
 using BitMagic.Compiler;
 using BitMagic.X16Emulator;
 using CommandLine;
+using Silk.NET.SDL;
+using System.Text;
 using static X16E.Program.AddressModes;
+using Thread = System.Threading.Thread;
 
 namespace X16E;
 
@@ -162,13 +165,13 @@ static class Program
         emulator.Brk_Causes_Stop = true;
 
         // currently need this to run
-        emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.B);
-        emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.B);
+        //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.B);
+        //emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.B);
 
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);
 
-        EmulatorThread.Priority = ThreadPriority.Highest;
+        EmulatorThread.Priority = System.Threading.ThreadPriority.Highest;
         EmulatorThread.Start();
 
         EmulatorWindow.Run(emulator);
@@ -205,7 +208,7 @@ static class Program
                     var opCodeDef = OpCodes.GetOpcode(history[idx].OpCode);
                     var opCode = $"{opCodeDef.OpCode} {AddressModes.GetModeText(opCodeDef.AddressMode, history[idx].Params)}".PadRight(15);
 
-                    toOutput.Add($"R:${history[idx].RomBank:X2} ${history[idx].PC:X4} - ${history[idx].OpCode:X2}: {opCode} -> A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2}");
+                    toOutput.Add($"Ram:${history[idx].RamBank:X2} Rom:${history[idx].RomBank:X2} ${history[idx].PC:X4} - ${history[idx].OpCode:X2}: {opCode} -> A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2} SP:${history[idx].SP:X2} {Flags(history[idx].Flags)}");
                     if (idx <= 0)
                         idx = 1024;
                     idx--;
@@ -218,7 +221,7 @@ static class Program
             }
 
             Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
-            for (var i = 0; i < 256; i += 16)
+            for (var i = 0; i < 512; i += 16)
             {
                 Console.Write($"{i:X4}: ");
                 for (var j = 0; j < 16; j++)
@@ -237,6 +240,67 @@ static class Program
                 Console.ResetColor();
             }
         }
+    }
+
+    public static string Flags(byte flags)
+    {
+        var sb = new StringBuilder();
+
+        sb.Append("[");
+
+        if ((flags & (byte)CpuFlags.Negative) > 0)
+            sb.Append("N");
+        else
+            sb.Append(" ");
+
+        if ((flags & (byte)CpuFlags.Overflow) > 0)
+            sb.Append("O");
+        else
+            sb.Append(" ");
+
+        sb.Append(" "); // unused
+        if ((flags & (byte)CpuFlags.Break) > 0)
+            sb.Append("B");
+        else
+            sb.Append(" ");
+
+        if ((flags & (byte)CpuFlags.Decimal) > 0)
+            sb.Append("D");
+        else
+            sb.Append(" ");
+
+        if ((flags & (byte)CpuFlags.InterruptDisable) > 0)
+            sb.Append("I");
+        else
+            sb.Append(" ");
+
+        if ((flags & (byte)CpuFlags.Zero) > 0)
+            sb.Append("Z");
+        else
+            sb.Append(" ");
+
+        if ((flags & (byte)CpuFlags.Carry) > 0)
+            sb.Append("C");
+        else
+            sb.Append(" ");
+
+        sb.Append("]");
+
+        return sb.ToString();
+    }
+
+    [Flags]
+    public enum CpuFlags : byte
+    {
+        None = 0,
+        Carry = 1,
+        Zero = 2,
+        InterruptDisable = 4,
+        Decimal = 8,
+        Break = 16,
+        Unused = 32,
+        Overflow = 64,
+        Negative = 128
     }
 
     public static class AddressModes

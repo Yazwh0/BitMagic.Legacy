@@ -12,12 +12,13 @@ public struct EmulatorHistory
     public ushort PC;
     public byte OpCode;
     public byte RomBank;
-    public byte Unused3;
+    public byte RamBank;
     public byte A;
     public byte X;
     public byte Y;
     public ushort Params;
-    public ushort Unused;
+    public byte Flags;
+    public byte SP;
     public ushort Unused1;
     public ushort Unused2;
 }
@@ -538,11 +539,8 @@ public class Emulator : IDisposable
     public EmulatorResult Emulate()
     {
         //var i2c = SmcBuffer;
-        //var i2c_thread = new Thread(_ => i2c.RunI2cCaptuer(ref _state));
+        //var i2c_thread = new Thread(_ => i2c.RunI2cCapture(ref _state));
         //i2c_thread.UnsafeStart();
-
-        //SmcBuffer.KeyDown(Silk.NET.Input.Key.B);
-        //SmcBuffer.KeyUp(Silk.NET.Input.Key.B);
 
         Thread.CurrentThread.Priority = ThreadPriority.Highest;
         var r = fnEmulatorCode(ref _state);
