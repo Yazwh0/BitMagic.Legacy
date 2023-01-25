@@ -50,8 +50,8 @@ public class Interrupts
 
         emulator.AssertState(stackPointer: 0x1fa); // 3 bytes
         Assert.AreEqual(0b00100000, emulator.Memory[0x1fb]);
-        Assert.AreEqual(0x08, emulator.Memory[0x1fc]);
-        Assert.AreEqual(0x10, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x10, emulator.Memory[0x1fc]);
+        Assert.AreEqual(0x08, emulator.Memory[0x1fd]);
     }
 
     [TestMethod]
@@ -80,8 +80,8 @@ public class Interrupts
 
         emulator.AssertState(stackPointer: 0x1fa); // 3 bytes
         Assert.AreEqual(0b11101011, emulator.Memory[0x1fb]); // no interrupt disable obv
-        Assert.AreEqual(0x08, emulator.Memory[0x1fc]);
-        Assert.AreEqual(0x10, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x10, emulator.Memory[0x1fc]);
+        Assert.AreEqual(0x08, emulator.Memory[0x1fd]);
     }
 
     [TestMethod]
