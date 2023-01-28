@@ -6,6 +6,16 @@
 
 	sei
 
+	lda #$ff
+	pha
+	plp
+	php
+	plx
+	lda #$ff
+	pha
+	plp
+	stp
+
 	.const read_i2c = $dfcc
 	.const receive_scancode = $cdfd
 

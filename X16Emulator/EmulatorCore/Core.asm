@@ -225,12 +225,13 @@ next_opcode::
     ;mov rbx, 0dbh
     ;debug_skip:
 
-
+    ;--------------------------- START DEBUG CAPTURE ------------------------
     ;
     ; STORE DEBUG INFO
     ;
     ; PC Opcode+2bytes, A, X, Y
     ;
+    push rbx
     mov rdi, [rdx].state.history_ptr
     mov rcx, [rdx].state.history_pos
     add rdi, rcx
@@ -247,16 +248,7 @@ next_opcode::
     mov ax, word ptr [rsi + r11 + 1]
     mov word ptr [rdi+8], ax        ; parameters
 
-    add r11w, 1						; PC+1
-    lea rax, opcode_00				; start of jump table
-    jmp qword ptr [rax + rbx*8]		; jump to opcode
-
-cpu_is_waiting:
-    add r14, 1
-opcode_done::
-    ;--------------------------- START DEBUG CAPTURE ------------------------
-    mov rdi, debug_pos
-    mov byte ptr [rdi+5], r8b		; A
+        mov byte ptr [rdi+5], r8b		; A
     mov byte ptr [rdi+6], r9b		; X
     mov byte ptr [rdi+7], r10b		; Y
 
@@ -301,7 +293,7 @@ no_overflow:
     or al, 00001000b
 no_decimal:
 
-    ; decimal
+    ; break
     movzx rbx, byte ptr [rdx].state.flags_break
     test bl, 1
     jz no_break
@@ -312,8 +304,17 @@ no_break:
 
     mov ax, word ptr [rdx].state.stackpointer
     mov byte ptr [rdi+11], al       ; SP
-
+    pop rbx
     ;--------------------------- END DEBUG CAPTURE ------------------------
+
+    add r11w, 1						; PC+1
+    lea rax, opcode_00				; start of jump table
+    jmp qword ptr [rax + rbx*8]		; jump to opcode
+
+cpu_is_waiting:
+    add r14, 1
+opcode_done::
+    mov rdi, debug_pos
 
     call via_step	; todo: change to macro call
 
@@ -2416,7 +2417,7 @@ xBA_tsx endp
 
 ; also used by PHP
 set_status_register_al macro
-    mov	al, 00110000b ; bits that are always set
+    mov	al, 00100000b ; bits that are always set
 
     ; carry
     bt r15w, 0 +8
@@ -2456,6 +2457,7 @@ no_overflow:
     jz no_decimal
     or al, 00001000b
 no_decimal:
+
 endm
 
 get_status_register macro preservebx
@@ -2501,6 +2503,11 @@ no_negative:
     bt ax, 6
     setc bl
     mov byte ptr [rdx].state.flags_overflow, bl
+
+    ; break
+    ;bt ax, 4
+    ;setc bl
+    ;mov byte ptr [rdx].state.flags_break, bl
 
     ; decimal
     bt ax, 3
@@ -2642,12 +2649,22 @@ x28_plp endp
 ;
 
 bit_body_end macro checkvera, clock, pc
-    and dil, r8b				; cant just test, as we need to check bit 6 for overflow.
-    test dil, dil				; sets zero and sign flags
+;    and dil, r8b				; cant just test, as we need to check bit 6 for overflow.
+    test dil, dil				; sets zero and sign flags, we will overwrite zero later
     write_flags_r15_preservecarry
     
-    bt di, 6				; test overflow
+    bt di, 6				    ; test overflow
     setc byte ptr [rdx].state.flags_overflow
+
+    ; check the zero flag, which is the and of input and the accumulator
+
+    and dil, r8b
+    test dil, dil
+    lahf
+    and rax, 0100000000000000b ; isolate zero
+    and r15, 1011111111111111b ; remove zero
+    or r15, rax                ; map on
+
     step_vera_read checkvera
     
     add r14, clock			
@@ -2935,6 +2952,7 @@ x00_brk proc
 
     push bx
     set_status_register_al
+    or al, 00010000b                    ; set break flag
     pop bx								; no need to change as brk is set here.
 
     mov [rsi+rbx], al					; Put P on stack

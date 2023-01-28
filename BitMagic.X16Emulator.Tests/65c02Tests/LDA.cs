@@ -418,6 +418,28 @@ public class LDA
     }
 
     [TestMethod]
+    public async Task IndirectY_Zero()
+    {
+        var emulator = new Emulator();
+
+        emulator.Memory[0x402] = 0x00;
+        emulator.Memory[0x10] = 0x01;
+        emulator.Memory[0x11] = 0x04;
+        emulator.Y = 1;
+        emulator.Zero = false;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                lda ($10), Y
+                stp", emulator);
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x01, 0x813, 5);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
+    [TestMethod]
     public async Task IndirectY_FromRom()
     {
         var emulator = new Emulator();

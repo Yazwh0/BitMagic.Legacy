@@ -165,8 +165,8 @@ static class Program
         emulator.Brk_Causes_Stop = true;
 
         // currently need this to run
-        //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.B);
-        //emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.B);
+        //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);
+        //emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.Enter);
 
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);
@@ -206,7 +206,7 @@ static class Program
                 for (var i = 0; i < 1000; i++)
                 {
                     var opCodeDef = OpCodes.GetOpcode(history[idx].OpCode);
-                    var opCode = $"{opCodeDef.OpCode} {AddressModes.GetModeText(opCodeDef.AddressMode, history[idx].Params)}".PadRight(15);
+                    var opCode = $"{opCodeDef.OpCode.ToLower()} {AddressModes.GetModeText(opCodeDef.AddressMode, history[idx].Params)}".PadRight(15);
 
                     toOutput.Add($"Ram:${history[idx].RamBank:X2} Rom:${history[idx].RomBank:X2} ${history[idx].PC:X4} - ${history[idx].OpCode:X2}: {opCode} -> A:${history[idx].A:X2} X:${history[idx].X:X2} Y:${history[idx].Y:X2} SP:${history[idx].SP:X2} {Flags(history[idx].Flags)}");
                     if (idx <= 0)
@@ -221,12 +221,35 @@ static class Program
             }
 
             Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
-            for (var i = 0; i < 512; i += 16)
+            for (var i = 0; i < 1024; i += 16)
             {
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"{i:X4}: ");
                 for (var j = 0; j < 16; j++)
                 {
+                    if (Emulator.Memory[i + j] != 0)
+                        Console.ForegroundColor = ConsoleColor.White;
+                    else
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write($"{Emulator.Memory[i + j]:X2} ");
+                    if (j == 7)
+                        Console.Write(" ");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+            for (var i = 0xa800; i < 0xa900; i += 16)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write($"{i:X4}: ");
+                for (var j = 0; j < 16; j++)
+                {
+                    if (Emulator.RamBank[i + j - 0xa000] != 0)
+                        Console.ForegroundColor = ConsoleColor.White;
+                    else
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write($"{Emulator.RamBank[i + j - 0xa000]:X2} ");
                     if (j == 7)
                         Console.Write(" ");
                 }
@@ -237,8 +260,8 @@ static class Program
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("*** Close emulator window to exit ***");
-                Console.ResetColor();
             }
+            Console.ResetColor();
         }
     }
 

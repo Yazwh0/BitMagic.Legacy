@@ -29,6 +29,86 @@ public class BIT
     }
 
     [TestMethod]
+    public async Task Imm_Ignore_Accumulator()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit #$00
+                stp",
+                emulator);
+
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 3);
+        emulator.AssertFlags(true, false, false, false);
+    }
+
+    [TestMethod]
+    public async Task Imm_Ignore_Accumulator_Negative()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit #$80
+                stp",
+                emulator);
+
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 3);
+        emulator.AssertFlags(true, true, false, false);
+    }
+
+    [TestMethod]
+    public async Task Imm_Ignore_Accumulator_Overflow()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit #$40
+                stp",
+                emulator);
+
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 3);
+        emulator.AssertFlags(true, false, true, false);
+    }
+
+    [TestMethod]
+    public async Task Imm_Ignore_Accumulator_OverflowNegative()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit #$c0
+                stp",
+                emulator);
+
+
+        // emulation
+        emulator.AssertState(0x00, 0x00, 0x00, 0x813, 3);
+        emulator.AssertFlags(true, true, true, false);
+    }
+
+    [TestMethod]
     public async Task Imm_Zero()
     {
         var emulator = new Emulator();
@@ -202,6 +282,25 @@ public class BIT
 
         // emulation
         emulator.AssertFlags(false, false, true, false);
+    }
+
+    [TestMethod]
+    public async Task Abs_OverflowAndZero()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x20;
+        emulator.Memory[0x1234] = 0x40;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                bit $1234
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertFlags(true, false, true, false);
     }
 
     [TestMethod]
