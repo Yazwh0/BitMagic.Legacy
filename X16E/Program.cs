@@ -2,7 +2,6 @@
 using BitMagic.Compiler;
 using BitMagic.X16Emulator;
 using CommandLine;
-using Silk.NET.SDL;
 using System.Text;
 using static X16E.Program.AddressModes;
 using Thread = System.Threading.Thread;
@@ -32,6 +31,9 @@ static class Program
 
         [Option("warp", Required = false, HelpText = "Run as fast as possible.")]
         public bool Warp { get; set; } = false;
+
+        //[Option('m', "autorun", Required = false, HelpText = "Automatically run at startup. Ignored if address is specified. NOT YET IMPLEMENTED")]
+        public bool AutoRun { get; set; } = false;
     }
 
     static async Task<int> Main(string[] args)
@@ -61,7 +63,7 @@ static class Program
             return 1;
         }
 
-        bool useRomStartAddress = true;
+        var prgLoaded = false;
         if (!string.IsNullOrWhiteSpace(options.PrgFilename) && string.IsNullOrWhiteSpace(options.CodeFilename) && !options.WritePrg)
         {
             if (File.Exists(options.PrgFilename))
@@ -73,7 +75,7 @@ static class Program
                 {
                     emulator.Memory[destAddress++] = prgData[i];
                 }
-                useRomStartAddress = false;
+                prgLoaded = true;
             }
             else
             {
@@ -116,8 +118,7 @@ static class Program
                         Console.WriteLine($"Writing to '{options.PrgFilename}'.");
                         await File.WriteAllBytesAsync(options.PrgFilename, prg);
                     }
-
-                    useRomStartAddress = false;
+                    prgLoaded = true;
                 }
                 catch (Exception e)
                 {
@@ -150,10 +151,23 @@ static class Program
             return 2;
         }
 
-        if (useRomStartAddress)
-            emulator.Pc = (ushort)((emulator.RomBank[0x3ffd] << 8) + emulator.RomBank[0x3ffc]);
-        else
+        if (options.StartAddress != 0 && prgLoaded)
             emulator.Pc = options.StartAddress;
+        else
+        {
+            emulator.Pc = (ushort)((emulator.RomBank[0x3ffd] << 8) + emulator.RomBank[0x3ffc]);
+            if (options.AutoRun)
+            {
+                emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.R);
+                emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.R);
+                emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.U);
+                emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.U);
+                emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.N);
+                emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.N);
+                emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);
+                emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.Enter);
+            }
+        }
 
         emulator.Control = Control.Paused; // window load start the emulator
 
@@ -221,7 +235,7 @@ static class Program
             }
 
             Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
-            for (var i = 0; i < 1024; i += 16)
+            for (var i = 0; i < 512; i += 16)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write($"{i:X4}: ");
@@ -238,23 +252,23 @@ static class Program
                 Console.WriteLine();
             }
 
-            Console.WriteLine();
-            for (var i = 0xa800; i < 0xa900; i += 16)
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"{i:X4}: ");
-                for (var j = 0; j < 16; j++)
-                {
-                    if (Emulator.RamBank[i + j - 0xa000] != 0)
-                        Console.ForegroundColor = ConsoleColor.White;
-                    else
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write($"{Emulator.RamBank[i + j - 0xa000]:X2} ");
-                    if (j == 7)
-                        Console.Write(" ");
-                }
-                Console.WriteLine();
-            }
+            //Console.WriteLine();
+            //for (var i = 0xa800; i < 0xa900; i += 16)
+            //{
+            //    Console.ForegroundColor = ConsoleColor.White;
+            //    Console.Write($"{i:X4}: ");
+            //    for (var j = 0; j < 16; j++)
+            //    {
+            //        if (Emulator.RamBank[i + j - 0xa000] != 0)
+            //            Console.ForegroundColor = ConsoleColor.White;
+            //        else
+            //            Console.ForegroundColor = ConsoleColor.DarkGray;
+            //        Console.Write($"{Emulator.RamBank[i + j - 0xa000]:X2} ");
+            //        if (j == 7)
+            //            Console.Write(" ");
+            //    }
+            //    Console.WriteLine();
+            //}
 
             if (Emulator.Control != Control.Stop)
             {

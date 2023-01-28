@@ -12,8 +12,8 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <Version>2</Version>
-    <FileVersion>2</FileVersion>
+    <Version>3</Version>
+    <FileVersion>3</FileVersion>
   </PropertyGroup>
   
   <ItemGroup>
