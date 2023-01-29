@@ -3,7 +3,7 @@
 namespace BitMagic.X16Emulator.Tests.Vera;
 
 [TestClass]
-internal class Sprite_X
+public class Sprite_X
 {
     [TestMethod]
     public async Task SetX_0()
@@ -21,7 +21,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0xff }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { X = 0xff, Height = 8, Width = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0xff }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { X = 0xff, Height = 8, Width = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0xff }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { X = 0xff, Height = 8, Width = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ internal class Sprite_X
 
         emulator.Vera.Data0_Step = 0;
         emulator.Vera.Data0_Address = 0x1fc03;
-        emulator.A = 0x03;
+        emulator.A = 0x01;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -78,7 +78,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { X = 0x100, Height = 8, Width = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ internal class Sprite_X
 
         emulator.Vera.Data0_Step = 0;
         emulator.Vera.Data0_Address = 0x1fc0b;
-        emulator.A = 0x03;
+        emulator.A = 0x01;
 
         await X16TestHelper.Emulate(@"
                 .machine CommanderX16R40
@@ -97,11 +97,68 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { X = 0x100, Height = 8, Width = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
     public async Task SetX_High_127()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fffb;
+        emulator.A = 0x01;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0x100, Height = 8, Width = 8 }, emulator.Sprites[127]);
+    }
+
+    [TestMethod]
+    public async Task SetX_Higher_0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fc03;
+        emulator.A = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0x200, Height = 8, Width = 8 }, emulator.Sprites[0]);
+    }
+
+    [TestMethod]
+    public async Task SetX_Higher_1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fc0b;
+        emulator.A = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0x200, Height = 8, Width = 8 }, emulator.Sprites[1]);
+    }
+
+    [TestMethod]
+    public async Task SetX_Negative_127()
     {
         var emulator = new Emulator();
 
@@ -116,7 +173,65 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[127]);
+    }
+
+
+    [TestMethod]
+    public async Task SetX_Negative_0()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fc03;
+        emulator.A = 0x03;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[0]);
+    }
+
+    [TestMethod]
+    public async Task SetX_Negative_1()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fc0b;
+        emulator.A = 0x03;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[1]);
+    }
+
+    [TestMethod]
+    public async Task SetX_Higher_127()
+    {
+        var emulator = new Emulator();
+
+        emulator.Vera.Data0_Step = 0;
+        emulator.Vera.Data0_Address = 0x1fffb;
+        emulator.A = 0x02;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                sta DATA0
+                stp",
+                emulator);
+
+        Assert.AreEqual(new Sprite() { X = 0x200, Height = 8, Width = 8 }, emulator.Sprites[127]);
     }
     [TestMethod]
     public async Task SetX_High_Clip_0()
@@ -134,7 +249,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -153,7 +268,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -172,7 +287,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x300 }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { X = 0xffffff00, Height = 8, Width = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -192,7 +307,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { X = 0xffffffff, Height = 8, Width = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -212,7 +327,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { X = 0xffffffff, Height = 8, Width = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -232,7 +347,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { X = 0xffffffff, Height = 8, Width = 8 }, emulator.Sprites[127]);
     }
 
     [TestMethod]
@@ -252,7 +367,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[0]);
+        Assert.AreEqual(new Sprite() { X = 0x3ff, Height = 8, Width = 8 }, emulator.Sprites[0]);
     }
 
     [TestMethod]
@@ -272,7 +387,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[1]);
+        Assert.AreEqual(new Sprite() { X = 0x3ff, Height = 8, Width = 8 }, emulator.Sprites[1]);
     }
 
     [TestMethod]
@@ -292,7 +407,7 @@ internal class Sprite_X
                 stp",
                 emulator);
 
-        Assert.AreEqual(new Sprite() { X = 0x3ff }, emulator.Sprites[127]);
+        Assert.AreEqual(new Sprite() { X = 0x3ff, Height = 8, Width = 8 }, emulator.Sprites[127]);
     }
 
 }

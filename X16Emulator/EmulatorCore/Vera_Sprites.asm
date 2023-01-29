@@ -83,11 +83,11 @@ sprites_render_find proc
 
 	; check if sprite is on line
 	mov ebx, dword ptr [rsi + rax].sprite.y
-	cmp r12, rbx
-	jb not_on_line
+	cmp r12d, ebx
+	jl not_on_line
 
 	add ebx, dword ptr [rsi + rax].sprite.height
-	cmp r12, rbx
+	cmp r12d, ebx
 	jge not_on_line
 
 	; found a sprite!
@@ -198,7 +198,15 @@ sprite_byte_2:
 ; X High
 sprite_byte_3:
 	and r13, 03h
+	; test high bit, and extend if necessary so we have a signed dword
+	mov r12, 0fffffch ; 11111100b
+	xor rbx, rbx
+	cmp r13, 03h
+	cmovne r12, rbx
+	or r13, r12
+
 	shl r13, 8
+
 	mov r12d, dword ptr [rsi + rax].sprite.x
 	and r12d, 00ffh
 	or r12, r13
@@ -218,7 +226,15 @@ sprite_byte_4:
 ; Y High
 sprite_byte_5:
 	and r13, 03h
+	; test high bit, and extend if necessary so we have a signed dword
+	mov r12, 0fffffch ; 11111100b
+	xor rbx, rbx
+	bt r13, 1
+	cmovnc r12, rbx
+	or r13, r12
+
 	shl r13, 8
+
 	mov r12d, dword ptr [rsi + rax].sprite.y
 	and r12d, 00ffh
 	or r12, r13
@@ -301,6 +317,21 @@ render_pixel_data macro mask, shift, pixeladd
 
 	; dont write blank pixels
 	jz dont_draw
+
+	; ensure output pixel is in visible bounds
+	; we do this in parts as r13 can be either extended to go into the buffer (opposite lines)
+	; or negative if off screen.
+	mov rax, r13
+	and rax, 0011111111111b
+	add rax, pixeladd
+
+	; cant do this in one cmp, as we dont have the sign extended
+	bt rax, 10
+	jc dont_draw	
+
+	cmp rax, VISIBLE_WIDTH-1 ; off the screen to the right?
+	jg dont_draw
+
 	
 	; can only write on pixels that are the same depth or lower
 	movzx rax, byte ptr [rsi + r13 + pixeladd + BUFFER_SPRITE_DEPTH]
@@ -346,6 +377,7 @@ endm
 ; r15 : buffer offset
 render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	local sprite_width_px, exit, skip 
+
 	shl rax, 6
 
 	; fetch 32bits of data
@@ -357,25 +389,26 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 
 	mov r8d, dword ptr [rdx].state.sprite_depth
 
+	;int 3
 	; calculate offset
 	mov r14d, dword ptr [rdx].state.sprite_y	; this shouldn't ever result in a negative position
-	sub r12, r14
+	sub r12d, r14d
 
 	if vflip eq 1
 		if inp_height eq 0
-			mov r14, 7
+			mov r14d, 7
 		endif
 		if inp_height eq 1
-			mov r14, 15
+			mov r14d, 15
 		endif
 		if inp_height eq 2
-			mov r14, 31
+			mov r14d, 31
 		endif
 		if inp_height eq 3
-			mov r14, 63
+			mov r14d, 63
 		endif
-		sub r14, r12
-		mov r12, r14
+		sub r14d, r12d
+		mov r12d, r14d
 	endif
 
 	; adjust for line
@@ -398,27 +431,27 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 	endif
 
 	if hflip eq 0
-		add r12, rbx		; add on position within sprite
+		add r12d, ebx		; add on position within sprite
 	endif
 
 	if hflip eq 1
 		; rbx is 0, 4, 8, 12, etc... so need to inverse
 		; minus the width -4, -4 as 4 is the size for one read. (4bpp is adjusted later)
 		if inp_width eq 0
-			mov r14, 8-4
+			mov r14d, 8-4
 		endif
 		if inp_width eq 1
-			mov r14, 16-4
+			mov r14d, 16-4
 		endif
 		if inp_width eq 2
-			mov r14, 32-4
+			mov r14d, 32-4
 		endif
 		if inp_width eq 3
-			mov r14, 64-4
+			mov r14d, 64-4
 		endif
-		sub r14, rbx
+		sub r14d, ebx
 
-		add r12, r14		; add on position within sprite
+		add r12d, r14d		; add on position within sprite
 	endif
 
 	; if we're 4bpp, then adjust
@@ -426,12 +459,12 @@ render_sprite macro bpp, inp_height, inp_width, vflip, hflip
 		shr r12, 1
 	endif
 
-	add r12, r13		; add on vram start
+	add r12d, r13d		; add on vram start
 
 	; set r13 to the output x
 	mov r13d, dword ptr [rdx].state.sprite_x
-	add r13, rbx
-	add r13, r15		; add offset in buffer
+	add r13d, ebx
+	add r13d, r15d		; add offset in buffer
 
 	push rdi
 	mov rdi, qword ptr [rdx].state.vram_ptr
