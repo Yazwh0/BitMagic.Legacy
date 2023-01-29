@@ -21,7 +21,7 @@ public class PHP
         Assert.AreEqual(0x08, emulator.Memory[0x810]);
 
         // emulation
-        Assert.AreEqual(0x30, emulator.Memory[0x1fd]); 
+        Assert.AreEqual(0x20, emulator.Memory[0x1fd]); 
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, false, false, false);
     }
@@ -46,13 +46,13 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x32, emulator.Memory[0x100]);
+        Assert.AreEqual(0x22, emulator.Memory[0x100]);
 
         for (var i = 0x101; i < 0x180; i++)
-            Assert.AreEqual(0x30, emulator.Memory[i]);
+            Assert.AreEqual(0x20, emulator.Memory[i]);
 
         for (var i = 0x180; i < 0x200; i++)
-            Assert.AreEqual(0xb0, emulator.Memory[i]);
+            Assert.AreEqual(0xa0, emulator.Memory[i]);
 
         emulator.AssertState(0x00, 0xff, 0x00, stackPointer: 0x1ff);
         emulator.AssertFlags(true, false, false, false, false, false);
@@ -73,7 +73,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x31, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x21, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, false, false, true, false, false);
     }
@@ -93,7 +93,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0xb0, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0xa0, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, true, false, false, false, false);
     }
@@ -113,7 +113,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x32, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x22, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(true, false, false, false, false, false);
     }
@@ -133,7 +133,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x34, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x24, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, false, false, false, true, false);
     }
@@ -153,7 +153,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x38, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x28, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, false, false, false, false, true);
     }
@@ -173,7 +173,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0x70, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0x60, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(false, false, true, false, false, false);
     }
@@ -198,7 +198,7 @@ public class PHP
                 emulator);
 
         // emulation
-        Assert.AreEqual(0xff, emulator.Memory[0x1fd]);
+        Assert.AreEqual(0xef, emulator.Memory[0x1fd]);
         emulator.AssertState(0x00, 0x00, 0x00, 0x812, 3);
         emulator.AssertFlags(true, true, true, true, true, true);
     }
