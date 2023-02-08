@@ -10,6 +10,7 @@ using DiscUtils.Vhd;
 using DiscUtils;
 using DiscUtils.Core;
 using DiscUtils.Partitions;
+using System.IO.Enumeration;
 
 namespace BitMagic.X16Emulator
 {
@@ -39,215 +40,6 @@ namespace BitMagic.X16Emulator
             BiosPartitionTable.Initialize(_disk, WellKnownPartitionType.WindowsFat);
 
             _fileSystem = FatFileSystem.FormatPartition(_disk, 0, "BITMAGIC!", true);
-
-            var source = File.ReadAllBytes(@"C:\dev\x4096.prg");
-
-            using var file = _fileSystem.OpenFile("IMAGE.PRG", FileMode.CreateNew, FileAccess.Write);
-                        file.Write(source);
-            //file.Write(new byte[] { 0x01, 0x80 });
-            //file.Write(new byte[] { 0xdb, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-            //var a = (byte)1;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a = 0;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf0, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-
-            //a = 0;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf1, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-
-
-            //a = 0;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf2, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-
-
-            //a = 0;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf3, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-
-
-            //a = 0;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-            //a++;
-            //file.Write(new byte[] { 0xf4, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a });
-
-            file.Close();
-
-            //var exists = _fileSystem.FileExists("HELLO.PRG");
-            //File.WriteAllBytes(@"c:\dev\mydisk.vhd", _data.ToArray());
         }
 
         public ulong MemoryPtr => _memoryPtr;
@@ -257,6 +49,42 @@ namespace BitMagic.X16Emulator
             _disk?.Dispose();
             _data?.Dispose();
             _fileSystem?.Dispose();
+        }
+
+        public void AddDirectory(string directory)
+        {
+            Console.WriteLine($"Adding files from '{directory}':");
+            foreach (var filename in Directory.GetFiles(directory))
+            {
+                AddFile(filename);
+            }
+        }
+
+        public void AddFile(string filename)
+        {
+            Console.Write($"  Adding '{filename}'...");
+            var source = File.ReadAllBytes(filename);
+
+            var actName = Path.GetFileName(filename);
+
+            actName = actName.ToUpper();
+
+            using var file = _fileSystem.OpenFile(actName, FileMode.CreateNew, FileAccess.Write);
+            file.Write(source);
+
+            file.Close();
+            Console.WriteLine(" Done.");
+        }
+
+        public void Save(string filename, bool canOverwrite)
+        {
+            if (!File.Exists(filename) || canOverwrite) {
+                Console.Write($"Writing '{filename}'...");
+                File.WriteAllBytes(filename, _data.ToArray());
+                Console.WriteLine(" Done.");
+                return;
+            }
+            Console.WriteLine($"SD Card iamge already exists '{filename}'");
         }
     }
 }

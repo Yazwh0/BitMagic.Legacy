@@ -481,12 +481,12 @@ public class Emulator : IDisposable
 
     private static ulong RoundMemoryPtr(ulong inp) => (inp & _roundingMask) + (ulong)_rounding;
 
-    private SdCard? _sdCard { get; set; }
+    public SdCard? SdCard { get; private set; }
 
     public void LoadSdCard(SdCard sdCard)
     {
-        _sdCard = sdCard;
-        _state.SdCardPtr = _sdCard.MemoryPtr;// + 0xc00; // vdi's have a header
+        SdCard = sdCard;
+        _state.SdCardPtr = SdCard.MemoryPtr;// + 0xc00; // vdi's have a header
     }
 
     public unsafe Emulator()

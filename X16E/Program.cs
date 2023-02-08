@@ -33,6 +33,18 @@ static class Program
         [Option("warp", Required = false, HelpText = "Run as fast as possible.")]
         public bool Warp { get; set; } = false;
 
+        [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach.")]
+        public string? SdCardFileName { get; set; }
+
+        [Option('d', "sdcard-source", Required = false, HelpText = "Folder to mount as a SD Card.")]
+        public string? SdCardSource { get; set; }
+
+        [Option("sdcard-write", Required = false, HelpText = "SD Card file to write at the end of emulation.")]
+        public string? SdCardWrite { get; set; }
+
+        [Option("sdcard-overwrite", Required = false, HelpText = "When writing the SD Card file, it can overwrite.")]
+        public bool SdCardOverrwrite { get; set; } = false;
+
         //[Option('m', "autorun", Required = false, HelpText = "Automatically run at startup. Ignored if address is specified. NOT YET IMPLEMENTED")]
         public bool AutoRun { get; set; } = false;
     }
@@ -179,8 +191,13 @@ static class Program
 
         emulator.Brk_Causes_Stop = true;
 
-        // create the sdcard
         emulator.LoadSdCard(new SdCard());
+
+        // create the sdcard
+        if (!string.IsNullOrWhiteSpace(options.SdCardSource))
+            emulator.SdCard!.AddDirectory(options.SdCardSource);
+
+
 
         // currently need this to run
         //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);
@@ -197,6 +214,10 @@ static class Program
         EmulatorThread.Join();
 
         Console.WriteLine($"Emulator finished with return '{EmulatorWork.Return}'.");
+
+        // once emulation is over write sdcard if requested
+        if (!string.IsNullOrWhiteSpace(options.SdCardWrite))
+            emulator.SdCard!.Save(options.SdCardWrite, options.SdCardOverrwrite);
 
         return 0;
     }
@@ -242,25 +263,25 @@ static class Program
                     }
                 }
 
-                Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
-                for (var i = 0; i < 512; i += 16)
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write($"{i:X4}: ");
-                    for (var j = 0; j < 16; j++)
-                    {
-                        if (Emulator.Memory[i + j] != 0)
-                            Console.ForegroundColor = ConsoleColor.White;
-                        else
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write($"{Emulator.Memory[i + j]:X2} ");
-                        if (j == 7)
-                            Console.Write(" ");
-                    }
-                    Console.WriteLine();
-                }
+                //Console.WriteLine($"Ram: ${Emulator.Memory[0x00]:X2} Rom: ${Emulator.Memory[0x01]:X2}");
+                //for (var i = 0; i < 512; i += 16)
+                //{
+                //    Console.ForegroundColor = ConsoleColor.White;
+                //    Console.Write($"{i:X4}: ");
+                //    for (var j = 0; j < 16; j++)
+                //    {
+                //        if (Emulator.Memory[i + j] != 0)
+                //            Console.ForegroundColor = ConsoleColor.White;
+                //        else
+                //            Console.ForegroundColor = ConsoleColor.DarkGray;
+                //        Console.Write($"{Emulator.Memory[i + j]:X2} ");
+                //        if (j == 7)
+                //            Console.Write(" ");
+                //    }
+                //    Console.WriteLine();
+                //}
 
-                DisplayMemory(0x800-1, 0xd00 - 0x800);
+                //DisplayMemory(0x800-1, 0xd00 - 0x800);
                 //DisplayMemory(0x9f30, 16);
 
                 if (Return == Emulator.EmulatorResult.DebugOpCode)

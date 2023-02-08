@@ -651,7 +651,7 @@ read_indy_rbx macro check_allvera
     local no_overflow
     movzx rbx, byte ptr [rsi+r11]	; Address in ZP
     movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
-    add bx, r10w		; Add Y to the lower address byte
+    add bx, r10w		            ; Add Y to the address
     check_vera_access check_allvera
 endm
 
