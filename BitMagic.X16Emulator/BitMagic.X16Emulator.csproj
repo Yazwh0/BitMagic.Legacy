@@ -6,6 +6,7 @@
 	<Nullable>enable</Nullable>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
+  <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,12 +15,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.Input" Version="2.16.0" />
+	  <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
+	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Core\DiscUtils.Core.csproj" />
+	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vdi\DiscUtils.Vdi.csproj" />
+	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vhd\DiscUtils.Vhd.csproj" />
+	  <ProjectReference Include="..\X16Emulator\EmulatorCore\EmulatorCore.vcxproj" />
+    <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Fat\DiscUtils.Fat.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
-	<ProjectReference Include="..\X16Emulator\EmulatorCore\EmulatorCore.vcxproj" />
+    <!--<PackageReference Include="LTRData.DiscUtils" Version="1.0.18" />-->
+    <PackageReference Include="Silk.NET.Input" Version="2.16.0" />
   </ItemGroup>
-
+  
 </Project>

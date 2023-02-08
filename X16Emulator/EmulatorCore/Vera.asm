@@ -1260,6 +1260,7 @@ construct_isr:
 	ret
 vera_update_isr endp
 
+
 .data
 
 vera_step_table:

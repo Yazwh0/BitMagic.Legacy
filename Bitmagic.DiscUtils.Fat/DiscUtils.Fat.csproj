@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Description>DiscUtils FAT filesystem parser</Description>
+    <Authors>Kenneth Bell;LordMike;Olof Lagerkvist</Authors>
+    <PackageTags>DiscUtils;Filesystem;FAT</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <LangVersion>latest</LangVersion>
+    <AssemblyOriginatorKeyFile>SigningKey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyName>DiscUtils.Fat32</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework.CompareTo(`net5`))' &gt;= 0">
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LTRData.DiscUtils" Version="1.0.18" />
+  </ItemGroup>
+
+</Project>

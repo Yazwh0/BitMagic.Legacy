@@ -31,6 +31,30 @@ public class BMI
     }
 
     [TestMethod]
+    public async Task Bmi_FromBit_Jump_Forward()
+    {
+        var emulator = new Emulator();
+        emulator.Negative = false;
+
+        await X16TestHelper.Emulate(@"
+                .machine CommanderX16R40
+                .org $810
+                lda #$00
+                bit #$80
+                bmi exit
+                lda #0
+                stp
+            .exit:
+                lda #$ff
+                stp",
+                emulator);
+
+        // emulation
+        emulator.AssertState(0xff, 0x00, 0x00);
+        emulator.AssertFlags(false, true, false, false);
+    }
+
+    [TestMethod]
     public async Task Bmi_Jump_Forward_Far()
     {
         var emulator = new Emulator();

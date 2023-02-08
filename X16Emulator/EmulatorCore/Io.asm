@@ -379,8 +379,8 @@ io_registers_readwrite:
 	vera_rw_9f3b qword io_rw_readmemory
 	vera_rw_9f3c qword io_rw_readmemory
 	vera_rw_9f3d qword io_rw_readmemory
-	vera_rw_9f3e qword io_rw_readmemory
-	vera_rw_9f3f qword io_rw_readmemory
+	vera_rw_9f3e qword vera_update_spi_data
+	vera_rw_9f3f qword vera_update_spi_ctrl
 
 
 	ym_rw_9f40 qword io_rw_readmemory
@@ -643,8 +643,8 @@ io_registers_write:
 	vera_w_9f3b qword vera_update_notimplemented
 	vera_w_9f3c qword vera_update_notimplemented
 	vera_w_9f3d qword vera_update_notimplemented
-	vera_w_9f3e qword vera_update_notimplemented
-	vera_w_9f3f qword vera_update_notimplemented
+	vera_w_9f3e qword vera_update_spi_data
+	vera_w_9f3f qword vera_update_spi_ctrl
 	
 	ym_w_9f40 qword io_w_unsupported
 	ym_w_9f41 qword io_w_unsupported

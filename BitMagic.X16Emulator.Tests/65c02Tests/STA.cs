@@ -456,6 +456,75 @@ public class STA
     }
 
     [TestMethod]
+    public async Task IndirectY_Load()
+    {
+        var emulator = new Emulator();
+
+        emulator.A = 0x00;
+
+        emulator.Memory[0x10] = 0x00;
+        emulator.Memory[0x11] = 0x05;
+
+        await X16TestHelper.Emulate(@"                
+                .machine CommanderX16R40
+                .org $810
+                ldx #00
+                .loop:
+                sta ($10), Y
+                inc
+                inc $10
+                bne no_change
+                inc $11
+                .no_change:
+
+                dex
+                bne loop
+
+                ; second loop
+                .loop2:
+                sta ($10), Y
+                inc
+                inc $10
+                bne no_change2
+                inc $11
+                .no_change2:
+
+                dex
+                bne loop2
+
+                stp",
+                emulator);
+
+        Console.WriteLine($"{emulator.Memory[0x11]:X2}{emulator.Memory[0x10]:X2}");
+
+        for(var i = 0; i < 16; i++)
+        {
+            for(var j = 0; j < 16; j++)
+            {
+                Console.Write($"{emulator.Memory[0x500 + (i * 16) + j]:X2} ");
+            }
+            Console.WriteLine();
+        }
+        for (var i = 0; i < 16; i++)
+        {
+            for (var j = 0; j < 16; j++)
+            {
+                Console.Write($"{emulator.Memory[0x600 + (i * 16) + j]:X2} ");
+            }
+            Console.WriteLine();
+        }
+
+        for (var i = 0; i < 256; i++)
+        {
+            Assert.AreEqual(i, emulator.Memory[0x500 +i]);
+        }
+        for (var i = 0; i < 256; i++)
+        {
+            Assert.AreEqual(i, emulator.Memory[0x600 + i]);
+        }
+    }
+
+    [TestMethod]
     public async Task IndirectY_FromRom()
     {
         var emulator = new Emulator();

@@ -24,6 +24,7 @@ include Via.asm
 include Banking.asm
 include I2c.asm
 include Smc.asm
+include Spi.asm
 
 readonly_memory equ 0c000h - 1		; stop all writes above this location
 
@@ -650,7 +651,7 @@ read_indy_rbx macro check_allvera
     local no_overflow
     movzx rbx, byte ptr [rsi+r11]	; Address in ZP
     movzx rbx, word ptr [rsi+rbx]	; Address pointed at in ZP
-    add bl, r10b		; Add Y to the lower address byte
+    add bx, r10w		; Add Y to the lower address byte
     check_vera_access check_allvera
 endm
 

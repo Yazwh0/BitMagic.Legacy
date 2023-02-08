@@ -22,6 +22,10 @@ state struct
 	history_ptr				qword ?
 	i2c_buffer_ptr			qword ?
 	smc_keyboard_ptr		qword ?
+	spi_history_ptr			qword ?
+	spi_inbound_buffer_ptr	qword ?
+	spi_outbound_buffer_ptr	qword ?
+	sdcard_ptr				qword ?
 
 	; Vera
 	vram_ptr				qword ?
@@ -51,6 +55,8 @@ state struct
 	layer1_cur_tileaddress	qword ?
 	layer1_cur_tiledata		qword ?
 
+	spi_command				qword ?
+
 	dc_hscale				dword ?
 	dc_vscale				dword ?
 
@@ -72,6 +78,17 @@ state struct
 	smc_keyboard_readposition   dword ?
 	smc_keyboard_writeposition	dword ?
 	smc_keyboard_readnodata	dword ?
+
+	spi_position			dword ?
+	spi_chipselect			dword ?
+	spi_receivecount		dword ?
+	spi_sendcount			dword ?
+	spi_sendlength			dword ?
+	spi_idle				dword ?
+	spi_commandnext			dword ?
+	spi_initialised			dword ?
+	spi_previousvalue		dword ?
+	;spi_replyready			dword ?
 
 	register_pc				word ?
 	stackpointer			word ?

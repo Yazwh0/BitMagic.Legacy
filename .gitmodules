@@ -1,0 +1,3 @@
+[submodule "External/DiscUtils"]
+	path = External/DiscUtils
+	url = https://github.com/Yazwh0/DiscUtils.git
