@@ -33,17 +33,27 @@ static class Program
         [Option("warp", Required = false, HelpText = "Run as fast as possible.")]
         public bool Warp { get; set; } = false;
 
-        [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach.")]
+        [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardFileName { get; set; }
 
-        [Option('d', "sdcard-source", Required = false, HelpText = "Folder to mount as a SD Card.")]
-        public string? SdCardSource { get; set; }
+        [Option('d', "sdcard-folder", Required = false, HelpText = "Source folder for the SD Card.")]
+        public string? SdCardFolder { get; set; }
 
-        [Option("sdcard-write", Required = false, HelpText = "SD Card file to write at the end of emulation.")]
+        [Option('a', "sdcard-autosync", Required = false, HelpText = "Sync any changes in the source folder to the SD Card. NOT YET IMPLEMENTED")]
+        public bool SdCardAutoSync { get; set; } = false;
+
+        [Option('f', "sdcard-file", Required = false, HelpText = "File to add to the SD Card root directory. Can add multiple files and use wildcards.")]
+        public IEnumerable<string>? SdCardFiles { get; set; }
+
+        [Option("sdcard-write", Required = false, HelpText = "SD Card file to write at the end of emulation. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardWrite { get; set; }
 
         [Option("sdcard-overwrite", Required = false, HelpText = "When writing the SD Card file, it can overwrite.")]
         public bool SdCardOverrwrite { get; set; } = false;
+
+        [Option('u', "sdcard-update", Required = false, HelpText = "Sets 'sdcard-write' to the 'sdcard' parameter and enables overwrite.")]
+        public bool SdCardUpdate { get; set; } = false;
+
 
         //[Option('m', "autorun", Required = false, HelpText = "Automatically run at startup. Ignored if address is specified. NOT YET IMPLEMENTED")]
         public bool AutoRun { get; set; } = false;
@@ -191,13 +201,34 @@ static class Program
 
         emulator.Brk_Causes_Stop = true;
 
-        emulator.LoadSdCard(new SdCard());
+        SdCard sdCard = string.IsNullOrEmpty(options.SdCardFileName) ? new SdCard() : new SdCard(options.SdCardFileName);
+       
+        emulator.LoadSdCard(sdCard);
 
         // create the sdcard
-        if (!string.IsNullOrWhiteSpace(options.SdCardSource))
-            emulator.SdCard!.AddDirectory(options.SdCardSource);
+        if (!string.IsNullOrWhiteSpace(options.SdCardFolder))
+            emulator.SdCard!.AddDirectory(options.SdCardFolder);
 
+        if (options.SdCardFiles != null)
+        {
+            foreach (var file in options.SdCardFiles)
+            {
+                sdCard.AddFiles(file);
+            }
+        }
 
+        if (options.SdCardUpdate)
+        {
+            if (!string.IsNullOrEmpty(options.SdCardFileName))
+            {
+                options.SdCardWrite = options.SdCardFileName;
+                options.SdCardOverrwrite = true;
+            }
+            else
+            {
+                Console.WriteLine("Cannot update source sdcard when the source sdcard is not set.");
+            }
+        }
 
         // currently need this to run
         //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);

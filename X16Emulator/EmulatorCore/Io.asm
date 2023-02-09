@@ -49,6 +49,11 @@ io_w_unsupported proc
 	ret
 io_w_unsupported endp
 
+io_cantwrite proc
+	mov byte ptr [rsi + rbx], 0
+	ret	
+io_cantwrite endp
+
 io_registers_read:
 	io_r_9f00 qword io_r_readmemory
 	io_r_9f01 qword io_r_readmemory
@@ -383,8 +388,8 @@ io_registers_readwrite:
 	vera_rw_9f3f qword vera_update_spi_ctrl
 
 
-	ym_rw_9f40 qword io_rw_readmemory
-	ym_rw_9f41 qword io_rw_readmemory
+	ym_rw_9f40 qword io_cantwrite
+	ym_rw_9f41 qword io_cantwrite
 	io_rw_9f42 qword io_rw_readmemory
 	io_rw_9f43 qword io_rw_readmemory
 	io_rw_9f44 qword io_rw_readmemory
@@ -646,8 +651,8 @@ io_registers_write:
 	vera_w_9f3e qword vera_update_spi_data
 	vera_w_9f3f qword vera_update_spi_ctrl
 	
-	ym_w_9f40 qword io_w_unsupported
-	ym_w_9f41 qword io_w_unsupported
+	ym_w_9f40 qword io_cantwrite
+	ym_w_9f41 qword io_cantwrite
 	io_w_9f42 qword io_w_unsupported
 	io_w_9f43 qword io_w_unsupported
 	io_w_9f44 qword io_w_unsupported

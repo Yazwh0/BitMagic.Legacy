@@ -10,43 +10,73 @@ using DiscUtils.Vhd;
 using DiscUtils;
 using DiscUtils.Core;
 using DiscUtils.Partitions;
-using System.IO.Enumeration;
 
 namespace BitMagic.X16Emulator
 {
     public unsafe class SdCard : IDisposable
     {
-        private ulong _memoryPtr; 
-        private readonly byte[] _rawMemory;
-        private readonly MemoryStream _data;
-        private const int _size = 32 * 1024 * 1024; // 32 meg, big enough for anyone.
-        private readonly Disk _disk;
-        private readonly FatFileSystem _fileSystem;
+        private ulong _memoryPtr;
+        private MemoryStream _data;
+        private ulong _size = 32 * 1024 * 1024; // 32 meg, big enough for anyone.
+        private FatFileSystem _fileSystem;
         private ulong _offset;
-        private const ulong Padding = 32;
+        private const int Padding = 32;
 
         public SdCard()
         {
-            _rawMemory = new byte[_size + Padding]; // 32 so we can allign the data correctly
-            fixed(byte* ptr = _rawMemory)
+            InitNewCard(32 * 1024 * 1024);
+
+            var disk = Disk.InitializeFixed(_data, DiscUtils.Streams.Ownership.None, (long)_size - 1024*1024);
+            BiosPartitionTable.Initialize(disk, WellKnownPartitionType.WindowsFat);
+
+            _fileSystem = FatFileSystem.FormatPartition(disk, 0, "BITMAGIC!", true);
+        }
+
+        public SdCard(string sdcardFilename)
+        {
+            using var fileStream = new FileStream(sdcardFilename, FileMode.Open, FileAccess.Read);
+            var stream = SdCardImageHelper.ReadFile(sdcardFilename, fileStream);
+
+            InitNewCard(stream);
+
+            var disk = new Disk(_data, DiscUtils.Streams.Ownership.None);
+            _fileSystem = new FatFileSystem(disk.Partitions[0].Open(), true);
+        }
+
+        private void InitNewCard(ulong size)
+        {
+            _size = size;
+            var rawMemory = new byte[_size + Padding]; // 32 so we can allign the data correctly
+            fixed (byte* ptr = rawMemory)
             {
                 _memoryPtr = (ulong)ptr;
-                _memoryPtr = (_memoryPtr & ~(Padding-1)) + Padding;
-                _offset = (ulong)(_memoryPtr - (ulong)ptr);
+                _memoryPtr = (_memoryPtr & ~((ulong)Padding - 1)) + Padding;
+                _offset = (_memoryPtr - (ulong)ptr);
             }
-            _data = new MemoryStream(_rawMemory, (int)_offset, _size, true);
+            _data = new MemoryStream(rawMemory, (int)_offset, (int)_size, true);
+        }
 
-            _disk = Disk.InitializeFixed(_data, DiscUtils.Streams.Ownership.None, _size - 1024*1024);
-            BiosPartitionTable.Initialize(_disk, WellKnownPartitionType.WindowsFat);
+        private void InitNewCard(Stream stream)
+        {
+            _size = (ulong)stream.Length;
+            var rawMemory = new byte[_size + Padding]; // 32 so we can allign the data correctly
+            fixed (byte* ptr = rawMemory)
+            {
+                _memoryPtr = (ulong)ptr;
+                _memoryPtr = (_memoryPtr & ~((ulong)Padding - 1)) + Padding;
+                _offset = (_memoryPtr - (ulong)ptr);
+            }
 
-            _fileSystem = FatFileSystem.FormatPartition(_disk, 0, "BITMAGIC!", true);
+            stream.Read(rawMemory, (int)_offset, (int)_offset + (int)_size);
+
+            _data = new MemoryStream(rawMemory, (int)_offset, (int)_size, true);
         }
 
         public ulong MemoryPtr => _memoryPtr;
 
         public void Dispose()
         {
-            _disk?.Dispose();
+            //_disk?.Dispose();
             _data?.Dispose();
             _fileSystem?.Dispose();
         }
@@ -60,15 +90,30 @@ namespace BitMagic.X16Emulator
             }
         }
 
-        public void AddFile(string filename)
+        public void AddFiles(string filenames)
         {
-            Console.Write($"  Adding '{filename}'...");
+            var searchName = Path.GetFileName(filenames);
+            var path = Path.GetDirectoryName(filenames);
+            var entries =  Directory.GetFiles(path, searchName);
+
+            foreach(var filename in entries)
+            {
+                AddFile(filename);
+            }
+        }
+
+        private void AddFile(string filename)
+        {
+            Console.Write($"  Adding '{filename}'");
             var source = File.ReadAllBytes(filename);
 
-            var actName = Path.GetFileName(filename);
+            var actName = Path.GetFileName(filename).ToUpper();
+            Console.Write($" -> '{actName}'...");
 
-            actName = actName.ToUpper();
-
+            if (_fileSystem.FileExists(actName))
+            {
+                _fileSystem.DeleteFile(actName);
+            }
             using var file = _fileSystem.OpenFile(actName, FileMode.CreateNew, FileAccess.Write);
             file.Write(source);
 
@@ -80,7 +125,7 @@ namespace BitMagic.X16Emulator
         {
             if (!File.Exists(filename) || canOverwrite) {
                 Console.Write($"Writing '{filename}'...");
-                File.WriteAllBytes(filename, _data.ToArray());
+                SdCardImageHelper.WriteFile(filename, _data);
                 Console.WriteLine(" Done.");
                 return;
             }
