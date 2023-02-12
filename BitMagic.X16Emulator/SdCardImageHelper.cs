@@ -1,12 +1,6 @@
-﻿using ICSharpCode.SharpZipLib.Checksum;
+﻿using DiscUtils.Streams;
 using ICSharpCode.SharpZipLib.Zip;
-using Silk.NET.SDL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
+using System.Diagnostics.Tracing;
 
 namespace BitMagic.X16Emulator;
 
@@ -59,7 +53,7 @@ public static class SdCardImageHelper
 
             data = (parts[index++].ToUpper()) switch
             {
-                "BIN" => data,
+                "BIN" => new SubStream(data, Ownership.None, 0, data.Length - 512),
                 "VHD" => data,
                 "ZIP" => CompressZip(data, String.Join('.', parts.Take(index-1))),
                 _ => data
@@ -95,4 +89,28 @@ public class SdCardFileNotFoundInZipException : Exception
     public SdCardFileNotFoundInZipException(string filename) : base($"Cannot find '{filename}' inside the archive.")
     {
     }
+}
+
+public class FsImage
+{
+    private readonly byte[] _rawData;
+
+    public FsImage(byte[] rawData)
+    {
+        _rawData = rawData;
+    }
+
+    public byte Mounted => _rawData[0];
+    public ushort RootDir_Cluster => (ushort)(_rawData[1] + (_rawData[2] << 8));
+    public byte Sectors_Per_Cluster => _rawData[3];
+    public byte Cluster_Shift => _rawData[4];
+    public ushort Lba_Partition => (ushort)(_rawData[5] + (_rawData[6] << 8));
+    public ushort Fat_Size => (ushort)(_rawData[7] + (_rawData[8] << 8));
+    public ushort Lba_Fat => (ushort)(_rawData[9] + (_rawData[10] << 8));
+    public ushort Lba_Data => (ushort)(_rawData[11] + (_rawData[12] << 8));
+    public ushort Cluster_Count => (ushort)(_rawData[13] + (_rawData[14] << 8));
+    public ushort Lba_FsInfo => (ushort)(_rawData[15] + (_rawData[16] << 8));
+    public ushort Free_Clusters => (ushort)(_rawData[17] + (_rawData[18] << 8));
+    public ushort Free_Cluster => (ushort)(_rawData[19] + (_rawData[20] << 8));
+    public ushort Cwd_Cluster => (ushort)(_rawData[21] + (_rawData[22] << 8));
 }

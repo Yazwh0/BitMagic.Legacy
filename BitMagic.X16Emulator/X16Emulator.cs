@@ -250,6 +250,7 @@ public class Emulator : IDisposable
         public uint SpiCommandNext = 0;
         public uint SpiInitialised = 0;
         public uint SpiPreviousValue = 0;
+        public uint SpiWriteBlock = 0;
         //public uint SpiDeplyReady = 0;
 
         public ushort Pc = 0;

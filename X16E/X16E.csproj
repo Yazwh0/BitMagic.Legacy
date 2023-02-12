@@ -56,4 +56,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="https://json.schemastore.org/minecraft-dimension-type.json" /></VisualStudio></ProjectExtensions>
+
 </Project>

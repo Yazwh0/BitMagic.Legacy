@@ -65,7 +65,17 @@ static class Program
 
         var emulator = new Emulator();
 
-        var argumentsResult = Parser.Default.ParseArguments<Options>(args);
+        ParserResult<Options>? argumentsResult;
+        try
+        {
+            argumentsResult = Parser.Default.ParseArguments<Options>(args);
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error processing arguments:");
+            Console.WriteLine(ex.Message);
+            return 1;
+        }
 
         var options = argumentsResult.Value;
 
@@ -207,8 +217,14 @@ static class Program
 
         // create the sdcard
         if (!string.IsNullOrWhiteSpace(options.SdCardFolder))
-            emulator.SdCard!.AddDirectory(options.SdCardFolder);
+        {
+            if (options.SdCardAutoSync)
+                emulator.SdCard!.SetHomeDirectory(options.SdCardFolder);
+            else
+                emulator.SdCard!.AddDirectory(options.SdCardFolder);
+        }
 
+        // add files after directories.
         if (options.SdCardFiles != null)
         {
             foreach (var file in options.SdCardFiles)
@@ -226,7 +242,7 @@ static class Program
             }
             else
             {
-                Console.WriteLine("Cannot update source sdcard when the source sdcard is not set.");
+                Console.WriteLine("Cannot set the update source Sd Card when the source SD Card is not set. Use with --sdcard.");
             }
         }
 
@@ -314,6 +330,8 @@ static class Program
 
                 //DisplayMemory(0x800-1, 0xd00 - 0x800);
                 //DisplayMemory(0x9f30, 16);
+
+                var fsImage = new FsImage(Emulator.RamBank.Slice(0xb40c - 0xa000, 100).ToArray());
 
                 if (Return == Emulator.EmulatorResult.DebugOpCode)
                 {

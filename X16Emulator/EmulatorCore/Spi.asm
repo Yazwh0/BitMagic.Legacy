@@ -78,6 +78,10 @@ receiving_command:
 	inc ebx
 	mov dword ptr [rdx].state.spi_receivecount, ebx
 
+	mov r13d, dword ptr [rdx].state.spi_writeblock
+	test r13d, r13d
+	jnz writing_block
+
 	; check command
 	cmp ebx, 6
 	je spi_handle_command
@@ -95,6 +99,18 @@ dont_change_message:
 	mov r13d, dword ptr [rdx].state.spi_previousvalue
 	mov byte ptr [rsi+SPI_DATA], r13b
 	
+	spi_log_fromsdcard
+
+	ret
+
+writing_block:
+	cmp ebx, 515
+	je spi_write_complete
+
+	mov r13b, SPI_DEFAULT_RESPONSE
+	mov byte ptr [rsi+SPI_DATA], r13b
+	mov dword ptr [rdx].state.spi_previousvalue, r13d
+
 	spi_log_fromsdcard
 
 	ret
@@ -297,6 +313,93 @@ spi_read_single_block proc
 	ret
 spi_read_single_block endp
 
+spi_write_single_block proc
+	; get requested block number
+	mov rax, qword ptr [rdx].state.spi_inbound_buffer_ptr ; need to get the parameter
+
+	xor rbx, rbx
+	mov bl, byte ptr [rax + 1]
+	shl rbx, 8
+	mov bl, byte ptr [rax + 2]
+	shl rbx, 8
+	mov bl, byte ptr [rax + 3]
+	shl rbx, 8
+	mov bl, byte ptr [rax + 4]
+	; ebx now contains the block number
+	shl rbx, 9	; * 512 to get offset of the sd card
+
+	or rbx, 1	; set low bit so we know we're receiving. will remove before writing to sd card.
+
+	mov dword ptr [rdx].state.spi_writeblock, ebx
+
+	xor r13, r13
+	mov byte ptr [rax], r13b
+	mov dword ptr [rdx].state.spi_sendcount, r13d
+	mov dword ptr [rdx].state.spi_sendlength, 1
+
+	spi_log_fromsdcard
+
+	ret
+spi_write_single_block endp
+
+spi_write_complete proc
+	; check start block byte
+	cmp byte ptr [rax], 0feh
+	jne bad_data
+
+	; rax is the inbound data buffer
+	mov rdi, qword ptr [rdx].state.sdcard_ptr
+	mov ebx, dword ptr [rdx].state.spi_writeblock
+	xor ebx, 1 ; remove the bit we set earlier
+	
+	; copying from buffer to sdcard
+	; sd card is aligned, buffer isn't
+	vmovdqu ymm0, ymmword ptr [rax + 2 + 00h]
+	vmovdqa ymmword ptr [rdi + rbx + 00h], ymm0
+	vmovdqu ymm1, ymmword ptr [rax + 2 + 20h]
+	vmovdqa ymmword ptr [rdi + rbx + 20h], ymm1
+	vmovdqu ymm2, ymmword ptr [rax + 2 + 40h]
+	vmovdqa ymmword ptr [rdi + rbx + 40h], ymm2
+	vmovdqu ymm3, ymmword ptr [rax + 2 + 60h]
+	vmovdqa ymmword ptr [rdi + rbx + 60h], ymm3
+
+	vmovdqu ymm4, ymmword ptr [rax + 2 + 080h]
+	vmovdqa ymmword ptr [rdi + rbx + 080h], ymm4
+	vmovdqu ymm5, ymmword ptr [rax + 2 + 0a0h]
+	vmovdqa ymmword ptr [rdi + rbx + 0a0h], ymm5
+	vmovdqu ymm6, ymmword ptr [rax + 2 + 0c0h]
+	vmovdqa ymmword ptr [rdi + rbx + 0c0h], ymm6
+	vmovdqu ymm7, ymmword ptr [rax + 2 + 0e0h]
+	vmovdqa ymmword ptr [rdi + rbx + 0e0h], ymm7
+
+	vmovdqu ymm8, ymmword ptr [rax + 2 + 100h]
+	vmovdqa ymmword ptr [rdi + rbx + 100h], ymm8
+	vmovdqu ymm9, ymmword ptr [rax + 2 + 120h]
+	vmovdqa ymmword ptr [rdi + rbx + 120h], ymm9
+	vmovdqu ymm10, ymmword ptr [rax + 2 + 140h]
+	vmovdqa ymmword ptr [rdi + rbx + 140h], ymm10
+	vmovdqu ymm11, ymmword ptr [rax + 2 + 160h]
+	vmovdqa ymmword ptr [rdi + rbx + 160h], ymm11
+
+	vmovdqu ymm12, ymmword ptr [rax + 2 + 180h]
+	vmovdqa ymmword ptr [rdi + rbx + 180h], ymm12
+	vmovdqu ymm13, ymmword ptr [rax + 2 + 1a0h]
+	vmovdqa ymmword ptr [rdi + rbx + 1a0h], ymm13
+	vmovdqu ymm14, ymmword ptr [rax + 2 + 1c0h]
+	vmovdqa ymmword ptr [rdi + rbx + 1c0h], ymm14
+	vmovdqu ymm15, ymmword ptr [rax + 2 + 1e0h]
+	vmovdqa ymmword ptr [rdi + rbx + 1e0h], ymm15
+
+bad_data:
+	mov r13b, SPI_DEFAULT_RESPONSE
+	mov byte ptr [rsi+SPI_DATA], r13b
+	mov dword ptr [rdx].state.spi_previousvalue, r13d
+
+	spi_log_fromsdcard
+
+	ret	
+spi_write_complete endp
+
 spi_read_send_status proc
 	spi_log_fromsdcard
 
@@ -361,7 +464,7 @@ spi_command_table:
 	qword spi_not_known ; 21
 	qword spi_not_known ; 22
 	qword spi_not_known ; 23
-	qword spi_not_known ; 24
+	qword spi_write_single_block ; 24
 	qword spi_not_known ; 25
 	qword spi_not_known ; 26
 	qword spi_not_known ; 27

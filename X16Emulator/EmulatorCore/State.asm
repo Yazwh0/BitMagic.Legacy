@@ -88,6 +88,7 @@ state struct
 	spi_commandnext			dword ?
 	spi_initialised			dword ?
 	spi_previousvalue		dword ?
+	spi_writeblock			dword ?
 	;spi_replyready			dword ?
 
 	register_pc				word ?
