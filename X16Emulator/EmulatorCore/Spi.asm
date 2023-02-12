@@ -180,6 +180,7 @@ spi_handle_command proc
 
 	movzx rbx, byte ptr [rax] ; get command
 	and rbx, 00111111b
+	mov dword ptr [rdx].state.spi_previouscommand, ebx
 	lea rdi, spi_command_table
 	jmp qword ptr [rdi + rbx * 8]
 spi_handle_command endp
@@ -347,6 +348,10 @@ spi_write_complete proc
 	cmp byte ptr [rax], 0feh
 	jne bad_data
 
+	mov ebx, dword ptr [rdx].state.spi_previouscommand
+	cmp ebx, 24
+	jne bad_data
+
 	; rax is the inbound data buffer
 	mov rdi, qword ptr [rdx].state.sdcard_ptr
 	mov ebx, dword ptr [rdx].state.spi_writeblock
@@ -354,41 +359,45 @@ spi_write_complete proc
 	
 	; copying from buffer to sdcard
 	; sd card is aligned, buffer isn't
-	vmovdqu ymm0, ymmword ptr [rax + 2 + 00h]
+	vmovdqu ymm0, ymmword ptr [rax + 1 + 00h]
 	vmovdqa ymmword ptr [rdi + rbx + 00h], ymm0
-	vmovdqu ymm1, ymmword ptr [rax + 2 + 20h]
+	vmovdqu ymm1, ymmword ptr [rax + 1 + 20h]
 	vmovdqa ymmword ptr [rdi + rbx + 20h], ymm1
-	vmovdqu ymm2, ymmword ptr [rax + 2 + 40h]
+	vmovdqu ymm2, ymmword ptr [rax + 1 + 40h]
 	vmovdqa ymmword ptr [rdi + rbx + 40h], ymm2
-	vmovdqu ymm3, ymmword ptr [rax + 2 + 60h]
+	vmovdqu ymm3, ymmword ptr [rax + 1 + 60h]
 	vmovdqa ymmword ptr [rdi + rbx + 60h], ymm3
 
-	vmovdqu ymm4, ymmword ptr [rax + 2 + 080h]
+	vmovdqu ymm4, ymmword ptr [rax + 1 + 080h]
 	vmovdqa ymmword ptr [rdi + rbx + 080h], ymm4
-	vmovdqu ymm5, ymmword ptr [rax + 2 + 0a0h]
+	vmovdqu ymm5, ymmword ptr [rax + 1 + 0a0h]
 	vmovdqa ymmword ptr [rdi + rbx + 0a0h], ymm5
-	vmovdqu ymm6, ymmword ptr [rax + 2 + 0c0h]
+	vmovdqu ymm6, ymmword ptr [rax + 1 + 0c0h]
 	vmovdqa ymmword ptr [rdi + rbx + 0c0h], ymm6
-	vmovdqu ymm7, ymmword ptr [rax + 2 + 0e0h]
+	vmovdqu ymm7, ymmword ptr [rax + 1 + 0e0h]
 	vmovdqa ymmword ptr [rdi + rbx + 0e0h], ymm7
 
-	vmovdqu ymm8, ymmword ptr [rax + 2 + 100h]
+	vmovdqu ymm8, ymmword ptr [rax + 1 + 100h]
 	vmovdqa ymmword ptr [rdi + rbx + 100h], ymm8
-	vmovdqu ymm9, ymmword ptr [rax + 2 + 120h]
+	vmovdqu ymm9, ymmword ptr [rax + 1 + 120h]
 	vmovdqa ymmword ptr [rdi + rbx + 120h], ymm9
-	vmovdqu ymm10, ymmword ptr [rax + 2 + 140h]
+	vmovdqu ymm10, ymmword ptr [rax + 1 + 140h]
 	vmovdqa ymmword ptr [rdi + rbx + 140h], ymm10
-	vmovdqu ymm11, ymmword ptr [rax + 2 + 160h]
+	vmovdqu ymm11, ymmword ptr [rax + 1 + 160h]
 	vmovdqa ymmword ptr [rdi + rbx + 160h], ymm11
 
-	vmovdqu ymm12, ymmword ptr [rax + 2 + 180h]
+	vmovdqu ymm12, ymmword ptr [rax + 1 + 180h]
 	vmovdqa ymmword ptr [rdi + rbx + 180h], ymm12
-	vmovdqu ymm13, ymmword ptr [rax + 2 + 1a0h]
+	vmovdqu ymm13, ymmword ptr [rax + 1 + 1a0h]
 	vmovdqa ymmword ptr [rdi + rbx + 1a0h], ymm13
-	vmovdqu ymm14, ymmword ptr [rax + 2 + 1c0h]
+	vmovdqu ymm14, ymmword ptr [rax + 1 + 1c0h]
 	vmovdqa ymmword ptr [rdi + rbx + 1c0h], ymm14
-	vmovdqu ymm15, ymmword ptr [rax + 2 + 1e0h]
+	vmovdqu ymm15, ymmword ptr [rax + 1 + 1e0h]
 	vmovdqa ymmword ptr [rdi + rbx + 1e0h], ymm15
+
+	xor rbx, rbx
+	mov dword ptr [rdx].state.spi_receivecount, ebx
+	mov dword ptr [rdx].state.spi_writeblock, ebx
 
 bad_data:
 	mov r13b, SPI_DEFAULT_RESPONSE

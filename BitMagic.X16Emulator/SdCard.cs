@@ -24,8 +24,12 @@ public unsafe class SdCard : IDisposable
     private bool _updateable = false; // until we fix the stored image loading
     private FileSystemWatcher? _watcher;
 
+    private string? _homeFolder;
+    internal bool _watching = false;
+
     public SdCard()
     {
+        Console.WriteLine($"Creating new SD Card.");
         InitNewCard(32 * 1024 * 1024 + 512);
 
         var disk = Disk.InitializeFixed(_data, DiscUtils.Streams.Ownership.None, (long)_size - 512);
@@ -37,6 +41,7 @@ public unsafe class SdCard : IDisposable
 
     public SdCard(string sdcardFilename)
     {
+        Console.WriteLine($"Loading SD Card from '{sdcardFilename}'.");
         using var fileStream = new FileStream(sdcardFilename, FileMode.Open, FileAccess.Read);
         var stream = SdCardImageHelper.ReadFile(sdcardFilename, fileStream);
 
@@ -44,12 +49,44 @@ public unsafe class SdCard : IDisposable
 
         var disk = new Disk(_data, DiscUtils.Streams.Ownership.None);
         _fileSystem = new FatFileSystem(disk.Partitions[0].Open(), true);
-
-        using var file = _fileSystem.OpenFile("ARG.TST", FileMode.CreateNew, FileAccess.Write);
-        file.Write(new byte[] { 1, 2, 3, 4} );
-
-        file.Close();
     }
+
+    public Thread StartX16Watcher()
+    {
+        if (string.IsNullOrWhiteSpace(_homeFolder))
+            throw new X16FileWatcherButNoHomeFolderException("Cannot watch the X16 SD Card to host without setting a home directory.");
+
+        _watching = true;
+        return new Thread(_ => WatchSdCard(this));
+    }
+
+    public void StopX16Watcher()
+    {
+        _watching = false;
+    }
+
+    private static void WatchSdCard(SdCard card)
+    {
+        while (card._watching)
+        {
+            Thread.Sleep(1000);
+
+            card._fileSystem.UpdateCaches();
+            var files = card._fileSystem.GetFiles("\\");
+            foreach (var file in files)
+            {
+                var localname = Path.Join(card._homeFolder, file);
+                if (!File.Exists(Path.Join(card._homeFolder, file)))
+                {
+                    using var datastream = card._fileSystem.OpenFile(file, FileMode.Open, FileAccess.Read);
+                    using var fs = new FileStream(localname, FileMode.OpenOrCreate, FileAccess.Write);
+                    datastream.CopyTo(fs);
+                    datastream.Close();
+                    fs.Close();
+                }
+            }
+        }
+    }    
 
     private void InitNewCard(ulong size)
     {
@@ -90,21 +127,26 @@ public unsafe class SdCard : IDisposable
     }
 
     // Copies a directory and starts a watcher
-    public void SetHomeDirectory(string directory)
+    public void SetHomeDirectory(string directory, bool hostFsToSdCardSync)
     {
         if (!_updateable)
             throw new CantSyncLoadedImageException("Home directory is currently only available with a new SD Card");
 
         Console.WriteLine($"Setting home directory to '{directory}'.");
+        _homeFolder = directory;
+
         AddDirectoryFiles(directory);
 
-        _watcher = new FileSystemWatcher(directory, "*.*");
-        _watcher.Changed += _watcher_Changed;
-        _watcher.Deleted += _watcher_Deleted;
-        _watcher.Created += _watcher_Created;
-        _watcher.Renamed += _watcher_Renamed;
-        _watcher.Error += _watcher_Error;
-        _watcher.EnableRaisingEvents = true;
+        if (hostFsToSdCardSync)
+        {
+            _watcher = new FileSystemWatcher(directory, "*.*");
+            _watcher.Changed += _watcher_Changed;
+            _watcher.Deleted += _watcher_Deleted;
+            _watcher.Created += _watcher_Created;
+            _watcher.Renamed += _watcher_Renamed;
+            _watcher.Error += _watcher_Error;
+            _watcher.EnableRaisingEvents = true;
+        }
     }
 
     private void _watcher_Error(object sender, ErrorEventArgs e)
@@ -224,4 +266,9 @@ public class UnhandledFileSysetmChangeException : Exception
 public class CantSyncLoadedImageException : Exception
 {
     public CantSyncLoadedImageException(string message) : base(message) { }
+}
+
+public class X16FileWatcherButNoHomeFolderException : Exception
+{
+    public X16FileWatcherButNoHomeFolderException(string message) : base(message) { }
 }

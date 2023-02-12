@@ -36,11 +36,15 @@ static class Program
         [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardFileName { get; set; }
 
-        [Option('d', "sdcard-folder", Required = false, HelpText = "Source folder for the SD Card.")]
+        [Option('d', "sdcard-folder", Required = false, HelpText = "Set the home folder for the SD Card.")]
         public string? SdCardFolder { get; set; }
 
-        [Option('a', "sdcard-autosync", Required = false, HelpText = "Sync any changes in the source folder to the SD Card. NOT YET IMPLEMENTED")]
-        public bool SdCardAutoSync { get; set; } = false;
+        [Option('a', "sdcard-synctox16", Required = false, HelpText = "Sync any changes to the home directory to SD Card. Root directory only.")]
+        public bool SdCardSyncTo { get; set; } = false;
+
+        [Option('a', "sdcard-syncfromx16", Required = false, HelpText = "Sync any changes to SD Card to the home directory. Root directory only.")]
+        public bool SdCardSyncFrom { get; set; } = false;
+
 
         [Option('f', "sdcard-file", Required = false, HelpText = "File to add to the SD Card root directory. Can add multiple files and use wildcards.")]
         public IEnumerable<string>? SdCardFiles { get; set; }
@@ -218,10 +222,7 @@ static class Program
         // create the sdcard
         if (!string.IsNullOrWhiteSpace(options.SdCardFolder))
         {
-            if (options.SdCardAutoSync)
-                emulator.SdCard!.SetHomeDirectory(options.SdCardFolder);
-            else
-                emulator.SdCard!.AddDirectory(options.SdCardFolder);
+            emulator.SdCard!.SetHomeDirectory(options.SdCardFolder, options.SdCardSyncTo);
         }
 
         // add files after directories.
@@ -246,6 +247,13 @@ static class Program
             }
         }
 
+        Thread? syncThread = null;
+        if (options.SdCardSyncFrom)
+        {
+            syncThread = emulator.SdCard!.StartX16Watcher();
+            syncThread.Start();
+        }
+
         // currently need this to run
         //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);
         //emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.Enter);
@@ -257,8 +265,13 @@ static class Program
         EmulatorThread.Start();
 
         EmulatorWindow.Run(emulator);
-
+        
         EmulatorThread.Join();
+        if (syncThread != null)
+        {
+            emulator.SdCard!.StopX16Watcher();
+            syncThread.Join();
+        }
 
         Console.WriteLine($"Emulator finished with return '{EmulatorWork.Return}'.");
 
@@ -290,6 +303,9 @@ static class Program
                     Console.WriteLine($"Result: {Return}");
                     var history = Emulator.History;
                     var idx = (int)Emulator.HistoryPosition - 1;
+                    if (idx == 0xffffffff)
+                        idx = 1024;
+
                     Console.WriteLine("Last 50 steps:");
 
                     var toOutput = new List<string>();

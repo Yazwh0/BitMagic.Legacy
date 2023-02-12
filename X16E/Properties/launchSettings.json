@@ -12,7 +12,7 @@
       "commandLineArgsR42": "--rom c:\\dev\\rom_r42.bin",
       "commandLineArgsWrite": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin -d C:\\Dev\\Xixit --sdcard-write c:\\Dev\\xixit.vhd.zip --sdcard-overwrite",
       "commandLineArgsX": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin -d C:\\Dev\\sdcard --sdcard-autosync --sdcard-write c:\\Dev\\test.vhd",
-      "commandLineArgs": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin -d C:\\Dev\\sdcard ",
+      "commandLineArgs": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin -d C:\\Dev\\sdcard --sdcard-syncfromx16",
       "commandLineArgsSpriteOffscreen": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\spritebounds.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg --warp",
       "commandLineArgsI2c": "--rom C:\\Documents\\Source\\x16-rom\\build\\x16\\rom.bin --code C:\\Documents\\Source\\BitMagic\\X16E\\i2ctest.bmasm --write --prg c:\\dev\\x16emu\\r41\\example.prg",
       "nativeDebugging": true
