@@ -39,12 +39,14 @@ static class Program
         [Option('d', "sdcard-folder", Required = false, HelpText = "Set the home folder for the SD Card.")]
         public string? SdCardFolder { get; set; }
 
-        [Option('a', "sdcard-synctox16", Required = false, HelpText = "Sync any changes to the home directory to SD Card. Root directory only.")]
+        [Option("sdcard-synctox16", Required = false, HelpText = "Sync any changes to the home directory to SD Card. Root directory only.")]
         public bool SdCardSyncTo { get; set; } = false;
 
-        [Option('a', "sdcard-syncfromx16", Required = false, HelpText = "Sync any changes to SD Card to the home directory. Root directory only.")]
+        [Option("sdcard-syncfromx16", Required = false, HelpText = "Sync any changes to SD Card to the home directory. Root directory only.")]
         public bool SdCardSyncFrom { get; set; } = false;
 
+        [Option('y', "sdcard-sync", Required = false, HelpText = "Sync any changes to SD Card to the home directory, or vice versa. Root directory only. Same as setting --sdcard-synctox16 --sdcard-syncfromx16.")]
+        public bool SdCardFullSync { get; set; } = false;
 
         [Option('f', "sdcard-file", Required = false, HelpText = "File to add to the SD Card root directory. Can add multiple files and use wildcards.")]
         public IEnumerable<string>? SdCardFiles { get; set; }
@@ -54,6 +56,7 @@ static class Program
 
         [Option("sdcard-overwrite", Required = false, HelpText = "When writing the SD Card file, it can overwrite.")]
         public bool SdCardOverrwrite { get; set; } = false;
+
 
         [Option('u', "sdcard-update", Required = false, HelpText = "Sets 'sdcard-write' to the 'sdcard' parameter and enables overwrite.")]
         public bool SdCardUpdate { get; set; } = false;
@@ -73,7 +76,7 @@ static class Program
         try
         {
             argumentsResult = Parser.Default.ParseArguments<Options>(args);
-        } 
+        }
         catch (Exception ex)
         {
             Console.WriteLine("Error processing arguments:");
@@ -216,8 +219,15 @@ static class Program
         emulator.Brk_Causes_Stop = true;
 
         SdCard sdCard = string.IsNullOrEmpty(options.SdCardFileName) ? new SdCard() : new SdCard(options.SdCardFileName);
-       
+
         emulator.LoadSdCard(sdCard);
+
+        // set syncing options
+        if (options.SdCardFullSync)
+        {
+            options.SdCardSyncFrom = true;
+            options.SdCardSyncTo = true;
+        }
 
         // create the sdcard
         if (!string.IsNullOrWhiteSpace(options.SdCardFolder))
@@ -254,10 +264,6 @@ static class Program
             syncThread.Start();
         }
 
-        // currently need this to run
-        //emulator.SmcBuffer.KeyDown(Silk.NET.Input.Key.Enter);
-        //emulator.SmcBuffer.KeyUp(Silk.NET.Input.Key.Enter);
-
         EmulatorWork.Emulator = emulator;
         EmulatorThread = new Thread(EmulatorWork.DoWork);
 
@@ -265,7 +271,7 @@ static class Program
         EmulatorThread.Start();
 
         EmulatorWindow.Run(emulator);
-        
+
         EmulatorThread.Join();
         if (syncThread != null)
         {
@@ -303,7 +309,7 @@ static class Program
                     Console.WriteLine($"Result: {Return}");
                     var history = Emulator.History;
                     var idx = (int)Emulator.HistoryPosition - 1;
-                    if (idx == 0xffffffff)
+                    if (idx == -1)
                         idx = 1024;
 
                     Console.WriteLine("Last 50 steps:");
@@ -381,7 +387,7 @@ static class Program
                 Console.Write($"{i:X4}: ");
                 for (var j = 0; j < 16; j++)
                 {
-                    var val = i+j >= 0xa000 ? Emulator.RamBank[i + j - 0xa000]  : Emulator.Memory[i + j];
+                    var val = i + j >= 0xa000 ? Emulator.RamBank[i + j - 0xa000] : Emulator.Memory[i + j];
                     if (val != 0)
                         Console.ForegroundColor = ConsoleColor.White;
                     else

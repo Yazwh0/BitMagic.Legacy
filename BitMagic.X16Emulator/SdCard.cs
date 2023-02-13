@@ -27,6 +27,9 @@ public unsafe class SdCard : IDisposable
     private string? _homeFolder;
     internal bool _watching = false;
 
+    internal object Lock = new object();
+    internal List<string> FileUpdates = new List<string>();
+
     public SdCard()
     {
         Console.WriteLine($"Creating new SD Card.");
@@ -67,26 +70,67 @@ public unsafe class SdCard : IDisposable
 
     private static void WatchSdCard(SdCard card)
     {
+        Dictionary<string, long> previousEntries = card._fileSystem.Root.GetFiles().ToDictionary(i => i.Name, i => i.Length);
+        List<DiscFileInfo> files = new List<DiscFileInfo>();
+
         while (card._watching)
         {
             Thread.Sleep(1000);
 
             card._fileSystem.UpdateCaches();
-            var files = card._fileSystem.GetFiles("\\");
-            foreach (var file in files)
+            var root = card._fileSystem.Root;
+
+            // compare previous with current to see if there are any changes
+            lock (card.Lock)
             {
-                var localname = Path.Join(card._homeFolder, file);
-                if (!File.Exists(Path.Join(card._homeFolder, file)))
+                card.FileUpdates.Clear();
+                files.Clear();
+
+                foreach (var file in root.GetFiles())
                 {
-                    using var datastream = card._fileSystem.OpenFile(file, FileMode.Open, FileAccess.Read);
-                    using var fs = new FileStream(localname, FileMode.OpenOrCreate, FileAccess.Write);
-                    datastream.CopyTo(fs);
-                    datastream.Close();
-                    fs.Close();
+                    var writeFile = false;
+                    if (previousEntries.ContainsKey(file.Name))
+                    {
+                        var previous = previousEntries[file.Name];
+
+                        if (previous != file.Length) // todo change to a proper check
+                        {
+                            // amend!
+                            Console.WriteLine($"[X16] >> [PC] Amend: '{file.Name}'");
+                            writeFile = true;
+                        }
+                    }
+                    else
+                    {
+                        // new file!
+                        Console.Write($"[X16] >> [PC] New: '{file.Name}'...");
+                        writeFile = true;
+                    }
+
+
+                    if (writeFile)
+                    {
+                        card.FileUpdates.Add(file.Name);
+                        var localname = Path.Join(card._homeFolder, file.Name);
+
+                        using var datastream = card._fileSystem.OpenFile(file.Name, FileMode.Open, FileAccess.Read);
+                        using var fs = new FileStream(localname, FileMode.OpenOrCreate, FileAccess.Write);
+
+                        datastream.CopyTo(fs);
+                        datastream.Close();
+                        fs.Close();
+
+                        Console.WriteLine(" Done.");
+                    }
+                    files.Add(file);
                 }
             }
+
+            previousEntries.Clear();
+            foreach (var file in files)
+                previousEntries.Add(file.Name, file.Length);
         }
-    }    
+    }
 
     private void InitNewCard(ulong size)
     {
@@ -176,7 +220,7 @@ public unsafe class SdCard : IDisposable
 
     private void AddDirectoryFiles(string directory)
     {
-        foreach (var filename in Directory.GetFiles(directory))
+        foreach (var filename in System.IO.Directory.GetFiles(directory))
         {
             AddFile(filename);
         }
@@ -186,7 +230,7 @@ public unsafe class SdCard : IDisposable
     {
         var searchName = Path.GetFileName(filenames);
         var path = Path.GetDirectoryName(filenames) ?? throw new Exception("No path!");
-        var entries = Directory.GetFiles(path, searchName);
+        var entries = System.IO.Directory.GetFiles(path, searchName);
 
         foreach (var filename in entries)
         {
@@ -196,41 +240,72 @@ public unsafe class SdCard : IDisposable
 
     private void AddFile(string filename)
     {
-        Console.Write($"  Adding '{filename}'");
-        var source = File.ReadAllBytes(filename);
-
-        var actName = FixFilename(filename);
-        Console.Write($" -> '{actName}'...");
-
-        if (_fileSystem.FileExists(actName))
+        lock (Lock)
         {
-            _fileSystem.DeleteFile(actName);
-        }
-        using var file = _fileSystem.OpenFile(actName, FileMode.CreateNew, FileAccess.Write);
-        file.Write(source);
+            var actName = FixFilename(filename);
+            if (FileUpdates.Contains(actName))
+            {
+                Console.WriteLine($"[PC] >> [16] Skipping : {actName}");
+                return;
+            }
 
-        file.Close();
+            Console.Write($"[PC] >> [16] Adding: '{filename}'");
+            byte[] source;
+            try
+            {
+                source = File.ReadAllBytes(filename);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(" Error.");
+                Console.WriteLine("Error opening file, trying again in 1s.");
+                Thread.Sleep(1000);
 
-        _fileSystem.UpdateFsInfoFreeSpace();
+                Console.Write($"[PC] >> [16] Adding: '{filename}'");
+                source = File.ReadAllBytes(filename);
+            }
 
-        Console.WriteLine(" Done.");
-    }
+            Console.Write($" -> '{actName}'...");
 
-    private void DeleteFile(string filename)
-    {
-        var actName = FixFilename(filename);
-        Console.Write($"  Deleteing '{filename}' -> '{actName}'... ");
+            if (_fileSystem.FileExists(actName))
+            {
+                _fileSystem.DeleteFile(actName);
+            }
+            using var file = _fileSystem.OpenFile(actName, FileMode.CreateNew, FileAccess.Write);
+            file.Write(source);
 
-        if (_fileSystem.FileExists(actName))
-        {
-            _fileSystem.DeleteFile(actName);
+            file.Close();
+
             _fileSystem.UpdateFsInfoFreeSpace();
 
             Console.WriteLine(" Done.");
         }
-        else
+    }
+
+    private void DeleteFile(string filename)
+    {
+        lock (Lock)
         {
-            Console.WriteLine(" Does not exist.");
+            var actName = FixFilename(filename);
+            if (FileUpdates.Contains(actName))
+            {
+                Console.WriteLine($"[PC] >> [16] Skipping : {actName}");
+                return;
+            }
+
+            Console.Write($"[PC] >> [16] Deleteing: '{filename}' -> '{actName}'... ");
+
+            if (_fileSystem.FileExists(actName))
+            {
+                _fileSystem.DeleteFile(actName);
+                _fileSystem.UpdateFsInfoFreeSpace();
+
+                Console.WriteLine(" Done.");
+            }
+            else
+            {
+                Console.WriteLine(" Does not exist.");
+            }
         }
     }
 
