@@ -254,6 +254,11 @@ spi_read_single_block proc
 	mov bl, byte ptr [rax + 3]
 	shl rbx, 8
 	mov bl, byte ptr [rax + 4]
+
+	mov r13d, dword ptr [rdx].state.spi_sdcardsize
+	cmp rbx, r13
+	jg spi_do_nothing ; not sure what to do if we exceed the disk size
+
 	; ebx now contains the block number
 	shl rbx, 9	; * 512 to get offset of the sd card
 
@@ -326,6 +331,11 @@ spi_write_single_block proc
 	mov bl, byte ptr [rax + 3]
 	shl rbx, 8
 	mov bl, byte ptr [rax + 4]
+
+	mov r13d, dword ptr [rdx].state.spi_sdcardsize
+	cmp rbx, r13
+	jg spi_do_nothing ; not sure what to do if we exceed the disk size
+
 	; ebx now contains the block number
 	shl rbx, 9	; * 512 to get offset of the sd card
 
@@ -448,8 +458,23 @@ spi_read_ocr proc
 	ret
 spi_read_ocr endp
 
+spi_read_csd proc
+	spi_log_fromsdcard
+
+	mov dword ptr [rdx].state.spi_sendcount, 0
+	mov dword ptr [rdx].state.spi_sendlength, 16
+
+	mov rax, qword ptr [rdx].state.spi_outbound_buffer_ptr
+	mov rbx, qword ptr [rdx].state.spi_csd_register0
+	mov qword ptr [rax], rbx
+	mov rbx, qword ptr [rdx].state.spi_csd_register1
+	mov qword ptr [rax+8], rbx
+
+	ret
+spi_read_csd endp
+
 spi_command_table:
-	qword spi_go_idle		; 0
+	qword spi_go_idle	; 0
 	qword spi_not_known ; 1
 	qword spi_not_known ; 2
 	qword spi_not_known ; 3
@@ -457,8 +482,8 @@ spi_command_table:
 	qword spi_not_known ; 5
 	qword spi_not_known ; 6
 	qword spi_not_known ; 7
-	qword spi_cmd8			; 8
-	qword spi_not_known ; 9
+	qword spi_cmd8		; 8
+	qword spi_read_csd	; 9
 	qword spi_not_known ; 10
 	qword spi_not_known ; 11
 	qword spi_not_known ; 12

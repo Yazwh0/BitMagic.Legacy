@@ -30,10 +30,10 @@ public unsafe class SdCard : IDisposable
     internal object Lock = new object();
     internal List<string> FileUpdates = new List<string>();
 
-    public SdCard()
+    public SdCard(ulong size)
     {
-        Console.WriteLine($"Creating new SD Card.");
-        InitNewCard(32 * 1024 * 1024 + 512);
+        Console.WriteLine($"Creating new {size}MB SD Card.");
+        InitNewCard(size * 1024 * 1024 + 512); // add VHD header
 
         var disk = Disk.InitializeFixed(_data, DiscUtils.Streams.Ownership.None, (long)_size - 512);
         BiosPartitionTable.Initialize(disk, WellKnownPartitionType.WindowsFat);
@@ -52,6 +52,24 @@ public unsafe class SdCard : IDisposable
 
         var disk = new Disk(_data, DiscUtils.Streams.Ownership.None);
         _fileSystem = new FatFileSystem(disk.Partitions[0].Open(), true);
+    }
+
+    internal void SetCsdRegister(Emulator emulator)
+    {
+        ulong reg_0 = 0;
+        ulong reg_1 = 0;
+
+        reg_0 |= 1 << 0; // bit 0 is always set
+        reg_0 |= 0x09 << 22; // WRITE_BL_LEN - 512 bytes
+        reg_0 |= 0x7f << 39; // 64k SECTOR_SIZE
+        reg_0 |= 1 << 46; // bit 46 should always be set for ERASE_BLK_EN
+
+        reg_1 |= (((ulong)_data.Length >> 9) - 2) << (69 - 64); // totalsize is (C_SIZE + 1) * 512bytes. So take (size / 512) -2, 1 for VHD header, 1 for conversion
+        reg_1 |= 0x09L << (83 - 64); // READ_BL_LEN - 512 bytes
+        reg_1 |= 0x2bL << (94 - 64); // TRAN_SPEED
+
+        emulator.Spi_CsdRegister_0 = reg_0;
+        emulator.Spi_CsdRegister_1 = reg_1;
     }
 
     public Thread StartX16Watcher()
@@ -160,6 +178,8 @@ public unsafe class SdCard : IDisposable
 
         _data = new MemoryStream(rawMemory, (int)_offset, (int)_size, true);
     }
+
+    public ulong Size => _size - 512; // take off VHD header
 
     public ulong MemoryPtr => _memoryPtr;
 

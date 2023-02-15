@@ -106,11 +106,3 @@ smc_keyboard endp
 smc_donothing proc
 	ret
 smc_donothing endp
-
-
-
-keyb_data:
-dword 032h, 0, 0, 0, 0, 0, 0, 0, 0ffh, 32h, 0, 0, 0, 0, 0, 0
-dword  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-dword  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-dword  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

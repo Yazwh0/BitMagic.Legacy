@@ -218,6 +218,8 @@ public class Emulator : IDisposable
         public ulong Layer1_Cur_TileData = 0;
 
         public ulong SpiCommand = 0;
+        public ulong SpiCsdRegister_0 = 0;
+        public ulong SpiCsdRegister_1 = 0;
 
         public uint Dc_HScale = 0x00010000;
         public uint Dc_VScale = 0x00010000;
@@ -252,6 +254,7 @@ public class Emulator : IDisposable
         public uint SpiPreviousValue = 0;
         public uint SpiPreviousCommand = 0;
         public uint SpiWriteBlock = 0;
+        public uint SpiSdCardSize = 0;
         //public uint SpiDeplyReady = 0;
 
         public ushort Pc = 0;
@@ -438,6 +441,9 @@ public class Emulator : IDisposable
     public Control Control { get => (Control)_state.Control; set => _state.Control = (uint)value; }
     public FrameControl FrameControl { get => (FrameControl)_state.Frame_Control; set => _state.Frame_Control = (uint)value; }
 
+    public ulong Spi_CsdRegister_0 { get => _state.SpiCsdRegister_0; set => _state.SpiCsdRegister_0= value; }
+    public ulong Spi_CsdRegister_1 { get => _state.SpiCsdRegister_1; set => _state.SpiCsdRegister_1 = value; }
+
     public VeraState Vera => new VeraState(this);
     public ViaState Via => new ViaState(this);
 
@@ -488,7 +494,9 @@ public class Emulator : IDisposable
     public void LoadSdCard(SdCard sdCard)
     {
         SdCard = sdCard;
+        sdCard.SetCsdRegister(this);
         _state.SdCardPtr = SdCard.MemoryPtr;// + 0xc00; // vdi's have a header
+        _state.SpiSdCardSize = (uint)(sdCard.Size / 512L);
     }
 
     public unsafe Emulator()

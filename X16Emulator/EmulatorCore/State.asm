@@ -56,6 +56,8 @@ state struct
 	layer1_cur_tiledata		qword ?
 
 	spi_command				qword ?
+	spi_csd_register0		qword ?
+	spi_csd_register1		qword ?
 
 	dc_hscale				dword ?
 	dc_vscale				dword ?
@@ -90,6 +92,7 @@ state struct
 	spi_previousvalue		dword ?
 	spi_previouscommand		dword ?
 	spi_writeblock			dword ?
+	spi_sdcardsize			dword ?
 	;spi_replyready			dword ?
 
 	register_pc				word ?

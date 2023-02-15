@@ -16,9 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
-    <None Include="Smc.asm">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -97,6 +94,12 @@
       <Filter>Source Files</Filter>
     </Text>
     <Text Include="Vera_Sprites.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Smc.asm">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Spi.asm">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>

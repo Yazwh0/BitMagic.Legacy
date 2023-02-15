@@ -36,6 +36,9 @@ static class Program
         [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardFileName { get; set; }
 
+        [Option("sdcard-size", Required = false, HelpText = "SD Card size in mb if the card is being created by the emulator.")]
+        public ulong SdCardSize { get; set; } = 32;
+
         [Option('d', "sdcard-folder", Required = false, HelpText = "Set the home folder for the SD Card.")]
         public string? SdCardFolder { get; set; }
 
@@ -218,7 +221,7 @@ static class Program
 
         emulator.Brk_Causes_Stop = true;
 
-        SdCard sdCard = string.IsNullOrEmpty(options.SdCardFileName) ? new SdCard() : new SdCard(options.SdCardFileName);
+        SdCard sdCard = string.IsNullOrEmpty(options.SdCardFileName) ? new SdCard(options.SdCardSize) : new SdCard(options.SdCardFileName);
 
         emulator.LoadSdCard(sdCard);
 
