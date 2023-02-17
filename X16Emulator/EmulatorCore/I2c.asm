@@ -14,6 +14,7 @@
 ;    along with this program.  If not, see https://www.gnu.org/licenses/.
 
 I2C_SMC equ 42h
+I2C_RTC equ 64h
 
 ;	modes:
 ;	val mode becomes

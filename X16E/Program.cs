@@ -33,7 +33,7 @@ static class Program
         [Option("warp", Required = false, HelpText = "Run as fast as possible.")]
         public bool Warp { get; set; } = false;
 
-        [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
+        [Option('s', "sdcard", Required = false, HelpText = "SD Card to attach. Can be a .zip or .gz file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardFileName { get; set; }
 
         [Option("sdcard-size", Required = false, HelpText = "SD Card size in mb if the card is being created by the emulator.")]
@@ -54,7 +54,7 @@ static class Program
         [Option('f', "sdcard-file", Required = false, HelpText = "File to add to the SD Card root directory. Can add multiple files and use wildcards.")]
         public IEnumerable<string>? SdCardFiles { get; set; }
 
-        [Option("sdcard-write", Required = false, HelpText = "SD Card file to write at the end of emulation. Can be a .zip file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
+        [Option("sdcard-write", Required = false, HelpText = "SD Card file to write at the end of emulation. Can be a .zip or .gz file, in the form 'name.xxx.zip', where xxx is either BIN or VHD.")]
         public string? SdCardWrite { get; set; }
 
         [Option("sdcard-overwrite", Required = false, HelpText = "When writing the SD Card file, it can overwrite.")]

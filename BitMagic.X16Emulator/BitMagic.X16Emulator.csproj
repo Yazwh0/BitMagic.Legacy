@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net6.0</TargetFramework>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
+  <TargetFramework>net6.0</TargetFramework>
+  <ImplicitUsings>enable</ImplicitUsings>
+  <Nullable>enable</Nullable>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
   <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-	<None Remove="state_object.xlsx" />
-	<None Remove="~%24state_object.xlsx" />
+  <None Remove="state_object.xlsx" />
+  <None Remove="~%24state_object.xlsx" />
   </ItemGroup>
 
   <ItemGroup>
-	  <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
-	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Core\DiscUtils.Core.csproj" />
-	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vdi\DiscUtils.Vdi.csproj" />
-	  <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vhd\DiscUtils.Vhd.csproj" />
-	  <ProjectReference Include="..\X16Emulator\EmulatorCore\EmulatorCore.vcxproj" />
+    <ProjectReference Include="..\BitMagic.Common\BitMagic.Common.csproj" />
+    <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Core\DiscUtils.Core.csproj" />
+    <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vdi\DiscUtils.Vdi.csproj" />
+    <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Vhd\DiscUtils.Vhd.csproj" />
+    <ProjectReference Include="..\X16Emulator\EmulatorCore\EmulatorCore.vcxproj" />
     <ProjectReference Include="..\External\DiscUtils\Library\DiscUtils.Fat\DiscUtils.Fat.csproj" />
   </ItemGroup>
 
